@@ -10,13 +10,23 @@ import {
   CompetitionCode 
 } from '@/types/footballApi';
 
-// Cache for reducing API calls
+// Cache for reducing API calls - EXTENDED to prevent rate limits
 const cache = new Map<string, { data: unknown; timestamp: number }>();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes for most data
+const LIVE_CACHE_DURATION = 2 * 60 * 1000; // 2 minutes for live matches
+const STANDINGS_CACHE_DURATION = 60 * 60 * 1000; // 1 hour for standings
 
-function getCached<T>(key: string): T | null {
+// Rate limiting to prevent 429 errors (Football-Data.org: 10 req/min)
+let lastRequestTime = 0;
+const MIN_REQUEST_INTERVAL = 6500; // 6.5 seconds between requests (safe margin)
+const requestQueue: Array<() => Promise<void>> = [];
+let isProcessingQueue = false;
+
+function getCached<T>(key: string, customDuration?: number): T | null {
   const cached = cache.get(key);
-  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+  const duration = customDuration || CACHE_DURATION;
+  if (cached && Date.now() - cached.timestamp < duration) {
+    console.log(`[Cache HIT] ${key}`);
     return cached.data as T;
   }
   return null;
@@ -26,7 +36,35 @@ function setCache(key: string, data: unknown): void {
   cache.set(key, { data, timestamp: Date.now() });
 }
 
+async function processQueue(): Promise<void> {
+  if (isProcessingQueue || requestQueue.length === 0) return;
+  
+  isProcessingQueue = true;
+  while (requestQueue.length > 0) {
+    const request = requestQueue.shift();
+    if (request) {
+      await request();
+    }
+  }
+  isProcessingQueue = false;
+}
+
+async function waitForRateLimit(): Promise<void> {
+  const now = Date.now();
+  const timeSinceLastRequest = now - lastRequestTime;
+  
+  if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+    const waitTime = MIN_REQUEST_INTERVAL - timeSinceLastRequest;
+    console.log(`[Rate Limit] Waiting ${waitTime}ms before next request`);
+    await new Promise(resolve => setTimeout(resolve, waitTime));
+  }
+  
+  lastRequestTime = Date.now();
+}
+
 async function callFootballApi<T>(body: Record<string, unknown>): Promise<T> {
+  await waitForRateLimit();
+  
   const { data, error } = await supabase.functions.invoke('football-api', {
     body,
   });
@@ -37,6 +75,11 @@ async function callFootballApi<T>(body: Record<string, unknown>): Promise<T> {
   }
 
   if (data?.error) {
+    // Handle rate limit specifically
+    if (data.error.includes('429')) {
+      console.warn('[Rate Limited] Too many requests, using cached data if available');
+      throw new Error('API rate limit exceeded. Please try again in a minute.');
+    }
     throw new Error(data.error);
   }
 
@@ -49,31 +92,43 @@ export async function getCompetitions() {
 
 export async function getTeams(competitionCode: CompetitionCode): Promise<Team[]> {
   const cacheKey = `teams-${competitionCode}`;
-  const cached = getCached<Team[]>(cacheKey);
+  const cached = getCached<Team[]>(cacheKey, STANDINGS_CACHE_DURATION);
   if (cached) return cached;
 
-  const response = await callFootballApi<TeamsResponse>({
-    action: 'teams',
-    competitionCode,
-  });
+  try {
+    const response = await callFootballApi<TeamsResponse>({
+      action: 'teams',
+      competitionCode,
+    });
 
-  setCache(cacheKey, response.teams);
-  return response.teams;
+    setCache(cacheKey, response.teams);
+    return response.teams;
+  } catch (error) {
+    console.error('Failed to fetch teams:', error);
+    return [];
+  }
 }
 
 export async function getStandings(competitionCode: CompetitionCode): Promise<Standing[]> {
   const cacheKey = `standings-${competitionCode}`;
-  const cached = getCached<Standing[]>(cacheKey);
+  // Use longer cache for standings (1 hour)
+  const cached = getCached<Standing[]>(cacheKey, STANDINGS_CACHE_DURATION);
   if (cached) return cached;
 
-  const response = await callFootballApi<StandingsResponse>({
-    action: 'standings',
-    competitionCode,
-  });
+  try {
+    const response = await callFootballApi<StandingsResponse>({
+      action: 'standings',
+      competitionCode,
+    });
 
-  const standings = response.standings[0]?.table || [];
-  setCache(cacheKey, standings);
-  return standings;
+    const standings = response.standings[0]?.table || [];
+    setCache(cacheKey, standings);
+    return standings;
+  } catch (error) {
+    // Return empty array on rate limit, component should handle gracefully
+    console.error('Failed to fetch standings:', error);
+    return [];
+  }
 }
 
 export async function getUpcomingMatches(
@@ -84,39 +139,47 @@ export async function getUpcomingMatches(
   const cached = getCached<Match[]>(cacheKey);
   if (cached) return cached;
 
-  const dateFrom = new Date().toISOString().split('T')[0];
-  const dateTo = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  try {
+    const dateFrom = new Date().toISOString().split('T')[0];
+    const dateTo = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-  const response = await callFootballApi<MatchesResponse>({
-    action: 'matches',
-    competitionCode,
-    dateFrom,
-    dateTo,
-    status: 'SCHEDULED',
-  });
+    const response = await callFootballApi<MatchesResponse>({
+      action: 'matches',
+      competitionCode,
+      dateFrom,
+      dateTo,
+      status: 'SCHEDULED',
+    });
 
-  setCache(cacheKey, response.matches);
-  return response.matches;
+    setCache(cacheKey, response.matches);
+    return response.matches;
+  } catch (error) {
+    console.error('Failed to fetch upcoming matches:', error);
+    return [];
+  }
 }
 
 export async function getLiveMatches(
   competitionCode?: CompetitionCode
 ): Promise<Match[]> {
-  // Don't cache live matches as they change frequently
   const cacheKey = `live-${competitionCode || 'all'}`;
-  const cached = getCached<Match[]>(cacheKey);
-  // Use a shorter cache for live matches (30 seconds)
+  // Use 2-minute cache for live matches to reduce API calls
+  const cached = getCached<Match[]>(cacheKey, LIVE_CACHE_DURATION);
   if (cached) return cached;
 
-  const response = await callFootballApi<MatchesResponse>({
-    action: 'matches',
-    competitionCode,
-    status: 'LIVE', // This returns both IN_PLAY and PAUSED matches
-  });
+  try {
+    const response = await callFootballApi<MatchesResponse>({
+      action: 'matches',
+      competitionCode,
+      status: 'LIVE',
+    });
 
-  // Cache for 30 seconds only
-  cache.set(cacheKey, { data: response.matches, timestamp: Date.now() });
-  return response.matches;
+    setCache(cacheKey, response.matches);
+    return response.matches;
+  } catch (error) {
+    console.error('Failed to fetch live matches:', error);
+    return [];
+  }
 }
 
 export async function getFinishedMatches(
@@ -127,33 +190,43 @@ export async function getFinishedMatches(
   const cached = getCached<Match[]>(cacheKey);
   if (cached) return cached;
 
-  const dateTo = new Date().toISOString().split('T')[0];
-  const dateFrom = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  try {
+    const dateTo = new Date().toISOString().split('T')[0];
+    const dateFrom = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-  const response = await callFootballApi<MatchesResponse>({
-    action: 'matches',
-    competitionCode,
-    dateFrom,
-    dateTo,
-    status: 'FINISHED',
-  });
+    const response = await callFootballApi<MatchesResponse>({
+      action: 'matches',
+      competitionCode,
+      dateFrom,
+      dateTo,
+      status: 'FINISHED',
+    });
 
-  setCache(cacheKey, response.matches);
-  return response.matches;
+    setCache(cacheKey, response.matches);
+    return response.matches;
+  } catch (error) {
+    console.error('Failed to fetch finished matches:', error);
+    return [];
+  }
 }
 
 export async function getHeadToHead(matchId: number) {
   const cacheKey = `h2h-${matchId}`;
-  const cached = getCached<unknown>(cacheKey);
+  const cached = getCached<unknown>(cacheKey, STANDINGS_CACHE_DURATION);
   if (cached) return cached;
 
-  const response = await callFootballApi<unknown>({
-    action: 'head2head',
-    matchId,
-  });
+  try {
+    const response = await callFootballApi<unknown>({
+      action: 'head2head',
+      matchId,
+    });
 
-  setCache(cacheKey, response);
-  return response;
+    setCache(cacheKey, response);
+    return response;
+  } catch (error) {
+    console.error('Failed to fetch head to head:', error);
+    return null;
+  }
 }
 
 // Helper to find team's recent form from standings
