@@ -109,6 +109,239 @@ export type Database = {
         }
         Relationships: []
       }
+      match_history: {
+        Row: {
+          away_draws: number | null
+          away_form: string | null
+          away_form_score: number | null
+          away_goal_avg: number | null
+          away_goals_conceded: number | null
+          away_goals_scored: number | null
+          away_losses: number | null
+          away_points: number | null
+          away_position: number | null
+          away_score: number
+          away_team: string
+          away_wins: number | null
+          both_teams_scored: boolean | null
+          created_at: string
+          first_half_away_score: number | null
+          first_half_home_score: number | null
+          first_half_result: string | null
+          h2h_away_wins: number | null
+          h2h_draws: number | null
+          h2h_home_wins: number | null
+          home_draws: number | null
+          home_form: string | null
+          home_form_score: number | null
+          home_goal_avg: number | null
+          home_goals_conceded: number | null
+          home_goals_scored: number | null
+          home_losses: number | null
+          home_points: number | null
+          home_position: number | null
+          home_score: number
+          home_team: string
+          home_wins: number | null
+          id: string
+          league: string
+          match_date: string
+          match_result: string | null
+          position_diff: number | null
+          total_goals: number | null
+        }
+        Insert: {
+          away_draws?: number | null
+          away_form?: string | null
+          away_form_score?: number | null
+          away_goal_avg?: number | null
+          away_goals_conceded?: number | null
+          away_goals_scored?: number | null
+          away_losses?: number | null
+          away_points?: number | null
+          away_position?: number | null
+          away_score: number
+          away_team: string
+          away_wins?: number | null
+          both_teams_scored?: boolean | null
+          created_at?: string
+          first_half_away_score?: number | null
+          first_half_home_score?: number | null
+          first_half_result?: string | null
+          h2h_away_wins?: number | null
+          h2h_draws?: number | null
+          h2h_home_wins?: number | null
+          home_draws?: number | null
+          home_form?: string | null
+          home_form_score?: number | null
+          home_goal_avg?: number | null
+          home_goals_conceded?: number | null
+          home_goals_scored?: number | null
+          home_losses?: number | null
+          home_points?: number | null
+          home_position?: number | null
+          home_score: number
+          home_team: string
+          home_wins?: number | null
+          id?: string
+          league: string
+          match_date: string
+          match_result?: string | null
+          position_diff?: number | null
+          total_goals?: number | null
+        }
+        Update: {
+          away_draws?: number | null
+          away_form?: string | null
+          away_form_score?: number | null
+          away_goal_avg?: number | null
+          away_goals_conceded?: number | null
+          away_goals_scored?: number | null
+          away_losses?: number | null
+          away_points?: number | null
+          away_position?: number | null
+          away_score?: number
+          away_team?: string
+          away_wins?: number | null
+          both_teams_scored?: boolean | null
+          created_at?: string
+          first_half_away_score?: number | null
+          first_half_home_score?: number | null
+          first_half_result?: string | null
+          h2h_away_wins?: number | null
+          h2h_draws?: number | null
+          h2h_home_wins?: number | null
+          home_draws?: number | null
+          home_form?: string | null
+          home_form_score?: number | null
+          home_goal_avg?: number | null
+          home_goals_conceded?: number | null
+          home_goals_scored?: number | null
+          home_losses?: number | null
+          home_points?: number | null
+          home_position?: number | null
+          home_score?: number
+          home_team?: string
+          home_wins?: number | null
+          id?: string
+          league?: string
+          match_date?: string
+          match_result?: string | null
+          position_diff?: number | null
+          total_goals?: number | null
+        }
+        Relationships: []
+      }
+      ml_model_stats: {
+        Row: {
+          accuracy_percentage: number | null
+          avg_confidence: number | null
+          correct_predictions: number | null
+          created_at: string
+          high_confidence_accuracy: number | null
+          id: string
+          last_updated: string | null
+          prediction_type: string
+          total_predictions: number | null
+        }
+        Insert: {
+          accuracy_percentage?: number | null
+          avg_confidence?: number | null
+          correct_predictions?: number | null
+          created_at?: string
+          high_confidence_accuracy?: number | null
+          id?: string
+          last_updated?: string | null
+          prediction_type: string
+          total_predictions?: number | null
+        }
+        Update: {
+          accuracy_percentage?: number | null
+          avg_confidence?: number | null
+          correct_predictions?: number | null
+          created_at?: string
+          high_confidence_accuracy?: number | null
+          id?: string
+          last_updated?: string | null
+          prediction_type?: string
+          total_predictions?: number | null
+        }
+        Relationships: []
+      }
+      prediction_features: {
+        Row: {
+          actual_result: string | null
+          ai_confidence: number | null
+          ai_reasoning: string | null
+          away_form_score: number | null
+          away_goal_avg: number | null
+          created_at: string
+          expected_goals: number | null
+          h2h_away_wins: number | null
+          h2h_draws: number | null
+          h2h_home_wins: number | null
+          home_advantage_score: number | null
+          home_form_score: number | null
+          home_goal_avg: number | null
+          hybrid_confidence: number | null
+          id: string
+          mathematical_confidence: number | null
+          position_diff: number | null
+          prediction_id: string | null
+          was_correct: boolean | null
+        }
+        Insert: {
+          actual_result?: string | null
+          ai_confidence?: number | null
+          ai_reasoning?: string | null
+          away_form_score?: number | null
+          away_goal_avg?: number | null
+          created_at?: string
+          expected_goals?: number | null
+          h2h_away_wins?: number | null
+          h2h_draws?: number | null
+          h2h_home_wins?: number | null
+          home_advantage_score?: number | null
+          home_form_score?: number | null
+          home_goal_avg?: number | null
+          hybrid_confidence?: number | null
+          id?: string
+          mathematical_confidence?: number | null
+          position_diff?: number | null
+          prediction_id?: string | null
+          was_correct?: boolean | null
+        }
+        Update: {
+          actual_result?: string | null
+          ai_confidence?: number | null
+          ai_reasoning?: string | null
+          away_form_score?: number | null
+          away_goal_avg?: number | null
+          created_at?: string
+          expected_goals?: number | null
+          h2h_away_wins?: number | null
+          h2h_draws?: number | null
+          h2h_home_wins?: number | null
+          home_advantage_score?: number | null
+          home_form_score?: number | null
+          home_goal_avg?: number | null
+          hybrid_confidence?: number | null
+          id?: string
+          mathematical_confidence?: number | null
+          position_diff?: number | null
+          prediction_id?: string | null
+          was_correct?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prediction_features_prediction_id_fkey"
+            columns: ["prediction_id"]
+            isOneToOne: false
+            referencedRelation: "predictions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       predictions: {
         Row: {
           actual_result: string | null

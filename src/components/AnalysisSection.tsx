@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, Users, Brain, BarChart3, TrendingUp, Target } from 'lucide-react';
+import { AlertCircle, Users, Brain, BarChart3, TrendingUp, Target, Sparkles } from 'lucide-react';
 import { MatchAnalysis } from '@/types/match';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -8,6 +8,7 @@ import {
   TrendAnalysisChart,
   ConfidenceVisualizer,
 } from '@/components/charts';
+import { Progress } from '@/components/ui/progress';
 
 interface AnalysisSectionProps {
   analysis: MatchAnalysis;
@@ -16,15 +17,49 @@ interface AnalysisSectionProps {
 const AnalysisSection: React.FC<AnalysisSectionProps> = ({ analysis }) => {
   const [activeTab, setActiveTab] = useState('overview');
 
+  // AI destekli tahminlerin ortalama güvenini hesapla
+  const aiPredictions = analysis.predictions.filter(p => p.isAIPowered);
+  const avgAIConfidence = aiPredictions.length > 0
+    ? aiPredictions.reduce((sum, p) => sum + (p.aiConfidence || 0), 0) / aiPredictions.length
+    : 0;
+
   return (
     <div className="space-y-6">
+      {/* AI Enhanced Badge */}
+      {analysis.isAIEnhanced && (
+        <div className="glass-card p-4 animate-fade-in border-primary/30 bg-primary/5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-foreground">AI Destekli Analiz</h3>
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary">
+                  Hibrit Model
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Bu analiz yapay zeka ile güçlendirilmiştir. Ortalama AI güveni: {Math.round(avgAIConfidence * 100)}%
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Visualization Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-6">
+        <TabsList className={`grid w-full ${analysis.isAIEnhanced ? 'grid-cols-5' : 'grid-cols-4'} mb-6`}>
           <TabsTrigger value="overview" className="gap-2">
             <Brain className="w-4 h-4" />
-            <span className="hidden sm:inline">Genel Bakış</span>
+            <span className="hidden sm:inline">Genel</span>
           </TabsTrigger>
+          {analysis.isAIEnhanced && (
+            <TabsTrigger value="ai" className="gap-2">
+              <Sparkles className="w-4 h-4" />
+              <span className="hidden sm:inline">AI</span>
+            </TabsTrigger>
+          )}
           <TabsTrigger value="performance" className="gap-2">
             <BarChart3 className="w-4 h-4" />
             <span className="hidden sm:inline">Performans</span>
@@ -116,6 +151,65 @@ const AnalysisSection: React.FC<AnalysisSectionProps> = ({ analysis }) => {
             </div>
           </div>
         </TabsContent>
+
+        {/* AI Analysis Tab */}
+        {analysis.isAIEnhanced && (
+          <TabsContent value="ai" className="space-y-6">
+            <div className="glass-card p-6 animate-fade-in">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-display font-bold text-foreground">AI Tahmin Detayları</h3>
+                  <p className="text-sm text-muted-foreground">Yapay zeka analizi ile güçlendirilmiş tahminler</p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {aiPredictions.map((prediction, index) => (
+                  <div key={index} className="p-4 rounded-lg bg-muted/30 border border-border/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold text-foreground">{prediction.type}</h4>
+                      <span className="text-lg font-bold gradient-text">{prediction.prediction}</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-3">
+                      <div>
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="text-muted-foreground flex items-center gap-1">
+                            <Sparkles className="w-3 h-3" /> AI Güveni
+                          </span>
+                          <span className="font-medium">{Math.round((prediction.aiConfidence || 0) * 100)}%</span>
+                        </div>
+                        <Progress value={(prediction.aiConfidence || 0) * 100} className="h-2" />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="text-muted-foreground">📊 Matematik</span>
+                          <span className="font-medium">{Math.round((prediction.mathConfidence || 0) * 100)}%</span>
+                        </div>
+                        <Progress value={(prediction.mathConfidence || 0) * 100} className="h-2" />
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground">{prediction.reasoning}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Model Bilgisi */}
+              <div className="mt-6 p-4 rounded-lg bg-primary/5 border border-primary/20">
+                <h4 className="font-semibold text-foreground mb-2">Hibrit Model Hakkında</h4>
+                <ul className="space-y-1 text-sm text-muted-foreground">
+                  <li>• <strong>%40 AI Analizi:</strong> Gemini AI ile derin maç analizi</li>
+                  <li>• <strong>%40 Matematiksel:</strong> Form, gol ortalaması, H2H verileri</li>
+                  <li>• <strong>%20 Temel:</strong> Genel futbol kalıpları</li>
+                </ul>
+              </div>
+            </div>
+          </TabsContent>
+        )}
 
         {/* Performance Tab */}
         <TabsContent value="performance" className="space-y-6">

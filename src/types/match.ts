@@ -30,6 +30,9 @@ export interface Prediction {
   prediction: string;
   confidence: 'düşük' | 'orta' | 'yüksek';
   reasoning: string;
+  isAIPowered?: boolean;
+  aiConfidence?: number;
+  mathConfidence?: number;
 }
 
 export interface MatchAnalysis {
@@ -41,4 +44,5 @@ export interface MatchAnalysis {
   tacticalAnalysis: string;
   keyFactors: string[];
   injuries: { home: string[]; away: string[] };
+  isAIEnhanced?: boolean;
 }
