@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getFinishedMatches } from './footballApiService';
 import { PredictionRecord } from '@/types/prediction';
 import { Match, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
+import { updateMLModelStats } from './mlPredictionService';
 
 interface VerificationResult {
   predictionId: string;
@@ -141,6 +142,29 @@ function findMatchingApiMatch(
   return null;
 }
 
+// Update prediction features with verification result
+async function updatePredictionFeatures(
+  predictionId: string,
+  wasCorrect: boolean,
+  actualResult: string
+): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('prediction_features')
+      .update({
+        was_correct: wasCorrect,
+        actual_result: actualResult,
+      })
+      .eq('prediction_id', predictionId);
+
+    if (error) {
+      console.error('Error updating prediction features:', error);
+    }
+  } catch (error) {
+    console.error('Error in updatePredictionFeatures:', error);
+  }
+}
+
 // Verify a single prediction with match data
 async function verifyPredictionWithMatch(
   prediction: PredictionRecord,
@@ -162,13 +186,15 @@ async function verifyPredictionWithMatch(
     prediction.away_team
   );
 
+  const actualResult = `${homeScore}-${awayScore}`;
+
   // Update the prediction in database
   const { error } = await supabase
     .from('predictions')
     .update({
       home_score: homeScore,
       away_score: awayScore,
-      actual_result: `${homeScore}-${awayScore}`,
+      actual_result: actualResult,
       is_correct: isCorrect,
       verified_at: new Date().toISOString(),
     })
@@ -177,6 +203,21 @@ async function verifyPredictionWithMatch(
   if (error) {
     console.error('Error updating prediction:', error);
     return null;
+  }
+
+  // Update ML model stats for learning loop
+  try {
+    await updateMLModelStats(prediction.prediction_type, isCorrect);
+    console.log(`ML stats updated for ${prediction.prediction_type}: ${isCorrect ? 'correct' : 'incorrect'}`);
+  } catch (mlError) {
+    console.error('Error updating ML stats:', mlError);
+  }
+
+  // Update prediction features for learning feedback
+  try {
+    await updatePredictionFeatures(prediction.id, isCorrect, actualResult);
+  } catch (featError) {
+    console.error('Error updating features:', featError);
   }
 
   return {
@@ -211,17 +252,19 @@ export async function autoVerifyPredictions(): Promise<{
   verified: VerificationResult[];
   notFound: PredictionRecord[];
   errors: string[];
+  mlStatsUpdated: number;
 }> {
   const results: VerificationResult[] = [];
   const notFound: PredictionRecord[] = [];
   const errors: string[] = [];
+  let mlStatsUpdated = 0;
 
   try {
     // Get pending predictions
     const pendingPredictions = await getPendingPredictions();
     
     if (pendingPredictions.length === 0) {
-      return { verified: results, notFound, errors };
+      return { verified: results, notFound, errors, mlStatsUpdated };
     }
 
     // Group predictions by league
@@ -254,6 +297,7 @@ export async function autoVerifyPredictions(): Promise<{
             const result = await verifyPredictionWithMatch(prediction, matchingMatch);
             if (result) {
               results.push(result);
+              mlStatsUpdated++;
             }
           } else {
             // Check if match date is in the past (should have a result)
@@ -274,5 +318,36 @@ export async function autoVerifyPredictions(): Promise<{
     errors.push(`Genel hata: ${errorMsg}`);
   }
 
-  return { verified: results, notFound, errors };
+  console.log(`Auto-verify complete: ${results.length} verified, ${mlStatsUpdated} ML stats updated`);
+  return { verified: results, notFound, errors, mlStatsUpdated };
+}
+
+// Get ML model performance summary
+export async function getMLModelPerformance(): Promise<{
+  predictionType: string;
+  accuracy: number;
+  total: number;
+  correct: number;
+}[]> {
+  try {
+    const { data, error } = await supabase
+      .from('ml_model_stats')
+      .select('prediction_type, accuracy_percentage, total_predictions, correct_predictions')
+      .order('accuracy_percentage', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching ML model performance:', error);
+      return [];
+    }
+
+    return (data || []).map(stat => ({
+      predictionType: stat.prediction_type,
+      accuracy: stat.accuracy_percentage || 0,
+      total: stat.total_predictions || 0,
+      correct: stat.correct_predictions || 0,
+    }));
+  } catch (error) {
+    console.error('Error in getMLModelPerformance:', error);
+    return [];
+  }
 }

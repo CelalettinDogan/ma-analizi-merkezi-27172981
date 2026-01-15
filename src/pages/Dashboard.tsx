@@ -8,6 +8,7 @@ import StatsOverview from '@/components/dashboard/StatsOverview';
 import PredictionTypeChart from '@/components/dashboard/PredictionTypeChart';
 import RecentPredictions from '@/components/dashboard/RecentPredictions';
 import AutoVerifyButton from '@/components/dashboard/AutoVerifyButton';
+import MLPerformanceCard from '@/components/dashboard/MLPerformanceCard';
 import SavedSlipsList from '@/components/betslip/SavedSlipsList';
 import UserMenu from '@/components/UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,6 +24,7 @@ const Dashboard: React.FC = () => {
   const [predictionStats, setPredictionStats] = useState<PredictionStats[]>([]);
   const [recentPredictions, setRecentPredictions] = useState<PredictionRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -43,6 +45,11 @@ const Dashboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleVerificationComplete = () => {
+    loadData();
+    setRefreshTrigger(prev => prev + 1); // Trigger ML card refresh
   };
 
   useEffect(() => {
@@ -109,7 +116,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <AutoVerifyButton onVerificationComplete={loadData} />
+            <AutoVerifyButton onVerificationComplete={handleVerificationComplete} />
             <Button variant="outline" size="sm" onClick={loadData} disabled={isLoading}>
               <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Yenile
@@ -136,8 +143,9 @@ const Dashboard: React.FC = () => {
 
         {/* Tabs for different views */}
         <Tabs defaultValue="predictions" className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-muted/50">
+          <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 bg-muted/50">
             <TabsTrigger value="predictions">Tahminler</TabsTrigger>
+            <TabsTrigger value="ai">AI Model</TabsTrigger>
             <TabsTrigger value="slips">Kuponlarım</TabsTrigger>
           </TabsList>
 
@@ -149,6 +157,12 @@ const Dashboard: React.FC = () => {
                 isLoading={isLoading} 
                 onRefresh={loadData}
               />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="ai" className="mt-6">
+            <div className="max-w-2xl mx-auto">
+              <MLPerformanceCard refreshTrigger={refreshTrigger} />
             </div>
           </TabsContent>
 
