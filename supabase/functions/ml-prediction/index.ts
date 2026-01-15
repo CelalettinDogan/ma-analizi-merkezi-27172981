@@ -17,6 +17,10 @@ interface TeamFeatures {
   wins: number;
   draws: number;
   losses: number;
+  momentum?: number;
+  trend?: string;
+  attackStrength?: number;
+  defenseStrength?: number;
 }
 
 interface H2HData {
@@ -26,11 +30,31 @@ interface H2HData {
   totalMatches: number;
 }
 
+interface MatchContext {
+  isDerby?: boolean;
+  derbyName?: string;
+  matchImportance?: string;
+  seasonPhase?: string;
+  matchBadges?: string[];
+}
+
+interface PoissonData {
+  homeExpected?: number;
+  awayExpected?: number;
+  homeWinProb?: number;
+  drawProb?: number;
+  awayWinProb?: number;
+  over2_5Prob?: number;
+  bttsProb?: number;
+}
+
 interface RequestBody {
   homeTeam: TeamFeatures;
   awayTeam: TeamFeatures;
   h2h: H2HData;
   league: string;
+  context?: MatchContext;
+  poisson?: PoissonData;
   historicalAccuracy?: {
     matchResult: number;
     totalGoals: number;
@@ -41,31 +65,11 @@ interface RequestBody {
 }
 
 interface AIPrediction {
-  matchResult: {
-    prediction: 'HOME_WIN' | 'DRAW' | 'AWAY_WIN';
-    confidence: number;
-    reasoning: string;
-  };
-  totalGoals: {
-    prediction: 'OVER_2_5' | 'UNDER_2_5';
-    confidence: number;
-    reasoning: string;
-  };
-  bothTeamsScore: {
-    prediction: 'YES' | 'NO';
-    confidence: number;
-    reasoning: string;
-  };
-  correctScore: {
-    prediction: string;
-    confidence: number;
-    reasoning: string;
-  };
-  firstHalf: {
-    prediction: 'HOME_WIN' | 'DRAW' | 'AWAY_WIN';
-    confidence: number;
-    reasoning: string;
-  };
+  matchResult: { prediction: 'HOME_WIN' | 'DRAW' | 'AWAY_WIN'; confidence: number; reasoning: string; };
+  totalGoals: { prediction: 'OVER_2_5' | 'UNDER_2_5'; confidence: number; reasoning: string; };
+  bothTeamsScore: { prediction: 'YES' | 'NO'; confidence: number; reasoning: string; };
+  correctScore: { prediction: string; confidence: number; reasoning: string; };
+  firstHalf: { prediction: 'HOME_WIN' | 'DRAW' | 'AWAY_WIN'; confidence: number; reasoning: string; };
 }
 
 serve(async (req) => {
@@ -75,65 +79,114 @@ serve(async (req) => {
 
   try {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
-    }
+    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
 
     const body: RequestBody = await req.json();
-    const { homeTeam, awayTeam, h2h, league, historicalAccuracy } = body;
+    const { homeTeam, awayTeam, h2h, league, context, poisson, historicalAccuracy } = body;
 
-    // Build system prompt with historical performance feedback
-    let systemPrompt = `Sen profesyonel bir futbol analiz uzmanısın. Verilen takım istatistiklerini detaylı analiz ederek maç tahmini yapıyorsun.
+    // Enhanced system prompt
+    let systemPrompt = `Sen profesyonel bir futbol analiz uzmanısın. Kapsamlı veri analizi yaparak maç tahmini üretiyorsun.
 
-Analiz kriterlerin:
-1. Form Durumu: Son 5 maçın ağırlıklı ortalaması (son maçlar daha önemli)
-2. Ev/Deplasman Performansı: Ev sahibi avantajı genelde %10-15 etki yapar
-3. Gol Ortalamaları: Atılan ve yenilen gol oranları
-4. H2H Geçmişi: Takımlar arası tarihsel üstünlük
-5. Lig Pozisyonu: Puan farkı ve hedefler
+DETAYLI ANALİZ KRİTERLERİ:
 
-Güven seviyeleri:
-- 0.3-0.5: Düşük güven, veriler belirsiz
-- 0.5-0.7: Orta güven, hafif eğilim var
-- 0.7-0.9: Yüksek güven, net veriler
+1. FORM ANALİZİ
+   - Genel form skoru ve trend (yükseliş/düşüş/stabil)
+   - Momentum: Son maçlardaki performans eğilimi
+   - Galibiyet/Mağlubiyet serileri
 
-ÖNEMLİ: Doğru skor tahmini en zor tahmindir, düşük güven ver.`;
+2. GÜÇ ENDEKSLERİ
+   - Hücum Güç Endeksi: >1 = lig ortalamasının üzerinde
+   - Savunma Güç Endeksi: <1 = lig ortalamasından az gol yiyor
+   - Genel güç = Hücum / Savunma
 
-    // Add historical accuracy feedback if available
+3. POİSSON MODELİ (varsa)
+   - Beklenen gol dağılımı matematiksel hesaplama
+   - Maç sonucu olasılıkları
+   - Alt/Üst ve KG olasılıkları
+
+4. BAĞLAMSAL FAKTÖRLER
+   - Derbi maçlarında formun etkisi azalır, belirsizlik artar
+   - Kritik maçlarda (şampiyonluk, düşme hattı) temkinli ol
+   - Sezon fazı: Final haftaları daha öngörülmez
+
+5. H2H TARİHÇESİ
+   - Psikolojik üstünlük
+   - Son karşılaşma trendi
+
+GÜVEN SEVİYESİ HESAPLAMA:
+- Tüm faktörler aynı yönde + net istatistik: 0.75-0.90
+- Çoğu faktör aynı yönde: 0.60-0.75
+- Karışık sinyaller: 0.45-0.60
+- Derbi/kritik maç: Güveni %10-15 düşür
+- Belirsiz durum: 0.35-0.50
+
+DOĞRU SKOR: En zor tahmin, daima düşük güven (0.25-0.40)`;
+
     if (historicalAccuracy) {
       systemPrompt += `
 
-Geçmiş Performans (dikkate al):
-- Maç Sonucu tahminleri: %${(historicalAccuracy.matchResult * 100).toFixed(0)} doğruluk
-- Alt/Üst tahminleri: %${(historicalAccuracy.totalGoals * 100).toFixed(0)} doğruluk
-- KG Var/Yok tahminleri: %${(historicalAccuracy.bothTeamsScore * 100).toFixed(0)} doğruluk
-- İlk Yarı tahminleri: %${(historicalAccuracy.firstHalf * 100).toFixed(0)} doğruluk
-
-Düşük doğruluk olan kategorilerde daha temkinli ol ve orta güven kullan.`;
+GEÇMİŞ PERFORMANS:
+- Maç Sonucu: %${(historicalAccuracy.matchResult * 100).toFixed(0)}
+- Alt/Üst: %${(historicalAccuracy.totalGoals * 100).toFixed(0)}
+- KG: %${(historicalAccuracy.bothTeamsScore * 100).toFixed(0)}
+Düşük doğruluk kategorilerinde daha temkinli ol.`;
     }
 
-    const userPrompt = `Maç Analizi:
-
-LİG: ${league}
+    // Enhanced user prompt
+    let userPrompt = `MAÇA ANALİZİ - ${league}
 
 EV SAHİBİ: ${homeTeam.name}
-- Lig Sırası: ${homeTeam.position}. (${homeTeam.points} puan)
-- Son Form: ${homeTeam.form} (Form Skoru: ${homeTeam.formScore}/100)
-- Gol Ortalaması: ${homeTeam.goalAverage.toFixed(2)} (Attı: ${homeTeam.goalsScored}, Yedi: ${homeTeam.goalsConceded})
-- Performans: ${homeTeam.wins}G ${homeTeam.draws}B ${homeTeam.losses}M
+- Sıra: ${homeTeam.position}. (${homeTeam.points} puan)
+- Form: ${homeTeam.form} (Skor: ${homeTeam.formScore}/100)
+- Gol Ort: ${homeTeam.goalAverage.toFixed(2)} (${homeTeam.goalsScored} attı, ${homeTeam.goalsConceded} yedi)
+- Performans: ${homeTeam.wins}G ${homeTeam.draws}B ${homeTeam.losses}M`;
+
+    if (homeTeam.momentum !== undefined) {
+      userPrompt += `\n- Momentum: ${homeTeam.momentum} (${homeTeam.trend})`;
+    }
+    if (homeTeam.attackStrength !== undefined) {
+      userPrompt += `\n- Hücum Gücü: ${homeTeam.attackStrength.toFixed(2)}x | Savunma: ${homeTeam.defenseStrength?.toFixed(2)}x`;
+    }
+
+    userPrompt += `
 
 DEPLASMAN: ${awayTeam.name}
-- Lig Sırası: ${awayTeam.position}. (${awayTeam.points} puan)
-- Son Form: ${awayTeam.form} (Form Skoru: ${awayTeam.formScore}/100)
-- Gol Ortalaması: ${awayTeam.goalAverage.toFixed(2)} (Attı: ${awayTeam.goalsScored}, Yedi: ${awayTeam.goalsConceded})
-- Performans: ${awayTeam.wins}G ${awayTeam.draws}B ${awayTeam.losses}M
+- Sıra: ${awayTeam.position}. (${awayTeam.points} puan)
+- Form: ${awayTeam.form} (Skor: ${awayTeam.formScore}/100)
+- Gol Ort: ${awayTeam.goalAverage.toFixed(2)} (${awayTeam.goalsScored} attı, ${awayTeam.goalsConceded} yedi)
+- Performans: ${awayTeam.wins}G ${awayTeam.draws}B ${awayTeam.losses}M`;
 
-H2H GEÇMİŞİ: (Son ${h2h.totalMatches} maç)
-- ${homeTeam.name} galibiyetleri: ${h2h.homeWins}
-- ${awayTeam.name} galibiyetleri: ${h2h.awayWins}
-- Beraberlikler: ${h2h.draws}
+    if (awayTeam.momentum !== undefined) {
+      userPrompt += `\n- Momentum: ${awayTeam.momentum} (${awayTeam.trend})`;
+    }
+    if (awayTeam.attackStrength !== undefined) {
+      userPrompt += `\n- Hücum Gücü: ${awayTeam.attackStrength.toFixed(2)}x | Savunma: ${awayTeam.defenseStrength?.toFixed(2)}x`;
+    }
 
-Bu verilere dayanarak kapsamlı maç tahmini yap.`;
+    userPrompt += `
+
+H2H (Son ${h2h.totalMatches} maç): ${homeTeam.name} ${h2h.homeWins}G - ${h2h.draws}B - ${h2h.awayWins}G ${awayTeam.name}`;
+
+    if (context?.isDerby) {
+      userPrompt += `\n\n⚔️ DERBİ MAÇI: ${context.derbyName || 'Yerel Derbi'}`;
+    }
+    if (context?.matchImportance && context.matchImportance !== 'normal') {
+      userPrompt += `\n🏆 MAÇ ÖNEMİ: ${context.matchImportance.toUpperCase()}`;
+    }
+    if (context?.matchBadges && context.matchBadges.length > 0) {
+      userPrompt += `\n📌 Özel Durumlar: ${context.matchBadges.join(', ')}`;
+    }
+
+    if (poisson) {
+      userPrompt += `
+
+📊 POİSSON MATEMATİKSEL MODEL:
+- Beklenen Gol: ${homeTeam.name} ${poisson.homeExpected?.toFixed(2)} - ${poisson.awayExpected?.toFixed(2)} ${awayTeam.name}
+- Olasılıklar: Ev %${poisson.homeWinProb?.toFixed(0)} | Beraberlik %${poisson.drawProb?.toFixed(0)} | Dep %${poisson.awayWinProb?.toFixed(0)}
+- 2.5 Üst: %${poisson.over2_5Prob?.toFixed(0)} | KG Var: %${poisson.bttsProb?.toFixed(0)}`;
+    }
+
+    userPrompt += `\n\nTüm verileri analiz ederek kapsamlı tahmin yap.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -147,117 +200,47 @@ Bu verilere dayanarak kapsamlı maç tahmini yap.`;
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        tools: [
-          {
-            type: 'function',
-            function: {
-              name: 'generate_predictions',
-              description: 'Futbol maçı için detaylı tahminler üret',
-              parameters: {
-                type: 'object',
-                properties: {
-                  matchResult: {
-                    type: 'object',
-                    properties: {
-                      prediction: { type: 'string', enum: ['HOME_WIN', 'DRAW', 'AWAY_WIN'] },
-                      confidence: { type: 'number', minimum: 0, maximum: 1 },
-                      reasoning: { type: 'string' },
-                    },
-                    required: ['prediction', 'confidence', 'reasoning'],
-                  },
-                  totalGoals: {
-                    type: 'object',
-                    properties: {
-                      prediction: { type: 'string', enum: ['OVER_2_5', 'UNDER_2_5'] },
-                      confidence: { type: 'number', minimum: 0, maximum: 1 },
-                      reasoning: { type: 'string' },
-                    },
-                    required: ['prediction', 'confidence', 'reasoning'],
-                  },
-                  bothTeamsScore: {
-                    type: 'object',
-                    properties: {
-                      prediction: { type: 'string', enum: ['YES', 'NO'] },
-                      confidence: { type: 'number', minimum: 0, maximum: 1 },
-                      reasoning: { type: 'string' },
-                    },
-                    required: ['prediction', 'confidence', 'reasoning'],
-                  },
-                  correctScore: {
-                    type: 'object',
-                    properties: {
-                      prediction: { type: 'string', description: 'Format: X-Y (örn: 2-1)' },
-                      confidence: { type: 'number', minimum: 0, maximum: 1 },
-                      reasoning: { type: 'string' },
-                    },
-                    required: ['prediction', 'confidence', 'reasoning'],
-                  },
-                  firstHalf: {
-                    type: 'object',
-                    properties: {
-                      prediction: { type: 'string', enum: ['HOME_WIN', 'DRAW', 'AWAY_WIN'] },
-                      confidence: { type: 'number', minimum: 0, maximum: 1 },
-                      reasoning: { type: 'string' },
-                    },
-                    required: ['prediction', 'confidence', 'reasoning'],
-                  },
-                },
-                required: ['matchResult', 'totalGoals', 'bothTeamsScore', 'correctScore', 'firstHalf'],
-                additionalProperties: false,
+        tools: [{
+          type: 'function',
+          function: {
+            name: 'generate_predictions',
+            description: 'Futbol maçı için detaylı tahminler üret',
+            parameters: {
+              type: 'object',
+              properties: {
+                matchResult: { type: 'object', properties: { prediction: { type: 'string', enum: ['HOME_WIN', 'DRAW', 'AWAY_WIN'] }, confidence: { type: 'number' }, reasoning: { type: 'string' } }, required: ['prediction', 'confidence', 'reasoning'] },
+                totalGoals: { type: 'object', properties: { prediction: { type: 'string', enum: ['OVER_2_5', 'UNDER_2_5'] }, confidence: { type: 'number' }, reasoning: { type: 'string' } }, required: ['prediction', 'confidence', 'reasoning'] },
+                bothTeamsScore: { type: 'object', properties: { prediction: { type: 'string', enum: ['YES', 'NO'] }, confidence: { type: 'number' }, reasoning: { type: 'string' } }, required: ['prediction', 'confidence', 'reasoning'] },
+                correctScore: { type: 'object', properties: { prediction: { type: 'string' }, confidence: { type: 'number' }, reasoning: { type: 'string' } }, required: ['prediction', 'confidence', 'reasoning'] },
+                firstHalf: { type: 'object', properties: { prediction: { type: 'string', enum: ['HOME_WIN', 'DRAW', 'AWAY_WIN'] }, confidence: { type: 'number' }, reasoning: { type: 'string' } }, required: ['prediction', 'confidence', 'reasoning'] },
               },
+              required: ['matchResult', 'totalGoals', 'bothTeamsScore', 'correctScore', 'firstHalf'],
             },
           },
-        ],
+        }],
         tool_choice: { type: 'function', function: { name: 'generate_predictions' } },
       }),
     });
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'AI credits exhausted. Please add credits.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      const errorText = await response.text();
-      console.error('AI Gateway error:', response.status, errorText);
+      if (response.status === 429) return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      if (response.status === 402) return new Response(JSON.stringify({ error: 'AI credits exhausted' }), { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       throw new Error(`AI Gateway error: ${response.status}`);
     }
 
     const aiResponse = await response.json();
-    
-    // Extract the tool call result
     const toolCall = aiResponse.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall || toolCall.function.name !== 'generate_predictions') {
-      console.error('Unexpected AI response:', JSON.stringify(aiResponse));
-      throw new Error('Invalid AI response structure');
-    }
+    if (!toolCall) throw new Error('Invalid AI response');
 
     const predictions: AIPrediction = JSON.parse(toolCall.function.arguments);
+    console.log('AI Predictions:', JSON.stringify(predictions, null, 2));
 
-    console.log('AI Predictions generated:', JSON.stringify(predictions, null, 2));
-
-    return new Response(JSON.stringify({ 
-      success: true, 
-      predictions,
-      homeTeam: homeTeam.name,
-      awayTeam: awayTeam.name,
-    }), {
+    return new Response(JSON.stringify({ success: true, predictions, homeTeam: homeTeam.name, awayTeam: awayTeam.name }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('ML Prediction error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });

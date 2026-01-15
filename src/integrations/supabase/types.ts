@@ -109,8 +109,68 @@ export type Database = {
         }
         Relationships: []
       }
+      league_averages: {
+        Row: {
+          avg_away_goals: number | null
+          avg_goals_per_match: number | null
+          avg_home_goals: number | null
+          away_win_percentage: number | null
+          btts_percentage: number | null
+          clean_sheet_away_pct: number | null
+          clean_sheet_home_pct: number | null
+          draw_percentage: number | null
+          home_win_percentage: number | null
+          id: string
+          league: string
+          over_1_5_percentage: number | null
+          over_2_5_percentage: number | null
+          over_3_5_percentage: number | null
+          season: string
+          updated_at: string | null
+        }
+        Insert: {
+          avg_away_goals?: number | null
+          avg_goals_per_match?: number | null
+          avg_home_goals?: number | null
+          away_win_percentage?: number | null
+          btts_percentage?: number | null
+          clean_sheet_away_pct?: number | null
+          clean_sheet_home_pct?: number | null
+          draw_percentage?: number | null
+          home_win_percentage?: number | null
+          id?: string
+          league: string
+          over_1_5_percentage?: number | null
+          over_2_5_percentage?: number | null
+          over_3_5_percentage?: number | null
+          season: string
+          updated_at?: string | null
+        }
+        Update: {
+          avg_away_goals?: number | null
+          avg_goals_per_match?: number | null
+          avg_home_goals?: number | null
+          away_win_percentage?: number | null
+          btts_percentage?: number | null
+          clean_sheet_away_pct?: number | null
+          clean_sheet_home_pct?: number | null
+          draw_percentage?: number | null
+          home_win_percentage?: number | null
+          id?: string
+          league?: string
+          over_1_5_percentage?: number | null
+          over_2_5_percentage?: number | null
+          over_3_5_percentage?: number | null
+          season?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       match_history: {
         Row: {
+          away_attack_index: number | null
+          away_away_form: string | null
+          away_defense_index: number | null
           away_draws: number | null
           away_form: string | null
           away_form_score: number | null
@@ -118,8 +178,10 @@ export type Database = {
           away_goals_conceded: number | null
           away_goals_scored: number | null
           away_losses: number | null
+          away_momentum: number | null
           away_points: number | null
           away_position: number | null
+          away_rest_days: number | null
           away_score: number
           away_team: string
           away_wins: number | null
@@ -131,26 +193,37 @@ export type Database = {
           h2h_away_wins: number | null
           h2h_draws: number | null
           h2h_home_wins: number | null
+          home_attack_index: number | null
+          home_defense_index: number | null
           home_draws: number | null
           home_form: string | null
           home_form_score: number | null
           home_goal_avg: number | null
           home_goals_conceded: number | null
           home_goals_scored: number | null
+          home_home_form: string | null
           home_losses: number | null
+          home_momentum: number | null
           home_points: number | null
           home_position: number | null
+          home_rest_days: number | null
           home_score: number
           home_team: string
           home_wins: number | null
           id: string
+          is_derby: boolean | null
           league: string
           match_date: string
+          match_importance: string | null
           match_result: string | null
           position_diff: number | null
+          season_phase: string | null
           total_goals: number | null
         }
         Insert: {
+          away_attack_index?: number | null
+          away_away_form?: string | null
+          away_defense_index?: number | null
           away_draws?: number | null
           away_form?: string | null
           away_form_score?: number | null
@@ -158,8 +231,10 @@ export type Database = {
           away_goals_conceded?: number | null
           away_goals_scored?: number | null
           away_losses?: number | null
+          away_momentum?: number | null
           away_points?: number | null
           away_position?: number | null
+          away_rest_days?: number | null
           away_score: number
           away_team: string
           away_wins?: number | null
@@ -171,26 +246,37 @@ export type Database = {
           h2h_away_wins?: number | null
           h2h_draws?: number | null
           h2h_home_wins?: number | null
+          home_attack_index?: number | null
+          home_defense_index?: number | null
           home_draws?: number | null
           home_form?: string | null
           home_form_score?: number | null
           home_goal_avg?: number | null
           home_goals_conceded?: number | null
           home_goals_scored?: number | null
+          home_home_form?: string | null
           home_losses?: number | null
+          home_momentum?: number | null
           home_points?: number | null
           home_position?: number | null
+          home_rest_days?: number | null
           home_score: number
           home_team: string
           home_wins?: number | null
           id?: string
+          is_derby?: boolean | null
           league: string
           match_date: string
+          match_importance?: string | null
           match_result?: string | null
           position_diff?: number | null
+          season_phase?: string | null
           total_goals?: number | null
         }
         Update: {
+          away_attack_index?: number | null
+          away_away_form?: string | null
+          away_defense_index?: number | null
           away_draws?: number | null
           away_form?: string | null
           away_form_score?: number | null
@@ -198,8 +284,10 @@ export type Database = {
           away_goals_conceded?: number | null
           away_goals_scored?: number | null
           away_losses?: number | null
+          away_momentum?: number | null
           away_points?: number | null
           away_position?: number | null
+          away_rest_days?: number | null
           away_score?: number
           away_team?: string
           away_wins?: number | null
@@ -211,23 +299,31 @@ export type Database = {
           h2h_away_wins?: number | null
           h2h_draws?: number | null
           h2h_home_wins?: number | null
+          home_attack_index?: number | null
+          home_defense_index?: number | null
           home_draws?: number | null
           home_form?: string | null
           home_form_score?: number | null
           home_goal_avg?: number | null
           home_goals_conceded?: number | null
           home_goals_scored?: number | null
+          home_home_form?: string | null
           home_losses?: number | null
+          home_momentum?: number | null
           home_points?: number | null
           home_position?: number | null
+          home_rest_days?: number | null
           home_score?: number
           home_team?: string
           home_wins?: number | null
           id?: string
+          is_derby?: boolean | null
           league?: string
           match_date?: string
+          match_importance?: string | null
           match_result?: string | null
           position_diff?: number | null
+          season_phase?: string | null
           total_goals?: number | null
         }
         Relationships: []
@@ -273,63 +369,105 @@ export type Database = {
           actual_result: string | null
           ai_confidence: number | null
           ai_reasoning: string | null
+          away_attack_index: number | null
+          away_defense_index: number | null
           away_form_score: number | null
           away_goal_avg: number | null
+          away_momentum: number | null
           created_at: string
           expected_goals: number | null
           h2h_away_wins: number | null
           h2h_draws: number | null
           h2h_home_wins: number | null
           home_advantage_score: number | null
+          home_attack_index: number | null
+          home_defense_index: number | null
           home_form_score: number | null
           home_goal_avg: number | null
+          home_momentum: number | null
           hybrid_confidence: number | null
           id: string
+          is_derby: boolean | null
+          match_importance: string | null
           mathematical_confidence: number | null
+          poisson_away_expected: number | null
+          poisson_home_expected: number | null
           position_diff: number | null
           prediction_id: string | null
+          similar_matches_away_win_pct: number | null
+          similar_matches_count: number | null
+          similar_matches_draw_pct: number | null
+          similar_matches_home_win_pct: number | null
           was_correct: boolean | null
         }
         Insert: {
           actual_result?: string | null
           ai_confidence?: number | null
           ai_reasoning?: string | null
+          away_attack_index?: number | null
+          away_defense_index?: number | null
           away_form_score?: number | null
           away_goal_avg?: number | null
+          away_momentum?: number | null
           created_at?: string
           expected_goals?: number | null
           h2h_away_wins?: number | null
           h2h_draws?: number | null
           h2h_home_wins?: number | null
           home_advantage_score?: number | null
+          home_attack_index?: number | null
+          home_defense_index?: number | null
           home_form_score?: number | null
           home_goal_avg?: number | null
+          home_momentum?: number | null
           hybrid_confidence?: number | null
           id?: string
+          is_derby?: boolean | null
+          match_importance?: string | null
           mathematical_confidence?: number | null
+          poisson_away_expected?: number | null
+          poisson_home_expected?: number | null
           position_diff?: number | null
           prediction_id?: string | null
+          similar_matches_away_win_pct?: number | null
+          similar_matches_count?: number | null
+          similar_matches_draw_pct?: number | null
+          similar_matches_home_win_pct?: number | null
           was_correct?: boolean | null
         }
         Update: {
           actual_result?: string | null
           ai_confidence?: number | null
           ai_reasoning?: string | null
+          away_attack_index?: number | null
+          away_defense_index?: number | null
           away_form_score?: number | null
           away_goal_avg?: number | null
+          away_momentum?: number | null
           created_at?: string
           expected_goals?: number | null
           h2h_away_wins?: number | null
           h2h_draws?: number | null
           h2h_home_wins?: number | null
           home_advantage_score?: number | null
+          home_attack_index?: number | null
+          home_defense_index?: number | null
           home_form_score?: number | null
           home_goal_avg?: number | null
+          home_momentum?: number | null
           hybrid_confidence?: number | null
           id?: string
+          is_derby?: boolean | null
+          match_importance?: string | null
           mathematical_confidence?: number | null
+          poisson_away_expected?: number | null
+          poisson_home_expected?: number | null
           position_diff?: number | null
           prediction_id?: string | null
+          similar_matches_away_win_pct?: number | null
+          similar_matches_count?: number | null
+          similar_matches_draw_pct?: number | null
+          similar_matches_home_win_pct?: number | null
           was_correct?: boolean | null
         }
         Relationships: [
