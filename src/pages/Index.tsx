@@ -7,6 +7,7 @@ import TeamStatsCard from '@/components/TeamStatsCard';
 import HeadToHeadCard from '@/components/HeadToHeadCard';
 import PredictionCard from '@/components/PredictionCard';
 import AnalysisSection from '@/components/AnalysisSection';
+import FilteredPredictionsSection from '@/components/FilteredPredictionsSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
 import BetSlipButton from '@/components/betslip/BetSlipButton';
 import UserMenu from '@/components/UserMenu';
@@ -164,21 +165,12 @@ const Index: React.FC = () => {
               <AnalysisSection analysis={analysis} />
             </div>
 
-            {/* Predictions */}
+            {/* Predictions with Filters */}
             <div className="mb-8">
-              <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-6 text-center">
-                Bahis <span className="gradient-text">Tahminleri</span>
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {analysis.predictions.map((prediction, index) => (
-                  <PredictionCard 
-                    key={index} 
-                    prediction={prediction} 
-                    index={index} 
-                    matchInput={analysis.input}
-                  />
-                ))}
-              </div>
+              <FilteredPredictionsSection
+                predictions={analysis.predictions}
+                matchInput={analysis.input}
+              />
             </div>
 
             {/* Legal Disclaimer */}
