@@ -14,6 +14,98 @@ export type Database = {
   }
   public: {
     Tables: {
+      bet_slip_items: {
+        Row: {
+          away_score: number | null
+          away_team: string
+          confidence: string
+          created_at: string
+          home_score: number | null
+          home_team: string
+          id: string
+          is_correct: boolean | null
+          league: string
+          match_date: string
+          odds: number
+          prediction_type: string
+          prediction_value: string
+          slip_id: string
+        }
+        Insert: {
+          away_score?: number | null
+          away_team: string
+          confidence: string
+          created_at?: string
+          home_score?: number | null
+          home_team: string
+          id?: string
+          is_correct?: boolean | null
+          league: string
+          match_date: string
+          odds?: number
+          prediction_type: string
+          prediction_value: string
+          slip_id: string
+        }
+        Update: {
+          away_score?: number | null
+          away_team?: string
+          confidence?: string
+          created_at?: string
+          home_score?: number | null
+          home_team?: string
+          id?: string
+          is_correct?: boolean | null
+          league?: string
+          match_date?: string
+          odds?: number
+          prediction_type?: string
+          prediction_value?: string
+          slip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bet_slip_items_slip_id_fkey"
+            columns: ["slip_id"]
+            isOneToOne: false
+            referencedRelation: "bet_slips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bet_slips: {
+        Row: {
+          created_at: string
+          id: string
+          is_verified: boolean
+          name: string | null
+          potential_win: number
+          stake: number
+          status: string
+          total_odds: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_verified?: boolean
+          name?: string | null
+          potential_win?: number
+          stake?: number
+          status?: string
+          total_odds?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_verified?: boolean
+          name?: string | null
+          potential_win?: number
+          stake?: number
+          status?: string
+          total_odds?: number
+        }
+        Relationships: []
+      }
       predictions: {
         Row: {
           actual_result: string | null

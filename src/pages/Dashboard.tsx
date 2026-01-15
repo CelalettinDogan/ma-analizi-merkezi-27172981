@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import StatsOverview from '@/components/dashboard/StatsOverview';
 import PredictionTypeChart from '@/components/dashboard/PredictionTypeChart';
 import RecentPredictions from '@/components/dashboard/RecentPredictions';
 import AutoVerifyButton from '@/components/dashboard/AutoVerifyButton';
+import SavedSlipsList from '@/components/betslip/SavedSlipsList';
 import { 
   getOverallStats, 
   getPredictionStats, 
@@ -86,15 +88,30 @@ const Dashboard: React.FC = () => {
         {/* Stats Overview */}
         <StatsOverview stats={overallStats} isLoading={isLoading} />
 
-        {/* Charts and Recent */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <PredictionTypeChart stats={predictionStats} isLoading={isLoading} />
-          <RecentPredictions 
-            predictions={recentPredictions} 
-            isLoading={isLoading} 
-            onRefresh={loadData}
-          />
-        </div>
+        {/* Tabs for different views */}
+        <Tabs defaultValue="predictions" className="w-full">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 bg-muted/50">
+            <TabsTrigger value="predictions">Tahminler</TabsTrigger>
+            <TabsTrigger value="slips">Kuponlarım</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="predictions" className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <PredictionTypeChart stats={predictionStats} isLoading={isLoading} />
+              <RecentPredictions 
+                predictions={recentPredictions} 
+                isLoading={isLoading} 
+                onRefresh={loadData}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="slips" className="mt-6">
+            <div className="max-w-2xl mx-auto">
+              <SavedSlipsList isLoading={isLoading} onRefresh={loadData} />
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Footer */}
