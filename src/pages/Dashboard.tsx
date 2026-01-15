@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import StatsOverview from '@/components/dashboard/StatsOverview';
 import PredictionTypeChart from '@/components/dashboard/PredictionTypeChart';
 import RecentPredictions from '@/components/dashboard/RecentPredictions';
+import AutoVerifyButton from '@/components/dashboard/AutoVerifyButton';
 import { 
   getOverallStats, 
   getPredictionStats, 
@@ -60,10 +61,13 @@ const Dashboard: React.FC = () => {
               <span className="font-display font-bold text-lg text-foreground">Dashboard</span>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={loadData} disabled={isLoading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Yenile
-          </Button>
+          <div className="flex items-center gap-2">
+            <AutoVerifyButton onVerificationComplete={loadData} />
+            <Button variant="outline" size="sm" onClick={loadData} disabled={isLoading}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Yenile
+            </Button>
+          </div>
         </div>
       </header>
 
