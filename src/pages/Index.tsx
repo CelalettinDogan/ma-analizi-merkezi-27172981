@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import HeroSection from '@/components/HeroSection';
 import MatchInputForm from '@/components/MatchInputForm';
 import MatchHeader from '@/components/MatchHeader';
@@ -9,7 +10,8 @@ import AnalysisSection from '@/components/AnalysisSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
 import { MatchInput } from '@/types/match';
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
-import { ArrowDown, Loader2 } from 'lucide-react';
+import { ArrowDown, Loader2, BarChart3 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Index: React.FC = () => {
   const { analysis, isLoading, analyzeMatch } = useMatchAnalysis();
@@ -36,9 +38,17 @@ const Index: React.FC = () => {
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Anasayfa</a>
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Analizler</a>
+            <Link to="/dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+              <BarChart3 className="w-4 h-4" />
+              Dashboard
+            </Link>
             <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">İletişim</a>
           </nav>
+          <Link to="/dashboard" className="md:hidden">
+            <Button variant="ghost" size="sm">
+              <BarChart3 className="w-4 h-4" />
+            </Button>
+          </Link>
         </div>
       </header>
 

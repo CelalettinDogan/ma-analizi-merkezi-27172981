@@ -3,6 +3,7 @@ import { MatchInput, MatchAnalysis } from '@/types/match';
 import { CompetitionCode, Standing, Match, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
 import { getStandings, getFinishedMatches } from '@/services/footballApiService';
 import { generatePrediction, generateMockPrediction } from '@/utils/predictionEngine';
+import { savePredictions } from '@/services/predictionService';
 import { useToast } from '@/hooks/use-toast';
 
 export function useMatchAnalysis() {
@@ -99,9 +100,23 @@ export function useMatchAnalysis() {
 
       setAnalysis(result);
       
+      // Tahminleri veritabanına kaydet
+      try {
+        await savePredictions(
+          data.league,
+          result.input.homeTeam,
+          result.input.awayTeam,
+          data.matchDate,
+          result.predictions
+        );
+      } catch (saveError) {
+        console.error('Error saving predictions:', saveError);
+        // Kaydetme hatası analizi engellemez
+      }
+      
       toast({
         title: 'Analiz Tamamlandı',
-        description: 'Gerçek verilerle tahmin oluşturuldu.',
+        description: 'Gerçek verilerle tahmin oluşturuldu ve kaydedildi.',
       });
 
       return result;
