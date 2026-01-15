@@ -5,7 +5,7 @@ import { useBetSlip } from '@/contexts/BetSlipContext';
 import BetSlipDrawer from './BetSlipDrawer';
 
 const BetSlipButton: React.FC = () => {
-  const { itemCount, setIsOpen, totalOdds } = useBetSlip();
+  const { itemCount, setIsOpen } = useBetSlip();
 
   return (
     <>
@@ -17,13 +17,8 @@ const BetSlipButton: React.FC = () => {
         <Receipt className="h-5 w-5 mr-2" />
         <span className="font-semibold">Kupon</span>
         {itemCount > 0 && (
-          <span className="ml-2 flex items-center">
-            <span className="bg-secondary text-secondary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
-              {itemCount}
-            </span>
-            <span className="ml-2 text-sm opacity-90">
-              ({totalOdds.toFixed(2)})
-            </span>
+          <span className="ml-2 bg-secondary text-secondary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
+            {itemCount}
           </span>
         )}
       </Button>

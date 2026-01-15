@@ -1,20 +1,15 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { BetSlipItem } from '@/types/betslip';
-import { calculateTotalOdds, calculatePotentialWin } from '@/utils/oddsCalculator';
 import { saveBetSlip } from '@/services/betSlipService';
 import { useToast } from '@/hooks/use-toast';
 
 interface BetSlipContextType {
   items: BetSlipItem[];
-  stake: number;
-  totalOdds: number;
-  potentialWin: number;
   itemCount: number;
   isOpen: boolean;
   addToSlip: (item: Omit<BetSlipItem, 'id'>) => void;
   removeFromSlip: (id: string) => void;
   clearSlip: () => void;
-  updateStake: (amount: number) => void;
   saveSlip: (name?: string) => Promise<boolean>;
   isInSlip: (homeTeam: string, awayTeam: string, predictionType: string) => boolean;
   setIsOpen: (open: boolean) => void;
@@ -24,12 +19,9 @@ const BetSlipContext = createContext<BetSlipContextType | undefined>(undefined);
 
 export function BetSlipProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<BetSlipItem[]>([]);
-  const [stake, setStake] = useState<number>(10);
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
-  const totalOdds = useMemo(() => calculateTotalOdds(items), [items]);
-  const potentialWin = useMemo(() => calculatePotentialWin(totalOdds, stake), [totalOdds, stake]);
   const itemCount = items.length;
 
   const addToSlip = useCallback((item: Omit<BetSlipItem, 'id'>) => {
@@ -47,11 +39,6 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
 
   const clearSlip = useCallback(() => {
     setItems([]);
-    setStake(10);
-  }, []);
-
-  const updateStake = useCallback((amount: number) => {
-    setStake(Math.max(1, amount));
   }, []);
 
   const saveSlip = useCallback(async (name?: string): Promise<boolean> => {
@@ -64,12 +51,12 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
       return false;
     }
 
-    const slipId = await saveBetSlip(items, totalOdds, stake, potentialWin, name);
+    const slipId = await saveBetSlip(items, name);
     
     if (slipId) {
       toast({
         title: 'Kupon Kaydedildi',
-        description: `${items.length} maç, Toplam Oran: ${totalOdds.toFixed(2)}`,
+        description: `${items.length} tahmin kaydedildi`,
       });
       clearSlip();
       return true;
@@ -81,7 +68,7 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
       });
       return false;
     }
-  }, [items, totalOdds, stake, potentialWin, toast, clearSlip]);
+  }, [items, toast, clearSlip]);
 
   const isInSlip = useCallback((homeTeam: string, awayTeam: string, predictionType: string): boolean => {
     return items.some(
@@ -95,20 +82,16 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(
     () => ({
       items,
-      stake,
-      totalOdds,
-      potentialWin,
       itemCount,
       isOpen,
       addToSlip,
       removeFromSlip,
       clearSlip,
-      updateStake,
       saveSlip,
       isInSlip,
       setIsOpen,
     }),
-    [items, stake, totalOdds, potentialWin, itemCount, isOpen, addToSlip, removeFromSlip, clearSlip, updateStake, saveSlip, isInSlip]
+    [items, itemCount, isOpen, addToSlip, removeFromSlip, clearSlip, saveSlip, isInSlip]
   );
 
   return <BetSlipContext.Provider value={value}>{children}</BetSlipContext.Provider>;

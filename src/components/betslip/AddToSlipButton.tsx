@@ -2,7 +2,6 @@ import React from 'react';
 import { Plus, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBetSlip } from '@/contexts/BetSlipContext';
-import { calculateOdds, formatOdds } from '@/utils/oddsCalculator';
 import { Prediction, MatchInput } from '@/types/match';
 
 interface AddToSlipButtonProps {
@@ -12,14 +11,6 @@ interface AddToSlipButtonProps {
 
 const AddToSlipButton: React.FC<AddToSlipButtonProps> = ({ prediction, matchInput }) => {
   const { addToSlip, isInSlip } = useBetSlip();
-
-  const odds = calculateOdds(
-    prediction.type,
-    prediction.prediction,
-    prediction.confidence,
-    matchInput.homeTeam,
-    matchInput.awayTeam
-  );
 
   const isAdded = isInSlip(matchInput.homeTeam, matchInput.awayTeam, prediction.type);
 
@@ -34,7 +25,7 @@ const AddToSlipButton: React.FC<AddToSlipButtonProps> = ({ prediction, matchInpu
       predictionType: prediction.type,
       predictionValue: prediction.prediction,
       confidence: prediction.confidence,
-      odds,
+      odds: null, // Real odds not available from API
     });
   };
 
@@ -59,7 +50,6 @@ const AddToSlipButton: React.FC<AddToSlipButtonProps> = ({ prediction, matchInpu
         <>
           <Plus className="h-3.5 w-3.5" />
           <span>Kupona Ekle</span>
-          <span className="font-bold text-secondary">{formatOdds(odds)}</span>
         </>
       )}
     </Button>

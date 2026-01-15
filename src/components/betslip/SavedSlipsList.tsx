@@ -7,7 +7,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { getBetSlips, deleteBetSlip, getBetSlipStats } from '@/services/betSlipService';
 import { BetSlip } from '@/types/betslip';
-import { formatCurrency, formatOdds } from '@/utils/oddsCalculator';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -24,9 +23,21 @@ const statusConfig = {
   partial: { label: 'Kısmi', icon: TrendingUp, className: 'bg-muted text-muted-foreground border-muted' },
 };
 
+const confidenceLabels = {
+  düşük: 'Düşük',
+  orta: 'Orta', 
+  yüksek: 'Yüksek',
+};
+
+const confidenceColors = {
+  düşük: 'text-loss',
+  orta: 'text-draw',
+  yüksek: 'text-win',
+};
+
 const SavedSlipsList: React.FC<SavedSlipsListProps> = ({ isLoading: externalLoading, onRefresh }) => {
   const [slips, setSlips] = useState<BetSlip[]>([]);
-  const [stats, setStats] = useState({ total: 0, won: 0, lost: 0, pending: 0, totalStake: 0, totalWon: 0 });
+  const [stats, setStats] = useState({ total: 0, won: 0, lost: 0, pending: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -126,7 +137,7 @@ const SavedSlipsList: React.FC<SavedSlipsListProps> = ({ isLoading: externalLoad
                           {format(new Date(slip.created_at), 'dd MMM yyyy, HH:mm', { locale: tr })}
                         </p>
                         <p className="text-sm font-medium text-foreground">
-                          {slip.items?.length || 0} Maç
+                          {slip.items?.length || 0} Tahmin
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -149,36 +160,25 @@ const SavedSlipsList: React.FC<SavedSlipsListProps> = ({ isLoading: externalLoad
                     </div>
 
                     {slip.items && slip.items.length > 0 && (
-                      <div className="space-y-1">
+                      <div className="space-y-2">
                         {slip.items.slice(0, 3).map((item) => (
-                          <p key={item.id} className="text-xs text-muted-foreground truncate">
-                            {item.home_team} vs {item.away_team} • {item.prediction_value}
-                          </p>
+                          <div key={item.id} className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground truncate flex-1">
+                              {item.home_team} vs {item.away_team}
+                            </span>
+                            <span className="text-foreground mx-2">{item.prediction_value}</span>
+                            <span className={`font-medium ${confidenceColors[item.confidence]}`}>
+                              {confidenceLabels[item.confidence]}
+                            </span>
+                          </div>
                         ))}
                         {slip.items.length > 3 && (
                           <p className="text-xs text-muted-foreground">
-                            +{slip.items.length - 3} daha fazla maç
+                            +{slip.items.length - 3} daha fazla tahmin
                           </p>
                         )}
                       </div>
                     )}
-
-                    <div className="flex items-center justify-between pt-2 border-t border-border">
-                      <div className="flex gap-4 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Oran: </span>
-                          <span className="font-semibold text-secondary">{formatOdds(Number(slip.total_odds))}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">Yatırım: </span>
-                          <span className="font-medium text-foreground">{formatCurrency(Number(slip.stake))}</span>
-                        </div>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground text-sm">Kazanç: </span>
-                        <span className="font-bold gradient-text">{formatCurrency(Number(slip.potential_win))}</span>
-                      </div>
-                    </div>
                   </div>
                 );
               })}
