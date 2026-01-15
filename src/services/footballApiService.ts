@@ -99,6 +99,26 @@ export async function getUpcomingMatches(
   return response.matches;
 }
 
+export async function getLiveMatches(
+  competitionCode?: CompetitionCode
+): Promise<Match[]> {
+  // Don't cache live matches as they change frequently
+  const cacheKey = `live-${competitionCode || 'all'}`;
+  const cached = getCached<Match[]>(cacheKey);
+  // Use a shorter cache for live matches (30 seconds)
+  if (cached) return cached;
+
+  const response = await callFootballApi<MatchesResponse>({
+    action: 'matches',
+    competitionCode,
+    status: 'LIVE', // This returns both IN_PLAY and PAUSED matches
+  });
+
+  // Cache for 30 seconds only
+  cache.set(cacheKey, { data: response.matches, timestamp: Date.now() });
+  return response.matches;
+}
+
 export async function getFinishedMatches(
   competitionCode: CompetitionCode,
   days: number = 30

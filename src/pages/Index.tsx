@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import HeroSection from '@/components/HeroSection';
 import MatchInputForm from '@/components/MatchInputForm';
@@ -10,18 +10,44 @@ import AnalysisSection from '@/components/AnalysisSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
 import BetSlipButton from '@/components/betslip/BetSlipButton';
 import UserMenu from '@/components/UserMenu';
+import LiveMatchesSection from '@/components/LiveMatchesSection';
 import { MatchInput } from '@/types/match';
+import { Match as ApiMatch, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
-import { ArrowDown, Loader2, BarChart3 } from 'lucide-react';
+import { ArrowDown, Loader2, BarChart3, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Index: React.FC = () => {
   const { analysis, isLoading, analyzeMatch } = useMatchAnalysis();
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('analyze');
 
   const handleFormSubmit = async (data: MatchInput) => {
     await analyzeMatch(data);
+    
+    // Scroll to analysis section
+    setTimeout(() => {
+      document.getElementById('analysis-section')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
+  const handleLiveMatchSelect = (match: ApiMatch) => {
+    // Find league code from match competition
+    const leagueCode = SUPPORTED_COMPETITIONS.find(
+      c => c.code === match.competition.code
+    )?.code || 'PL';
+    
+    const matchInput: MatchInput = {
+      homeTeam: match.homeTeam.name,
+      awayTeam: match.awayTeam.name,
+      league: leagueCode,
+      matchDate: match.utcDate.split('T')[0],
+    };
+    
+    setActiveTab('analyze');
+    analyzeMatch(matchInput);
     
     // Scroll to analysis section
     setTimeout(() => {
@@ -61,10 +87,29 @@ const Index: React.FC = () => {
       {/* Hero Section */}
       <HeroSection />
 
-      {/* Input Form Section */}
+      {/* Main Content with Tabs */}
       <section className="py-12 md:py-16">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <MatchInputForm onSubmit={handleFormSubmit} />
+        <div className="container mx-auto px-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+              <TabsTrigger value="analyze" className="gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Maç Analizi
+              </TabsTrigger>
+              <TabsTrigger value="live" className="gap-2">
+                <Radio className="w-4 h-4" />
+                Canlı Maçlar
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="analyze" className="max-w-3xl mx-auto">
+              <MatchInputForm onSubmit={handleFormSubmit} />
+            </TabsContent>
+            
+            <TabsContent value="live">
+              <LiveMatchesSection onSelectMatch={handleLiveMatchSelect} />
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
 
