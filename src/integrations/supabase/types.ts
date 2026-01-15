@@ -83,6 +83,7 @@ export type Database = {
           stake: number | null
           status: string
           total_odds: number | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -93,6 +94,7 @@ export type Database = {
           stake?: number | null
           status?: string
           total_odds?: number | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -103,6 +105,7 @@ export type Database = {
           stake?: number | null
           status?: string
           total_odds?: number | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -122,6 +125,7 @@ export type Database = {
           prediction_type: string
           prediction_value: string
           reasoning: string | null
+          user_id: string | null
           verified_at: string | null
         }
         Insert: {
@@ -139,6 +143,7 @@ export type Database = {
           prediction_type: string
           prediction_value: string
           reasoning?: string | null
+          user_id?: string | null
           verified_at?: string | null
         }
         Update: {
@@ -156,7 +161,35 @@ export type Database = {
           prediction_type?: string
           prediction_value?: string
           reasoning?: string | null
+          user_id?: string | null
           verified_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

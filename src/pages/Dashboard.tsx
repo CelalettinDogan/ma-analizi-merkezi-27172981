@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, RefreshCw, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import StatsOverview from '@/components/dashboard/StatsOverview';
 import PredictionTypeChart from '@/components/dashboard/PredictionTypeChart';
 import RecentPredictions from '@/components/dashboard/RecentPredictions';
 import AutoVerifyButton from '@/components/dashboard/AutoVerifyButton';
 import SavedSlipsList from '@/components/betslip/SavedSlipsList';
+import UserMenu from '@/components/UserMenu';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   getOverallStats, 
   getPredictionStats, 
@@ -20,6 +23,8 @@ const Dashboard: React.FC = () => {
   const [predictionStats, setPredictionStats] = useState<PredictionStats[]>([]);
   const [recentPredictions, setRecentPredictions] = useState<PredictionRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
 
   const loadData = async () => {
     setIsLoading(true);
@@ -43,6 +48,46 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Show login prompt for bet slips if not authenticated
+  const renderSlipsContent = () => {
+    if (authLoading) {
+      return (
+        <div className="max-w-2xl mx-auto">
+          <SavedSlipsList isLoading={true} onRefresh={loadData} />
+        </div>
+      );
+    }
+
+    if (!user) {
+      return (
+        <div className="max-w-md mx-auto">
+          <Card className="glass-card text-center">
+            <CardHeader>
+              <CardTitle className="text-foreground">Giriş Gerekli</CardTitle>
+              <CardDescription>
+                Kişisel kuponlarınızı görüntülemek için lütfen giriş yapın
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link to="/auth">
+                <Button className="bg-primary hover:bg-primary/90 gap-2">
+                  <LogIn className="h-4 w-4" />
+                  Giriş Yap / Kayıt Ol
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    return (
+      <div className="max-w-2xl mx-auto">
+        <SavedSlipsList isLoading={isLoading} onRefresh={loadData} />
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -69,6 +114,7 @@ const Dashboard: React.FC = () => {
               <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Yenile
             </Button>
+            <UserMenu />
           </div>
         </div>
       </header>
@@ -81,7 +127,7 @@ const Dashboard: React.FC = () => {
             Tahmin <span className="gradient-text">İstatistikleri</span>
           </h1>
           <p className="text-muted-foreground">
-            Tüm tahminlerinizin performans analizi
+            {user ? `Hoş geldin, ${user.user_metadata?.display_name || user.email?.split('@')[0]}` : 'Tüm tahminlerin performans analizi'}
           </p>
         </div>
 
@@ -107,9 +153,7 @@ const Dashboard: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="slips" className="mt-6">
-            <div className="max-w-2xl mx-auto">
-              <SavedSlipsList isLoading={isLoading} onRefresh={loadData} />
-            </div>
+            {renderSlipsContent()}
           </TabsContent>
         </Tabs>
       </main>

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useMemo } from
 import { BetSlipItem } from '@/types/betslip';
 import { saveBetSlip } from '@/services/betSlipService';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface BetSlipContextType {
   items: BetSlipItem[];
@@ -21,17 +22,27 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<BetSlipItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const itemCount = items.length;
 
   const addToSlip = useCallback((item: Omit<BetSlipItem, 'id'>) => {
+    if (!user) {
+      toast({
+        title: 'Giriş Gerekli',
+        description: 'Kupona eklemek için lütfen giriş yapın.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     const id = `${item.homeTeam}-${item.awayTeam}-${item.predictionType}-${Date.now()}`;
     setItems((prev) => [...prev, { ...item, id }]);
     toast({
       title: 'Kupona Eklendi',
       description: `${item.homeTeam} vs ${item.awayTeam} - ${item.predictionType}`,
     });
-  }, [toast]);
+  }, [toast, user]);
 
   const removeFromSlip = useCallback((id: string) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
@@ -42,6 +53,15 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const saveSlip = useCallback(async (name?: string): Promise<boolean> => {
+    if (!user) {
+      toast({
+        title: 'Giriş Gerekli',
+        description: 'Kupon kaydetmek için lütfen giriş yapın.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
     if (items.length === 0) {
       toast({
         title: 'Hata',
@@ -51,7 +71,7 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
       return false;
     }
 
-    const slipId = await saveBetSlip(items, name);
+    const slipId = await saveBetSlip(items, user.id, name);
     
     if (slipId) {
       toast({
@@ -68,7 +88,7 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
       });
       return false;
     }
-  }, [items, toast, clearSlip]);
+  }, [items, user, toast, clearSlip]);
 
   const isInSlip = useCallback((homeTeam: string, awayTeam: string, predictionType: string): boolean => {
     return items.some(
