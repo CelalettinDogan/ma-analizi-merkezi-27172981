@@ -9,13 +9,16 @@ import PredictionCard from '@/components/PredictionCard';
 import AnalysisSection from '@/components/AnalysisSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
 import BetSlipButton from '@/components/betslip/BetSlipButton';
+import UserMenu from '@/components/UserMenu';
 import { MatchInput } from '@/types/match';
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
 import { ArrowDown, Loader2, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index: React.FC = () => {
   const { analysis, isLoading, analyzeMatch } = useMatchAnalysis();
+  const { user } = useAuth();
 
   const handleFormSubmit = async (data: MatchInput) => {
     await analyzeMatch(data);
@@ -43,13 +46,15 @@ const Index: React.FC = () => {
               <BarChart3 className="w-4 h-4" />
               Dashboard
             </Link>
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">İletişim</a>
           </nav>
-          <Link to="/dashboard" className="md:hidden">
-            <Button variant="ghost" size="sm">
-              <BarChart3 className="w-4 h-4" />
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to="/dashboard" className="md:hidden">
+              <Button variant="ghost" size="sm">
+                <BarChart3 className="w-4 h-4" />
+              </Button>
+            </Link>
+            <UserMenu />
+          </div>
         </div>
       </header>
 

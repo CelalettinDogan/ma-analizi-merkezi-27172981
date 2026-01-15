@@ -3,15 +3,17 @@ import { BetSlip, BetSlipItem, BetSlipItemRecord } from '@/types/betslip';
 
 export async function saveBetSlip(
   items: BetSlipItem[],
+  userId: string,
   name?: string
 ): Promise<string | null> {
-  // Create the bet slip without odds (odds not available from API)
+  // Create the bet slip with user_id
   const { data: slip, error: slipError } = await supabase
     .from('bet_slips')
     .insert({
+      user_id: userId,
       name: name || null,
       total_odds: null,
-      stake: 0,
+      stake: null,
       potential_win: null,
       status: 'pending',
       is_verified: false,
@@ -34,7 +36,7 @@ export async function saveBetSlip(
     prediction_type: item.predictionType,
     prediction_value: item.predictionValue,
     confidence: item.confidence,
-    odds: item.odds, // Will be null
+    odds: item.odds,
   }));
 
   const { error: itemsError } = await supabase
