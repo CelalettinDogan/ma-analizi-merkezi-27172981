@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
+import { RefreshCw, CheckCircle2, AlertCircle, Sparkles, Brain } from 'lucide-react';
 import { autoVerifyPredictions } from '@/services/autoVerifyService';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -36,6 +36,7 @@ const AutoVerifyButton: React.FC<AutoVerifyButtonProps> = ({ onVerificationCompl
       match_date: string;
     }>;
     errors: string[];
+    mlStatsUpdated: number;
   } | null>(null);
 
   const handleAutoVerify = async () => {
@@ -49,8 +50,8 @@ const AutoVerifyButton: React.FC<AutoVerifyButtonProps> = ({ onVerificationCompl
       
       if (verificationResults.verified.length > 0) {
         toast({
-          title: 'Otomatik Doğrulama Tamamlandı',
-          description: `${verificationResults.verified.length} tahmin doğrulandı: ${correctCount} doğru, ${incorrectCount} yanlış`,
+          title: '🤖 AI Öğrenme Güncellendi',
+          description: `${verificationResults.verified.length} tahmin doğrulandı (${correctCount}✓ / ${incorrectCount}✗) • ML model güncellendi`,
         });
         setShowResults(true);
         onVerificationComplete();
@@ -96,12 +97,34 @@ const AutoVerifyButton: React.FC<AutoVerifyButtonProps> = ({ onVerificationCompl
       <Dialog open={showResults} onOpenChange={setShowResults}>
         <DialogContent className="bg-card border-border max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Doğrulama Sonuçları</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              Doğrulama Sonuçları
+              {results && results.mlStatsUpdated > 0 && (
+                <Badge variant="outline" className="ml-2 gap-1 border-primary/30 text-primary">
+                  <Sparkles className="w-3 h-3" />
+                  AI Güncellendi
+                </Badge>
+              )}
+            </DialogTitle>
           </DialogHeader>
           
           {results && (
             <ScrollArea className="max-h-[60vh]">
               <div className="space-y-4 pr-4">
+                {/* ML Learning Stats */}
+                {results.mlStatsUpdated > 0 && (
+                  <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Brain className="w-4 h-4 text-primary" />
+                      <span className="font-medium text-foreground">AI Öğrenme Döngüsü</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {results.mlStatsUpdated} tahmin sonucu ML modeline aktarıldı. 
+                      Gelecek tahminler bu verilerden öğrenecek.
+                    </p>
+                  </div>
+                )}
+
                 {results.verified.length > 0 && (
                   <div>
                     <h4 className="font-medium mb-2 text-foreground">
