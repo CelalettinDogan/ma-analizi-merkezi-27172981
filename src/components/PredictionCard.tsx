@@ -1,10 +1,12 @@
 import React from 'react';
-import { Target, TrendingUp, Percent } from 'lucide-react';
-import { Prediction } from '@/types/match';
+import { Target, TrendingUp } from 'lucide-react';
+import { Prediction, MatchInput } from '@/types/match';
+import AddToSlipButton from '@/components/betslip/AddToSlipButton';
 
 interface PredictionCardProps {
   prediction: Prediction;
   index: number;
+  matchInput?: MatchInput;
 }
 
 const confidenceColors = {
@@ -13,7 +15,7 @@ const confidenceColors = {
   yüksek: 'bg-win/20 text-win border-win/30',
 };
 
-const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index }) => {
+const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matchInput }) => {
   return (
     <div 
       className="glass-card p-6 animate-fade-in hover:border-primary/50 transition-all duration-300"
@@ -35,12 +37,18 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index }) =>
       </div>
 
       <div className="pt-4 border-t border-border">
-        <div className="flex items-start gap-2">
+        <div className="flex items-start gap-2 mb-4">
           <TrendingUp className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
           <p className="text-sm text-muted-foreground leading-relaxed">
             {prediction.reasoning}
           </p>
         </div>
+        
+        {matchInput && (
+          <div className="flex justify-end">
+            <AddToSlipButton prediction={prediction} matchInput={matchInput} />
+          </div>
+        )}
       </div>
     </div>
   );

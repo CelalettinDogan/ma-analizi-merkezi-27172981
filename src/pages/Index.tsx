@@ -8,6 +8,7 @@ import HeadToHeadCard from '@/components/HeadToHeadCard';
 import PredictionCard from '@/components/PredictionCard';
 import AnalysisSection from '@/components/AnalysisSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
+import BetSlipButton from '@/components/betslip/BetSlipButton';
 import { MatchInput } from '@/types/match';
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
 import { ArrowDown, Loader2, BarChart3 } from 'lucide-react';
@@ -120,7 +121,12 @@ const Index: React.FC = () => {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {analysis.predictions.map((prediction, index) => (
-                  <PredictionCard key={index} prediction={prediction} index={index} />
+                  <PredictionCard 
+                    key={index} 
+                    prediction={prediction} 
+                    index={index} 
+                    matchInput={analysis.input}
+                  />
                 ))}
               </div>
             </div>
@@ -148,6 +154,9 @@ const Index: React.FC = () => {
           </p>
         </div>
       </footer>
+
+      {/* Bet Slip Floating Button */}
+      <BetSlipButton />
     </div>
   );
 };
