@@ -1,26 +1,20 @@
 import React, { useState } from 'react';
-import { Trash2, Save, Receipt } from 'lucide-react';
+import { Trash2, Save, Receipt, AlertCircle } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useBetSlip } from '@/contexts/BetSlipContext';
-import { formatOdds, formatCurrency } from '@/utils/oddsCalculator';
 import BetSlipItemComponent from './BetSlipItem';
 
 const BetSlipDrawer: React.FC = () => {
   const {
     items,
-    stake,
-    totalOdds,
-    potentialWin,
     isOpen,
     setIsOpen,
     removeFromSlip,
     clearSlip,
-    updateStake,
     saveSlip,
   } = useBetSlip();
 
@@ -35,6 +29,15 @@ const BetSlipDrawer: React.FC = () => {
     }
   };
 
+  // Count predictions by confidence
+  const confidenceCounts = items.reduce(
+    (acc, item) => {
+      acc[item.confidence]++;
+      return acc;
+    },
+    { düşük: 0, orta: 0, yüksek: 0 }
+  );
+
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetContent className="w-full sm:max-w-md flex flex-col bg-card border-border">
@@ -44,7 +47,7 @@ const BetSlipDrawer: React.FC = () => {
             Kuponum
             {items.length > 0 && (
               <span className="ml-auto text-sm font-normal text-muted-foreground">
-                {items.length} maç
+                {items.length} tahmin
               </span>
             )}
           </SheetTitle>
@@ -62,6 +65,13 @@ const BetSlipDrawer: React.FC = () => {
           </div>
         ) : (
           <>
+            <Alert className="bg-muted/30 border-border">
+              <AlertCircle className="h-4 w-4 text-muted-foreground" />
+              <AlertDescription className="text-xs text-muted-foreground">
+                Gerçek bahis oranları mevcut değildir. Bu kupon yalnızca tahmin takibi içindir.
+              </AlertDescription>
+            </Alert>
+
             <ScrollArea className="flex-1 -mx-6 px-6">
               <div className="space-y-3 py-4">
                 {items.map((item) => (
@@ -75,34 +85,24 @@ const BetSlipDrawer: React.FC = () => {
             </ScrollArea>
 
             <div className="space-y-4 pt-4 border-t border-border">
-              <div className="space-y-2">
-                <Label htmlFor="stake" className="text-muted-foreground">
-                  Yatırım Miktarı (₺)
-                </Label>
-                <Input
-                  id="stake"
-                  type="number"
-                  min="1"
-                  value={stake}
-                  onChange={(e) => updateStake(Number(e.target.value))}
-                  className="bg-muted/50 border-border"
-                />
-              </div>
-
               <Separator className="bg-border" />
 
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Toplam Oran</span>
-                  <span className="font-bold text-secondary">{formatOdds(totalOdds)}</span>
+                  <span className="text-muted-foreground">Toplam Tahmin</span>
+                  <span className="font-bold text-foreground">{items.length}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Yatırım</span>
-                  <span className="font-medium text-foreground">{formatCurrency(stake)}</span>
+                  <span className="text-muted-foreground">Yüksek Güven</span>
+                  <span className="font-medium text-win">{confidenceCounts.yüksek}</span>
                 </div>
-                <div className="flex justify-between text-lg">
-                  <span className="font-semibold text-foreground">Potansiyel Kazanç</span>
-                  <span className="font-bold gradient-text">{formatCurrency(potentialWin)}</span>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Orta Güven</span>
+                  <span className="font-medium text-draw">{confidenceCounts.orta}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Düşük Güven</span>
+                  <span className="font-medium text-loss">{confidenceCounts.düşük}</span>
                 </div>
               </div>
 

@@ -3,19 +3,16 @@ import { BetSlip, BetSlipItem, BetSlipItemRecord } from '@/types/betslip';
 
 export async function saveBetSlip(
   items: BetSlipItem[],
-  totalOdds: number,
-  stake: number,
-  potentialWin: number,
   name?: string
 ): Promise<string | null> {
-  // Create the bet slip
+  // Create the bet slip without odds (odds not available from API)
   const { data: slip, error: slipError } = await supabase
     .from('bet_slips')
     .insert({
       name: name || null,
-      total_odds: totalOdds,
-      stake: stake,
-      potential_win: potentialWin,
+      total_odds: null,
+      stake: 0,
+      potential_win: null,
       status: 'pending',
       is_verified: false,
     })
@@ -37,7 +34,7 @@ export async function saveBetSlip(
     prediction_type: item.predictionType,
     prediction_value: item.predictionValue,
     confidence: item.confidence,
-    odds: item.odds,
+    odds: item.odds, // Will be null
   }));
 
   const { error: itemsError } = await supabase
@@ -167,25 +164,21 @@ export async function getBetSlipStats(): Promise<{
   won: number;
   lost: number;
   pending: number;
-  totalStake: number;
-  totalWon: number;
 }> {
   const { data: slips, error } = await supabase
     .from('bet_slips')
     .select('*');
 
   if (error || !slips) {
-    return { total: 0, won: 0, lost: 0, pending: 0, totalStake: 0, totalWon: 0 };
+    return { total: 0, won: 0, lost: 0, pending: 0 };
   }
 
   const stats = slips.reduce(
     (acc, slip) => {
       acc.total++;
-      acc.totalStake += Number(slip.stake);
       
       if (slip.status === 'won') {
         acc.won++;
-        acc.totalWon += Number(slip.potential_win);
       } else if (slip.status === 'lost') {
         acc.lost++;
       } else {
@@ -194,7 +187,7 @@ export async function getBetSlipStats(): Promise<{
       
       return acc;
     },
-    { total: 0, won: 0, lost: 0, pending: 0, totalStake: 0, totalWon: 0 }
+    { total: 0, won: 0, lost: 0, pending: 0 }
   );
 
   return stats;

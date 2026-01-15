@@ -7,16 +7,16 @@ export interface BetSlipItem {
   predictionType: string;
   predictionValue: string;
   confidence: 'düşük' | 'orta' | 'yüksek';
-  odds: number;
+  odds: number | null; // null when real odds not available
 }
 
 export interface BetSlip {
   id: string;
   created_at: string;
   name: string | null;
-  total_odds: number;
+  total_odds: number | null;
   stake: number;
-  potential_win: number;
+  potential_win: number | null;
   status: 'pending' | 'won' | 'lost' | 'partial';
   is_verified: boolean;
   items?: BetSlipItemRecord[];
@@ -32,7 +32,7 @@ export interface BetSlipItemRecord {
   prediction_type: string;
   prediction_value: string;
   confidence: 'düşük' | 'orta' | 'yüksek';
-  odds: number;
+  odds: number | null;
   is_correct: boolean | null;
   home_score: number | null;
   away_score: number | null;

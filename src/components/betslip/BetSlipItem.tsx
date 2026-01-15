@@ -15,6 +15,12 @@ const confidenceLabels = {
   yüksek: 'Yüksek',
 };
 
+const confidenceColors = {
+  düşük: 'text-loss',
+  orta: 'text-draw',
+  yüksek: 'text-win',
+};
+
 const BetSlipItemComponent: React.FC<BetSlipItemProps> = ({ item, onRemove }) => {
   return (
     <div className="bg-muted/50 rounded-lg p-3 space-y-2 animate-fade-in">
@@ -41,8 +47,10 @@ const BetSlipItemComponent: React.FC<BetSlipItemProps> = ({ item, onRemove }) =>
           <p className="text-sm font-semibold text-primary">{item.predictionValue}</p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-muted-foreground">{confidenceLabels[item.confidence]}</p>
-          <p className="text-sm font-bold text-secondary">{formatOdds(item.odds)}</p>
+          <p className="text-xs text-muted-foreground">Güven</p>
+          <p className={`text-sm font-bold ${confidenceColors[item.confidence]}`}>
+            {confidenceLabels[item.confidence]}
+          </p>
         </div>
       </div>
     </div>
