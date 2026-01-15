@@ -14,10 +14,85 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      predictions: {
+        Row: {
+          actual_result: string | null
+          away_score: number | null
+          away_team: string
+          confidence: string
+          created_at: string
+          home_score: number | null
+          home_team: string
+          id: string
+          is_correct: boolean | null
+          league: string
+          match_date: string
+          prediction_type: string
+          prediction_value: string
+          reasoning: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          actual_result?: string | null
+          away_score?: number | null
+          away_team: string
+          confidence: string
+          created_at?: string
+          home_score?: number | null
+          home_team: string
+          id?: string
+          is_correct?: boolean | null
+          league: string
+          match_date: string
+          prediction_type: string
+          prediction_value: string
+          reasoning?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          actual_result?: string | null
+          away_score?: number | null
+          away_team?: string
+          confidence?: string
+          created_at?: string
+          home_score?: number | null
+          home_team?: string
+          id?: string
+          is_correct?: boolean | null
+          league?: string
+          match_date?: string
+          prediction_type?: string
+          prediction_value?: string
+          reasoning?: string | null
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      overall_stats: {
+        Row: {
+          accuracy_percentage: number | null
+          correct_predictions: number | null
+          high_confidence_correct: number | null
+          high_confidence_total: number | null
+          incorrect_predictions: number | null
+          pending_predictions: number | null
+          total_predictions: number | null
+        }
+        Relationships: []
+      }
+      prediction_stats: {
+        Row: {
+          accuracy_percentage: number | null
+          correct_predictions: number | null
+          incorrect_predictions: number | null
+          pending_predictions: number | null
+          prediction_type: string | null
+          total_predictions: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
