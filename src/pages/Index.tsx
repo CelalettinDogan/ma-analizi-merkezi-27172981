@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import HeroSection from '@/components/HeroSection';
 import MatchInputForm from '@/components/MatchInputForm';
 import MatchHeader from '@/components/MatchHeader';
@@ -7,17 +7,15 @@ import HeadToHeadCard from '@/components/HeadToHeadCard';
 import PredictionCard from '@/components/PredictionCard';
 import AnalysisSection from '@/components/AnalysisSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
-import { MatchInput, MatchAnalysis } from '@/types/match';
-import { generateMockAnalysis } from '@/utils/mockData';
-import { ArrowDown } from 'lucide-react';
+import { MatchInput } from '@/types/match';
+import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
+import { ArrowDown, Loader2 } from 'lucide-react';
 
 const Index: React.FC = () => {
-  const [analysis, setAnalysis] = useState<MatchAnalysis | null>(null);
+  const { analysis, isLoading, analyzeMatch } = useMatchAnalysis();
 
-  const handleFormSubmit = (data: MatchInput) => {
-    // Generate mock analysis based on input
-    const mockAnalysis = generateMockAnalysis(data);
-    setAnalysis(mockAnalysis);
+  const handleFormSubmit = async (data: MatchInput) => {
+    await analyzeMatch(data);
     
     // Scroll to analysis section
     setTimeout(() => {
@@ -54,15 +52,24 @@ const Index: React.FC = () => {
         </div>
       </section>
 
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex flex-col items-center justify-center py-16">
+          <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+          <p className="text-muted-foreground">Gerçek veriler analiz ediliyor...</p>
+          <p className="text-sm text-muted-foreground mt-2">Form, gol istatistikleri ve H2H hesaplanıyor</p>
+        </div>
+      )}
+
       {/* Scroll Indicator */}
-      {!analysis && (
+      {!analysis && !isLoading && (
         <div className="flex justify-center pb-8 animate-bounce">
           <ArrowDown className="w-6 h-6 text-muted-foreground" />
         </div>
       )}
 
       {/* Analysis Section */}
-      {analysis && (
+      {analysis && !isLoading && (
         <section id="analysis-section" className="py-12 md:py-16 bg-card/30">
           <div className="container mx-auto px-4">
             {/* Match Header */}
