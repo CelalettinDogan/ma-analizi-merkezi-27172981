@@ -26,7 +26,7 @@ export type Database = {
           is_correct: boolean | null
           league: string
           match_date: string
-          odds: number
+          odds: number | null
           prediction_type: string
           prediction_value: string
           slip_id: string
@@ -42,7 +42,7 @@ export type Database = {
           is_correct?: boolean | null
           league: string
           match_date: string
-          odds?: number
+          odds?: number | null
           prediction_type: string
           prediction_value: string
           slip_id: string
@@ -58,7 +58,7 @@ export type Database = {
           is_correct?: boolean | null
           league?: string
           match_date?: string
-          odds?: number
+          odds?: number | null
           prediction_type?: string
           prediction_value?: string
           slip_id?: string
@@ -79,30 +79,30 @@ export type Database = {
           id: string
           is_verified: boolean
           name: string | null
-          potential_win: number
-          stake: number
+          potential_win: number | null
+          stake: number | null
           status: string
-          total_odds: number
+          total_odds: number | null
         }
         Insert: {
           created_at?: string
           id?: string
           is_verified?: boolean
           name?: string | null
-          potential_win?: number
-          stake?: number
+          potential_win?: number | null
+          stake?: number | null
           status?: string
-          total_odds?: number
+          total_odds?: number | null
         }
         Update: {
           created_at?: string
           id?: string
           is_verified?: boolean
           name?: string | null
-          potential_win?: number
-          stake?: number
+          potential_win?: number | null
+          stake?: number | null
           status?: string
-          total_odds?: number
+          total_odds?: number | null
         }
         Relationships: []
       }
