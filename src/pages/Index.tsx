@@ -1,41 +1,81 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import HeroSection from '@/components/HeroSection';
 import MatchInputForm from '@/components/MatchInputForm';
 import MatchHeader from '@/components/MatchHeader';
 import TeamStatsCard from '@/components/TeamStatsCard';
 import HeadToHeadCard from '@/components/HeadToHeadCard';
-import PredictionCard from '@/components/PredictionCard';
 import AnalysisSection from '@/components/AnalysisSection';
 import FilteredPredictionsSection from '@/components/FilteredPredictionsSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
 import BetSlipButton from '@/components/betslip/BetSlipButton';
 import UserMenu from '@/components/UserMenu';
-import LiveMatchesSection from '@/components/LiveMatchesSection';
+import LeagueGrid from '@/components/league/LeagueGrid';
+import MatchCarousel from '@/components/match/MatchCarousel';
+import BottomNav from '@/components/navigation/BottomNav';
+import CommandPalette from '@/components/navigation/CommandPalette';
+import { MatchCardSkeleton } from '@/components/ui/skeletons';
 import { MatchInput } from '@/types/match';
-import { Match as ApiMatch, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
+import { Match as ApiMatch, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
-import { ArrowDown, Loader2, BarChart3, Radio } from 'lucide-react';
+import { Loader2, BarChart3, Calendar, ChevronRight, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { supabase } from '@/integrations/supabase/client';
+import { staggerContainer, staggerItem, fadeInUp } from '@/lib/animations';
 
 const Index: React.FC = () => {
-  const { analysis, isLoading, analyzeMatch } = useMatchAnalysis();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { analysis, isLoading: analysisLoading, analyzeMatch } = useMatchAnalysis();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('analyze');
+  
+  const [selectedLeague, setSelectedLeague] = useState<CompetitionCode | ''>('');
+  const [upcomingMatches, setUpcomingMatches] = useState<ApiMatch[]>([]);
+  const [isLoadingMatches, setIsLoadingMatches] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [showAnalysisForm, setShowAnalysisForm] = useState(false);
 
-  const handleFormSubmit = async (data: MatchInput) => {
-    await analyzeMatch(data);
-    
-    // Scroll to analysis section
-    setTimeout(() => {
-      document.getElementById('analysis-section')?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+  // Handle match from Live page navigation
+  useEffect(() => {
+    const state = location.state as { selectedMatch?: ApiMatch } | null;
+    if (state?.selectedMatch) {
+      handleMatchSelect(state.selectedMatch);
+      // Clear state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
+  // Fetch upcoming matches when league changes
+  const fetchUpcomingMatches = useCallback(async (leagueCode: CompetitionCode) => {
+    setIsLoadingMatches(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('football-api', {
+        body: { action: 'matches', competitionCode: leagueCode, status: 'SCHEDULED' },
+      });
+      if (!error && data?.matches) {
+        setUpcomingMatches(data.matches.slice(0, 10));
+      }
+    } catch (e) {
+      console.error('Error fetching matches:', e);
+    } finally {
+      setIsLoadingMatches(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedLeague) {
+      fetchUpcomingMatches(selectedLeague);
+    }
+  }, [selectedLeague, fetchUpcomingMatches]);
+
+  const handleLeagueSelect = (code: CompetitionCode) => {
+    setSelectedLeague(code);
+    setShowAnalysisForm(false);
   };
 
-  const handleLiveMatchSelect = (match: ApiMatch) => {
-    // Find league code from match competition
+  const handleMatchSelect = async (match: ApiMatch) => {
     const leagueCode = SUPPORTED_COMPETITIONS.find(
       c => c.code === match.competition.code
     )?.code || 'PL';
@@ -47,143 +87,270 @@ const Index: React.FC = () => {
       matchDate: match.utcDate.split('T')[0],
     };
     
-    setActiveTab('analyze');
-    analyzeMatch(matchInput);
+    await analyzeMatch(matchInput);
     
-    // Scroll to analysis section
     setTimeout(() => {
       document.getElementById('analysis-section')?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
   };
 
+  const handleFormSubmit = async (data: MatchInput) => {
+    await analyzeMatch(data);
+    setTimeout(() => {
+      document.getElementById('analysis-section')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'live':
+        navigate('/live');
+        break;
+      case 'analyze':
+        setShowAnalysisForm(true);
+        break;
+      case 'predictions':
+        navigate('/dashboard');
+        break;
+    }
+  };
+
+  const handleCommandLeagueSelect = (code: string) => {
+    setSelectedLeague(code as CompetitionCode);
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-8">
       {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50">
+        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center shadow-lg shadow-primary/20">
               <span className="text-primary-foreground font-bold text-sm">FT</span>
             </div>
-            <span className="font-display font-bold text-lg text-foreground">FutbolTahmin</span>
+            <span className="font-display font-bold text-lg text-foreground hidden sm:block">FutbolTahmin</span>
           </div>
-          <nav className="hidden md:flex items-center gap-6">
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Anasayfa</a>
-            <Link to="/dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-              <BarChart3 className="w-4 h-4" />
-              Dashboard
-            </Link>
-          </nav>
-          <div className="flex items-center gap-2">
-            <Link to="/dashboard" className="md:hidden">
-              <Button variant="ghost" size="sm">
+          
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-1">
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/">Anasayfa</Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/live" className="gap-1">
+                <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                Canlı
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/dashboard" className="gap-1">
                 <BarChart3 className="w-4 h-4" />
-              </Button>
-            </Link>
+                Dashboard
+              </Link>
+            </Button>
+          </nav>
+
+          <div className="flex items-center gap-2">
+            {/* Search Button */}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="hidden md:flex gap-2 text-muted-foreground"
+              onClick={() => setCommandOpen(true)}
+            >
+              <Search className="w-4 h-4" />
+              <span>Ara...</span>
+              <kbd className="ml-2 px-1.5 py-0.5 text-[10px] bg-muted rounded">⌘K</kbd>
+            </Button>
             <UserMenu />
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <HeroSection />
+      {/* Hero Section - Compact */}
+      <HeroSection onQuickAction={handleQuickAction} />
 
-      {/* Main Content with Tabs */}
-      <section className="py-12 md:py-16">
-        <div className="container mx-auto px-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-              <TabsTrigger value="analyze" className="gap-2">
-                <BarChart3 className="w-4 h-4" />
-                Maç Analizi
-              </TabsTrigger>
-              <TabsTrigger value="live" className="gap-2">
-                <Radio className="w-4 h-4" />
-                Canlı Maçlar
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="analyze" className="max-w-3xl mx-auto">
-              <MatchInputForm onSubmit={handleFormSubmit} />
-            </TabsContent>
-            
-            <TabsContent value="live">
-              <LiveMatchesSection onSelectMatch={handleLiveMatchSelect} />
-            </TabsContent>
-          </Tabs>
-        </div>
-      </section>
+      {/* Main Content - Bento Grid Layout */}
+      <main className="container mx-auto px-4 py-6 space-y-8">
+        {/* Analysis Form (Conditional) */}
+        <AnimatePresence>
+          {showAnalysisForm && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="max-w-2xl mx-auto">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-display font-bold text-lg">Maç Analizi</h2>
+                  <Button variant="ghost" size="sm" onClick={() => setShowAnalysisForm(false)}>
+                    Kapat
+                  </Button>
+                </div>
+                <MatchInputForm onSubmit={handleFormSubmit} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Loading State */}
-      {isLoading && (
-        <div className="flex flex-col items-center justify-center py-16">
-          <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-          <p className="text-muted-foreground">Gerçek veriler analiz ediliyor...</p>
-          <p className="text-sm text-muted-foreground mt-2">Form, gol istatistikleri ve H2H hesaplanıyor</p>
-        </div>
-      )}
-
-      {/* Scroll Indicator */}
-      {!analysis && !isLoading && (
-        <div className="flex justify-center pb-8 animate-bounce">
-          <ArrowDown className="w-6 h-6 text-muted-foreground" />
-        </div>
-      )}
-
-      {/* Analysis Section */}
-      {analysis && !isLoading && (
-        <section id="analysis-section" className="py-12 md:py-16 bg-card/30">
-          <div className="container mx-auto px-4">
-            {/* Match Header */}
-            <MatchHeader match={analysis.input} insights={analysis.insights} />
-
-            {/* Team Stats */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-              <TeamStatsCard 
-                teamName={analysis.input.homeTeam} 
-                stats={analysis.homeTeamStats} 
-                isHome={true} 
-              />
-              <TeamStatsCard 
-                teamName={analysis.input.awayTeam} 
-                stats={analysis.awayTeamStats} 
-                isHome={false} 
-              />
-            </div>
-
-            {/* Head to Head */}
-            <div className="mb-8">
-              <HeadToHeadCard 
-                h2h={analysis.headToHead} 
-                homeTeam={analysis.input.homeTeam}
-                awayTeam={analysis.input.awayTeam}
-              />
-            </div>
-
-            {/* Analysis Details */}
-            <div className="mb-8">
-              <AnalysisSection analysis={analysis} />
-            </div>
-
-            {/* Predictions with Filters */}
-            <div className="mb-8">
-              <FilteredPredictionsSection
-                predictions={analysis.predictions}
-                matchInput={analysis.input}
-              />
-            </div>
-
-            {/* Legal Disclaimer */}
-            <LegalDisclaimer />
+        {/* League Selection */}
+        <motion.section {...fadeInUp}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display font-bold text-lg">Lig Seçin</h2>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-1 text-muted-foreground"
+              onClick={() => setShowAnalysisForm(true)}
+            >
+              Manuel Analiz
+              <ChevronRight className="w-4 h-4" />
+            </Button>
           </div>
-        </section>
-      )}
+          <LeagueGrid 
+            selectedLeague={selectedLeague} 
+            onLeagueSelect={handleLeagueSelect}
+          />
+        </motion.section>
 
-      {/* Footer */}
-      <footer className="py-8 border-t border-border">
+        {/* Upcoming Matches Carousel */}
+        {selectedLeague && (
+          <motion.section 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-primary" />
+                <h2 className="font-display font-bold text-lg">
+                  Yaklaşan Maçlar
+                </h2>
+                <span className="text-sm text-muted-foreground">
+                  {SUPPORTED_COMPETITIONS.find(c => c.code === selectedLeague)?.name}
+                </span>
+              </div>
+            </div>
+            
+            {isLoadingMatches ? (
+              <div className="flex gap-4 overflow-hidden">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex-shrink-0 w-[280px] md:w-[320px]">
+                    <MatchCardSkeleton />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <MatchCarousel 
+                matches={upcomingMatches} 
+                onMatchSelect={handleMatchSelect}
+              />
+            )}
+          </motion.section>
+        )}
+
+        {/* Loading State */}
+        {analysisLoading && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center py-16"
+          >
+            <div className="relative">
+              <Loader2 className="w-12 h-12 animate-spin text-primary" />
+              <div className="absolute inset-0 w-12 h-12 bg-primary/20 rounded-full animate-ping" />
+            </div>
+            <p className="text-muted-foreground mt-4">AI analiz yapılıyor...</p>
+            <p className="text-sm text-muted-foreground">Form, gol istatistikleri ve H2H hesaplanıyor</p>
+          </motion.div>
+        )}
+
+        {/* Analysis Section */}
+        <AnimatePresence>
+          {analysis && !analysisLoading && (
+            <motion.section 
+              id="analysis-section"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -30 }}
+              className="py-8 -mx-4 px-4 bg-gradient-to-b from-card/50 to-transparent rounded-t-3xl"
+            >
+              {/* Match Header */}
+              <MatchHeader match={analysis.input} insights={analysis.insights} />
+
+              {/* Team Stats */}
+              <motion.div 
+                variants={staggerContainer}
+                initial="initial"
+                animate="animate"
+                className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
+              >
+                <motion.div variants={staggerItem}>
+                  <TeamStatsCard 
+                    teamName={analysis.input.homeTeam} 
+                    stats={analysis.homeTeamStats} 
+                    isHome={true} 
+                  />
+                </motion.div>
+                <motion.div variants={staggerItem}>
+                  <TeamStatsCard 
+                    teamName={analysis.input.awayTeam} 
+                    stats={analysis.awayTeamStats} 
+                    isHome={false} 
+                  />
+                </motion.div>
+              </motion.div>
+
+              {/* Head to Head */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mb-8"
+              >
+                <HeadToHeadCard 
+                  h2h={analysis.headToHead} 
+                  homeTeam={analysis.input.homeTeam}
+                  awayTeam={analysis.input.awayTeam}
+                />
+              </motion.div>
+
+              {/* Analysis Details */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="mb-8"
+              >
+                <AnalysisSection analysis={analysis} />
+              </motion.div>
+
+              {/* Predictions with Filters */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="mb-8"
+              >
+                <FilteredPredictionsSection
+                  predictions={analysis.predictions}
+                  matchInput={analysis.input}
+                />
+              </motion.div>
+
+              {/* Legal Disclaimer */}
+              <LegalDisclaimer />
+            </motion.section>
+          )}
+        </AnimatePresence>
+      </main>
+
+      {/* Footer - Desktop only */}
+      <footer className="hidden md:block py-8 border-t border-border/50">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-xs">FT</span>
             </div>
             <span className="font-display font-semibold text-foreground">FutbolTahmin</span>
@@ -199,6 +366,16 @@ const Index: React.FC = () => {
 
       {/* Bet Slip Floating Button */}
       <BetSlipButton />
+
+      {/* Bottom Navigation - Mobile */}
+      <BottomNav onSearchClick={() => setCommandOpen(true)} />
+
+      {/* Command Palette */}
+      <CommandPalette 
+        open={commandOpen} 
+        onOpenChange={setCommandOpen}
+        onLeagueSelect={handleCommandLeagueSelect}
+      />
     </div>
   );
 };
