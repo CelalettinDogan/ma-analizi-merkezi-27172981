@@ -161,15 +161,19 @@ export async function updateBetSlipItemResult(
   return true;
 }
 
-export async function getBetSlipStats(): Promise<{
+export async function getBetSlipStats(userId?: string): Promise<{
   total: number;
   won: number;
   lost: number;
   pending: number;
 }> {
-  const { data: slips, error } = await supabase
-    .from('bet_slips')
-    .select('*');
+  let query = supabase.from('bet_slips').select('*');
+  
+  if (userId) {
+    query = query.eq('user_id', userId);
+  }
+
+  const { data: slips, error } = await query;
 
   if (error || !slips) {
     return { total: 0, won: 0, lost: 0, pending: 0 };

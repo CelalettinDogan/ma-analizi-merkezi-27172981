@@ -7,7 +7,8 @@ export async function savePredictions(
   homeTeam: string,
   awayTeam: string,
   matchDate: string,
-  predictions: Prediction[]
+  predictions: Prediction[],
+  userId?: string
 ): Promise<void> {
   const records = predictions.map(p => ({
     league,
@@ -18,6 +19,7 @@ export async function savePredictions(
     prediction_value: p.prediction,
     confidence: p.confidence,
     reasoning: p.reasoning,
+    user_id: userId || null,
   }));
 
   const { error } = await supabase

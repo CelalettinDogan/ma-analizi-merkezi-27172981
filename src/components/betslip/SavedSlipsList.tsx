@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { getBetSlips, deleteBetSlip, getBetSlipStats } from '@/services/betSlipService';
 import { BetSlip } from '@/types/betslip';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
@@ -40,13 +41,14 @@ const SavedSlipsList: React.FC<SavedSlipsListProps> = ({ isLoading: externalLoad
   const [stats, setStats] = useState({ total: 0, won: 0, lost: 0, pending: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const loadSlips = async () => {
     setIsLoading(true);
     try {
       const [fetchedSlips, fetchedStats] = await Promise.all([
         getBetSlips(20),
-        getBetSlipStats(),
+        getBetSlipStats(user?.id),
       ]);
       setSlips(fetchedSlips);
       setStats(fetchedStats);
