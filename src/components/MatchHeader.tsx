@@ -1,12 +1,14 @@
 import React from 'react';
 import { Calendar, MapPin } from 'lucide-react';
-import { MatchInput } from '@/types/match';
+import { MatchInput, MatchInsights } from '@/types/match';
+import MatchInsightBadges from './MatchInsightBadges';
 
 interface MatchHeaderProps {
   match: MatchInput;
+  insights?: MatchInsights;
 }
 
-const MatchHeader: React.FC<MatchHeaderProps> = ({ match }) => {
+const MatchHeader: React.FC<MatchHeaderProps> = ({ match, insights }) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('tr-TR', {
@@ -31,6 +33,13 @@ const MatchHeader: React.FC<MatchHeaderProps> = ({ match }) => {
           <span>{formatDate(match.matchDate)}</span>
         </div>
       </div>
+
+      {/* Match Insight Badges */}
+      {insights && (
+        <div className="flex justify-center mb-6">
+          <MatchInsightBadges insights={insights} />
+        </div>
+      )}
 
       {/* Teams */}
       <div className="flex items-center justify-center gap-4 md:gap-8">
