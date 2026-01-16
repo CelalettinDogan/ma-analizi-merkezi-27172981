@@ -2,11 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import HeroSection from '@/components/HeroSection';
-import MatchHeader from '@/components/MatchHeader';
-import TeamStatsCard from '@/components/TeamStatsCard';
-import HeadToHeadCard from '@/components/HeadToHeadCard';
-import AnalysisSection from '@/components/AnalysisSection';
-import FilteredPredictionsSection from '@/components/FilteredPredictionsSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
 import BetSlipButton from '@/components/betslip/BetSlipButton';
 import UserMenu from '@/components/UserMenu';
@@ -16,15 +11,23 @@ import BottomNav from '@/components/navigation/BottomNav';
 import CommandPalette from '@/components/navigation/CommandPalette';
 import Onboarding from '@/components/Onboarding';
 import { MatchCardSkeleton } from '@/components/ui/skeletons';
+import {
+  MatchHeroCard,
+  AIRecommendationCard,
+  PredictionPillSelector,
+  QuickStatsRow,
+  H2HTimeline,
+  CollapsibleAnalysis,
+} from '@/components/analysis';
 import { MatchInput } from '@/types/match';
 import { Match as ApiMatch, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
 import { useOnboarding } from '@/hooks/useOnboarding';
-import { Loader2, BarChart3, Calendar, Search } from 'lucide-react';
+import { Loader2, BarChart3, Calendar, Search, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { staggerContainer, staggerItem, fadeInUp } from '@/lib/animations';
+// Removed unused imports
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -160,7 +163,10 @@ const Index: React.FC = () => {
       {/* Main Content - Bento Grid Layout */}
       <main className="container mx-auto px-4 py-6 space-y-8">
         {/* League Selection */}
-        <motion.section {...fadeInUp}>
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
           <h2 className="font-display font-bold text-lg mb-4">Lig Seçin</h2>
           <LeagueGrid 
             selectedLeague={selectedLeague} 
@@ -220,7 +226,7 @@ const Index: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Analysis Section */}
+        {/* Analysis Section - Modern 2026 Redesign */}
         <AnimatePresence>
           {analysis && !analysisLoading && (
             <motion.section 
@@ -228,70 +234,59 @@ const Index: React.FC = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -30 }}
-              className="py-8 -mx-4 px-4 bg-gradient-to-b from-card/50 to-transparent rounded-t-3xl"
+              className="space-y-6"
             >
-              {/* Match Header */}
-              <MatchHeader match={analysis.input} insights={analysis.insights} />
+              {/* Match Hero Card - Compact */}
+              <MatchHeroCard match={analysis.input} insights={analysis.insights} />
 
-              {/* Team Stats */}
-              <motion.div 
-                variants={staggerContainer}
-                initial="initial"
-                animate="animate"
-                className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
-              >
-                <motion.div variants={staggerItem}>
-                  <TeamStatsCard 
-                    teamName={analysis.input.homeTeam} 
-                    stats={analysis.homeTeamStats} 
-                    isHome={true} 
-                  />
-                </motion.div>
-                <motion.div variants={staggerItem}>
-                  <TeamStatsCard 
-                    teamName={analysis.input.awayTeam} 
-                    stats={analysis.awayTeamStats} 
-                    isHome={false} 
-                  />
-                </motion.div>
-              </motion.div>
-
-              {/* Head to Head */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="mb-8"
-              >
-                <HeadToHeadCard 
-                  h2h={analysis.headToHead} 
-                  homeTeam={analysis.input.homeTeam}
-                  awayTeam={analysis.input.awayTeam}
+              {/* AI Recommendation + Prediction Pills - Hero Section */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <AIRecommendationCard 
+                  predictions={analysis.predictions} 
+                  matchInput={analysis.input} 
                 />
-              </motion.div>
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl bg-card border border-border/50">
+                    <h4 className="text-sm font-semibold text-foreground mb-4">Tüm Tahminler</h4>
+                    <PredictionPillSelector 
+                      predictions={analysis.predictions} 
+                      matchInput={analysis.input} 
+                    />
+                  </div>
+                </div>
+              </div>
 
-              {/* Analysis Details */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="mb-8"
-              >
-                <AnalysisSection analysis={analysis} />
-              </motion.div>
+              {/* Quick Stats Row - Form + Power Index */}
+              <QuickStatsRow
+                homeTeam={analysis.input.homeTeam}
+                awayTeam={analysis.input.awayTeam}
+                homeStats={analysis.homeTeamStats}
+                awayStats={analysis.awayTeamStats}
+                homePower={analysis.homePower}
+                awayPower={analysis.awayPower}
+              />
 
-              {/* Predictions with Filters */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="mb-8"
-              >
-                <FilteredPredictionsSection
-                  predictions={analysis.predictions}
-                  matchInput={analysis.input}
-                />
-              </motion.div>
+              {/* H2H Timeline */}
+              <H2HTimeline
+                h2h={analysis.headToHead}
+                homeTeam={analysis.input.homeTeam}
+                awayTeam={analysis.input.awayTeam}
+              />
+
+              {/* Collapsible Advanced Analysis */}
+              <CollapsibleAnalysis analysis={analysis} />
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 gap-2"
+                  onClick={() => analyzeMatch(analysis.input)}
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Yeniden Analiz
+                </Button>
+              </div>
 
               {/* Legal Disclaimer */}
               <LegalDisclaimer />
