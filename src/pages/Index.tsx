@@ -5,6 +5,7 @@ import HeroSection from '@/components/HeroSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
 import BetSlipButton from '@/components/betslip/BetSlipButton';
 import UserMenu from '@/components/UserMenu';
+import ThemeToggle from '@/components/ThemeToggle';
 import LeagueGrid from '@/components/league/LeagueGrid';
 import MatchCarousel from '@/components/match/MatchCarousel';
 import BottomNav from '@/components/navigation/BottomNav';
@@ -23,11 +24,10 @@ import { MatchInput } from '@/types/match';
 import { Match as ApiMatch, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
 import { useOnboarding } from '@/hooks/useOnboarding';
-import { Loader2, BarChart3, Calendar, Search, RefreshCw } from 'lucide-react';
+import { Loader2, BarChart3, Calendar, Search, RefreshCw, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-// Removed unused imports
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -132,6 +132,12 @@ const Index: React.FC = () => {
               </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
+              <Link to="/standings" className="gap-1">
+                <Trophy className="w-4 h-4" />
+                Sıralama
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
               <Link to="/dashboard" className="gap-1">
                 <BarChart3 className="w-4 h-4" />
                 Dashboard
@@ -152,6 +158,7 @@ const Index: React.FC = () => {
               <span>Ara...</span>
               <kbd className="ml-2 px-1.5 py-0.5 text-[10px] bg-muted rounded">⌘K</kbd>
             </Button>
+            <ThemeToggle />
             <UserMenu />
           </div>
         </div>
