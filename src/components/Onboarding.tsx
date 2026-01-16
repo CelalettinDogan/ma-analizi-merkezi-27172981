@@ -57,7 +57,7 @@ const steps: OnboardingStep[] = [
   }
 ];
 
-const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
+const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComplete }, ref) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(0);
 
@@ -105,6 +105,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
 
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -235,6 +236,8 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
       </motion.div>
     </motion.div>
   );
-};
+});
+
+Onboarding.displayName = 'Onboarding';
 
 export default Onboarding;
