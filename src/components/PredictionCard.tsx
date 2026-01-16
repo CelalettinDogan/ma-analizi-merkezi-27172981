@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Target, TrendingUp, Sparkles } from 'lucide-react';
 import { Prediction, MatchInput } from '@/types/match';
 import AddToSlipButton from '@/components/betslip/AddToSlipButton';
 import { Progress } from '@/components/ui/progress';
+import { CONFIDENCE_LEVELS } from '@/constants/predictions';
 
 interface PredictionCardProps {
   prediction: Prediction;
@@ -10,10 +11,10 @@ interface PredictionCardProps {
   matchInput?: MatchInput;
 }
 
-const confidenceColors = {
-  düşük: 'bg-loss/20 text-loss border-loss/30',
-  orta: 'bg-draw/20 text-draw border-draw/30',
-  yüksek: 'bg-win/20 text-win border-win/30',
+const confidenceColors: Record<string, string> = {
+  [CONFIDENCE_LEVELS.LOW]: 'bg-loss/20 text-loss border-loss/30',
+  [CONFIDENCE_LEVELS.MEDIUM]: 'bg-draw/20 text-draw border-draw/30',
+  [CONFIDENCE_LEVELS.HIGH]: 'bg-win/20 text-win border-win/30',
 };
 
 const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matchInput }) => {
@@ -85,4 +86,4 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matc
   );
 };
 
-export default PredictionCard;
+export default memo(PredictionCard);

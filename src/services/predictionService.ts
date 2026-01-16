@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Prediction } from '@/types/match';
 import { PredictionRecord, PredictionStats, OverallStats } from '@/types/prediction';
+import { PREDICTION_TYPES } from '@/constants/predictions';
 
 export async function savePredictions(
   league: string,
@@ -77,7 +78,9 @@ export async function getOverallStats(): Promise<OverallStats | null> {
 export async function verifyPrediction(
   id: string,
   homeScore: number,
-  awayScore: number
+  awayScore: number,
+  firstHalfHomeScore?: number,
+  firstHalfAwayScore?: number
 ): Promise<void> {
   // First get the prediction to determine if it was correct
   const { data: prediction, error: fetchError } = await supabase
@@ -97,7 +100,9 @@ export async function verifyPrediction(
     homeScore,
     awayScore,
     prediction.home_team,
-    prediction.away_team
+    prediction.away_team,
+    firstHalfHomeScore,
+    firstHalfAwayScore
   );
 
   const { error } = await supabase
@@ -117,48 +122,85 @@ export async function verifyPrediction(
   }
 }
 
+/**
+ * Checks if a prediction was correct based on the actual match result
+ * Returns null if the prediction cannot be verified (e.g., first half result without HT data)
+ */
 function checkPredictionCorrect(
   type: string,
   prediction: string,
   homeScore: number,
   awayScore: number,
   homeTeam: string,
-  awayTeam: string
-): boolean {
+  awayTeam: string,
+  firstHalfHomeScore?: number,
+  firstHalfAwayScore?: number
+): boolean | null {
   const totalGoals = homeScore + awayScore;
 
   switch (type) {
-    case 'Maç Sonucu': {
+    case PREDICTION_TYPES.MATCH_RESULT: {
       if (homeScore > awayScore && prediction.includes(homeTeam)) return true;
       if (awayScore > homeScore && prediction.includes(awayTeam)) return true;
       if (homeScore === awayScore && prediction.includes('Beraberlik')) return true;
       return false;
     }
 
-    case 'Toplam Gol Alt/Üst': {
+    case PREDICTION_TYPES.OVER_UNDER: {
       if (prediction.includes('2.5 Üst') && totalGoals > 2.5) return true;
       if (prediction.includes('2.5 Alt') && totalGoals < 2.5) return true;
+      if (prediction.includes('1.5 Üst') && totalGoals > 1.5) return true;
+      if (prediction.includes('1.5 Alt') && totalGoals < 1.5) return true;
+      if (prediction.includes('3.5 Üst') && totalGoals > 3.5) return true;
+      if (prediction.includes('3.5 Alt') && totalGoals < 3.5) return true;
       return false;
     }
 
-    case 'Karşılıklı Gol': {
+    case PREDICTION_TYPES.BTTS: {
       const bothScored = homeScore > 0 && awayScore > 0;
       if (prediction === 'Evet' && bothScored) return true;
       if (prediction === 'Hayır' && !bothScored) return true;
       return false;
     }
 
-    case 'Doğru Skor': {
+    case PREDICTION_TYPES.CORRECT_SCORE: {
       return prediction === `${homeScore}-${awayScore}`;
     }
 
-    case 'İlk Yarı Sonucu': {
-      // Cannot verify first half result with only full time score
-      // For now, mark as correct if final result matches
-      if (homeScore > awayScore && prediction.includes(homeTeam)) return true;
-      if (awayScore > homeScore && prediction.includes(awayTeam)) return true;
-      if (homeScore === awayScore && prediction.includes('Beraberlik')) return true;
+    case PREDICTION_TYPES.FIRST_HALF: {
+      // Cannot verify first half result without HT score data
+      if (firstHalfHomeScore === undefined || firstHalfAwayScore === undefined) {
+        return null; // Return null to indicate unverifiable
+      }
+      
+      if (firstHalfHomeScore > firstHalfAwayScore && prediction.includes(homeTeam)) return true;
+      if (firstHalfAwayScore > firstHalfHomeScore && prediction.includes(awayTeam)) return true;
+      if (firstHalfHomeScore === firstHalfAwayScore && prediction.includes('Beraberlik')) return true;
       return false;
+    }
+
+    case PREDICTION_TYPES.HALF_TIME_FULL_TIME: {
+      // Cannot verify without HT score data
+      if (firstHalfHomeScore === undefined || firstHalfAwayScore === undefined) {
+        return null;
+      }
+      
+      // Parse HT/FT prediction (e.g., "Ev / Ev" or "Beraberlik / Deplasman")
+      const [htPrediction, ftPrediction] = prediction.split(' / ');
+      
+      // Check HT result
+      let htCorrect = false;
+      if (firstHalfHomeScore > firstHalfAwayScore && htPrediction.includes('Ev')) htCorrect = true;
+      if (firstHalfAwayScore > firstHalfHomeScore && htPrediction.includes('Dep')) htCorrect = true;
+      if (firstHalfHomeScore === firstHalfAwayScore && htPrediction.includes('Ber')) htCorrect = true;
+      
+      // Check FT result
+      let ftCorrect = false;
+      if (homeScore > awayScore && ftPrediction.includes('Ev')) ftCorrect = true;
+      if (awayScore > homeScore && ftPrediction.includes('Dep')) ftCorrect = true;
+      if (homeScore === awayScore && ftPrediction.includes('Ber')) ftCorrect = true;
+      
+      return htCorrect && ftCorrect;
     }
 
     default:
