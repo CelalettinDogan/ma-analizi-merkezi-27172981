@@ -1,1 +1,10 @@
 project_id = "qqhvdpzidjqcqwikpdeu"
+
+[functions.football-api]
+verify_jwt = false
+
+[functions.ml-prediction]
+verify_jwt = false
+
+[functions.auto-verify]
+verify_jwt = false
