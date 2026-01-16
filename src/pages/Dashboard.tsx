@@ -17,6 +17,7 @@ import { AILearningBar } from "@/components/dashboard/AILearningBar";
 import { PredictionTypePills } from "@/components/dashboard/PredictionTypePills";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import SavedSlipsList from "@/components/betslip/SavedSlipsList";
+import AutoVerifyButton from "@/components/dashboard/AutoVerifyButton";
 
 // Services
 import { getOverallStats, getPredictionStats, getRecentPredictions, getAccuracyTrend, TrendData } from "@/services/predictionService";
@@ -94,6 +95,7 @@ const Dashboard = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <AutoVerifyButton onVerificationComplete={loadData} />
             <Button
               variant="ghost"
               size="icon"

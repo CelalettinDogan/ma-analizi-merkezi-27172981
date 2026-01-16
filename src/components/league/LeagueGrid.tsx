@@ -86,11 +86,11 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
               isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background"
             )}
           >
-            {/* Selection indicator */}
+            {/* Selection indicator - positioned on left to avoid favorite button conflict */}
             {isSelected && (
               <motion.div
                 layoutId="leagueIndicator"
-                className="absolute top-2 right-2 w-3 h-3 bg-primary rounded-full"
+                className="absolute top-2 left-2 w-3 h-3 bg-primary rounded-full shadow-lg shadow-primary/50"
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
               />
             )}

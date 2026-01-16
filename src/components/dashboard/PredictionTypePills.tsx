@@ -8,6 +8,15 @@ interface PredictionTypePillsProps {
 }
 
 const TYPE_LABELS: Record<string, string> = {
+  // Turkish keys from database (primary)
+  "Maç Sonucu": "Maç Sonucu",
+  "Toplam Gol Alt/Üst": "Alt/Üst",
+  "Karşılıklı Gol": "KG Var/Yok",
+  "Doğru Skor": "Doğru Skor",
+  "İlk Yarı Sonucu": "İlk Yarı",
+  "İlk Yarı / Maç Sonucu": "İY/MS",
+  "İki Yarıda da Gol": "2YG",
+  // Legacy English keys (backward compatibility)
   "match_result": "Maç Sonucu",
   "over_under": "Alt/Üst",
   "btts": "Karşılıklı Gol",
