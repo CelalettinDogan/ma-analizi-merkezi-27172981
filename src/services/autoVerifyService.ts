@@ -82,12 +82,12 @@ function checkPredictionCorrect(
       return prediction === `${homeScore}-${awayScore}`;
     }
 
-    case 'İlk Yarı Sonucu': {
-      // Cannot verify first half result with only full time score
-      // For now, mark as correct if final result matches
-      if (homeScore > awayScore && prediction.includes(homeTeam)) return true;
-      if (awayScore > homeScore && prediction.includes(awayTeam)) return true;
-      if (homeScore === awayScore && prediction.includes('Beraberlik')) return true;
+    case 'İlk Yarı Sonucu':
+    case 'İlk Yarı / Maç Sonucu':
+    case 'İki Yarıda da Gol': {
+      // Cannot verify these without half-time score data
+      // Return false to skip verification (will remain as pending)
+      console.log(`Skipping verification for ${type} - requires half-time data`);
       return false;
     }
 
