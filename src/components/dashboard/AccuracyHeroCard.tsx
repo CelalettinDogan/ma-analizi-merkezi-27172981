@@ -10,6 +10,9 @@ interface AccuracyHeroCardProps {
 }
 
 export const AccuracyHeroCard = ({ accuracy, trend = 0, isLoading }: AccuracyHeroCardProps) => {
+  // Check if we have any verified data
+  const hasData = accuracy > 0 || trend !== 0;
+
   const data = [
     { name: "Doğru", value: accuracy },
     { name: "Yanlış", value: 100 - accuracy },
@@ -37,6 +40,36 @@ export const AccuracyHeroCard = ({ accuracy, trend = 0, isLoading }: AccuracyHer
           <div className="mt-4 h-4 w-24 bg-muted/50 rounded animate-pulse" />
         </div>
       </Card>
+    );
+  }
+
+  // Empty state when no verified predictions
+  if (!hasData) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50 overflow-hidden relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+          
+          <div className="relative flex flex-col items-center py-4">
+            <div className="relative w-40 h-40 md:w-48 md:h-48 flex items-center justify-center">
+              <div className="w-32 h-32 rounded-full border-4 border-dashed border-muted-foreground/30 flex items-center justify-center">
+                <div className="text-center">
+                  <span className="text-3xl">📊</span>
+                </div>
+              </div>
+            </div>
+            
+            <h3 className="text-lg font-semibold text-foreground mt-4">Henüz Veri Yok</h3>
+            <p className="text-sm text-muted-foreground text-center mt-2 max-w-xs">
+              Tahminler doğrulandıkça başarı oranınız burada görüntülenecek
+            </p>
+          </div>
+        </Card>
+      </motion.div>
     );
   }
 

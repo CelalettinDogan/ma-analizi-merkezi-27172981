@@ -81,10 +81,18 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
   homePower,
   awayPower,
 }) => {
-  const homeAvgScored = homeStats.goalsScored / 5;
-  const homeAvgConceded = homeStats.goalsConceded / 5;
-  const awayAvgScored = awayStats.goalsScored / 5;
-  const awayAvgConceded = awayStats.goalsConceded / 5;
+  // Null safety for stats
+  const homeForm = homeStats?.form ?? [];
+  const awayForm = awayStats?.form ?? [];
+  const homeGoalsScored = homeStats?.goalsScored ?? 0;
+  const homeGoalsConceded = homeStats?.goalsConceded ?? 0;
+  const awayGoalsScored = awayStats?.goalsScored ?? 0;
+  const awayGoalsConceded = awayStats?.goalsConceded ?? 0;
+
+  const homeAvgScored = homeGoalsScored / 5;
+  const homeAvgConceded = homeGoalsConceded / 5;
+  const awayAvgScored = awayGoalsScored / 5;
+  const awayAvgConceded = awayGoalsConceded / 5;
 
   return (
     <motion.div
@@ -113,9 +121,13 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
               </div>
             </div>
             <div className="flex gap-1">
-              {homeStats.form.map((result, i) => (
-                <FormBadge key={i} result={result} />
-              ))}
+              {homeForm.length > 0 ? (
+                homeForm.map((result, i) => (
+                  <FormBadge key={i} result={result} />
+                ))
+              ) : (
+                <span className="text-xs text-muted-foreground">Form verisi yok</span>
+              )}
             </div>
           </div>
 
@@ -133,9 +145,13 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
               </div>
             </div>
             <div className="flex gap-1">
-              {awayStats.form.map((result, i) => (
-                <FormBadge key={i} result={result} />
-              ))}
+              {awayForm.length > 0 ? (
+                awayForm.map((result, i) => (
+                  <FormBadge key={i} result={result} />
+                ))
+              ) : (
+                <span className="text-xs text-muted-foreground">Form verisi yok</span>
+              )}
             </div>
           </div>
         </div>
