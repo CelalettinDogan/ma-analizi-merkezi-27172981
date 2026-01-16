@@ -63,6 +63,12 @@ const UserMenu: React.FC = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48 bg-card border-border">
         <DropdownMenuItem asChild>
+          <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+            <User className="h-4 w-4" />
+            Profilim
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
           <Link to="/dashboard" className="flex items-center gap-2 cursor-pointer">
             <Receipt className="h-4 w-4" />
             Kuponlarım
