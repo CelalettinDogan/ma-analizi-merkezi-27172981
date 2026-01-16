@@ -1,12 +1,20 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Match } from '@/types/footballApi';
 import { format, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface MatchCarouselProps {
   matches: Match[];
@@ -17,12 +25,31 @@ interface MatchCarouselProps {
 interface MatchSlideProps {
   match: Match;
   onSelect: () => void;
+  isFavorite: (type: 'team' | 'league', id: string) => boolean;
+  onToggleFavorite: (type: 'team' | 'league', id: string, name: string) => void;
+  isLoggedIn: boolean;
 }
 
-const MatchSlide: React.FC<MatchSlideProps> = ({ match, onSelect }) => {
+const MatchSlide: React.FC<MatchSlideProps> = ({ 
+  match, 
+  onSelect, 
+  isFavorite, 
+  onToggleFavorite,
+  isLoggedIn 
+}) => {
   const matchDate = parseISO(match.utcDate);
   const isLive = match.status === 'IN_PLAY' || match.status === 'PAUSED';
   const isFinished = match.status === 'FINISHED';
+
+  const homeTeamId = String(match.homeTeam.id);
+  const awayTeamId = String(match.awayTeam.id);
+  const isHomeFavorite = isFavorite('team', homeTeamId);
+  const isAwayFavorite = isFavorite('team', awayTeamId);
+
+  const handleFavoriteClick = (e: React.MouseEvent, teamId: string, teamName: string) => {
+    e.stopPropagation();
+    onToggleFavorite('team', teamId, teamName);
+  };
 
   return (
     <motion.div
@@ -65,7 +92,7 @@ const MatchSlide: React.FC<MatchSlideProps> = ({ match, onSelect }) => {
         <div className="space-y-3">
           {/* Home Team */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center overflow-hidden">
                 {match.homeTeam.crest ? (
                   <img src={match.homeTeam.crest} alt="" className="w-6 h-6 object-contain" />
@@ -73,9 +100,35 @@ const MatchSlide: React.FC<MatchSlideProps> = ({ match, onSelect }) => {
                   <span className="text-xs font-bold">{match.homeTeam.tla || 'H'}</span>
                 )}
               </div>
-              <span className="font-medium text-sm truncate max-w-[140px]">
+              <span className="font-medium text-sm truncate max-w-[120px]">
                 {match.homeTeam.shortName || match.homeTeam.name}
               </span>
+              {isLoggedIn && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={(e) => handleFavoriteClick(e, homeTeamId, match.homeTeam.name)}
+                        className="p-1 rounded-full hover:bg-muted/50 transition-colors"
+                      >
+                        <Heart 
+                          className={cn(
+                            "w-3.5 h-3.5 transition-colors",
+                            isHomeFavorite 
+                              ? "fill-red-500 text-red-500" 
+                              : "text-muted-foreground hover:text-red-400"
+                          )} 
+                        />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p className="text-xs">
+                        {isHomeFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
             <span className={cn(
               "text-lg font-bold tabular-nums",
@@ -87,7 +140,7 @@ const MatchSlide: React.FC<MatchSlideProps> = ({ match, onSelect }) => {
 
           {/* Away Team */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center overflow-hidden">
                 {match.awayTeam.crest ? (
                   <img src={match.awayTeam.crest} alt="" className="w-6 h-6 object-contain" />
@@ -95,9 +148,35 @@ const MatchSlide: React.FC<MatchSlideProps> = ({ match, onSelect }) => {
                   <span className="text-xs font-bold">{match.awayTeam.tla || 'A'}</span>
                 )}
               </div>
-              <span className="font-medium text-sm truncate max-w-[140px]">
+              <span className="font-medium text-sm truncate max-w-[120px]">
                 {match.awayTeam.shortName || match.awayTeam.name}
               </span>
+              {isLoggedIn && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={(e) => handleFavoriteClick(e, awayTeamId, match.awayTeam.name)}
+                        className="p-1 rounded-full hover:bg-muted/50 transition-colors"
+                      >
+                        <Heart 
+                          className={cn(
+                            "w-3.5 h-3.5 transition-colors",
+                            isAwayFavorite 
+                              ? "fill-red-500 text-red-500" 
+                              : "text-muted-foreground hover:text-red-400"
+                          )} 
+                        />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p className="text-xs">
+                        {isAwayFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
             <span className={cn(
               "text-lg font-bold tabular-nums",
@@ -127,6 +206,8 @@ const MatchCarousel: React.FC<MatchCarouselProps> = ({ matches, onMatchSelect, i
     containScroll: 'trimSnaps',
     dragFree: true,
   });
+  const { user } = useAuth();
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   const scrollPrev = () => emblaApi?.scrollPrev();
   const scrollNext = () => emblaApi?.scrollNext();
@@ -181,6 +262,9 @@ const MatchCarousel: React.FC<MatchCarouselProps> = ({ matches, onMatchSelect, i
               key={match.id}
               match={match}
               onSelect={() => onMatchSelect(match)}
+              isFavorite={isFavorite}
+              onToggleFavorite={toggleFavorite}
+              isLoggedIn={!!user}
             />
           ))}
         </div>
