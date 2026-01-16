@@ -17,7 +17,7 @@ const CACHE_TTL = {
 };
 
 interface RequestBody {
-  action: 'competitions' | 'matches' | 'standings' | 'teams' | 'head2head';
+  action: 'competitions' | 'matches' | 'standings' | 'teams' | 'head2head' | 'live';
   competitionCode?: string;
   matchId?: number;
   dateFrom?: string;
@@ -103,6 +103,11 @@ serve(async (req) => {
           throw new Error('matchId is required for head2head');
         }
         url = `${FOOTBALL_DATA_BASE_URL}/matches/${matchId}/head2head`;
+        break;
+      
+      case 'live':
+        // Fetch all live matches across all competitions
+        url = `${FOOTBALL_DATA_BASE_URL}/matches?status=LIVE,IN_PLAY,PAUSED`;
         break;
         
       default:
