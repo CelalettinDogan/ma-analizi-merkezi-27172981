@@ -117,7 +117,13 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="flex items-center gap-2">
             <AutoVerifyButton onVerificationComplete={handleVerificationComplete} />
-            <Button variant="outline" size="sm" onClick={loadData} disabled={isLoading}>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={loadData} 
+              disabled={isLoading}
+              aria-label="Verileri yenile"
+            >
               <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Yenile
             </Button>
@@ -176,7 +182,7 @@ const Dashboard: React.FC = () => {
       <footer className="py-8 border-t border-border mt-8">
         <div className="container mx-auto px-4 text-center">
           <p className="text-sm text-muted-foreground">
-            © 2024 FutbolTahmin. Tüm hakları saklıdır.
+            © {new Date().getFullYear()} FutbolTahmin. Tüm hakları saklıdır.
           </p>
         </div>
       </footer>
