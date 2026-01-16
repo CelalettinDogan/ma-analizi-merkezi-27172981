@@ -1,18 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Home, BarChart3, Zap, User, Trophy, Clock, X, Loader2, Shield } from 'lucide-react';
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from '@/components/ui/command';
+import { Command as CommandPrimitive } from 'cmdk';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface CommandPaletteProps {
   open: boolean;
@@ -66,43 +60,47 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
     }
   }, [open, teamsLoaded]);
 
+  // Reset search when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setSearchQuery('');
+    }
+  }, [open]);
+
   const fetchAllTeams = async () => {
     setIsSearching(true);
     const teams: TeamResult[] = [];
     
-    // Fetch teams from each league in parallel
-    const promises = SUPPORTED_COMPETITIONS.slice(0, 3).map(async (league) => {
+    // Fetch teams from first 3 leagues to avoid rate limits
+    for (const league of SUPPORTED_COMPETITIONS.slice(0, 3)) {
       try {
         const { data, error } = await supabase.functions.invoke('football-api', {
           body: { action: 'teams', competitionCode: league.code },
         });
         
         if (!error && data?.teams) {
-          return data.teams.map((team: any) => ({
-            id: team.id,
-            name: team.name,
-            shortName: team.shortName || team.name,
-            crest: team.crest,
-            leagueCode: league.code,
-            leagueName: league.name,
-          }));
+          data.teams.forEach((team: any) => {
+            teams.push({
+              id: team.id,
+              name: team.name,
+              shortName: team.shortName || team.name,
+              crest: team.crest,
+              leagueCode: league.code,
+              leagueName: league.name,
+            });
+          });
         }
+        
+        // Small delay to avoid rate limits
+        await new Promise(resolve => setTimeout(resolve, 300));
       } catch (e) {
         console.error(`Error fetching teams for ${league.code}:`, e);
       }
-      return [];
-    });
-
-    try {
-      const results = await Promise.all(promises);
-      results.forEach(leagueTeams => teams.push(...leagueTeams));
-      setAllTeams(teams);
-      setTeamsLoaded(true);
-    } catch (e) {
-      console.error('Error fetching teams:', e);
-    } finally {
-      setIsSearching(false);
     }
+
+    setAllTeams(teams);
+    setTeamsLoaded(true);
+    setIsSearching(false);
   };
 
   // Filter teams based on search query
@@ -118,6 +116,14 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
       setTeamResults([]);
     }
   }, [searchQuery, allTeams]);
+
+  // Filter leagues based on search query
+  const filteredLeagues = searchQuery.length >= 2 
+    ? SUPPORTED_COMPETITIONS.filter(league => 
+        league.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        league.country.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
 
   // Keyboard shortcut
   useEffect(() => {
@@ -175,7 +181,6 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
   };
 
   const handleRecentSearchSelect = (search: string) => {
-    // Find the team in allTeams
     const team = allTeams.find(t => 
       t.name.toLowerCase() === search.toLowerCase() ||
       t.shortName.toLowerCase() === search.toLowerCase()
@@ -184,176 +189,219 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
     if (team) {
       handleTeamSelect(team);
     } else {
-      // Just navigate to home with the search
       runCommand(() => navigate('/'));
     }
   };
 
+  const hasResults = teamResults.length > 0 || filteredLeagues.length > 0;
+  const isActiveSearch = searchQuery.length >= 2;
+
   return (
-    <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput 
-        placeholder="Takım, lig veya sayfa ara..." 
-        value={searchQuery}
-        onValueChange={setSearchQuery}
-      />
-      <CommandList>
-        <CommandEmpty>
-          {isSearching ? (
-            <div className="flex items-center justify-center py-6 gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Aranıyor...</span>
-            </div>
-          ) : searchQuery.length >= 2 ? (
-            <div className="py-6 text-center">
-              <p>"{searchQuery}" için sonuç bulunamadı.</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Başka bir takım veya lig deneyin
-              </p>
-            </div>
-          ) : (
-            <div className="py-6 text-center text-muted-foreground">
-              Aramaya başlamak için en az 2 karakter yazın
-            </div>
-          )}
-        </CommandEmpty>
-
-        {/* Team Search Results */}
-        {teamResults.length > 0 && (
-          <CommandGroup heading="Takımlar">
-            {teamResults.map((team) => (
-              <CommandItem 
-                key={`${team.id}-${team.leagueCode}`}
-                onSelect={() => handleTeamSelect(team)}
-                className="flex items-center gap-3"
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="overflow-hidden p-0 shadow-lg max-w-lg">
+        <CommandPrimitive 
+          className="flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground"
+          shouldFilter={false}
+        >
+          {/* Search Input */}
+          <div className="flex items-center border-b px-3">
+            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Takım, lig veya sayfa ara..."
+              className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            {searchQuery && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 w-6 p-0"
+                onClick={() => setSearchQuery('')}
               >
-                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                  {team.crest ? (
-                    <img src={team.crest} alt="" className="w-6 h-6 object-contain" />
-                  ) : (
-                    <Shield className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="font-medium">{team.name}</span>
-                  <span className="ml-2 text-xs text-muted-foreground">
-                    {team.leagueName}
-                  </span>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        )}
-
-        {/* Navigation - Show when not actively searching */}
-        {searchQuery.length < 2 && (
-          <>
-            <CommandGroup heading="Sayfalar">
-              <CommandItem onSelect={() => runCommand(() => navigate('/'))}>
-                <Home className="mr-2 h-4 w-4" />
-                <span>Ana Sayfa</span>
-              </CommandItem>
-              <CommandItem onSelect={() => runCommand(() => navigate('/live'))}>
-                <Zap className="mr-2 h-4 w-4 text-red-500" />
-                <span>Canlı Maçlar</span>
-                <span className="ml-auto text-xs text-muted-foreground">⚡ Canlı</span>
-              </CommandItem>
-              <CommandItem onSelect={() => runCommand(() => navigate('/dashboard'))}>
-                <BarChart3 className="mr-2 h-4 w-4" />
-                <span>Dashboard</span>
-              </CommandItem>
-              <CommandItem onSelect={() => runCommand(() => navigate('/profile'))}>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profil</span>
-              </CommandItem>
-            </CommandGroup>
-
-            <CommandSeparator />
-
-            {/* Leagues */}
-            <CommandGroup heading="Ligler">
-              {SUPPORTED_COMPETITIONS.map((league) => (
-                <CommandItem 
-                  key={league.code}
-                  onSelect={() => runCommand(() => {
-                    onLeagueSelect?.(league.code);
-                    navigate('/');
-                  })}
-                >
-                  <Trophy className="mr-2 h-4 w-4" />
-                  <span className="mr-2">{league.flag}</span>
-                  <span>{league.name}</span>
-                  <span className="ml-auto text-xs text-muted-foreground">{league.country}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-
-            {recentSearches.length > 0 && (
-              <>
-                <CommandSeparator />
-                <CommandGroup heading={
-                  <div className="flex items-center justify-between w-full pr-2">
-                    <span>Son Aramalar</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        clearRecentSearches();
-                      }}
-                    >
-                      <X className="w-3 h-3 mr-1" />
-                      Temizle
-                    </Button>
-                  </div>
-                }>
-                  {recentSearches.map((search, idx) => (
-                    <CommandItem 
-                      key={`${search}-${idx}`}
-                      onSelect={() => handleRecentSearchSelect(search)}
-                    >
-                      <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span>{search}</span>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </>
+                <X className="h-4 w-4" />
+              </Button>
             )}
-          </>
-        )}
+          </div>
 
-        {/* Show leagues in search results too */}
-        {searchQuery.length >= 2 && (
-          <>
-            {SUPPORTED_COMPETITIONS.filter(league => 
-              league.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              league.country.toLowerCase().includes(searchQuery.toLowerCase())
-            ).length > 0 && (
-              <CommandGroup heading="Ligler">
-                {SUPPORTED_COMPETITIONS.filter(league => 
-                  league.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  league.country.toLowerCase().includes(searchQuery.toLowerCase())
-                ).map((league) => (
-                  <CommandItem 
+          {/* Results */}
+          <CommandPrimitive.List className="max-h-[350px] overflow-y-auto overflow-x-hidden p-2">
+            {/* Loading State */}
+            {isSearching && !teamsLoaded && (
+              <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Takımlar yükleniyor...</span>
+              </div>
+            )}
+
+            {/* Empty State for Active Search */}
+            {isActiveSearch && !hasResults && teamsLoaded && (
+              <div className="py-6 text-center">
+                <p className="text-sm text-muted-foreground">"{searchQuery}" için sonuç bulunamadı.</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Başka bir takım veya lig deneyin
+                </p>
+              </div>
+            )}
+
+            {/* Team Results */}
+            {teamResults.length > 0 && (
+              <CommandPrimitive.Group heading="Takımlar" className="mb-2">
+                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Takımlar</div>
+                {teamResults.map((team) => (
+                  <button
+                    key={`${team.id}-${team.leagueCode}`}
+                    onClick={() => handleTeamSelect(team)}
+                    className={cn(
+                      "relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none",
+                      "hover:bg-accent hover:text-accent-foreground",
+                      "focus:bg-accent focus:text-accent-foreground"
+                    )}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center overflow-hidden mr-3">
+                      {team.crest ? (
+                        <img src={team.crest} alt="" className="w-6 h-6 object-contain" />
+                      ) : (
+                        <Shield className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0 text-left">
+                      <span className="font-medium">{team.name}</span>
+                    </div>
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      {team.leagueName}
+                    </span>
+                  </button>
+                ))}
+              </CommandPrimitive.Group>
+            )}
+
+            {/* League Results */}
+            {filteredLeagues.length > 0 && (
+              <CommandPrimitive.Group heading="Ligler" className="mb-2">
+                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Ligler</div>
+                {filteredLeagues.map((league) => (
+                  <button
                     key={league.code}
-                    onSelect={() => runCommand(() => {
+                    onClick={() => {
                       addToRecentSearches(league.name);
-                      onLeagueSelect?.(league.code);
-                      navigate('/');
-                    })}
+                      runCommand(() => {
+                        onLeagueSelect?.(league.code);
+                        navigate('/');
+                      });
+                    }}
+                    className={cn(
+                      "relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none",
+                      "hover:bg-accent hover:text-accent-foreground"
+                    )}
                   >
                     <Trophy className="mr-2 h-4 w-4" />
                     <span className="mr-2">{league.flag}</span>
                     <span>{league.name}</span>
                     <span className="ml-auto text-xs text-muted-foreground">{league.country}</span>
-                  </CommandItem>
+                  </button>
                 ))}
-              </CommandGroup>
+              </CommandPrimitive.Group>
             )}
-          </>
-        )}
-      </CommandList>
-    </CommandDialog>
+
+            {/* Default View - No Active Search */}
+            {!isActiveSearch && (
+              <>
+                {/* Navigation */}
+                <div className="mb-2">
+                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Sayfalar</div>
+                  <button
+                    onClick={() => runCommand(() => navigate('/'))}
+                    className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <Home className="mr-2 h-4 w-4" />
+                    <span>Ana Sayfa</span>
+                  </button>
+                  <button
+                    onClick={() => runCommand(() => navigate('/live'))}
+                    className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <Zap className="mr-2 h-4 w-4 text-red-500" />
+                    <span>Canlı Maçlar</span>
+                    <span className="ml-auto text-xs text-muted-foreground">⚡ Canlı</span>
+                  </button>
+                  <button
+                    onClick={() => runCommand(() => navigate('/dashboard'))}
+                    className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </button>
+                  <button
+                    onClick={() => runCommand(() => navigate('/profile'))}
+                    className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profil</span>
+                  </button>
+                </div>
+
+                <div className="h-px bg-border my-2" />
+
+                {/* Leagues */}
+                <div className="mb-2">
+                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Ligler</div>
+                  {SUPPORTED_COMPETITIONS.map((league) => (
+                    <button
+                      key={league.code}
+                      onClick={() => runCommand(() => {
+                        onLeagueSelect?.(league.code);
+                        navigate('/');
+                      })}
+                      className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                    >
+                      <Trophy className="mr-2 h-4 w-4" />
+                      <span className="mr-2">{league.flag}</span>
+                      <span>{league.name}</span>
+                      <span className="ml-auto text-xs text-muted-foreground">{league.country}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Recent Searches */}
+                {recentSearches.length > 0 && (
+                  <>
+                    <div className="h-px bg-border my-2" />
+                    <div className="mb-2">
+                      <div className="flex items-center justify-between px-2 py-1.5">
+                        <span className="text-xs font-medium text-muted-foreground">Son Aramalar</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            clearRecentSearches();
+                          }}
+                        >
+                          <X className="w-3 h-3 mr-1" />
+                          Temizle
+                        </Button>
+                      </div>
+                      {recentSearches.map((search, idx) => (
+                        <button
+                          key={`${search}-${idx}`}
+                          onClick={() => handleRecentSearchSelect(search)}
+                          className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                        >
+                          <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                          <span>{search}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </CommandPrimitive.List>
+        </CommandPrimitive>
+      </DialogContent>
+    </Dialog>
   );
 };
 
