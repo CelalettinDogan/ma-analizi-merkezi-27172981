@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, Users, Brain, BarChart3, TrendingUp, Target, Sparkles } from 'lucide-react';
+import { AlertCircle, Users, Brain, BarChart3, TrendingUp, Target, Sparkles, History, Activity, Crosshair } from 'lucide-react';
 import { MatchAnalysis } from '@/types/match';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -8,6 +8,10 @@ import {
   TrendAnalysisChart,
   ConfidenceVisualizer,
 } from '@/components/charts';
+import ScorePredictionChart from '@/components/charts/ScorePredictionChart';
+import MatchContextCard from '@/components/MatchContextCard';
+import PowerComparisonCard from '@/components/PowerComparisonCard';
+import SimilarMatchesSection from '@/components/SimilarMatchesSection';
 import { Progress } from '@/components/ui/progress';
 
 interface AnalysisSectionProps {
@@ -22,6 +26,8 @@ const AnalysisSection: React.FC<AnalysisSectionProps> = ({ analysis }) => {
   const avgAIConfidence = aiPredictions.length > 0
     ? aiPredictions.reduce((sum, p) => sum + (p.aiConfidence || 0), 0) / aiPredictions.length
     : 0;
+
+  const hasAdvancedData = analysis.poissonData || analysis.context || analysis.homePower;
 
   return (
     <div className="space-y-6">
@@ -49,26 +55,32 @@ const AnalysisSection: React.FC<AnalysisSectionProps> = ({ analysis }) => {
 
       {/* Visualization Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className={`grid w-full ${analysis.isAIEnhanced ? 'grid-cols-5' : 'grid-cols-4'} mb-6`}>
-          <TabsTrigger value="overview" className="gap-2">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 mb-6 h-auto">
+          <TabsTrigger value="overview" className="gap-2 py-2">
             <Brain className="w-4 h-4" />
             <span className="hidden sm:inline">Genel</span>
           </TabsTrigger>
           {analysis.isAIEnhanced && (
-            <TabsTrigger value="ai" className="gap-2">
+            <TabsTrigger value="ai" className="gap-2 py-2">
               <Sparkles className="w-4 h-4" />
               <span className="hidden sm:inline">AI</span>
             </TabsTrigger>
           )}
-          <TabsTrigger value="performance" className="gap-2">
+          {hasAdvancedData && (
+            <TabsTrigger value="poisson" className="gap-2 py-2">
+              <Crosshair className="w-4 h-4" />
+              <span className="hidden sm:inline">Gol</span>
+            </TabsTrigger>
+          )}
+          <TabsTrigger value="performance" className="gap-2 py-2">
             <BarChart3 className="w-4 h-4" />
             <span className="hidden sm:inline">Performans</span>
           </TabsTrigger>
-          <TabsTrigger value="trends" className="gap-2">
+          <TabsTrigger value="trends" className="gap-2 py-2">
             <TrendingUp className="w-4 h-4" />
             <span className="hidden sm:inline">Trendler</span>
           </TabsTrigger>
-          <TabsTrigger value="confidence" className="gap-2">
+          <TabsTrigger value="confidence" className="gap-2 py-2">
             <Target className="w-4 h-4" />
             <span className="hidden sm:inline">Güven</span>
           </TabsTrigger>
@@ -76,6 +88,27 @@ const AnalysisSection: React.FC<AnalysisSectionProps> = ({ analysis }) => {
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
+          {/* Context and Power Cards */}
+          {(analysis.context || analysis.homePower) && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {analysis.context && (
+                <MatchContextCard 
+                  context={analysis.context}
+                  homeTeam={analysis.input.homeTeam}
+                  awayTeam={analysis.input.awayTeam}
+                />
+              )}
+              {analysis.homePower && analysis.awayPower && (
+                <PowerComparisonCard
+                  homeTeam={analysis.input.homeTeam}
+                  awayTeam={analysis.input.awayTeam}
+                  homePower={analysis.homePower}
+                  awayPower={analysis.awayPower}
+                />
+              )}
+            </div>
+          )}
+
           {/* Taktiksel Analiz */}
           <div className="glass-card p-6 animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
@@ -208,6 +241,52 @@ const AnalysisSection: React.FC<AnalysisSectionProps> = ({ analysis }) => {
                 </ul>
               </div>
             </div>
+          </TabsContent>
+        )}
+
+        {/* Poisson / Goal Prediction Tab */}
+        {hasAdvancedData && (
+          <TabsContent value="poisson" className="space-y-6">
+            {analysis.poissonData && (
+              <div className="glass-card p-6 animate-fade-in">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Crosshair className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-display font-bold text-foreground">Poisson Gol Analizi</h3>
+                    <p className="text-sm text-muted-foreground">İstatistiksel gol dağılımı ve olasılıklar</p>
+                  </div>
+                </div>
+
+                <ScorePredictionChart
+                  scoreProbabilities={analysis.poissonData.scoreProbabilities}
+                  goalLineProbabilities={analysis.poissonData.goalLineProbabilities}
+                  bttsProbability={analysis.poissonData.bttsProbability}
+                  expectedHomeGoals={analysis.poissonData.expectedHomeGoals}
+                  expectedAwayGoals={analysis.poissonData.expectedAwayGoals}
+                />
+              </div>
+            )}
+
+            {/* Similar Matches */}
+            {analysis.similarMatches && analysis.similarMatches.length > 0 && (
+              <div className="animate-fade-in">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-secondary/20 flex items-center justify-center">
+                    <History className="w-5 h-5 text-secondary" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-display font-bold text-foreground">Benzer Maçlar</h3>
+                    <p className="text-sm text-muted-foreground">Geçmişteki benzer maçların analizi</p>
+                  </div>
+                </div>
+                <SimilarMatchesSection 
+                  matches={analysis.similarMatches}
+                  stats={analysis.similarMatchStats}
+                />
+              </div>
+            )}
           </TabsContent>
         )}
 

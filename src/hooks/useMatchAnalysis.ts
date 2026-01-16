@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MatchInput, MatchAnalysis, Prediction } from '@/types/match';
+import { MatchInput, MatchAnalysis, Prediction, MatchInsights, MatchContext, TeamPower, PoissonData, SimilarMatch, SimilarMatchStats } from '@/types/match';
 import { CompetitionCode, Standing, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
 import { getStandings, getFinishedMatches } from '@/services/footballApiService';
 import { generatePrediction, generateMockPrediction } from '@/utils/predictionEngine';
@@ -13,6 +13,9 @@ import {
   convertGoalsPrediction, 
   convertBTTSPrediction 
 } from '@/services/mlPredictionService';
+import { calculatePoissonExpectedGoals, generateScoreProbabilities, calculateMatchResultProbabilities, calculateGoalLineProbabilities, calculateBTTSProbability, calculatePowerIndexes } from '@/utils/poissonCalculator';
+import { calculateMatchImportance, calculateMomentum, calculateCleanSheetRatio } from '@/utils/contextAnalyzer';
+import { detectDerby } from '@/utils/derbyDetector';
 
 // Hibrit güven hesaplama
 function calculateHybridConfidence(aiConfidence: number, mathConfidence: number): 'düşük' | 'orta' | 'yüksek' {
@@ -30,6 +33,20 @@ function mathConfidenceToNumber(confidence: 'düşük' | 'orta' | 'yüksek'): nu
     case 'orta': return 0.6;
     case 'düşük': return 0.4;
   }
+}
+
+// Form string'inden skor hesapla (0-100)
+function calculateFormScore(form: string | null): number {
+  if (!form) return 50;
+  let score = 0;
+  const chars = form.split('');
+  chars.forEach((char, index) => {
+    const weight = (chars.length - index) / chars.length;
+    if (char === 'W') score += 20 * weight;
+    else if (char === 'D') score += 10 * weight;
+    // L = 0
+  });
+  return Math.min(Math.round(score), 100);
 }
 
 export function useMatchAnalysis() {
@@ -127,6 +144,99 @@ export function useMatchAnalysis() {
       // Feature'ları çıkar
       const features = extractMatchFeatures(homeStanding, awayStanding, mathResult.headToHead);
 
+      // === ADVANCED FEATURES ===
+      
+      // Lig ortalamaları (varsayılan değerler)
+      const leagueAvgScored = standings.reduce((sum, s) => sum + s.goalsFor / s.playedGames, 0) / standings.length || 1.3;
+      const leagueAvgConceded = standings.reduce((sum, s) => sum + s.goalsAgainst / s.playedGames, 0) / standings.length || 1.3;
+
+      // Poisson hesaplamaları
+      const homeAttackStrength = (homeStanding.goalsFor / homeStanding.playedGames) / leagueAvgScored;
+      const homeDefenseStrength = (homeStanding.goalsAgainst / homeStanding.playedGames) / leagueAvgConceded;
+      const awayAttackStrength = (awayStanding.goalsFor / awayStanding.playedGames) / leagueAvgScored;
+      const awayDefenseStrength = (awayStanding.goalsAgainst / awayStanding.playedGames) / leagueAvgConceded;
+
+      const expectedGoals = calculatePoissonExpectedGoals(
+        homeAttackStrength,
+        homeDefenseStrength,
+        awayAttackStrength,
+        awayDefenseStrength,
+        leagueAvgScored,
+        leagueAvgConceded
+      );
+
+      const scoreProbabilities = generateScoreProbabilities(
+        expectedGoals.homeExpected,
+        expectedGoals.awayExpected
+      );
+
+      const goalLineProbabilities = calculateGoalLineProbabilities(scoreProbabilities);
+      const bttsProbability = calculateBTTSProbability(scoreProbabilities);
+
+      const poissonData: PoissonData = {
+        scoreProbabilities,
+        goalLineProbabilities,
+        bttsProbability,
+        expectedHomeGoals: expectedGoals.homeExpected,
+        expectedAwayGoals: expectedGoals.awayExpected,
+      };
+
+      // Power indexes
+      const homePowerIndexes = calculatePowerIndexes(
+        homeStanding.goalsFor / homeStanding.playedGames,
+        homeStanding.goalsAgainst / homeStanding.playedGames,
+        leagueAvgScored,
+        leagueAvgConceded
+      );
+
+      const awayPowerIndexes = calculatePowerIndexes(
+        awayStanding.goalsFor / awayStanding.playedGames,
+        awayStanding.goalsAgainst / awayStanding.playedGames,
+        leagueAvgScored,
+        leagueAvgConceded
+      );
+
+      const homePower: TeamPower = {
+        attackIndex: homePowerIndexes.attackPower,
+        defenseIndex: homePowerIndexes.defensePower,
+        overallPower: homePowerIndexes.overallPower,
+        formScore: calculateFormScore(homeStanding.form),
+      };
+
+      const awayPower: TeamPower = {
+        attackIndex: awayPowerIndexes.attackPower,
+        defenseIndex: awayPowerIndexes.defensePower,
+        overallPower: awayPowerIndexes.overallPower,
+        formScore: calculateFormScore(awayStanding.form),
+      };
+
+      // Context analysis
+      const isDerby = detectDerby(data.homeTeam, data.awayTeam, data.league);
+      const matchContext = calculateMatchImportance(homeStanding, awayStanding, data.league, homeStanding.playedGames);
+
+      const context: MatchContext = {
+        matchImportance: matchContext.matchImportance as 'critical' | 'high' | 'medium' | 'low',
+        seasonPhase: matchContext.seasonPhase as 'early' | 'mid' | 'late' | 'final',
+        isDerby,
+        homeMomentum: calculateMomentum(homeStanding.form),
+        awayMomentum: calculateMomentum(awayStanding.form),
+        contextTags: matchContext.contextTags,
+      };
+
+      // Match insights
+      const insights: MatchInsights = {
+        homeFormScore: homePower.formScore,
+        awayFormScore: awayPower.formScore,
+        homeMomentum: context.homeMomentum,
+        awayMomentum: context.awayMomentum,
+        isDerby,
+        matchImportance: context.matchImportance,
+        homeCleanSheetRatio: calculateCleanSheetRatio(homeStanding.goalsAgainst, homeStanding.playedGames),
+        awayCleanSheetRatio: calculateCleanSheetRatio(awayStanding.goalsAgainst, awayStanding.playedGames),
+        homeAttackIndex: homePower.attackIndex,
+        awayAttackIndex: awayPower.attackIndex,
+      };
+
       // AI tahminlerini al
       let finalPredictions: Prediction[] = mathResult.predictions;
       let isAIEnhanced = false;
@@ -218,6 +328,12 @@ export function useMatchAnalysis() {
         ...mathResult,
         predictions: finalPredictions,
         isAIEnhanced,
+        // Advanced data
+        insights,
+        context,
+        homePower,
+        awayPower,
+        poissonData,
       };
 
       setAnalysis(result);
