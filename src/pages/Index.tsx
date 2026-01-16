@@ -15,10 +15,12 @@ import LeagueGrid from '@/components/league/LeagueGrid';
 import MatchCarousel from '@/components/match/MatchCarousel';
 import BottomNav from '@/components/navigation/BottomNav';
 import CommandPalette from '@/components/navigation/CommandPalette';
+import Onboarding from '@/components/Onboarding';
 import { MatchCardSkeleton } from '@/components/ui/skeletons';
 import { MatchInput } from '@/types/match';
 import { Match as ApiMatch, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
+import { useOnboarding } from '@/hooks/useOnboarding';
 import { Loader2, BarChart3, Calendar, ChevronRight, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,6 +32,7 @@ const Index: React.FC = () => {
   const location = useLocation();
   const { analysis, isLoading: analysisLoading, analyzeMatch } = useMatchAnalysis();
   const { user } = useAuth();
+  const { showOnboarding, completeOnboarding } = useOnboarding();
   
   const [selectedLeague, setSelectedLeague] = useState<CompetitionCode | ''>('');
   const [upcomingMatches, setUpcomingMatches] = useState<ApiMatch[]>([]);
@@ -376,6 +379,13 @@ const Index: React.FC = () => {
         onOpenChange={setCommandOpen}
         onLeagueSelect={handleCommandLeagueSelect}
       />
+
+      {/* Onboarding */}
+      <AnimatePresence>
+        {showOnboarding && (
+          <Onboarding onComplete={completeOnboarding} />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
