@@ -5,6 +5,7 @@ import { getStandings, getFinishedMatches } from '@/services/footballApiService'
 import { generatePrediction, generateMockPrediction } from '@/utils/predictionEngine';
 import { savePredictions } from '@/services/predictionService';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { extractTeamFeatures, extractH2HFeatures, createFeatureRecord, extractMatchFeatures } from '@/utils/featureExtractor';
 import { 
   getMLPrediction, 
@@ -51,6 +52,7 @@ function calculateFormScore(form: string | null): number {
 
 export function useMatchAnalysis() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [analysis, setAnalysis] = useState<MatchAnalysis | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -363,7 +365,8 @@ export function useMatchAnalysis() {
           result.input.homeTeam,
           result.input.awayTeam,
           data.matchDate,
-          result.predictions
+          result.predictions,
+          user?.id
         );
       } catch (saveError) {
         console.error('Error saving predictions:', saveError);
