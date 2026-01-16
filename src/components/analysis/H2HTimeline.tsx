@@ -1,0 +1,112 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Swords } from 'lucide-react';
+import { HeadToHead } from '@/types/match';
+import { cn } from '@/lib/utils';
+
+interface H2HTimelineProps {
+  h2h: HeadToHead;
+  homeTeam: string;
+  awayTeam: string;
+}
+
+const H2HTimeline: React.FC<H2HTimelineProps> = ({ h2h, homeTeam, awayTeam }) => {
+  const total = h2h.homeWins + h2h.awayWins + h2h.draws;
+  const homePercentage = total > 0 ? (h2h.homeWins / total) * 100 : 0;
+  const drawPercentage = total > 0 ? (h2h.draws / total) * 100 : 0;
+  const awayPercentage = total > 0 ? (h2h.awayWins / total) * 100 : 0;
+
+  const getMatchResult = (match: typeof h2h.lastMatches[0]) => {
+    const [homeGoals, awayGoals] = match.score.split('-').map(Number);
+    if (match.homeTeam === homeTeam) {
+      if (homeGoals > awayGoals) return 'home';
+      if (homeGoals < awayGoals) return 'away';
+    } else {
+      if (homeGoals > awayGoals) return 'away';
+      if (homeGoals < awayGoals) return 'home';
+    }
+    return 'draw';
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4 }}
+      className="p-4 rounded-xl bg-card border border-border/50"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <Swords className="w-4 h-4 text-secondary" />
+          Geçmiş Karşılaşmalar
+        </h4>
+        <span className="text-xs text-muted-foreground">{total} maç</span>
+      </div>
+
+      {/* Win Rate Bar */}
+      <div className="mb-4">
+        <div className="flex justify-between text-xs mb-1.5">
+          <span className="text-primary font-medium">{homeTeam}</span>
+          <span className="text-muted-foreground">Beraberlik</span>
+          <span className="text-secondary font-medium">{awayTeam}</span>
+        </div>
+        <div className="flex h-2 rounded-full overflow-hidden">
+          <div 
+            className="bg-primary transition-all"
+            style={{ width: `${homePercentage}%` }}
+          />
+          <div 
+            className="bg-muted transition-all"
+            style={{ width: `${drawPercentage}%` }}
+          />
+          <div 
+            className="bg-secondary transition-all"
+            style={{ width: `${awayPercentage}%` }}
+          />
+        </div>
+        <div className="flex justify-between text-sm font-bold mt-1.5">
+          <span className="text-primary">{h2h.homeWins}</span>
+          <span className="text-muted-foreground">{h2h.draws}</span>
+          <span className="text-secondary">{h2h.awayWins}</span>
+        </div>
+      </div>
+
+      {/* Timeline */}
+      <div className="relative">
+        {/* Timeline Line */}
+        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-border/50 -translate-y-1/2" />
+        
+        {/* Match Bubbles */}
+        <div className="relative flex justify-between">
+          {h2h.lastMatches.slice(0, 5).map((match, index) => {
+            const result = getMatchResult(match);
+            
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5 + index * 0.1 }}
+                className="flex flex-col items-center"
+              >
+                <div className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold border-2 bg-card z-10",
+                  result === 'home' && "border-primary text-primary",
+                  result === 'away' && "border-secondary text-secondary",
+                  result === 'draw' && "border-muted-foreground text-muted-foreground"
+                )}>
+                  {match.score}
+                </div>
+                <span className="text-[10px] text-muted-foreground mt-1.5 truncate max-w-[50px]">
+                  {match.date.split('-').slice(1).join('/')}
+                </span>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default H2HTimeline;
