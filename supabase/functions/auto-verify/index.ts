@@ -33,6 +33,7 @@ interface PredictionRecord {
 
 // League to competition code mapping
 const LEAGUE_MAP: Record<string, string> = {
+  // English names
   'Premier League': 'PL',
   'Bundesliga': 'BL1',
   'La Liga': 'PD',
@@ -40,12 +41,20 @@ const LEAGUE_MAP: Record<string, string> = {
   'Ligue 1': 'FL1',
   'UEFA Champions League': 'CL',
   'Champions League': 'CL',
+  // Turkish names
   'İngiltere Premier Ligi': 'PL',
   'Almanya Bundesliga': 'BL1',
   'İspanya La Liga': 'PD',
   'İtalya Serie A': 'SA',
   'Fransa Ligue 1': 'FL1',
   'UEFA Şampiyonlar Ligi': 'CL',
+  // Short codes (for backwards compatibility)
+  'PL': 'PL',
+  'BL1': 'BL1',
+  'PD': 'PD',
+  'SA': 'SA',
+  'FL1': 'FL1',
+  'CL': 'CL',
 };
 
 // Normalize team names for matching
