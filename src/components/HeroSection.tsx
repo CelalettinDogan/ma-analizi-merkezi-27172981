@@ -4,6 +4,7 @@ import { Zap, Trophy, Target, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { staggerContainer, staggerItem } from '@/lib/animations';
+import { Link } from 'react-router-dom';
 
 interface HeroStats {
   liveCount: number;
@@ -11,11 +12,7 @@ interface HeroStats {
   accuracy: number;
 }
 
-interface HeroSectionProps {
-  onQuickAction?: (action: string) => void;
-}
-
-const HeroSection: React.FC<HeroSectionProps> = ({ onQuickAction }) => {
+const HeroSection: React.FC = () => {
   const [stats, setStats] = useState<HeroStats>({
     liveCount: 0,
     todayPredictions: 0,
@@ -113,27 +110,24 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onQuickAction }) => {
             className="flex flex-wrap items-center justify-center gap-3"
           >
             <Button
-              onClick={() => onQuickAction?.('analyze')}
+              asChild
               className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
             >
-              <Trophy className="w-4 h-4" />
-              Hızlı Analiz
+              <Link to="/live">
+                <Zap className="w-4 h-4" />
+                Canlı Maçlar
+              </Link>
             </Button>
             <Button
               variant="outline"
-              onClick={() => onQuickAction?.('live')}
-              className="gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10"
+              asChild
+              className="gap-2"
             >
-              <Zap className="w-4 h-4" />
-              Canlı Maçlar
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => onQuickAction?.('predictions')}
-              className="gap-2 text-muted-foreground hover:text-foreground"
-            >
-              En İyi Tahminler
-              <ArrowRight className="w-4 h-4" />
+              <Link to="/dashboard">
+                <Trophy className="w-4 h-4" />
+                Dashboard
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </Button>
           </motion.div>
         </motion.div>
