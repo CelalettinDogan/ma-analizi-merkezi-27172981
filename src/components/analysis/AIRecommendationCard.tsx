@@ -6,6 +6,8 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useBetSlip } from '@/contexts/BetSlipContext';
 import { cn } from '@/lib/utils';
+import ShareCard from '@/components/ShareCard';
+import { formatMatchDate } from '@/lib/utils';
 
 interface AIRecommendationCardProps {
   predictions: Prediction[];
@@ -112,14 +114,24 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
           {mainPrediction.reasoning}
         </p>
 
-        {/* Add to Slip Button */}
-        <Button 
-          onClick={handleAddToSlipClick}
-          className="w-full gap-2 bg-gradient-to-r from-primary to-emerald-500 hover:from-primary/90 hover:to-emerald-500/90"
-        >
-          <Plus className="w-4 h-4" />
-          Kupona Ekle
-        </Button>
+        {/* Action Buttons */}
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleAddToSlipClick}
+            className="flex-1 gap-2 bg-gradient-to-r from-primary to-emerald-500 hover:from-primary/90 hover:to-emerald-500/90"
+          >
+            <Plus className="w-4 h-4" />
+            Kupona Ekle
+          </Button>
+          <ShareCard
+            homeTeam={matchInput.homeTeam}
+            awayTeam={matchInput.awayTeam}
+            prediction={mainPrediction.prediction}
+            confidence={mainPrediction.confidence}
+            league={matchInput.league}
+            matchDate={formatMatchDate(matchInput.matchDate)}
+          />
+        </div>
       </div>
     </motion.div>
   );

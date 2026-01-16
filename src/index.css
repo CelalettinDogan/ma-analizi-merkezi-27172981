@@ -51,6 +51,46 @@
     --loss: 0 84% 60%;
     --draw: 45 93% 47%;
   }
+
+  /* Light theme */
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 98%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 142 71% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 45 93% 47%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 142 71% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 142 71% 40%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(142 71% 40%), hsl(160 84% 35%));
+    --gradient-gold: linear-gradient(135deg, hsl(45 93% 47%), hsl(38 92% 50%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 14% 96%));
+    --gradient-hero: linear-gradient(135deg, hsl(220 14% 96%) 0%, hsl(0 0% 100%) 100%);
+    
+    --shadow-glow: 0 0 40px hsl(142 71% 45% / 0.1);
+    --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.08);
+    --shadow-elevated: 0 8px 32px hsl(0 0% 0% / 0.12);
+  }
 }
 
 @layer base {
