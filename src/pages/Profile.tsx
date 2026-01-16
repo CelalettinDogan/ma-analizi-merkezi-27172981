@@ -205,7 +205,7 @@ const Profile: React.FC = () => {
                           {favoriteLeagues.map((fav) => (
                             <Badge key={fav.id} variant="secondary" className="gap-1">
                               <Trophy className="w-3 h-3" />
-                              {fav.name}
+                              {fav.favorite_name || fav.favorite_id}
                             </Badge>
                           ))}
                         </div>
@@ -217,7 +217,7 @@ const Profile: React.FC = () => {
                         <div className="flex flex-wrap gap-2">
                           {favoriteTeams.map((fav) => (
                             <Badge key={fav.id} variant="outline" className="gap-1">
-                              {fav.name}
+                              {fav.favorite_name || fav.favorite_id}
                             </Badge>
                           ))}
                         </div>
