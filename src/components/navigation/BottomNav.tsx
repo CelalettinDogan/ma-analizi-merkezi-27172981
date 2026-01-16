@@ -50,7 +50,9 @@ const BottomNav: React.FC<BottomNavProps> = ({ onSearchClick }) => {
                 key={item.path}
                 to={item.isAction ? '#' : item.path}
                 onClick={(e) => handleClick(item, e)}
-                className="relative flex flex-col items-center gap-0.5 px-3 py-2 min-w-[60px] touch-manipulation"
+                aria-label={item.label}
+                aria-current={isActive ? 'page' : undefined}
+                className="relative flex flex-col items-center gap-0.5 px-4 py-3 min-w-[64px] min-h-[44px] touch-manipulation"
               >
                 <div className="relative">
                   {isActive && (

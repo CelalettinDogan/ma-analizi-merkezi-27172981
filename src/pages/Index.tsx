@@ -143,6 +143,7 @@ const Index: React.FC = () => {
               size="sm" 
               className="hidden md:flex gap-2 text-muted-foreground"
               onClick={() => setCommandOpen(true)}
+              aria-label="Takım veya lig ara"
             >
               <Search className="w-4 h-4" />
               <span>Ara...</span>
@@ -309,7 +310,7 @@ const Index: React.FC = () => {
             <span className="font-display font-semibold text-foreground">FutbolTahmin</span>
           </div>
           <p className="text-sm text-muted-foreground mb-2">
-            © 2024 FutbolTahmin. Tüm hakları saklıdır.
+            © {new Date().getFullYear()} FutbolTahmin. Tüm hakları saklıdır.
           </p>
           <p className="text-xs text-muted-foreground">
             Bu site yalnızca bilgilendirme amaçlıdır. 18 yaş altı kullanıcılara yönelik değildir.

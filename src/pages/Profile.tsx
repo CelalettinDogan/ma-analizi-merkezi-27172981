@@ -47,7 +47,8 @@ const Profile: React.FC = () => {
       const total = predictions?.length || 0;
       const correct = predictions?.filter(p => p.is_correct === true).length || 0;
       const pending = predictions?.filter(p => p.is_correct === null).length || 0;
-      const accuracy = total > 0 ? Math.round((correct / (total - pending)) * 100) || 0 : 0;
+      const verified = total - pending;
+      const accuracy = verified > 0 ? Math.round((correct / verified) * 100) : 0;
       
       return { total, correct, pending, accuracy };
     },

@@ -16,16 +16,35 @@ const HeroSection: React.FC = () => {
   const [stats, setStats] = useState<HeroStats>({
     liveCount: 0,
     todayPredictions: 0,
-    accuracy: 78
+    accuracy: 0
   });
 
   useEffect(() => {
-    // Fetch real stats
     const fetchStats = async () => {
       try {
-        const { data } = await supabase.from('predictions').select('*', { count: 'exact', head: true });
-        // For now use placeholder data - will be populated with real data
-        setStats(prev => ({ ...prev, todayPredictions: 12 }));
+        // Get today's predictions count
+        const today = new Date().toISOString().split('T')[0];
+        const { count: todayCount } = await supabase
+          .from('predictions')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', today);
+
+        // Get overall accuracy from view
+        const { data: overallStats } = await supabase
+          .from('overall_stats')
+          .select('accuracy_percentage')
+          .single();
+
+        // Get live matches count (approximate from recent matches)
+        const { data: liveData } = await supabase.functions.invoke('football-api', {
+          body: { action: 'live' },
+        });
+
+        setStats({
+          todayPredictions: todayCount || 0,
+          accuracy: Math.round(overallStats?.accuracy_percentage || 0),
+          liveCount: liveData?.matches?.length || 0,
+        });
       } catch (e) {
         console.error('Error fetching hero stats:', e);
       }
@@ -99,7 +118,7 @@ const HeroSection: React.FC = () => {
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20">
               <Target className="w-3.5 h-3.5 text-primary" />
               <span className="text-xs font-medium text-primary">
-                %{stats.accuracy} Doğruluk
+                {stats.accuracy > 0 ? `%${stats.accuracy}` : '—'} Doğruluk
               </span>
             </div>
           </motion.div>

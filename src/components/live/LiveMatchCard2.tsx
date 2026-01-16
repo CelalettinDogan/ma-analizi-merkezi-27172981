@@ -12,7 +12,9 @@ interface LiveMatchCard2Props {
 
 const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
   const isHalfTime = match.status === 'PAUSED';
-  const minute = match.status === 'IN_PLAY' ? "90'" : isHalfTime ? 'HT' : '';
+  const minute = match.status === 'IN_PLAY' 
+    ? ((match as any).minute ? `${(match as any).minute}'` : "●") 
+    : isHalfTime ? 'HT' : '';
 
   return (
     <motion.button
