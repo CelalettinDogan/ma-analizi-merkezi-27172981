@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Zap, Shield, Activity } from 'lucide-react';
 import { TeamStats, TeamPower } from '@/types/match';
@@ -13,7 +13,11 @@ interface QuickStatsRowProps {
   awayPower?: TeamPower;
 }
 
-const FormBadge: React.FC<{ result: string }> = ({ result }) => {
+interface FormBadgeProps {
+  result: string;
+}
+
+const FormBadge = memo<FormBadgeProps>(({ result }) => {
   const config = {
     W: { label: 'G', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
     L: { label: 'M', bg: 'bg-red-500/20', text: 'text-red-400' },
@@ -26,14 +30,18 @@ const FormBadge: React.FC<{ result: string }> = ({ result }) => {
       {c.label}
     </span>
   );
-};
+});
 
-const PowerMeter: React.FC<{ 
-  value: number; 
-  label: string; 
+FormBadge.displayName = 'FormBadge';
+
+interface PowerMeterProps {
+  value: number;
+  label: string;
   icon: React.ReactNode;
   max?: number;
-}> = ({ value, label, icon, max = 200 }) => {
+}
+
+const PowerMeter = memo<PowerMeterProps>(({ value, label, icon, max = 200 }) => {
   const percentage = Math.min((value / max) * 100, 100);
   const isHigh = value > (max / 2);
   
@@ -61,7 +69,9 @@ const PowerMeter: React.FC<{
       </div>
     </div>
   );
-};
+});
+
+PowerMeter.displayName = 'PowerMeter';
 
 const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
   homeTeam,
@@ -194,4 +204,4 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
   );
 };
 
-export default QuickStatsRow;
+export default memo(QuickStatsRow);
