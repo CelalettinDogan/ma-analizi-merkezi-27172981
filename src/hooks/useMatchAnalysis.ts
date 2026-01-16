@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MatchInput, MatchAnalysis, Prediction, MatchInsights, MatchContext, TeamPower, PoissonData, SimilarMatch, SimilarMatchStats } from '@/types/match';
+import { MatchInput, MatchAnalysis, Prediction, MatchInsights, MatchContext, TeamPower, PoissonData, GoalLineProbabilities } from '@/types/match';
 import { CompetitionCode, Standing, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
 import { getStandings, getFinishedMatches } from '@/services/footballApiService';
 import { generatePrediction, generateMockPrediction } from '@/utils/predictionEngine';
@@ -13,9 +13,9 @@ import {
   convertGoalsPrediction, 
   convertBTTSPrediction 
 } from '@/services/mlPredictionService';
-import { calculatePoissonExpectedGoals, generateScoreProbabilities, calculateMatchResultProbabilities, calculateGoalLineProbabilities, calculateBTTSProbability, calculatePowerIndexes } from '@/utils/poissonCalculator';
+import { calculatePoissonExpectedGoals, generateScoreProbabilities, calculateMatchResultProbabilities, calculateGoalLineProbabilities as calcGoalLines, calculateBTTSProbability, calculatePowerIndexes } from '@/utils/poissonCalculator';
 import { calculateMatchImportance, calculateMomentum, calculateCleanSheetRatio } from '@/utils/contextAnalyzer';
-import { detectDerby } from '@/utils/derbyDetector';
+import { isDerbyMatch } from '@/utils/derbyDetector';
 
 // Hibrit güven hesaplama
 function calculateHybridConfidence(aiConfidence: number, mathConfidence: number): 'düşük' | 'orta' | 'yüksek' {
@@ -170,48 +170,66 @@ export function useMatchAnalysis() {
         expectedGoals.awayExpected
       );
 
-      const goalLineProbabilities = calculateGoalLineProbabilities(scoreProbabilities);
+      const rawGoalLines = calcGoalLines(scoreProbabilities);
       const bttsProbability = calculateBTTSProbability(scoreProbabilities);
 
+      // Convert to our type format (underscores to camelCase-like, but with numbers)
+      const goalLineProbabilities: GoalLineProbabilities = {
+        over05: rawGoalLines.over0_5 / 100,
+        over15: rawGoalLines.over1_5 / 100,
+        over25: rawGoalLines.over2_5 / 100,
+        over35: rawGoalLines.over3_5 / 100,
+        under05: rawGoalLines.under0_5 / 100,
+        under15: rawGoalLines.under1_5 / 100,
+        under25: rawGoalLines.under2_5 / 100,
+        under35: rawGoalLines.under3_5 / 100,
+      };
+
       const poissonData: PoissonData = {
-        scoreProbabilities,
+        scoreProbabilities: scoreProbabilities.map(sp => ({
+          homeGoals: sp.homeGoals,
+          awayGoals: sp.awayGoals,
+          probability: sp.probability / 100, // Convert to 0-1 range
+        })),
         goalLineProbabilities,
-        bttsProbability,
+        bttsProbability: bttsProbability / 100, // Convert to 0-1 range
         expectedHomeGoals: expectedGoals.homeExpected,
         expectedAwayGoals: expectedGoals.awayExpected,
       };
 
       // Power indexes
       const homePowerIndexes = calculatePowerIndexes(
-        homeStanding.goalsFor / homeStanding.playedGames,
-        homeStanding.goalsAgainst / homeStanding.playedGames,
+        homeStanding.goalsFor,
+        homeStanding.goalsAgainst,
+        homeStanding.playedGames,
         leagueAvgScored,
         leagueAvgConceded
       );
 
       const awayPowerIndexes = calculatePowerIndexes(
-        awayStanding.goalsFor / awayStanding.playedGames,
-        awayStanding.goalsAgainst / awayStanding.playedGames,
+        awayStanding.goalsFor,
+        awayStanding.goalsAgainst,
+        awayStanding.playedGames,
         leagueAvgScored,
         leagueAvgConceded
       );
 
       const homePower: TeamPower = {
-        attackIndex: homePowerIndexes.attackPower,
-        defenseIndex: homePowerIndexes.defensePower,
-        overallPower: homePowerIndexes.overallPower,
+        attackIndex: homePowerIndexes.attackStrength * 100, // Convert to 0-200 scale (100 = average)
+        defenseIndex: (2 - homePowerIndexes.defenseStrength) * 100, // Invert: lower is better
+        overallPower: homePowerIndexes.overallPower * 100,
         formScore: calculateFormScore(homeStanding.form),
       };
 
       const awayPower: TeamPower = {
-        attackIndex: awayPowerIndexes.attackPower,
-        defenseIndex: awayPowerIndexes.defensePower,
-        overallPower: awayPowerIndexes.overallPower,
+        attackIndex: awayPowerIndexes.attackStrength * 100,
+        defenseIndex: (2 - awayPowerIndexes.defenseStrength) * 100,
+        overallPower: awayPowerIndexes.overallPower * 100,
         formScore: calculateFormScore(awayStanding.form),
       };
 
       // Context analysis
-      const isDerby = detectDerby(data.homeTeam, data.awayTeam, data.league);
+      const isDerby = isDerbyMatch(data.homeTeam, data.awayTeam, data.league);
       const matchContext = calculateMatchImportance(homeStanding, awayStanding, data.league, homeStanding.playedGames);
 
       const context: MatchContext = {

@@ -135,7 +135,7 @@ const Index: React.FC = () => {
         <section id="analysis-section" className="py-12 md:py-16 bg-card/30">
           <div className="container mx-auto px-4">
             {/* Match Header */}
-            <MatchHeader match={analysis.input} />
+            <MatchHeader match={analysis.input} insights={analysis.insights} />
 
             {/* Team Stats */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
