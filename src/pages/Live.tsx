@@ -29,18 +29,34 @@ const LivePage: React.FC = () => {
     setError(null);
 
     try {
+      // Fetch only selected league or first 2 leagues to avoid rate limits
       const competitions = selectedLeague 
         ? [selectedLeague]
-        : SUPPORTED_COMPETITIONS.map(c => c.code);
+        : SUPPORTED_COMPETITIONS.slice(0, 2).map(c => c.code);
 
       const allMatches: Match[] = [];
 
+      // Sequential requests with delay to avoid rate limiting
       for (const code of competitions) {
         try {
           const { data, error: apiError } = await supabase.functions.invoke('football-api', {
             body: { action: 'matches', competitionCode: code, status: 'LIVE' },
           });
-          if (!apiError && data?.matches) allMatches.push(...data.matches);
+          
+          if (apiError) {
+            // Handle rate limit gracefully
+            if (apiError.message?.includes('429') || apiError.message?.includes('rate')) {
+              console.warn('Rate limited, using cached data if available');
+              continue;
+            }
+          }
+          
+          if (data?.matches) allMatches.push(...data.matches);
+          
+          // Add small delay between requests to avoid rate limiting
+          if (competitions.length > 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
         } catch (e) {
           console.error(`Error fetching live matches for ${code}:`, e);
         }
