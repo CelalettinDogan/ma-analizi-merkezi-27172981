@@ -10,6 +10,7 @@ interface AILearningBarProps {
 
 export const AILearningBar = ({ correct, total, isLoading }: AILearningBarProps) => {
   const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
+  const hasData = total > 0;
 
   if (isLoading) {
     return (
@@ -22,6 +23,50 @@ export const AILearningBar = ({ correct, total, isLoading }: AILearningBarProps)
           </div>
         </div>
       </Card>
+    );
+  }
+
+  // Empty state when no verified predictions
+  if (!hasData) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <Card className="p-4 bg-card/50 backdrop-blur-sm border-border/50 overflow-hidden relative">
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent"
+            animate={{ x: ["-100%", "100%"] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+          />
+
+          <div className="relative flex items-center gap-4">
+            <div className="p-2.5 rounded-lg bg-primary/10 shrink-0">
+              <Brain className="w-5 h-5 text-primary animate-pulse" />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm font-medium text-foreground">AI Öğrenmeye Hazırlanıyor</span>
+                <Sparkles className="w-3.5 h-3.5 text-secondary animate-pulse" />
+              </div>
+
+              <div className="h-2 bg-muted/50 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-muted-foreground/30 to-muted-foreground/50"
+                  animate={{ width: ["0%", "30%", "0%"] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                />
+              </div>
+
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Tahminler doğrulandıkça AI modeli öğrenecek
+              </p>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
     );
   }
 
