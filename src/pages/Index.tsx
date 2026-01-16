@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import HeroSection from '@/components/HeroSection';
-import MatchInputForm from '@/components/MatchInputForm';
 import MatchHeader from '@/components/MatchHeader';
 import TeamStatsCard from '@/components/TeamStatsCard';
 import HeadToHeadCard from '@/components/HeadToHeadCard';
@@ -21,7 +20,7 @@ import { MatchInput } from '@/types/match';
 import { Match as ApiMatch, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
 import { useOnboarding } from '@/hooks/useOnboarding';
-import { Loader2, BarChart3, Calendar, ChevronRight, Search } from 'lucide-react';
+import { Loader2, BarChart3, Calendar, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,7 +37,6 @@ const Index: React.FC = () => {
   const [upcomingMatches, setUpcomingMatches] = useState<ApiMatch[]>([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
-  const [showAnalysisForm, setShowAnalysisForm] = useState(false);
 
   // Handle match from Live page navigation
   useEffect(() => {
@@ -75,7 +73,6 @@ const Index: React.FC = () => {
 
   const handleLeagueSelect = (code: CompetitionCode) => {
     setSelectedLeague(code);
-    setShowAnalysisForm(false);
   };
 
   const handleMatchSelect = async (match: ApiMatch) => {
@@ -102,20 +99,6 @@ const Index: React.FC = () => {
     setTimeout(() => {
       document.getElementById('analysis-section')?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
-  };
-
-  const handleQuickAction = (action: string) => {
-    switch (action) {
-      case 'live':
-        navigate('/live');
-        break;
-      case 'analyze':
-        setShowAnalysisForm(true);
-        break;
-      case 'predictions':
-        navigate('/dashboard');
-        break;
-    }
   };
 
   const handleCommandLeagueSelect = (code: string) => {
@@ -171,46 +154,13 @@ const Index: React.FC = () => {
       </header>
 
       {/* Hero Section - Compact */}
-      <HeroSection onQuickAction={handleQuickAction} />
+      <HeroSection />
 
       {/* Main Content - Bento Grid Layout */}
       <main className="container mx-auto px-4 py-6 space-y-8">
-        {/* Analysis Form (Conditional) */}
-        <AnimatePresence>
-          {showAnalysisForm && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="max-w-2xl mx-auto">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-display font-bold text-lg">Maç Analizi</h2>
-                  <Button variant="ghost" size="sm" onClick={() => setShowAnalysisForm(false)}>
-                    Kapat
-                  </Button>
-                </div>
-                <MatchInputForm onSubmit={handleFormSubmit} />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* League Selection */}
         <motion.section {...fadeInUp}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display font-bold text-lg">Lig Seçin</h2>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="gap-1 text-muted-foreground"
-              onClick={() => setShowAnalysisForm(true)}
-            >
-              Manuel Analiz
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
+          <h2 className="font-display font-bold text-lg mb-4">Lig Seçin</h2>
           <LeagueGrid 
             selectedLeague={selectedLeague} 
             onLeagueSelect={handleLeagueSelect}
