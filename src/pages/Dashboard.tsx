@@ -19,7 +19,7 @@ import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import SavedSlipsList from "@/components/betslip/SavedSlipsList";
 
 // Services
-import { getOverallStats, getPredictionStats, getRecentPredictions } from "@/services/predictionService";
+import { getOverallStats, getPredictionStats, getRecentPredictions, getAccuracyTrend, TrendData } from "@/services/predictionService";
 import { getBetSlipStats } from "@/services/betSlipService";
 
 // Types
@@ -30,6 +30,7 @@ const Dashboard = () => {
   const [overallStats, setOverallStats] = useState<OverallStats | null>(null);
   const [predictionStats, setPredictionStats] = useState<PredictionStats[]>([]);
   const [recentPredictions, setRecentPredictions] = useState<PredictionRecord[]>([]);
+  const [trendData, setTrendData] = useState<TrendData | null>(null);
   const [slipCount, setSlipCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -37,15 +38,17 @@ const Dashboard = () => {
 
   const loadData = async () => {
     try {
-      const [overall, byType, recent] = await Promise.all([
+      const [overall, byType, recent, trend] = await Promise.all([
         getOverallStats(),
         getPredictionStats(),
-        getRecentPredictions(50)
+        getRecentPredictions(50),
+        getAccuracyTrend(7)
       ]);
       
       setOverallStats(overall);
       setPredictionStats(byType);
       setRecentPredictions(recent);
+      setTrendData(trend);
 
       // Get slip count for logged in users
       if (user) {
@@ -68,12 +71,6 @@ const Dashboard = () => {
     await loadData();
     setIsRefreshing(false);
     toast.success("Veriler güncellendi");
-  };
-
-  // Calculate trend (mock for now - could be based on last 7 days vs previous)
-  const calculateTrend = () => {
-    // This would ideally compare current accuracy to previous period
-    return 3; // Mock: +3% improvement
   };
 
   const containerVariants = {
@@ -143,7 +140,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <AccuracyHeroCard 
               accuracy={overallStats?.accuracy_percentage ?? 0}
-              trend={calculateTrend()}
+              trend={trendData?.trend ?? 0}
               isLoading={isLoading}
             />
             <QuickStatsGrid 

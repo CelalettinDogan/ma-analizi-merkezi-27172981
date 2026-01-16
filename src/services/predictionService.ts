@@ -183,3 +183,58 @@ export async function getPendingPredictions(): Promise<PredictionRecord[]> {
 
   return data as PredictionRecord[];
 }
+
+export interface TrendData {
+  currentAccuracy: number;
+  previousAccuracy: number;
+  trend: number; // percentage point difference
+  currentTotal: number;
+  previousTotal: number;
+}
+
+export async function getAccuracyTrend(days: number = 7): Promise<TrendData> {
+  const now = new Date();
+  const currentPeriodStart = new Date(now);
+  currentPeriodStart.setDate(now.getDate() - days);
+  
+  const previousPeriodStart = new Date(currentPeriodStart);
+  previousPeriodStart.setDate(currentPeriodStart.getDate() - days);
+
+  // Fetch predictions for both periods
+  const { data: allPredictions, error } = await supabase
+    .from('predictions')
+    .select('created_at, is_correct')
+    .not('is_correct', 'is', null)
+    .gte('created_at', previousPeriodStart.toISOString())
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching trend data:', error);
+    return { currentAccuracy: 0, previousAccuracy: 0, trend: 0, currentTotal: 0, previousTotal: 0 };
+  }
+
+  // Split into current and previous periods
+  const currentPeriodStartISO = currentPeriodStart.toISOString();
+  
+  const currentPeriod = allPredictions?.filter(p => p.created_at >= currentPeriodStartISO) || [];
+  const previousPeriod = allPredictions?.filter(p => p.created_at < currentPeriodStartISO) || [];
+
+  // Calculate accuracies
+  const calculateAccuracy = (predictions: { is_correct: boolean | null }[]) => {
+    if (predictions.length === 0) return 0;
+    const correct = predictions.filter(p => p.is_correct === true).length;
+    return (correct / predictions.length) * 100;
+  };
+
+  const currentAccuracy = calculateAccuracy(currentPeriod);
+  const previousAccuracy = calculateAccuracy(previousPeriod);
+  const trend = Math.round(currentAccuracy - previousAccuracy);
+
+  return {
+    currentAccuracy,
+    previousAccuracy,
+    trend,
+    currentTotal: currentPeriod.length,
+    previousTotal: previousPeriod.length,
+  };
+}
