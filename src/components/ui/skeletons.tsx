@@ -119,6 +119,61 @@ export const NavItemSkeleton = () => (
   </div>
 );
 
+// Profile Skeleton
+export const ProfileSkeleton = () => (
+  <div className="space-y-6">
+    {/* Avatar and name */}
+    <div className="flex items-center gap-4">
+      <SkeletonBase className="w-20 h-20 rounded-full" />
+      <div className="space-y-2">
+        <SkeletonBase className="h-6 w-32" />
+        <SkeletonBase className="h-4 w-48" />
+      </div>
+    </div>
+    {/* Stats */}
+    <div className="grid grid-cols-3 gap-4">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="glass-card p-4 text-center space-y-2">
+          <SkeletonBase className="h-8 w-16 mx-auto" />
+          <SkeletonBase className="h-4 w-20 mx-auto" />
+        </div>
+      ))}
+    </div>
+    {/* Sections */}
+    <div className="space-y-4">
+      <SkeletonBase className="h-12 w-full rounded-xl" />
+      <SkeletonBase className="h-12 w-full rounded-xl" />
+      <SkeletonBase className="h-12 w-full rounded-xl" />
+    </div>
+  </div>
+);
+
+// Favorites List Skeleton
+export const FavoritesListSkeleton = () => (
+  <div className="space-y-3">
+    {Array.from({ length: 4 }).map((_, i) => (
+      <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
+        <SkeletonBase className="w-10 h-10 rounded-lg" />
+        <div className="flex-1 space-y-1">
+          <SkeletonBase className="h-4 w-24" />
+          <SkeletonBase className="h-3 w-16" />
+        </div>
+        <SkeletonBase className="w-8 h-8 rounded-full" />
+      </div>
+    ))}
+  </div>
+);
+
+// Auth Form Skeleton
+export const AuthFormSkeleton = () => (
+  <div className="space-y-4">
+    <SkeletonBase className="h-10 w-full rounded-md" />
+    <SkeletonBase className="h-10 w-full rounded-md" />
+    <SkeletonBase className="h-10 w-full rounded-md" />
+    <SkeletonBase className="h-10 w-full rounded-md" />
+  </div>
+);
+
 // Full Page Skeleton
 export const PageSkeleton = () => (
   <div className="min-h-screen bg-background p-4 space-y-6">

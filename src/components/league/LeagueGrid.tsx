@@ -1,9 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, ChevronRight } from 'lucide-react';
+import { Trophy, ChevronRight, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { staggerContainer, staggerItem, cardHover, cardTap } from '@/lib/animations';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useAuth } from '@/contexts/AuthContext';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface LeagueGridProps {
   selectedLeague: CompetitionCode | '';
@@ -25,6 +28,14 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
   onLeagueSelect,
   compact = false 
 }) => {
+  const { user } = useAuth();
+  const { isFavorite, toggleFavorite } = useFavorites();
+
+  const handleFavoriteClick = (e: React.MouseEvent, code: string, name: string) => {
+    e.stopPropagation();
+    toggleFavorite('league', code, name);
+  };
+
   if (compact) {
     return (
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -100,6 +111,35 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
                 {league.country}
               </p>
             </div>
+
+            {/* Favorite button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={(e) => handleFavoriteClick(e, league.code, league.name)}
+                  className={cn(
+                    "absolute top-2 right-2 p-1.5 rounded-full transition-all",
+                    "hover:bg-background/50",
+                    isFavorite('league', league.code) 
+                      ? "text-red-500" 
+                      : "text-muted-foreground opacity-0 group-hover:opacity-100"
+                  )}
+                >
+                  <Heart 
+                    className={cn(
+                      "w-4 h-4 transition-all",
+                      isFavorite('league', league.code) && "fill-current"
+                    )} 
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {user 
+                  ? (isFavorite('league', league.code) ? 'Favorilerden Kaldır' : 'Favorilere Ekle')
+                  : 'Favorilere eklemek için giriş yapın'
+                }
+              </TooltipContent>
+            </Tooltip>
 
             {/* Hover arrow */}
             <ChevronRight className={cn(
