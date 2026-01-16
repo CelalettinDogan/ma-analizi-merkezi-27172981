@@ -76,8 +76,8 @@ const MomentumIndicator: React.FC<{ value: number; team: string }> = ({ value, t
 };
 
 const MatchContextCard: React.FC<MatchContextCardProps> = ({ context, homeTeam, awayTeam }) => {
-  const importance = importanceConfig[context.matchImportance];
-  const phase = seasonPhaseConfig[context.seasonPhase];
+  const importance = importanceConfig[context?.matchImportance] ?? importanceConfig.medium;
+  const phase = seasonPhaseConfig[context?.seasonPhase] ?? seasonPhaseConfig.mid;
 
   return (
     <div className="glass-card p-4 space-y-4">
