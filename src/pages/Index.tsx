@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import HeroSection from '@/components/HeroSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
 import BetSlipButton from '@/components/betslip/BetSlipButton';
-import UserMenu from '@/components/UserMenu';
-import ThemeToggle from '@/components/ThemeToggle';
+import AppHeader from '@/components/layout/AppHeader';
 import LeagueGrid from '@/components/league/LeagueGrid';
 import MatchCarousel from '@/components/match/MatchCarousel';
 import BottomNav from '@/components/navigation/BottomNav';
 import CommandPalette from '@/components/navigation/CommandPalette';
 import Onboarding from '@/components/Onboarding';
+import TodaysMatches from '@/components/TodaysMatches';
 import { MatchCardSkeleton } from '@/components/ui/skeletons';
 import {
   MatchHeroCard,
@@ -24,7 +24,7 @@ import { MatchInput } from '@/types/match';
 import { Match as ApiMatch, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
 import { useOnboarding } from '@/hooks/useOnboarding';
-import { Loader2, BarChart3, Calendar, Search, RefreshCw, Trophy } from 'lucide-react';
+import { Loader2, Calendar, Search, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -108,71 +108,43 @@ const Index: React.FC = () => {
     setSelectedLeague(code as CompetitionCode);
   };
 
+  const searchButton = (
+    <Button 
+      variant="outline" 
+      size="sm" 
+      className="hidden md:flex gap-2 text-muted-foreground"
+      onClick={() => setCommandOpen(true)}
+      aria-label="Takım veya lig ara"
+    >
+      <Search className="w-4 h-4" />
+      <span>Ara...</span>
+      <kbd className="ml-2 px-1.5 py-0.5 text-[10px] bg-muted rounded">⌘K</kbd>
+    </Button>
+  );
+
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-8">
       {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50">
-        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center shadow-lg shadow-primary/20">
-              <span className="text-primary-foreground font-bold text-sm">FT</span>
-            </div>
-            <span className="font-display font-bold text-lg text-foreground hidden sm:block">FutbolTahmin</span>
-          </div>
-          
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/">Anasayfa</Link>
-            </Button>
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/live" className="gap-1">
-                <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                Canlı
-              </Link>
-            </Button>
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/standings" className="gap-1">
-                <Trophy className="w-4 h-4" />
-                Sıralama
-              </Link>
-            </Button>
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/dashboard" className="gap-1">
-                <BarChart3 className="w-4 h-4" />
-                Dashboard
-              </Link>
-            </Button>
-          </nav>
-
-          <div className="flex items-center gap-2">
-            {/* Search Button */}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="hidden md:flex gap-2 text-muted-foreground"
-              onClick={() => setCommandOpen(true)}
-              aria-label="Takım veya lig ara"
-            >
-              <Search className="w-4 h-4" />
-              <span>Ara...</span>
-              <kbd className="ml-2 px-1.5 py-0.5 text-[10px] bg-muted rounded">⌘K</kbd>
-            </Button>
-            <ThemeToggle />
-            <UserMenu />
-          </div>
-        </div>
-      </header>
+      <AppHeader rightContent={searchButton} />
 
       {/* Hero Section - Compact */}
       <HeroSection />
 
       {/* Main Content - Bento Grid Layout */}
       <main className="container mx-auto px-4 py-6 space-y-8">
+        {/* Today's Matches - Always visible */}
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <TodaysMatches onMatchSelect={handleMatchSelect} />
+        </motion.section>
+
         {/* League Selection */}
         <motion.section 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
         >
           <h2 className="font-display font-bold text-lg mb-4">Lig Seçin</h2>
           <LeagueGrid 
@@ -186,7 +158,7 @@ const Index: React.FC = () => {
           <motion.section 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: 0.2 }}
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">

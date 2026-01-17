@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radio, RefreshCw, Loader2, WifiOff, ArrowLeft, Zap } from 'lucide-react';
+import { Radio, RefreshCw, Loader2, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import AppHeader from '@/components/layout/AppHeader';
 import LiveMatchCard2 from '@/components/live/LiveMatchCard2';
 import LeagueGrid from '@/components/league/LeagueGrid';
 import BottomNav from '@/components/navigation/BottomNav';
@@ -96,48 +97,28 @@ const LivePage: React.FC = () => {
     });
   };
 
+  const headerRightContent = (
+    <div className="flex items-center gap-2">
+      {lastUpdated && (
+        <span className="text-xs text-muted-foreground hidden sm:block">
+          {formatLastUpdated()}
+        </span>
+      )}
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => fetchLiveMatches(true)}
+        disabled={isRefreshing}
+      >
+        <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+      </Button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-8">
       {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-background/80 border-b border-border/50">
-        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link to="/">
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-            </Link>
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Radio className="w-5 h-5 text-red-500" />
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full animate-ping" />
-              </div>
-              <span className="font-display font-bold">Canlı Maçlar</span>
-            </div>
-            {liveMatches.length > 0 && (
-              <Badge variant="secondary" className="hidden sm:flex">
-                {liveMatches.length} maç
-              </Badge>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {lastUpdated && (
-              <span className="text-xs text-muted-foreground hidden sm:block">
-                {formatLastUpdated()}
-              </span>
-            )}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => fetchLiveMatches(true)}
-              disabled={isRefreshing}
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </Button>
-          </div>
-        </div>
-      </header>
+      <AppHeader rightContent={headerRightContent} />
 
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* League Filter */}

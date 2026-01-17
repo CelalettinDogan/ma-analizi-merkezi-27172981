@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { Target, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { Target, Clock, CheckCircle2, TrendingUp } from "lucide-react";
 import { OverallStats } from "@/types/prediction";
 
 interface QuickStatsGridProps {
@@ -9,10 +9,14 @@ interface QuickStatsGridProps {
 }
 
 export const QuickStatsGrid = ({ stats, isLoading }: QuickStatsGridProps) => {
+  const totalPredictions = stats?.total_predictions ?? 0;
+  const successRate = stats?.accuracy_percentage ?? 0;
+  const isLowData = totalPredictions < 20;
+
   const items = [
     {
       label: "Toplam",
-      value: stats?.total_predictions ?? 0,
+      value: totalPredictions,
       icon: Target,
       color: "text-primary",
       bgColor: "bg-primary/10",
@@ -25,18 +29,19 @@ export const QuickStatsGrid = ({ stats, isLoading }: QuickStatsGridProps) => {
       bgColor: "bg-secondary/10",
     },
     {
-      label: "Doğru",
+      label: "Başarılı",
       value: stats?.correct_predictions ?? 0,
       icon: CheckCircle2,
-      color: "text-primary",
-      bgColor: "bg-primary/10",
+      color: "text-emerald-500",
+      bgColor: "bg-emerald-500/10",
     },
     {
-      label: "Yanlış",
-      value: stats?.incorrect_predictions ?? 0,
-      icon: XCircle,
-      color: "text-destructive",
-      bgColor: "bg-destructive/10",
+      label: "Başarı Oranı",
+      value: isLowData ? "—" : `%${successRate}`,
+      subtext: isLowData ? "Veri toplanıyor" : undefined,
+      icon: TrendingUp,
+      color: successRate >= 50 ? "text-emerald-500" : "text-amber-500",
+      bgColor: successRate >= 50 ? "bg-emerald-500/10" : "bg-amber-500/10",
     },
   ];
 
@@ -75,6 +80,9 @@ export const QuickStatsGrid = ({ stats, isLoading }: QuickStatsGridProps) => {
               <div>
                 <p className="text-2xl font-bold text-foreground">{item.value}</p>
                 <p className="text-xs text-muted-foreground">{item.label}</p>
+                {item.subtext && (
+                  <p className="text-[10px] text-muted-foreground/70">{item.subtext}</p>
+                )}
               </div>
             </div>
           </Card>
