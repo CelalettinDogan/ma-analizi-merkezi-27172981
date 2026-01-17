@@ -79,7 +79,7 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className={cn(
-                      "flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all min-w-[80px]",
+                      "flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all",
                       "border",
                       isSelected
                         ? "bg-primary text-primary-foreground border-primary shadow-md"
@@ -87,7 +87,7 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
                     )}
                   >
                     <span className="text-lg">{league.flag}</span>
-                    <span className="text-sm font-medium">{league.code}</span>
+                    <span className="text-sm font-medium">{league.name}</span>
                     {hasLive && (
                       <Badge 
                         variant="destructive" 

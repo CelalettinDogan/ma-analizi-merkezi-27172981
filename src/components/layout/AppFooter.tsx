@@ -1,66 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Target, BarChart3, Twitter, Github, Mail } from 'lucide-react';
+import { Twitter, Github, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-interface FooterStats {
-  totalAnalysis: number;
-  accuracy: number;
-  premiumAccuracy: number;
-}
-
-interface AppFooterProps {
-  stats?: FooterStats;
-}
-
-const AppFooter: React.FC<AppFooterProps> = ({ stats }) => {
-  // Use passed stats or defaults
-  const displayStats = stats || { totalAnalysis: 0, accuracy: 0, premiumAccuracy: 0 };
-
+const AppFooter: React.FC = () => {
   return (
     <footer className="hidden md:block py-12 border-t border-border/50 bg-gradient-to-t from-background to-transparent">
       <div className="container mx-auto px-4">
-        {/* Stats Bar */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex items-center justify-center gap-8 mb-10 pb-10 border-b border-border/30"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <div className="text-xl font-bold text-foreground">{displayStats.totalAnalysis.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground">Toplam Analiz</div>
-            </div>
-          </div>
-
-          <div className="w-px h-8 bg-border/50" />
-
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <Target className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <div className="text-xl font-bold gradient-text">%{displayStats.accuracy}</div>
-              <div className="text-xs text-muted-foreground">Genel Doğruluk</div>
-            </div>
-          </div>
-
-          <div className="w-px h-8 bg-border/50" />
-
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-secondary/10 border border-secondary/20 flex items-center justify-center">
-              <Trophy className="w-5 h-5 text-secondary" />
-            </div>
-            <div>
-              <div className="text-xl font-bold gradient-text-gold">%{displayStats.premiumAccuracy}</div>
-              <div className="text-xs text-muted-foreground">Premium Doğruluk</div>
-            </div>
-          </div>
-        </motion.div>
 
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
