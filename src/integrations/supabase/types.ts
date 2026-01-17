@@ -700,6 +700,7 @@ export type Database = {
           id: string
           is_correct: boolean | null
           is_premium: boolean | null
+          is_primary: boolean | null
           league: string
           match_date: string
           prediction_type: string
@@ -720,6 +721,7 @@ export type Database = {
           id?: string
           is_correct?: boolean | null
           is_premium?: boolean | null
+          is_primary?: boolean | null
           league: string
           match_date: string
           prediction_type: string
@@ -740,6 +742,7 @@ export type Database = {
           id?: string
           is_correct?: boolean | null
           is_premium?: boolean | null
+          is_primary?: boolean | null
           league?: string
           match_date?: string
           prediction_type?: string

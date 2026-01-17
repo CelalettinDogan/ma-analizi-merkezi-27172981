@@ -21,32 +21,84 @@ export async function savePredictions(
   predictions: Prediction[],
   userId?: string
 ): Promise<void> {
-  const records = predictions.map(p => {
-    const hybridConfidence = calculateHybridConfidence(p);
-    const isPremium = hybridConfidence >= PREMIUM_CONFIDENCE_THRESHOLD;
-    
-    return {
-      league,
-      home_team: homeTeam,
-      away_team: awayTeam,
-      match_date: matchDate,
-      prediction_type: p.type,
-      prediction_value: p.prediction,
-      confidence: p.confidence,
-      reasoning: p.reasoning,
-      user_id: userId || null,
-      hybrid_confidence: hybridConfidence,
-      is_premium: isPremium,
-    };
+  // Find the prediction with the highest hybrid confidence
+  const bestPrediction = predictions.reduce((best, current) => {
+    const currentHybrid = calculateHybridConfidence(current);
+    const bestHybrid = calculateHybridConfidence(best);
+    return currentHybrid > bestHybrid ? current : best;
   });
 
-  const { error } = await supabase
-    .from('predictions')
-    .insert(records);
+  const hybridConfidence = calculateHybridConfidence(bestPrediction);
+  const isPremium = hybridConfidence >= PREMIUM_CONFIDENCE_THRESHOLD;
 
-  if (error) {
-    console.error('Error saving predictions:', error);
-    throw error;
+  // Check if a primary prediction already exists for this match + user (UPSERT logic)
+  const { data: existing } = await supabase
+    .from('predictions')
+    .select('id')
+    .eq('home_team', homeTeam)
+    .eq('away_team', awayTeam)
+    .eq('match_date', matchDate)
+    .eq('is_primary', true)
+    .then(result => {
+      // Filter by user_id (handle null case)
+      if (userId) {
+        return supabase
+          .from('predictions')
+          .select('id')
+          .eq('home_team', homeTeam)
+          .eq('away_team', awayTeam)
+          .eq('match_date', matchDate)
+          .eq('user_id', userId)
+          .eq('is_primary', true)
+          .maybeSingle();
+      }
+      return supabase
+        .from('predictions')
+        .select('id')
+        .eq('home_team', homeTeam)
+        .eq('away_team', awayTeam)
+        .eq('match_date', matchDate)
+        .is('user_id', null)
+        .eq('is_primary', true)
+        .maybeSingle();
+    });
+
+  const record = {
+    league,
+    home_team: homeTeam,
+    away_team: awayTeam,
+    match_date: matchDate,
+    prediction_type: bestPrediction.type,
+    prediction_value: bestPrediction.prediction,
+    confidence: bestPrediction.confidence,
+    reasoning: bestPrediction.reasoning,
+    user_id: userId || null,
+    hybrid_confidence: hybridConfidence,
+    is_premium: isPremium,
+    is_primary: true,
+  };
+
+  if (existing?.id) {
+    // Update existing primary prediction
+    const { error } = await supabase
+      .from('predictions')
+      .update(record)
+      .eq('id', existing.id);
+
+    if (error) {
+      console.error('Error updating prediction:', error);
+      throw error;
+    }
+  } else {
+    // Insert new primary prediction
+    const { error } = await supabase
+      .from('predictions')
+      .insert(record);
+
+    if (error) {
+      console.error('Error saving prediction:', error);
+      throw error;
+    }
   }
 }
 
@@ -54,6 +106,7 @@ export async function getRecentPredictions(limit: number = 20): Promise<Predicti
   const { data, error } = await supabase
     .from('predictions')
     .select('*')
+    .eq('is_primary', true) // Only get primary predictions
     .order('created_at', { ascending: false })
     .limit(limit);
 
@@ -232,6 +285,7 @@ export async function getPendingPredictions(): Promise<PredictionRecord[]> {
     .from('predictions')
     .select('*')
     .is('is_correct', null)
+    .eq('is_primary', true) // Only get primary predictions
     .lt('match_date', today)
     .order('match_date', { ascending: false });
 
@@ -421,6 +475,7 @@ export async function getUserRecentPredictions(userId: string, limit: number = 2
     .from('predictions')
     .select('*')
     .eq('user_id', userId)
+    .eq('is_primary', true) // Only get primary predictions
     .order('created_at', { ascending: false })
     .limit(limit);
 
