@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, ChevronRight, Flame, Loader2 } from 'lucide-react';
+import { Calendar, ChevronRight, Star, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Match, CompetitionCode } from '@/types/footballApi';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { staggerContainer, staggerItem } from '@/lib/animations';
 import { cn } from '@/lib/utils';
 
 interface TodaysMatchesProps {
@@ -16,21 +15,19 @@ interface TodaysMatchesProps {
   onMatchSelect: (match: Match) => void;
 }
 
-const LEAGUE_COLORS: Record<CompetitionCode, string> = {
-  PL: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  BL1: 'bg-red-500/20 text-red-400 border-red-500/30',
-  PD: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  SA: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  FL1: 'bg-sky-500/20 text-sky-400 border-sky-500/30',
-  CL: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
-};
+// Big teams for featured match selection
+const BIG_TEAMS = [
+  'Arsenal', 'Liverpool', 'Manchester City', 'Manchester United', 'Chelsea', 'Tottenham',
+  'Barcelona', 'Real Madrid', 'Atletico Madrid',
+  'Bayern', 'Dortmund',
+  'Juventus', 'Inter', 'Milan', 'Napoli',
+  'PSG', 'Monaco'
+];
 
-const HOT_TEAMS = ['Arsenal', 'Liverpool', 'Barcelona', 'Real Madrid', 'Bayern', 'PSG', 'Manchester City', 'Manchester United'];
-
-const isHotMatch = (match: Match): boolean => {
+const isBigMatch = (match: Match): boolean => {
   const home = match.homeTeam.name.toLowerCase();
   const away = match.awayTeam.name.toLowerCase();
-  return HOT_TEAMS.some(team => 
+  return BIG_TEAMS.some(team => 
     home.includes(team.toLowerCase()) || away.includes(team.toLowerCase())
   );
 };
@@ -38,26 +35,22 @@ const isHotMatch = (match: Match): boolean => {
 const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = false, onMatchSelect }) => {
   const [showAll, setShowAll] = useState(false);
 
-  // Group matches by hour
-  const groupedMatches = matches.reduce((groups, match) => {
-    const hour = format(new Date(match.utcDate), 'HH:00');
-    if (!groups[hour]) {
-      groups[hour] = [];
-    }
-    groups[hour].push(match);
-    return groups;
-  }, {} as Record<string, Match[]>);
+  // Find featured match (first big match or first match)
+  const { featuredMatch, otherMatches } = useMemo(() => {
+    const bigMatch = matches.find(isBigMatch);
+    const featured = bigMatch || matches[0];
+    const others = matches.filter(m => m.id !== featured?.id);
+    return { featuredMatch: featured, otherMatches: others };
+  }, [matches]);
 
-  const timeSlots = Object.keys(groupedMatches).sort();
-  const displayedTimeSlots = showAll ? timeSlots : timeSlots.slice(0, 3);
-  const todayFormatted = format(new Date(), 'd MMMM yyyy, EEEE', { locale: tr });
+  const displayedMatches = showAll ? otherMatches : otherMatches.slice(0, 5);
 
   if (isLoading) {
     return (
-      <Card className="p-6 glass-card">
+      <Card className="p-6">
         <div className="flex items-center justify-center gap-3 py-12">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          <span className="text-muted-foreground">Bugünün maçları yükleniyor...</span>
+          <span className="text-muted-foreground">Maçlar yükleniyor...</span>
         </div>
       </Card>
     );
@@ -65,150 +58,171 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
 
   if (matches.length === 0) {
     return (
-      <Card className="p-6 glass-card">
+      <Card className="p-6">
         <div className="flex items-center gap-2 mb-4">
           <Calendar className="w-5 h-5 text-primary" />
-          <h2 className="font-display font-bold text-lg">Bugünün Maçları</h2>
+          <h2 className="font-semibold">Bugünün Maçları</h2>
         </div>
         <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted/50 flex items-center justify-center">
-            <Calendar className="w-8 h-8 text-muted-foreground" />
-          </div>
-          <p className="text-muted-foreground mb-2">Bugün planlanmış maç bulunmuyor</p>
-          <p className="text-sm text-muted-foreground">Yaklaşan maçlar için bir lig seçin</p>
+          <Calendar className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+          <p className="text-muted-foreground">Bugün planlanmış maç yok</p>
+          <p className="text-sm text-muted-foreground mt-1">Yaklaşan maçlar için bir lig seçin</p>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="p-4 md:p-6 glass-card overflow-hidden">
+    <Card className="p-4 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-            <Calendar className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h2 className="font-display font-bold text-lg">Bugünün Maçları</h2>
-            <p className="text-xs text-muted-foreground">{todayFormatted}</p>
-          </div>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-primary" />
+          <h2 className="font-semibold">Bugünün Maçları</h2>
         </div>
-        <Badge className="bg-primary/10 text-primary border-primary/20">
-          {matches.length} maç
-        </Badge>
+        <Badge variant="secondary">{matches.length} maç</Badge>
       </div>
 
-      {/* Timeline View */}
-      <motion.div
-        variants={staggerContainer}
-        initial="initial"
-        animate="animate"
-        className="space-y-6"
-      >
-        {displayedTimeSlots.map((timeSlot) => (
-          <motion.div key={timeSlot} variants={staggerItem} className="relative">
-            {/* Time Header */}
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-border/50">
-                <Clock className="w-3.5 h-3.5 text-primary" />
-                <span className="text-sm font-semibold text-foreground">{timeSlot}</span>
+      {/* Featured Match - Large Card */}
+      {featuredMatch && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          onClick={() => onMatchSelect(featuredMatch)}
+          className={cn(
+            "relative p-4 rounded-xl cursor-pointer mb-4 transition-all group",
+            "bg-primary/5 border-2 border-primary/20 hover:border-primary/40"
+          )}
+        >
+          {/* Featured Label */}
+          <div className="absolute top-2 left-2">
+            <Badge className="bg-secondary text-secondary-foreground text-[10px]">
+              <Star className="w-3 h-3 mr-1 fill-current" />
+              Önerilen
+            </Badge>
+          </div>
+
+          {/* Match Content */}
+          <div className="flex items-center justify-between mt-6">
+            {/* Home Team */}
+            <div className="flex items-center gap-3 flex-1">
+              {featuredMatch.homeTeam.crest ? (
+                <img 
+                  src={featuredMatch.homeTeam.crest} 
+                  alt="" 
+                  className="w-10 h-10 object-contain"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-lg font-bold">
+                  {featuredMatch.homeTeam.shortName?.[0] || featuredMatch.homeTeam.name[0]}
+                </div>
+              )}
+              <span className="font-semibold truncate">
+                {featuredMatch.homeTeam.shortName || featuredMatch.homeTeam.name}
+              </span>
+            </div>
+
+            {/* Time */}
+            <div className="px-4 text-center">
+              <div className="text-lg font-bold text-primary">
+                {format(new Date(featuredMatch.utcDate), 'HH:mm')}
               </div>
-              <div className="flex-1 h-px bg-border/50" />
+              <div className="text-xs text-muted-foreground">
+                {featuredMatch.competition.code}
+              </div>
             </div>
 
-            {/* Matches in this time slot */}
-            <div className="space-y-2 pl-2">
-              {groupedMatches[timeSlot].map((match) => {
-                const matchTime = format(new Date(match.utcDate), 'HH:mm');
-                const leagueCode = match.competition.code as CompetitionCode;
-                const leagueColor = LEAGUE_COLORS[leagueCode] || 'bg-muted text-muted-foreground';
-                const isHot = isHotMatch(match);
-
-                return (
-                  <motion.div
-                    key={match.id}
-                    whileHover={{ scale: 1.01, x: 4 }}
-                    whileTap={{ scale: 0.99 }}
-                    onClick={() => onMatchSelect(match)}
-                    className={cn(
-                      "relative flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all group",
-                      "bg-background/50 hover:bg-primary/5 border border-border/30 hover:border-primary/30",
-                      isHot && "border-secondary/30 bg-secondary/5"
-                    )}
-                  >
-                    {/* Hot Match Indicator */}
-                    {isHot && (
-                      <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full bg-gradient-to-b from-secondary to-orange-500" />
-                    )}
-
-                    {/* League Badge */}
-                    <Badge 
-                      variant="outline" 
-                      className={cn("text-[10px] px-1.5 py-0.5 shrink-0", leagueColor)}
-                    >
-                      {match.competition.code}
-                    </Badge>
-
-                    {/* Teams */}
-                    <div className="flex-1 min-w-0 flex items-center gap-2">
-                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                        {match.homeTeam.crest && (
-                          <img src={match.homeTeam.crest} alt="" className="w-5 h-5 object-contain shrink-0" />
-                        )}
-                        <span className="font-medium truncate text-sm">
-                          {match.homeTeam.shortName || match.homeTeam.name}
-                        </span>
-                      </div>
-                      <span className="text-muted-foreground text-xs px-2 py-0.5 rounded bg-muted/30">vs</span>
-                      <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
-                        <span className="font-medium truncate text-sm text-right">
-                          {match.awayTeam.shortName || match.awayTeam.name}
-                        </span>
-                        {match.awayTeam.crest && (
-                          <img src={match.awayTeam.crest} alt="" className="w-5 h-5 object-contain shrink-0" />
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Tags */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      {isHot && (
-                        <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/30 text-[10px] px-1.5 py-0 gap-1">
-                          <Flame className="w-3 h-3" />
-                          Sıcak
-                        </Badge>
-                      )}
-                      
-                      {/* Time */}
-                      <span className="text-xs font-medium text-muted-foreground">{matchTime}</span>
-
-                      {/* Arrow */}
-                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ChevronRight className="w-4 h-4 text-primary" />
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+            {/* Away Team */}
+            <div className="flex items-center gap-3 flex-1 justify-end">
+              <span className="font-semibold truncate text-right">
+                {featuredMatch.awayTeam.shortName || featuredMatch.awayTeam.name}
+              </span>
+              {featuredMatch.awayTeam.crest ? (
+                <img 
+                  src={featuredMatch.awayTeam.crest} 
+                  alt="" 
+                  className="w-10 h-10 object-contain"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-lg font-bold">
+                  {featuredMatch.awayTeam.shortName?.[0] || featuredMatch.awayTeam.name[0]}
+                </div>
+              )}
             </div>
-          </motion.div>
-        ))}
-      </motion.div>
+          </div>
+
+          {/* CTA */}
+          <div className="flex justify-center mt-4">
+            <Button size="sm" className="gap-2">
+              Analiz Et
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Other Matches - Compact List */}
+      <div className="space-y-1">
+        {displayedMatches.map((match) => {
+          const matchTime = format(new Date(match.utcDate), 'HH:mm');
+
+          return (
+            <motion.div
+              key={match.id}
+              whileHover={{ x: 4 }}
+              onClick={() => onMatchSelect(match)}
+              className={cn(
+                "flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all",
+                "hover:bg-muted/50"
+              )}
+            >
+              {/* Time */}
+              <span className="text-sm font-medium text-muted-foreground w-12 shrink-0">
+                {matchTime}
+              </span>
+
+              {/* Teams */}
+              <div className="flex-1 min-w-0 flex items-center gap-2">
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                  {match.homeTeam.crest && (
+                    <img src={match.homeTeam.crest} alt="" className="w-4 h-4 object-contain shrink-0" />
+                  )}
+                  <span className="text-sm truncate">
+                    {match.homeTeam.shortName || match.homeTeam.name}
+                  </span>
+                </div>
+                <span className="text-muted-foreground text-xs">vs</span>
+                <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
+                  <span className="text-sm truncate text-right">
+                    {match.awayTeam.shortName || match.awayTeam.name}
+                  </span>
+                  {match.awayTeam.crest && (
+                    <img src={match.awayTeam.crest} alt="" className="w-4 h-4 object-contain shrink-0" />
+                  )}
+                </div>
+              </div>
+
+              {/* League */}
+              <span className="text-xs text-muted-foreground shrink-0">
+                {match.competition.code}
+              </span>
+
+              {/* Arrow */}
+              <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
+            </motion.div>
+          );
+        })}
+      </div>
 
       {/* Show More Button */}
-      {timeSlots.length > 3 && !showAll && (
+      {otherMatches.length > 5 && !showAll && (
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setShowAll(true)}
-          className="w-full mt-6 text-primary hover:text-primary gap-2"
+          className="w-full mt-3 text-primary"
         >
-          <span>Tümünü Gör</span>
-          <Badge variant="secondary" className="text-xs">
-            +{timeSlots.length - 3} saat dilimi
-          </Badge>
-          <ChevronRight className="w-4 h-4" />
+          Tümünü Gör (+{otherMatches.length - 5} maç)
         </Button>
       )}
     </Card>

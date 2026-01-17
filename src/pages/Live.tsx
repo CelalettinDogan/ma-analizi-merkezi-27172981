@@ -127,7 +127,6 @@ const LivePage: React.FC = () => {
           <LeagueGrid 
             selectedLeague={selectedLeague} 
             onLeagueSelect={(code) => setSelectedLeague(code === selectedLeague ? '' : code)}
-            compact
           />
         </motion.div>
 
