@@ -24,7 +24,7 @@ export interface Team {
 export interface Match {
   id: number;
   utcDate: string;
-  status: 'SCHEDULED' | 'LIVE' | 'IN_PLAY' | 'PAUSED' | 'FINISHED' | 'POSTPONED' | 'CANCELLED';
+  status: 'SCHEDULED' | 'TIMED' | 'LIVE' | 'IN_PLAY' | 'PAUSED' | 'FINISHED' | 'POSTPONED' | 'CANCELLED';
   matchday: number;
   homeTeam: Team;
   awayTeam: Team;
