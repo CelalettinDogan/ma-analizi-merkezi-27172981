@@ -21,13 +21,14 @@ import {
   QuickStatsRow,
   H2HTimeline,
   CollapsibleAnalysis,
+  AnalysisLoadingState,
 } from '@/components/analysis';
 import { MatchInput } from '@/types/match';
 import { Match as ApiMatch, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { useHomeData } from '@/hooks/useHomeData';
-import { Loader2, Calendar, Search, RefreshCw } from 'lucide-react';
+import { Calendar, Search, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { footballApiRequest } from '@/services/apiRequestManager';
@@ -110,18 +111,30 @@ const Index: React.FC = () => {
     }, 300);
   };
 
-  // Track which match is currently loading analysis
+  // Track which match is currently loading analysis with its info
   const [loadingMatchId, setLoadingMatchId] = useState<number | null>(null);
+  const [analyzingMatchInfo, setAnalyzingMatchInfo] = useState<{
+    homeTeam: string;
+    awayTeam: string;
+    homeTeamCrest?: string;
+    awayTeamCrest?: string;
+  } | null>(null);
+  const analysisLoadingRef = useRef<HTMLDivElement>(null);
 
   const handleMatchSelect = async (match: ApiMatch) => {
     // Set loading state immediately for instant feedback
     setLoadingMatchId(match.id);
-    
-    // Show toast for instant feedback
-    toast.loading(`${match.homeTeam.shortName || match.homeTeam.name} vs ${match.awayTeam.shortName || match.awayTeam.name} analiz ediliyor...`, {
-      id: 'match-analysis',
-      duration: 10000,
+    setAnalyzingMatchInfo({
+      homeTeam: match.homeTeam.shortName || match.homeTeam.name,
+      awayTeam: match.awayTeam.shortName || match.awayTeam.name,
+      homeTeamCrest: match.homeTeam.crest,
+      awayTeamCrest: match.awayTeam.crest,
     });
+    
+    // Scroll to the loading state section
+    setTimeout(() => {
+      analysisLoadingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
     
     const leagueCode = SUPPORTED_COMPETITIONS.find(
       c => c.code === match.competition.code
@@ -136,15 +149,16 @@ const Index: React.FC = () => {
     
     try {
       await analyzeMatch(matchInput);
-      toast.success('Analiz tamamlandı!', { id: 'match-analysis' });
       
+      // Scroll to analysis section after completion
       setTimeout(() => {
         document.getElementById('analysis-section')?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
     } catch (error) {
-      toast.error('Analiz yüklenirken hata oluştu', { id: 'match-analysis' });
+      toast.error('Analiz yüklenirken hata oluştu');
     } finally {
       setLoadingMatchId(null);
+      setAnalyzingMatchInfo(null);
     }
   };
 
@@ -245,19 +259,25 @@ const Index: React.FC = () => {
           </motion.section>
         )}
 
-        {/* Loading State */}
-        {analysisLoading && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-16"
-          >
-            <div className="relative">
-              <Loader2 className="w-12 h-12 animate-spin text-primary" />
-            </div>
-            <p className="text-muted-foreground mt-4">AI analiz yapılıyor...</p>
-          </motion.div>
-        )}
+        {/* In-Page Loading State */}
+        <AnimatePresence>
+          {analysisLoading && analyzingMatchInfo && (
+            <motion.div
+              ref={analysisLoadingRef}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              id="analysis-loading-section"
+            >
+              <AnalysisLoadingState
+                homeTeam={analyzingMatchInfo.homeTeam}
+                awayTeam={analyzingMatchInfo.awayTeam}
+                homeTeamCrest={analyzingMatchInfo.homeTeamCrest}
+                awayTeamCrest={analyzingMatchInfo.awayTeamCrest}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Analysis Section */}
         <AnimatePresence>
