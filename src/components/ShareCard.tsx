@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Share2, Twitter, MessageCircle, Copy, Download, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -29,6 +29,16 @@ const ShareCard: React.FC<ShareCardProps> = ({
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const copiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (copiedTimeoutRef.current) {
+        clearTimeout(copiedTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const getConfidenceColor = (conf: string) => {
     const c = conf.toLowerCase();
@@ -46,7 +56,12 @@ const ShareCard: React.FC<ShareCardProps> = ({
       await navigator.clipboard.writeText(shareText + '\n' + shareUrl);
       setCopied(true);
       toast({ title: 'Kopyalandı!', description: 'Tahmin metni panoya kopyalandı.' });
-      setTimeout(() => setCopied(false), 2000);
+      
+      // Clear previous timeout if exists
+      if (copiedTimeoutRef.current) {
+        clearTimeout(copiedTimeoutRef.current);
+      }
+      copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       toast({ title: 'Hata', description: 'Kopyalama başarısız oldu.', variant: 'destructive' });
     }

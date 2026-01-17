@@ -55,9 +55,53 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
 
   // Fetch all teams once when palette opens
   useEffect(() => {
-    if (open && !teamsLoaded) {
-      fetchAllTeams();
-    }
+    let isMounted = true;
+    
+    const fetchTeams = async () => {
+      if (!open || teamsLoaded) return;
+      
+      setIsSearching(true);
+      const teams: TeamResult[] = [];
+      
+      // Fetch teams from first 3 leagues to avoid rate limits
+      for (const league of SUPPORTED_COMPETITIONS.slice(0, 3)) {
+        if (!isMounted) break; // Early exit if unmounted
+        
+        try {
+          const data = await footballApiRequest<{ teams?: any[] }>({
+            action: 'teams',
+            competitionCode: league.code,
+          });
+
+          if (data?.teams && isMounted) {
+            data.teams.forEach((team: any) => {
+              teams.push({
+                id: team.id,
+                name: team.name,
+                shortName: team.shortName || team.name,
+                crest: team.crest,
+                leagueCode: league.code,
+                leagueName: league.name,
+              });
+            });
+          }
+        } catch (e) {
+          console.error(`Error fetching teams for ${league.code}:`, e);
+        }
+      }
+
+      if (isMounted) {
+        setAllTeams(teams);
+        setTeamsLoaded(true);
+        setIsSearching(false);
+      }
+    };
+    
+    fetchTeams();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [open, teamsLoaded]);
 
   // Reset search when dialog closes
@@ -66,40 +110,6 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
       setSearchQuery('');
     }
   }, [open]);
-
-  const fetchAllTeams = async () => {
-    setIsSearching(true);
-    const teams: TeamResult[] = [];
-    
-    // Fetch teams from first 3 leagues to avoid rate limits
-    for (const league of SUPPORTED_COMPETITIONS.slice(0, 3)) {
-      try {
-        const data = await footballApiRequest<{ teams?: any[] }>({
-          action: 'teams',
-          competitionCode: league.code,
-        });
-
-        if (data?.teams) {
-          data.teams.forEach((team: any) => {
-            teams.push({
-              id: team.id,
-              name: team.name,
-              shortName: team.shortName || team.name,
-              crest: team.crest,
-              leagueCode: league.code,
-              leagueName: league.name,
-            });
-          });
-        }
-      } catch (e) {
-        console.error(`Error fetching teams for ${league.code}:`, e);
-      }
-    }
-
-    setAllTeams(teams);
-    setTeamsLoaded(true);
-    setIsSearching(false);
-  };
 
   // Filter teams based on search query
   useEffect(() => {

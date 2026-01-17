@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -44,9 +44,14 @@ const StandingsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [commandOpen, setCommandOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  
+  // Refs for cleanup
+  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
 
   // Fetch standings from database (no rate limit!)
   const fetchStandings = useCallback(async (triggerSync = false) => {
+    if (!isMountedRef.current) return;
     setError(null);
 
     try {
@@ -57,6 +62,7 @@ const StandingsPage: React.FC = () => {
         .order('position', { ascending: true });
 
       if (error) throw error;
+      if (!isMountedRef.current) return;
 
       if (data && data.length > 0) {
         setStandings(data as CachedStanding[]);
@@ -70,20 +76,28 @@ const StandingsPage: React.FC = () => {
         
         // Trigger sync silently (no toast)
         supabase.functions.invoke('sync-standings').then(({ data: syncData, error: syncError }) => {
+          if (!isMountedRef.current) return;
           if (syncError) {
             console.error('Background sync error:', syncError);
           } else {
             console.log('Background sync completed:', syncData);
-            // Refetch after sync
-            setTimeout(() => fetchStandings(false), 2000);
+            // Refetch after sync with cleanup
+            if (syncTimeoutRef.current) {
+              clearTimeout(syncTimeoutRef.current);
+            }
+            syncTimeoutRef.current = setTimeout(() => fetchStandings(false), 2000);
           }
         });
       }
     } catch (e) {
       console.error('Error fetching standings:', e);
-      setError('Puan durumu yüklenirken hata oluştu');
+      if (isMountedRef.current) {
+        setError('Puan durumu yüklenirken hata oluştu');
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [selectedLeague]);
 
@@ -92,10 +106,15 @@ const StandingsPage: React.FC = () => {
     fetchStandings(true); // Allow sync on first load
   }, [fetchStandings]);
 
-  // Cleanup any lingering toasts when component unmounts
+  // Cleanup when component unmounts
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
+      isMountedRef.current = false;
       toast.dismiss('sync-standings');
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
     };
   }, []);
 

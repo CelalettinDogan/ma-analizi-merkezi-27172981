@@ -83,9 +83,14 @@ const LivePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [commandOpen, setCommandOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  
+  // Ref for cleanup
+  const isMountedRef = React.useRef(true);
 
   // Fetch from database cache
   const fetchFromCache = useCallback(async () => {
+    if (!isMountedRef.current) return;
+    
     try {
       let query = supabase
         .from('cached_live_matches')
@@ -103,6 +108,7 @@ const LivePage: React.FC = () => {
       const { data, error: fetchError } = await query;
 
       if (fetchError) throw fetchError;
+      if (!isMountedRef.current) return;
 
       const matches = (data || []).map(transformCachedLiveMatch);
       setLiveMatches(matches);
@@ -121,15 +127,20 @@ const LivePage: React.FC = () => {
       setError(null);
     } catch (e) {
       console.error('Error fetching from cache:', e);
-      setError('Canlı maçlar yüklenirken hata oluştu');
+      if (isMountedRef.current) {
+        setError('Canlı maçlar yüklenirken hata oluştu');
+      }
     } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
     }
   }, [selectedLeague]);
 
   // Trigger sync edge function
   const syncLiveMatches = useCallback(async () => {
+    if (!isMountedRef.current) return;
     setIsSyncing(true);
     try {
       const { error: syncError } = await supabase.functions.invoke('sync-live-matches');
@@ -137,31 +148,48 @@ const LivePage: React.FC = () => {
       
       // Refetch from cache after sync
       await fetchFromCache();
-      toast.success('Canlı maçlar güncellendi');
+      if (isMountedRef.current) {
+        toast.success('Canlı maçlar güncellendi');
+      }
     } catch (e) {
       console.error('Sync error:', e);
-      toast.error('Senkronizasyon hatası');
+      if (isMountedRef.current) {
+        toast.error('Senkronizasyon hatası');
+      }
     } finally {
-      setIsSyncing(false);
+      if (isMountedRef.current) {
+        setIsSyncing(false);
+      }
     }
   }, [fetchFromCache]);
 
-  // Initial load
+  // Initial load and cleanup
   useEffect(() => {
+    isMountedRef.current = true;
+    
     const init = async () => {
+      if (!isMountedRef.current) return;
       setIsLoading(true);
       // First fetch from cache
       await fetchFromCache();
       // Then trigger sync in background
-      syncLiveMatches();
+      if (isMountedRef.current) {
+        syncLiveMatches();
+      }
     };
     init();
+    
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [selectedLeague]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-refresh from cache
   useEffect(() => {
     const interval = setInterval(() => {
-      fetchFromCache();
+      if (isMountedRef.current) {
+        fetchFromCache();
+      }
     }, REFRESH_INTERVAL);
     return () => clearInterval(interval);
   }, [fetchFromCache]);

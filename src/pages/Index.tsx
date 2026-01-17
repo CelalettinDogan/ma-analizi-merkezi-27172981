@@ -104,8 +104,13 @@ const Index: React.FC = () => {
       duration: 2000,
     });
 
+    // Clear previous timeout if exists
+    if (leagueScrollTimeoutRef.current) {
+      clearTimeout(leagueScrollTimeoutRef.current);
+    }
+    
     // Scroll to upcoming matches section after a short delay
-    setTimeout(() => {
+    leagueScrollTimeoutRef.current = setTimeout(() => {
       upcomingMatchesRef.current?.scrollIntoView({ 
         behavior: 'smooth',
         block: 'start'
@@ -122,6 +127,20 @@ const Index: React.FC = () => {
     awayTeamCrest?: string;
   } | null>(null);
   const analysisLoadingRef = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const leagueScrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      if (leagueScrollTimeoutRef.current) {
+        clearTimeout(leagueScrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Scroll to AI recommendation after analysis completes
   useEffect(() => {
