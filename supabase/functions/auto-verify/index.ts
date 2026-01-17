@@ -29,6 +29,8 @@ interface PredictionRecord {
   prediction_type: string;
   prediction_value: string;
   is_correct: boolean | null;
+  is_premium?: boolean;
+  hybrid_confidence?: number;
 }
 
 // League to competition code mapping
@@ -311,7 +313,10 @@ serve(async (req) => {
               continue;
             }
 
-            // Update ML model stats
+            // Update ML model stats (only for premium predictions)
+            // First check if this prediction is premium (high confidence)
+            const isPremium = prediction.is_premium === true;
+            
             const { error: mlError } = await supabase.rpc('increment_ml_stats', {
               p_prediction_type: prediction.prediction_type,
               p_is_correct: isCorrect,
@@ -329,6 +334,11 @@ serve(async (req) => {
                 const newTotal = (existing.total_predictions || 0) + 1;
                 const newCorrect = (existing.correct_predictions || 0) + (isCorrect ? 1 : 0);
                 const newAccuracy = (newCorrect / newTotal) * 100;
+                
+                // Update premium stats only if this is a premium prediction
+                const premiumTotal = isPremium ? (existing.premium_total || 0) + 1 : (existing.premium_total || 0);
+                const premiumCorrect = isPremium ? (existing.premium_correct || 0) + (isCorrect ? 1 : 0) : (existing.premium_correct || 0);
+                const premiumAccuracy = premiumTotal > 0 ? (premiumCorrect / premiumTotal) * 100 : 0;
 
                 await supabase
                   .from('ml_model_stats')
@@ -336,6 +346,9 @@ serve(async (req) => {
                     total_predictions: newTotal,
                     correct_predictions: newCorrect,
                     accuracy_percentage: newAccuracy,
+                    premium_total: premiumTotal,
+                    premium_correct: premiumCorrect,
+                    premium_accuracy: premiumAccuracy,
                     last_updated: new Date().toISOString(),
                   })
                   .eq('prediction_type', prediction.prediction_type);
@@ -347,6 +360,9 @@ serve(async (req) => {
                     total_predictions: 1,
                     correct_predictions: isCorrect ? 1 : 0,
                     accuracy_percentage: isCorrect ? 100 : 0,
+                    premium_total: isPremium ? 1 : 0,
+                    premium_correct: isPremium && isCorrect ? 1 : 0,
+                    premium_accuracy: isPremium ? (isCorrect ? 100 : 0) : 0,
                     last_updated: new Date().toISOString(),
                   });
               }

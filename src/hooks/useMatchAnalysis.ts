@@ -79,10 +79,11 @@ export function useMatchAnalysis() {
 
       const competitionCode = competition.code as CompetitionCode;
 
-      // Paralel olarak verileri çek
-      const [standings, finishedMatches] = await Promise.all([
+      // Paralel olarak verileri çek - Extended range for H2H (365 days)
+      const [standings, recentMatches, h2hMatches] = await Promise.all([
         getStandings(competitionCode),
-        getFinishedMatches(competitionCode, 60), // Son 60 günün maçları
+        getFinishedMatches(competitionCode, 60), // Son 60 günün maçları for form
+        getFinishedMatches(competitionCode, 365), // Son 1 yılın maçları for H2H
       ]);
 
       // Takımları bul
@@ -113,18 +114,18 @@ export function useMatchAnalysis() {
         return mockAnalysis;
       }
 
-      // H2H maçlarını filtrele
-      const h2hMatches = finishedMatches.filter(match => {
+      // H2H maçlarını filtrele - using extended range data
+      const h2hFilteredMatches = h2hMatches.filter(match => {
         const teams = [match.homeTeam.id, match.awayTeam.id];
         return teams.includes(homeStanding.team.id) && teams.includes(awayStanding.team.id);
       });
 
-      // Son maçları filtrele
-      const homeRecentMatches = finishedMatches
+      // Son maçları filtrele - using recent data
+      const homeRecentMatches = recentMatches
         .filter(m => m.homeTeam.id === homeStanding.team.id || m.awayTeam.id === homeStanding.team.id)
         .slice(0, 5);
 
-      const awayRecentMatches = finishedMatches
+      const awayRecentMatches = recentMatches
         .filter(m => m.homeTeam.id === awayStanding.team.id || m.awayTeam.id === awayStanding.team.id)
         .slice(0, 5);
 
@@ -138,7 +139,7 @@ export function useMatchAnalysis() {
           standing: awayStanding,
           recentMatches: awayRecentMatches,
         },
-        h2hMatches,
+        h2hMatches: h2hFilteredMatches,
         league: data.league,
         matchDate: data.matchDate,
       });

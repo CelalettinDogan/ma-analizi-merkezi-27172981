@@ -57,7 +57,12 @@ const H2HTimeline: React.FC<H2HTimelineProps> = ({ h2h, homeTeam, awayTeam }) =>
         <div className="flex flex-col items-center justify-center py-6 text-center">
           <Swords className="w-8 h-8 text-muted-foreground/50 mb-2" />
           <p className="text-sm text-muted-foreground">Geçmiş karşılaşma bulunamadı</p>
-          <p className="text-xs text-muted-foreground/70 mt-1">Bu takımlar daha önce karşılaşmamış olabilir</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">
+            Bu takımlar son 1 yılda karşılaşmamış veya farklı liglerde oynuyorlar
+          </p>
+          <p className="text-[10px] text-muted-foreground/50 mt-2">
+            H2H verileri sadece aynı lig içindeki maçları kapsar
+          </p>
         </div>
       </motion.div>
     );
