@@ -151,9 +151,12 @@ const Index: React.FC = () => {
     try {
       await analyzeMatch(matchInput);
       
-      // Scroll to analysis section after completion
+      // Scroll to AI recommendation section (top of analysis) after completion
       setTimeout(() => {
-        document.getElementById('analysis-section')?.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('analysis-section')?.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
       }, 100);
     } catch (error) {
       toast.error('Analiz yüklenirken hata oluştu');
@@ -166,7 +169,10 @@ const Index: React.FC = () => {
   const handleFormSubmit = async (data: MatchInput) => {
     await analyzeMatch(data);
     setTimeout(() => {
-      document.getElementById('analysis-section')?.scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('analysis-section')?.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
     }, 100);
   };
 
@@ -288,18 +294,11 @@ const Index: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
+              className="space-y-6 pb-32"
+              style={{ scrollMarginTop: '80px' }}
             >
-              {/* Match Hero Card */}
-              <MatchHeroCard 
-                match={analysis.input} 
-                insights={analysis.insights}
-                homeTeamCrest={analysis.input.homeTeamCrest}
-                awayTeamCrest={analysis.input.awayTeamCrest}
-              />
-
-              {/* AI Recommendation + Prediction Pills */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* AI Recommendation - First for scroll target */}
+              <div id="ai-recommendation-section" className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <AIRecommendationCard 
                   predictions={analysis.predictions} 
                   matchInput={analysis.input} 
@@ -313,6 +312,14 @@ const Index: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Match Hero Card */}
+              <MatchHeroCard 
+                match={analysis.input} 
+                insights={analysis.insights}
+                homeTeamCrest={analysis.input.homeTeamCrest}
+                awayTeamCrest={analysis.input.awayTeamCrest}
+              />
 
               {/* Team Comparison Card - Merged Stats + Power */}
               <TeamComparisonCard
@@ -334,8 +341,10 @@ const Index: React.FC = () => {
               {/* Advanced Analysis Tabs */}
               <AdvancedAnalysisTabs analysis={analysis} />
 
-              {/* Legal Disclaimer - Collapsible */}
-              <LegalDisclaimer />
+              {/* Legal Disclaimer - Collapsible with extra bottom padding */}
+              <div className="pb-4">
+                <LegalDisclaimer />
+              </div>
             </motion.section>
           )}
         </AnimatePresence>

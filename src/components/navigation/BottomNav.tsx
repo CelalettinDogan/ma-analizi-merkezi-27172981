@@ -36,11 +36,14 @@ const BottomNav: React.FC<BottomNavProps> = ({ onSearchClick }) => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
       {/* Gradient fade effect */}
-      <div className="absolute inset-x-0 -top-6 h-6 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+      <div className="absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
       
       {/* Navigation bar */}
-      <div className="bg-card/95 backdrop-blur-xl border-t border-border/50 px-2 pb-safe">
-        <div className="flex items-center justify-around py-2">
+      <div className="bg-card/98 backdrop-blur-xl border-t border-border/60 shadow-lg shadow-black/10">
+        <div 
+          className="flex items-center justify-evenly py-1.5"
+          style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}
+        >
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
@@ -52,28 +55,30 @@ const BottomNav: React.FC<BottomNavProps> = ({ onSearchClick }) => {
                 onClick={(e) => handleClick(item, e)}
                 aria-label={item.label}
                 aria-current={isActive ? 'page' : undefined}
-                className="relative flex flex-col items-center gap-0.5 px-4 py-3 min-w-[64px] min-h-[44px] touch-manipulation"
+                className="relative flex flex-col items-center gap-0.5 py-2 px-3 min-w-[56px] min-h-[48px] touch-manipulation rounded-xl transition-colors"
               >
-                <div className="relative">
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute -inset-2 bg-primary/20 rounded-xl"
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    />
-                  )}
+                {/* Active background */}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute inset-0 bg-primary/15 rounded-xl"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                
+                <div className="relative z-10">
                   <Icon 
                     className={cn(
-                      "w-5 h-5 relative z-10 transition-colors",
+                      "w-5 h-5 transition-colors",
                       isActive ? "text-primary" : "text-muted-foreground"
                     )} 
                   />
                   {item.path === '/live' && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-destructive rounded-full animate-pulse" />
                   )}
                 </div>
                 <span className={cn(
-                  "text-[10px] font-medium transition-colors",
+                  "text-[11px] font-medium transition-colors relative z-10",
                   isActive ? "text-primary" : "text-muted-foreground"
                 )}>
                   {item.label}

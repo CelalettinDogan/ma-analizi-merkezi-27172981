@@ -138,7 +138,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Header */}
       <AppHeader rightContent={headerRightContent} />
 
@@ -150,14 +150,23 @@ const Dashboard = () => {
           animate="visible"
           className="space-y-6"
         >
-          {/* Welcome Message */}
-          {user && (
+          {/* Welcome Message or Guest Info */}
+          {user ? (
             <motion.p 
               variants={itemVariants}
               className="text-sm text-muted-foreground"
             >
               Hoş geldin, <span className="text-foreground font-medium">{user.email?.split("@")[0]}</span>
             </motion.p>
+          ) : (
+            <motion.div 
+              variants={itemVariants}
+              className="p-4 rounded-xl bg-primary/5 border border-primary/20"
+            >
+              <p className="text-sm text-muted-foreground">
+                <span className="text-primary font-medium">Giriş yaparak</span> kişisel tahmin istatistiklerinizi takip edin, kuponlarınızı kaydedin ve AI öğrenme sürecine katkıda bulunun.
+              </p>
+            </motion.div>
           )}
 
           {/* Bento Grid Layout */}
