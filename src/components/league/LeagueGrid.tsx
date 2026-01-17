@@ -1,23 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, ChevronRight, Heart, Zap, Calendar } from 'lucide-react';
+import { Trophy, ChevronRight, Heart, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
+import { SUPPORTED_COMPETITIONS, CompetitionCode, Match } from '@/types/footballApi';
 import { staggerContainer, staggerItem } from '@/lib/animations';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
 
 interface LeagueGridProps {
   selectedLeague: CompetitionCode | '';
   onLeagueSelect: (code: CompetitionCode) => void;
   compact?: boolean;
-}
-
-interface LeagueMatchCount {
-  [key: string]: { live: number; upcoming: number };
+  liveMatches?: Match[];
 }
 
 const leagueColors: Record<string, string> = {
@@ -41,42 +37,20 @@ const leagueGlowColors: Record<string, string> = {
 const LeagueGrid: React.FC<LeagueGridProps> = ({ 
   selectedLeague, 
   onLeagueSelect,
-  compact = false 
+  compact = false,
+  liveMatches = []
 }) => {
   const { user } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const [matchCounts, setMatchCounts] = useState<LeagueMatchCount>({});
 
-  // Fetch match counts for each league
-  useEffect(() => {
-    const fetchMatchCounts = async () => {
-      try {
-        const { data: liveData } = await supabase.functions.invoke('football-api', {
-          body: { action: 'live' },
-        });
-
-        const counts: LeagueMatchCount = {};
-        SUPPORTED_COMPETITIONS.forEach(league => {
-          counts[league.code] = { live: 0, upcoming: 0 };
-        });
-
-        if (liveData?.matches) {
-          liveData.matches.forEach((match: any) => {
-            const code = match.competition?.code;
-            if (code && counts[code]) {
-              counts[code].live++;
-            }
-          });
-        }
-
-        setMatchCounts(counts);
-      } catch (e) {
-        console.error('Error fetching match counts:', e);
-      }
-    };
-
-    fetchMatchCounts();
-  }, []);
+  // Calculate live match counts from passed data
+  const matchCounts: Record<string, number> = {};
+  liveMatches.forEach(match => {
+    const code = match.competition?.code;
+    if (code) {
+      matchCounts[code] = (matchCounts[code] || 0) + 1;
+    }
+  });
 
   const handleFavoriteClick = (e: React.MouseEvent, code: string, name: string) => {
     e.stopPropagation();
@@ -85,8 +59,8 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
 
   // Find the featured league (most live matches or first one)
   const featuredLeague = SUPPORTED_COMPETITIONS.reduce((prev, curr) => {
-    const prevCount = matchCounts[prev.code]?.live || 0;
-    const currCount = matchCounts[curr.code]?.live || 0;
+    const prevCount = matchCounts[prev.code] || 0;
+    const currCount = matchCounts[curr.code] || 0;
     return currCount > prevCount ? curr : prev;
   }, SUPPORTED_COMPETITIONS[0]);
 
@@ -111,9 +85,9 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
           >
             <span className="text-lg">{league.flag}</span>
             <span className="text-sm font-medium">{league.name}</span>
-            {matchCounts[league.code]?.live > 0 && (
+            {matchCounts[league.code] > 0 && (
               <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4">
-                {matchCounts[league.code].live} CANLI
+                {matchCounts[league.code]} CANLI
               </Badge>
             )}
           </motion.button>
@@ -176,13 +150,13 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
           
           {/* Match counts */}
           <div className="flex items-center gap-3 mt-4 pt-4 border-t border-border/30">
-            {matchCounts[featuredLeague.code]?.live > 0 && (
+            {matchCounts[featuredLeague.code] > 0 && (
               <div className="flex items-center gap-1.5 text-red-400">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
                 </span>
-                <span className="text-xs font-medium">{matchCounts[featuredLeague.code].live} Canlı</span>
+                <span className="text-xs font-medium">{matchCounts[featuredLeague.code]} Canlı</span>
               </div>
             )}
           </div>
@@ -223,7 +197,7 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
         {otherLeagues.map((league) => {
           const isSelected = selectedLeague === league.code;
           const colorClass = leagueColors[league.code] || 'from-primary/20 to-primary/10 border-primary/30';
-          const hasLiveMatches = matchCounts[league.code]?.live > 0;
+          const hasLiveMatches = matchCounts[league.code] > 0;
           
           return (
             <motion.button
@@ -255,7 +229,7 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
                   variant="destructive" 
                   className="absolute top-2 right-2 text-[10px] px-1.5 py-0 h-4 animate-pulse"
                 >
-                  {matchCounts[league.code].live} CANLI
+                  {matchCounts[league.code]} CANLI
                 </Badge>
               )}
 
