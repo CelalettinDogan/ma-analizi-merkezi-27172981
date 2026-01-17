@@ -71,32 +71,26 @@ export const useHomeData = (): HomeData => {
         console.warn('Live matches fetch failed:', e);
       }
 
-      // Fetch today's matches from each league (global endpoint doesn't work with date filter on free tier)
-      // Queue system handles rate limiting automatically
-      const matchPromises = SUPPORTED_COMPETITIONS.map(league => 
-        footballApiRequest<MatchesResponse>({
+      // Fetch today's upcoming matches in ONE request (rate-limit friendly)
+      // Note: Football-Data frequently uses TIMED for not-started matches; include both.
+      let scheduledMatches: Match[] = [];
+
+      try {
+        const response = await footballApiRequest<MatchesResponse>({
           action: 'matches',
-          competitionCode: league.code,
           dateFrom: today,
           dateTo: today,
-        }).catch(e => {
-          console.warn(`Matches fetch failed for ${league.code}:`, e);
-          return { matches: [] } as MatchesResponse;
-        })
-      );
+          status: 'SCHEDULED,TIMED',
+        });
 
-      const results = await Promise.all(matchPromises);
-      const allMatches: Match[] = [];
-      results.forEach(result => {
-        if (result?.matches) {
-          allMatches.push(...result.matches);
-        }
-      });
-
-      // Filter only upcoming matches (TIMED or SCHEDULED - not started yet)
-      const scheduledMatches = allMatches
-        .filter(m => m.status === 'TIMED' || m.status === 'SCHEDULED')
-        .sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
+        const allowedCodes = new Set<string>(SUPPORTED_COMPETITIONS.map(c => c.code));
+        scheduledMatches = (response?.matches || [])
+          .filter(m => allowedCodes.has(m.competition?.code))
+          .filter(m => m.status === 'TIMED' || m.status === 'SCHEDULED')
+          .sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
+      } catch (e) {
+        console.warn('Today matches fetch failed:', e);
+      }
 
       setStats({
         todayPredictions: todayCountResult.count || 0,

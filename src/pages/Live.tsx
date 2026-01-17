@@ -10,7 +10,7 @@ import LeagueGrid from '@/components/league/LeagueGrid';
 import BottomNav from '@/components/navigation/BottomNav';
 import CommandPalette from '@/components/navigation/CommandPalette';
 import { Match, CompetitionCode, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
-import { supabase } from '@/integrations/supabase/client';
+import { footballApiRequest } from '@/services/apiRequestManager';
 import { staggerContainer, staggerItem, fadeInUp } from '@/lib/animations';
 
 const REFRESH_INTERVAL = 30000;
@@ -30,40 +30,21 @@ const LivePage: React.FC = () => {
     setError(null);
 
     try {
-      // Fetch only selected league or first 2 leagues to avoid rate limits
+      // Which leagues to show (keep existing behavior)
       const competitions = selectedLeague 
         ? [selectedLeague]
         : SUPPORTED_COMPETITIONS.slice(0, 2).map(c => c.code);
 
-      const allMatches: Match[] = [];
+      const allowed = new Set(competitions);
 
-      // Sequential requests with delay to avoid rate limiting
-      for (const code of competitions) {
-        try {
-          const { data, error: apiError } = await supabase.functions.invoke('football-api', {
-            body: { action: 'matches', competitionCode: code, status: 'LIVE' },
-          });
-          
-          if (apiError) {
-            // Handle rate limit gracefully
-            if (apiError.message?.includes('429') || apiError.message?.includes('rate')) {
-              console.warn('Rate limited, using cached data if available');
-              continue;
-            }
-          }
-          
-          if (data?.matches) allMatches.push(...data.matches);
-          
-          // Add small delay between requests to avoid rate limiting
-          if (competitions.length > 1) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-        } catch (e) {
-          console.error(`Error fetching live matches for ${code}:`, e);
-        }
-      }
+      const response = await footballApiRequest<{ matches: Match[] }>({
+        action: 'live',
+      });
 
-      allMatches.sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
+      const allMatches = (response?.matches || [])
+        .filter(m => allowed.has(m.competition?.code as CompetitionCode))
+        .sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
+
       setLiveMatches(allMatches);
       setLastUpdated(new Date());
     } catch (e) {

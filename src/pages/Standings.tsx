@@ -10,7 +10,7 @@ import LeagueGrid from '@/components/league/LeagueGrid';
 import BottomNav from '@/components/navigation/BottomNav';
 import CommandPalette from '@/components/navigation/CommandPalette';
 import { CompetitionCode } from '@/types/footballApi';
-import { supabase } from '@/integrations/supabase/client';
+import { footballApiRequest } from '@/services/apiRequestManager';
 import { fadeInUp } from '@/lib/animations';
 import { cn } from '@/lib/utils';
 
@@ -61,11 +61,11 @@ const StandingsPage: React.FC = () => {
     setError(null);
 
     try {
-      const { data, error: apiError } = await supabase.functions.invoke('football-api', {
-        body: { action: 'standings', competitionCode: selectedLeague },
+      const data = await footballApiRequest<StandingsData>({
+        action: 'standings',
+        competitionCode: selectedLeague,
       });
 
-      if (apiError) throw new Error(apiError.message);
       setStandingsData(data);
     } catch (e) {
       console.error('Error fetching standings:', e);

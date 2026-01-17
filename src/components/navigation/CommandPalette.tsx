@@ -4,7 +4,7 @@ import { Search, Home, BarChart3, Zap, User, Trophy, Clock, X, Loader2, Shield }
 import { Command as CommandPrimitive } from 'cmdk';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
-import { supabase } from '@/integrations/supabase/client';
+import { footballApiRequest } from '@/services/apiRequestManager';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -74,11 +74,12 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
     // Fetch teams from first 3 leagues to avoid rate limits
     for (const league of SUPPORTED_COMPETITIONS.slice(0, 3)) {
       try {
-        const { data, error } = await supabase.functions.invoke('football-api', {
-          body: { action: 'teams', competitionCode: league.code },
+        const data = await footballApiRequest<{ teams?: any[] }>({
+          action: 'teams',
+          competitionCode: league.code,
         });
-        
-        if (!error && data?.teams) {
+
+        if (data?.teams) {
           data.teams.forEach((team: any) => {
             teams.push({
               id: team.id,
@@ -90,9 +91,6 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
             });
           });
         }
-        
-        // Small delay to avoid rate limits
-        await new Promise(resolve => setTimeout(resolve, 300));
       } catch (e) {
         console.error(`Error fetching teams for ${league.code}:`, e);
       }
