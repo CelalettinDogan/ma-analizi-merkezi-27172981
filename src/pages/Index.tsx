@@ -310,8 +310,8 @@ const Index: React.FC = () => {
         </AnimatePresence>
       </main>
 
-      {/* Footer - Props-based data, no separate API call */}
-      <AppFooter stats={footerStats} />
+      {/* Footer */}
+      <AppFooter />
 
       {/* Bet Slip Floating Button */}
       <BetSlipButton />
