@@ -234,6 +234,26 @@ const Profile: React.FC = () => {
             </Card>
           </motion.div>
 
+          {/* Premium CTA */}
+          <motion.div variants={itemVariants}>
+            <Card className="p-4 bg-gradient-to-r from-amber-500/10 via-primary/5 to-amber-500/10 border-amber-500/30">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-amber-500/20">
+                  <Trophy className="w-6 h-6 text-amber-500" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-foreground">Premium Üyelik</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Daha yüksek doğruluk oranına sahip premium tahminlere erişin
+                  </p>
+                </div>
+                <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">
+                  Keşfet
+                </Button>
+              </div>
+            </Card>
+          </motion.div>
+
           {/* Quick Links */}
           <motion.div variants={itemVariants}>
             <Card className="border-border/50">

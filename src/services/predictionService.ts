@@ -328,3 +328,176 @@ export async function getPremiumStats(): Promise<PremiumStats> {
     return { total: 0, correct: 0, accuracy: 0 };
   }
 }
+
+// ============ USER-SPECIFIC FUNCTIONS ============
+
+export async function getUserOverallStats(userId: string): Promise<OverallStats | null> {
+  try {
+    const { data, error } = await supabase
+      .from('predictions')
+      .select('is_correct')
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error fetching user stats:', error);
+      return null;
+    }
+
+    const total = data?.length || 0;
+    const correct = data?.filter(p => p.is_correct === true).length || 0;
+    const incorrect = data?.filter(p => p.is_correct === false).length || 0;
+    const pending = data?.filter(p => p.is_correct === null).length || 0;
+    const verified = total - pending;
+    const accuracy = verified > 0 ? (correct / verified) * 100 : 0;
+
+    // High confidence stats
+    const highConfData = await supabase
+      .from('predictions')
+      .select('is_correct')
+      .eq('user_id', userId)
+      .eq('is_premium', true);
+
+    const hcTotal = highConfData.data?.length || 0;
+    const hcCorrect = highConfData.data?.filter(p => p.is_correct === true).length || 0;
+
+    return {
+      total_predictions: total,
+      correct_predictions: correct,
+      incorrect_predictions: incorrect,
+      pending_predictions: pending,
+      accuracy_percentage: accuracy,
+      high_confidence_total: hcTotal,
+      high_confidence_correct: hcCorrect,
+    };
+  } catch (error) {
+    console.error('Error in getUserOverallStats:', error);
+    return null;
+  }
+}
+
+export async function getUserPredictionStats(userId: string): Promise<PredictionStats[]> {
+  try {
+    const { data, error } = await supabase
+      .from('predictions')
+      .select('prediction_type, is_correct')
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error fetching user prediction stats:', error);
+      return [];
+    }
+
+    // Group by prediction type
+    const grouped = data?.reduce((acc, p) => {
+      const type = p.prediction_type;
+      if (!acc[type]) {
+        acc[type] = { total: 0, correct: 0, incorrect: 0, pending: 0 };
+      }
+      acc[type].total++;
+      if (p.is_correct === true) acc[type].correct++;
+      else if (p.is_correct === false) acc[type].incorrect++;
+      else acc[type].pending++;
+      return acc;
+    }, {} as Record<string, { total: number; correct: number; incorrect: number; pending: number }>);
+
+    return Object.entries(grouped || {}).map(([type, stats]) => ({
+      prediction_type: type,
+      total_predictions: stats.total,
+      correct_predictions: stats.correct,
+      incorrect_predictions: stats.incorrect,
+      pending_predictions: stats.pending,
+      accuracy_percentage: stats.total - stats.pending > 0 
+        ? (stats.correct / (stats.total - stats.pending)) * 100 
+        : 0,
+    }));
+  } catch (error) {
+    console.error('Error in getUserPredictionStats:', error);
+    return [];
+  }
+}
+
+export async function getUserRecentPredictions(userId: string, limit: number = 20): Promise<PredictionRecord[]> {
+  const { data, error } = await supabase
+    .from('predictions')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching user predictions:', error);
+    return [];
+  }
+
+  return data as PredictionRecord[];
+}
+
+export async function getUserPremiumStats(userId: string): Promise<PremiumStats> {
+  try {
+    const { data, error } = await supabase
+      .from('predictions')
+      .select('is_correct')
+      .eq('user_id', userId)
+      .eq('is_premium', true)
+      .not('is_correct', 'is', null);
+
+    if (error) {
+      console.error('Error fetching user premium stats:', error);
+      return { total: 0, correct: 0, accuracy: 0 };
+    }
+
+    const total = data?.length || 0;
+    const correct = data?.filter(p => p.is_correct === true).length || 0;
+    const accuracy = total > 0 ? (correct / total) * 100 : 0;
+
+    return { total, correct, accuracy };
+  } catch (error) {
+    console.error('Error in getUserPremiumStats:', error);
+    return { total: 0, correct: 0, accuracy: 0 };
+  }
+}
+
+export async function getUserAccuracyTrend(userId: string, days: number = 7): Promise<TrendData> {
+  const now = new Date();
+  const currentPeriodStart = new Date(now);
+  currentPeriodStart.setDate(now.getDate() - days);
+  
+  const previousPeriodStart = new Date(currentPeriodStart);
+  previousPeriodStart.setDate(currentPeriodStart.getDate() - days);
+
+  const { data: allPredictions, error } = await supabase
+    .from('predictions')
+    .select('created_at, is_correct')
+    .eq('user_id', userId)
+    .not('is_correct', 'is', null)
+    .gte('created_at', previousPeriodStart.toISOString())
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching user trend data:', error);
+    return { currentAccuracy: 0, previousAccuracy: 0, trend: 0, currentTotal: 0, previousTotal: 0 };
+  }
+
+  const currentPeriodStartISO = currentPeriodStart.toISOString();
+  
+  const currentPeriod = allPredictions?.filter(p => p.created_at >= currentPeriodStartISO) || [];
+  const previousPeriod = allPredictions?.filter(p => p.created_at < currentPeriodStartISO) || [];
+
+  const calculateAccuracy = (predictions: { is_correct: boolean | null }[]) => {
+    if (predictions.length === 0) return 0;
+    const correct = predictions.filter(p => p.is_correct === true).length;
+    return (correct / predictions.length) * 100;
+  };
+
+  const currentAccuracy = calculateAccuracy(currentPeriod);
+  const previousAccuracy = calculateAccuracy(previousPeriod);
+  const trend = Math.round(currentAccuracy - previousAccuracy);
+
+  return {
+    currentAccuracy,
+    previousAccuracy,
+    trend,
+    currentTotal: currentPeriod.length,
+    previousTotal: previousPeriod.length,
+  };
+}

@@ -164,13 +164,36 @@ const SavedSlipsList: React.FC<SavedSlipsListProps> = ({ isLoading: externalLoad
                     {slip.items && slip.items.length > 0 && (
                       <div className="space-y-2">
                         {slip.items.slice(0, 3).map((item) => (
-                          <div key={item.id} className="flex items-center justify-between text-xs">
+                          <div key={item.id} className="flex items-center gap-2 text-xs">
+                            {/* Result indicator */}
+                            {item.is_correct === true && (
+                              <CheckCircle className="w-3.5 h-3.5 text-win flex-shrink-0" />
+                            )}
+                            {item.is_correct === false && (
+                              <XCircle className="w-3.5 h-3.5 text-loss flex-shrink-0" />
+                            )}
+                            {item.is_correct === null && (
+                              <Clock className="w-3.5 h-3.5 text-draw flex-shrink-0" />
+                            )}
+                            
+                            {/* Match info */}
                             <span className="text-muted-foreground truncate flex-1">
                               {item.home_team} vs {item.away_team}
                             </span>
-                            <span className="text-foreground mx-2">{item.prediction_value}</span>
-                            <span className={`font-medium ${confidenceColors[item.confidence]}`}>
-                              {confidenceLabels[item.confidence]}
+                            
+                            {/* Score if available */}
+                            {item.home_score !== null && item.away_score !== null && (
+                              <span className="text-foreground font-medium px-1.5 py-0.5 bg-muted/50 rounded">
+                                {item.home_score}-{item.away_score}
+                              </span>
+                            )}
+                            
+                            {/* Prediction */}
+                            <span className="text-foreground">{item.prediction_value}</span>
+                            
+                            {/* Confidence */}
+                            <span className={`font-medium ${confidenceColors[item.confidence as keyof typeof confidenceColors] || 'text-muted-foreground'}`}>
+                              {confidenceLabels[item.confidence as keyof typeof confidenceLabels] || item.confidence}
                             </span>
                           </div>
                         ))}

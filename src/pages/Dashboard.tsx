@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import AppHeader from "@/components/layout/AppHeader";
+import BottomNav from "@/components/navigation/BottomNav";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, TrendingUp, Target, Clock, CheckCircle2 } from "lucide-react";
+import { RefreshCw, TrendingUp, Target, Clock, CheckCircle2, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
@@ -20,7 +21,20 @@ import SavedSlipsList from "@/components/betslip/SavedSlipsList";
 import AutoVerifyButton from "@/components/dashboard/AutoVerifyButton";
 
 // Services
-import { getOverallStats, getPredictionStats, getRecentPredictions, getAccuracyTrend, getPremiumStats, TrendData, PremiumStats } from "@/services/predictionService";
+import { 
+  getOverallStats, 
+  getPredictionStats, 
+  getRecentPredictions, 
+  getAccuracyTrend, 
+  getPremiumStats, 
+  getUserOverallStats,
+  getUserPredictionStats,
+  getUserRecentPredictions,
+  getUserPremiumStats,
+  getUserAccuracyTrend,
+  TrendData, 
+  PremiumStats 
+} from "@/services/predictionService";
 import { getBetSlipStats } from "@/services/betSlipService";
 
 // Types
@@ -40,24 +54,38 @@ const Dashboard = () => {
 
   const loadData = async () => {
     try {
-      const [overall, byType, recent, trend, premium] = await Promise.all([
-        getOverallStats(),
-        getPredictionStats(),
-        getRecentPredictions(50),
-        getAccuracyTrend(7),
-        getPremiumStats()
-      ]);
-      
-      setOverallStats(overall);
-      setPredictionStats(byType);
-      setRecentPredictions(recent);
-      setTrendData(trend);
-      setPremiumStats(premium);
-
-      // Get slip count for logged in users
       if (user) {
-        const slipStats = await getBetSlipStats(user.id);
+        // User-specific data
+        const [overall, byType, recent, trend, premium, slipStats] = await Promise.all([
+          getUserOverallStats(user.id),
+          getUserPredictionStats(user.id),
+          getUserRecentPredictions(user.id, 50),
+          getUserAccuracyTrend(user.id, 7),
+          getUserPremiumStats(user.id),
+          getBetSlipStats(user.id)
+        ]);
+        
+        setOverallStats(overall);
+        setPredictionStats(byType);
+        setRecentPredictions(recent);
+        setTrendData(trend);
+        setPremiumStats(premium);
         setSlipCount(slipStats.total);
+      } else {
+        // Platform-wide data for guests
+        const [overall, byType, recent, trend, premium] = await Promise.all([
+          getOverallStats(),
+          getPredictionStats(),
+          getRecentPredictions(50),
+          getAccuracyTrend(7),
+          getPremiumStats()
+        ]);
+        
+        setOverallStats(overall);
+        setPredictionStats(byType);
+        setRecentPredictions(recent);
+        setTrendData(trend);
+        setPremiumStats(premium);
       }
     } catch (error) {
       console.error("Dashboard data loading error:", error);
@@ -67,6 +95,7 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    setIsLoading(true);
     loadData();
   }, [user]);
 
@@ -138,7 +167,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
+    <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <AppHeader rightContent={headerRightContent} />
 
@@ -152,12 +181,14 @@ const Dashboard = () => {
         >
           {/* Welcome Message or Guest Info */}
           {user ? (
-            <motion.p 
-              variants={itemVariants}
-              className="text-sm text-muted-foreground"
-            >
-              Hoş geldin, <span className="text-foreground font-medium">{user.email?.split("@")[0]}</span>
-            </motion.p>
+            <motion.div variants={itemVariants} className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Hoş geldin, <span className="text-foreground font-medium">{user.email?.split("@")[0]}</span>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Aşağıdaki istatistikler <span className="text-primary font-medium">kişisel tahminlerinize</span> aittir.
+              </p>
+            </motion.div>
           ) : (
             <motion.div 
               variants={itemVariants}
@@ -165,6 +196,9 @@ const Dashboard = () => {
             >
               <p className="text-sm text-muted-foreground">
                 <span className="text-primary font-medium">Giriş yaparak</span> kişisel tahmin istatistiklerinizi takip edin, kuponlarınızı kaydedin ve AI öğrenme sürecine katkıda bulunun.
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Şu an platform geneli istatistikleri görüntülüyorsunuz.
               </p>
             </motion.div>
           )}
@@ -206,6 +240,28 @@ const Dashboard = () => {
                 ))}
               </div>
             </motion.div>
+
+            {/* Premium CTA Card for non-premium users */}
+            {user && (
+              <motion.div variants={itemVariants} className="lg:col-span-12">
+                <Card className="p-4 bg-gradient-to-r from-amber-500/10 via-primary/5 to-amber-500/10 border-amber-500/30">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-xl bg-amber-500/20">
+                      <Crown className="w-6 h-6 text-amber-500" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-foreground">Premium'a Yükselt</h4>
+                      <p className="text-xs text-muted-foreground">
+                        Yüksek güvenli tahminlere öncelikli erişim, detaylı analiz raporları ve özel öneriler
+                      </p>
+                    </div>
+                    <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">
+                      Keşfet
+                    </Button>
+                  </div>
+                </Card>
+              </motion.div>
+            )}
 
             {/* Row 2: AI Learning Bar (full width) */}
             <motion.div variants={itemVariants} className="lg:col-span-12">
@@ -261,14 +317,17 @@ const Dashboard = () => {
         </motion.div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border/50 mt-12">
+      {/* Footer - hidden on mobile */}
+      <footer className="border-t border-border/50 mt-12 hidden md:block">
         <div className="container mx-auto px-4 py-6">
           <p className="text-center text-xs text-muted-foreground">
             © 2026 FutbolTahmin. Tüm hakları saklıdır.
           </p>
         </div>
       </footer>
+
+      {/* Bottom Navigation */}
+      <BottomNav />
     </div>
   );
 };
