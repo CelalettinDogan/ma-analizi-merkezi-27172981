@@ -71,26 +71,30 @@ export const useHomeData = (): HomeData => {
         console.warn('Live matches fetch failed:', e);
       }
 
-      // Fetch today's scheduled matches - ONLY ONE league to minimize API calls
-      // The centralized manager will handle caching and rate limiting
+      // Fetch today's scheduled matches from ALL leagues
+      // The centralized manager handles rate limiting (7s intervals) and caching (5min)
       const scheduledMatches: Match[] = [];
-      const primaryLeague = SUPPORTED_COMPETITIONS[0]; // Premier League
       
-      try {
-        const response = await footballApiRequest<MatchesResponse>({
+      // Queue all league requests in parallel - the manager will process them sequentially
+      const matchPromises = SUPPORTED_COMPETITIONS.map(league => 
+        footballApiRequest<MatchesResponse>({
           action: 'matches',
-          competitionCode: primaryLeague.code,
+          competitionCode: league.code,
           status: 'SCHEDULED',
           dateFrom: today,
           dateTo: today,
-        });
+        }).catch(e => {
+          console.warn(`Matches fetch failed for ${league.code}:`, e);
+          return { matches: [] } as MatchesResponse;
+        })
+      );
 
-        if (response?.matches) {
-          scheduledMatches.push(...response.matches);
+      const results = await Promise.all(matchPromises);
+      results.forEach(result => {
+        if (result?.matches) {
+          scheduledMatches.push(...result.matches);
         }
-      } catch (e) {
-        console.warn(`Matches fetch failed for ${primaryLeague.code}:`, e);
-      }
+      });
 
       // Sort by time
       scheduledMatches.sort((a, b) => 
