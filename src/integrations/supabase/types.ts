@@ -852,6 +852,9 @@ export type Database = {
       }
     }
     Functions: {
+      cleanup_old_bet_slips: { Args: never; Returns: undefined }
+      cleanup_old_features: { Args: never; Returns: undefined }
+      cleanup_old_predictions: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
