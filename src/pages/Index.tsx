@@ -30,7 +30,7 @@ import { useHomeData } from '@/hooks/useHomeData';
 import { Loader2, Calendar, Search, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { footballApiRequest } from '@/services/apiRequestManager';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -66,18 +66,21 @@ const Index: React.FC = () => {
     }
   }, [location.state]);
 
-  // Fetch upcoming matches when league changes
+  // Fetch upcoming matches when league changes (using centralized rate-limited manager)
   const fetchUpcomingMatches = useCallback(async (leagueCode: CompetitionCode) => {
     setIsLoadingMatches(true);
     try {
-      const { data, error } = await supabase.functions.invoke('football-api', {
-        body: { action: 'matches', competitionCode: leagueCode, status: 'SCHEDULED' },
+      const response = await footballApiRequest<{ matches: ApiMatch[] }>({
+        action: 'matches',
+        competitionCode: leagueCode,
+        status: 'SCHEDULED',
       });
-      if (!error && data?.matches) {
-        setUpcomingMatches(data.matches.slice(0, 10));
+      if (response?.matches) {
+        setUpcomingMatches(response.matches.slice(0, 10));
       }
     } catch (e) {
       console.error('Error fetching matches:', e);
+      toast.error('Maç verileri yüklenirken hata oluştu. Lütfen biraz bekleyip tekrar deneyin.');
     } finally {
       setIsLoadingMatches(false);
     }

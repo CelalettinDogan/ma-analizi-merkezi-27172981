@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Match, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
+import { Match, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
 import { supabase } from '@/integrations/supabase/client';
+import { footballApiRequest } from '@/services/apiRequestManager';
 
 interface HomeStats {
   liveCount: number;
@@ -18,7 +19,11 @@ interface HomeData {
   refetch: () => void;
 }
 
-// Centralized data fetching for homepage to avoid rate limiting
+interface MatchesResponse {
+  matches: Match[];
+}
+
+// Centralized data fetching for homepage with rate limit protection
 export const useHomeData = (): HomeData => {
   const [stats, setStats] = useState<HomeStats>({
     liveCount: 0,
@@ -38,7 +43,7 @@ export const useHomeData = (): HomeData => {
     try {
       const today = new Date().toISOString().split('T')[0];
 
-      // Fetch database stats in parallel (no rate limit)
+      // Fetch database stats in parallel (no rate limit - direct Supabase)
       const [todayCountResult, overallStatsResult, premiumStatsResult] = await Promise.all([
         supabase
           .from('predictions')
@@ -55,47 +60,36 @@ export const useHomeData = (): HomeData => {
           .maybeSingle(),
       ]);
 
-      // Fetch live matches (single API call)
+      // Fetch live matches via centralized API manager (handles rate limiting)
       let liveData: Match[] = [];
       try {
-        const { data, error: liveError } = await supabase.functions.invoke('football-api', {
-          body: { action: 'live' },
+        const response = await footballApiRequest<MatchesResponse>({
+          action: 'live',
         });
-        if (!liveError && data?.matches) {
-          liveData = data.matches;
-        }
+        liveData = response?.matches || [];
       } catch (e) {
         console.warn('Live matches fetch failed:', e);
       }
 
-      // Wait a bit before fetching scheduled matches to respect rate limits
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Fetch today's scheduled matches - only from first 2 leagues to minimize API calls
+      // Fetch today's scheduled matches - ONLY ONE league to minimize API calls
+      // The centralized manager will handle caching and rate limiting
       const scheduledMatches: Match[] = [];
-      const competitionsToFetch = SUPPORTED_COMPETITIONS.slice(0, 2);
+      const primaryLeague = SUPPORTED_COMPETITIONS[0]; // Premier League
       
-      for (const comp of competitionsToFetch) {
-        try {
-          const { data, error: matchError } = await supabase.functions.invoke('football-api', {
-            body: { 
-              action: 'matches', 
-              competitionCode: comp.code, 
-              status: 'SCHEDULED',
-              dateFrom: today,
-              dateTo: today
-            },
-          });
+      try {
+        const response = await footballApiRequest<MatchesResponse>({
+          action: 'matches',
+          competitionCode: primaryLeague.code,
+          status: 'SCHEDULED',
+          dateFrom: today,
+          dateTo: today,
+        });
 
-          if (!matchError && data?.matches) {
-            scheduledMatches.push(...data.matches);
-          }
-
-          // Delay between requests to avoid rate limiting
-          await new Promise(resolve => setTimeout(resolve, 1200));
-        } catch (e) {
-          console.warn(`Matches fetch failed for ${comp.code}:`, e);
+        if (response?.matches) {
+          scheduledMatches.push(...response.matches);
         }
+      } catch (e) {
+        console.warn(`Matches fetch failed for ${primaryLeague.code}:`, e);
       }
 
       // Sort by time
