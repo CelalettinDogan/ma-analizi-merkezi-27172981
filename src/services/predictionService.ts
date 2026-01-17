@@ -3,6 +3,16 @@ import { Prediction } from '@/types/match';
 import { PredictionRecord, PredictionStats, OverallStats } from '@/types/prediction';
 import { PREDICTION_TYPES } from '@/constants/predictions';
 
+// Confidence threshold for premium predictions (70%)
+const PREMIUM_CONFIDENCE_THRESHOLD = 0.70;
+
+// Calculate hybrid confidence from AI and Math confidence
+function calculateHybridConfidence(prediction: Prediction): number {
+  const ai = prediction.aiConfidence || 0;
+  const math = prediction.mathConfidence || 0;
+  return (ai + math) / 2;
+}
+
 export async function savePredictions(
   league: string,
   homeTeam: string,
@@ -11,17 +21,24 @@ export async function savePredictions(
   predictions: Prediction[],
   userId?: string
 ): Promise<void> {
-  const records = predictions.map(p => ({
-    league,
-    home_team: homeTeam,
-    away_team: awayTeam,
-    match_date: matchDate,
-    prediction_type: p.type,
-    prediction_value: p.prediction,
-    confidence: p.confidence,
-    reasoning: p.reasoning,
-    user_id: userId || null,
-  }));
+  const records = predictions.map(p => {
+    const hybridConfidence = calculateHybridConfidence(p);
+    const isPremium = hybridConfidence >= PREMIUM_CONFIDENCE_THRESHOLD;
+    
+    return {
+      league,
+      home_team: homeTeam,
+      away_team: awayTeam,
+      match_date: matchDate,
+      prediction_type: p.type,
+      prediction_value: p.prediction,
+      confidence: p.confidence,
+      reasoning: p.reasoning,
+      user_id: userId || null,
+      hybrid_confidence: hybridConfidence,
+      is_premium: isPremium,
+    };
+  });
 
   const { error } = await supabase
     .from('predictions')
@@ -279,4 +296,35 @@ export async function getAccuracyTrend(days: number = 7): Promise<TrendData> {
     currentTotal: currentPeriod.length,
     previousTotal: previousPeriod.length,
   };
+}
+
+// New: Get premium-only stats (high confidence predictions only)
+export interface PremiumStats {
+  total: number;
+  correct: number;
+  accuracy: number;
+}
+
+export async function getPremiumStats(): Promise<PremiumStats> {
+  try {
+    const { data, error } = await supabase
+      .from('predictions')
+      .select('is_correct')
+      .eq('is_premium', true)
+      .not('is_correct', 'is', null);
+
+    if (error) {
+      console.error('Error fetching premium stats:', error);
+      return { total: 0, correct: 0, accuracy: 0 };
+    }
+
+    const total = data?.length || 0;
+    const correct = data?.filter(p => p.is_correct === true).length || 0;
+    const accuracy = total > 0 ? (correct / total) * 100 : 0;
+
+    return { total, correct, accuracy };
+  } catch (error) {
+    console.error('Error in getPremiumStats:', error);
+    return { total: 0, correct: 0, accuracy: 0 };
+  }
 }

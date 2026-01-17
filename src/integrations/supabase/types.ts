@@ -338,6 +338,9 @@ export type Database = {
           id: string
           last_updated: string | null
           prediction_type: string
+          premium_accuracy: number | null
+          premium_correct: number | null
+          premium_total: number | null
           total_predictions: number | null
         }
         Insert: {
@@ -349,6 +352,9 @@ export type Database = {
           id?: string
           last_updated?: string | null
           prediction_type: string
+          premium_accuracy?: number | null
+          premium_correct?: number | null
+          premium_total?: number | null
           total_predictions?: number | null
         }
         Update: {
@@ -360,6 +366,9 @@ export type Database = {
           id?: string
           last_updated?: string | null
           prediction_type?: string
+          premium_accuracy?: number | null
+          premium_correct?: number | null
+          premium_total?: number | null
           total_predictions?: number | null
         }
         Relationships: []
@@ -489,8 +498,10 @@ export type Database = {
           created_at: string
           home_score: number | null
           home_team: string
+          hybrid_confidence: number | null
           id: string
           is_correct: boolean | null
+          is_premium: boolean | null
           league: string
           match_date: string
           prediction_type: string
@@ -507,8 +518,10 @@ export type Database = {
           created_at?: string
           home_score?: number | null
           home_team: string
+          hybrid_confidence?: number | null
           id?: string
           is_correct?: boolean | null
+          is_premium?: boolean | null
           league: string
           match_date: string
           prediction_type: string
@@ -525,8 +538,10 @@ export type Database = {
           created_at?: string
           home_score?: number | null
           home_team?: string
+          hybrid_confidence?: number | null
           id?: string
           is_correct?: boolean | null
+          is_premium?: boolean | null
           league?: string
           match_date?: string
           prediction_type?: string

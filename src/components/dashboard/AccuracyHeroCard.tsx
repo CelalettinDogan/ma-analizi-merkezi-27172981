@@ -1,21 +1,35 @@
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Star, Info } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface AccuracyHeroCardProps {
   accuracy: number;
+  premiumAccuracy?: number;
+  premiumTotal?: number;
   trend?: number; // positive = up, negative = down
   isLoading?: boolean;
 }
 
-export const AccuracyHeroCard = ({ accuracy, trend = 0, isLoading }: AccuracyHeroCardProps) => {
+export const AccuracyHeroCard = ({ 
+  accuracy, 
+  premiumAccuracy = 0, 
+  premiumTotal = 0,
+  trend = 0, 
+  isLoading 
+}: AccuracyHeroCardProps) => {
   // Check if we have any verified data
   const hasData = accuracy > 0 || trend !== 0;
+  const hasPremiumData = premiumTotal > 0;
+
+  // Use premium accuracy as the main display if available
+  const displayAccuracy = hasPremiumData ? premiumAccuracy : accuracy;
 
   const data = [
-    { name: "Doğru", value: accuracy },
-    { name: "Yanlış", value: 100 - accuracy },
+    { name: "Doğru", value: displayAccuracy },
+    { name: "Yanlış", value: 100 - displayAccuracy },
   ];
 
   const COLORS = ["hsl(var(--primary))", "hsl(var(--muted))"];
@@ -115,18 +129,47 @@ export const AccuracyHeroCard = ({ accuracy, trend = 0, isLoading }: AccuracyHer
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
               >
-                %{Math.round(accuracy)}
+                %{Math.round(displayAccuracy)}
               </motion.span>
-              <span className="text-xs text-muted-foreground mt-1">Doğruluk</span>
+              <span className="text-xs text-muted-foreground mt-1">
+                {hasPremiumData ? 'Premium' : 'Genel'}
+              </span>
             </div>
           </div>
 
+          {/* Premium Badge */}
+          {hasPremiumData && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="flex items-center justify-center"
+            >
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                <Star className="w-3 h-3 mr-1" />
+                {premiumTotal} Yüksek Güvenli Tahmin
+              </Badge>
+            </motion.div>
+          )}
+
+          {/* General accuracy (smaller) */}
+          {hasPremiumData && accuracy > 0 && (
+            <motion.p 
+              className="text-xs text-muted-foreground text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              Genel Doğruluk: %{Math.round(accuracy)}
+            </motion.p>
+          )}
+
           {/* Trend indicator */}
           <motion.div 
-            className={`flex items-center gap-1.5 mt-4 ${getTrendColor()}`}
+            className={`flex items-center justify-center gap-1.5 mt-2 ${getTrendColor()}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.45 }}
           >
             {getTrendIcon()}
             <span className="text-sm font-medium">
@@ -134,10 +177,16 @@ export const AccuracyHeroCard = ({ accuracy, trend = 0, isLoading }: AccuracyHer
             </span>
           </motion.div>
 
-          {/* Label */}
-          <p className="text-sm text-muted-foreground mt-2 text-center">
-            AI Tahmin Başarı Oranı
-          </p>
+          {/* Info tooltip */}
+          <div className="flex items-center justify-center gap-1 mt-2">
+            <Info className="w-3 h-3 text-muted-foreground/50" />
+            <p className="text-[10px] text-muted-foreground/50 text-center">
+              {hasPremiumData 
+                ? "Premium: Sadece yüksek güvenli tahminler" 
+                : "AI Tahmin Başarı Oranı"
+              }
+            </p>
+          </div>
         </div>
       </Card>
     </motion.div>

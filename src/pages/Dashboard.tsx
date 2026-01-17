@@ -20,7 +20,7 @@ import SavedSlipsList from "@/components/betslip/SavedSlipsList";
 import AutoVerifyButton from "@/components/dashboard/AutoVerifyButton";
 
 // Services
-import { getOverallStats, getPredictionStats, getRecentPredictions, getAccuracyTrend, TrendData } from "@/services/predictionService";
+import { getOverallStats, getPredictionStats, getRecentPredictions, getAccuracyTrend, getPremiumStats, TrendData, PremiumStats } from "@/services/predictionService";
 import { getBetSlipStats } from "@/services/betSlipService";
 
 // Types
@@ -32,6 +32,7 @@ const Dashboard = () => {
   const [predictionStats, setPredictionStats] = useState<PredictionStats[]>([]);
   const [recentPredictions, setRecentPredictions] = useState<PredictionRecord[]>([]);
   const [trendData, setTrendData] = useState<TrendData | null>(null);
+  const [premiumStats, setPremiumStats] = useState<PremiumStats | null>(null);
   const [slipCount, setSlipCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -39,17 +40,19 @@ const Dashboard = () => {
 
   const loadData = async () => {
     try {
-      const [overall, byType, recent, trend] = await Promise.all([
+      const [overall, byType, recent, trend, premium] = await Promise.all([
         getOverallStats(),
         getPredictionStats(),
         getRecentPredictions(50),
-        getAccuracyTrend(7)
+        getAccuracyTrend(7),
+        getPremiumStats()
       ]);
       
       setOverallStats(overall);
       setPredictionStats(byType);
       setRecentPredictions(recent);
       setTrendData(trend);
+      setPremiumStats(premium);
 
       // Get slip count for logged in users
       if (user) {
@@ -163,6 +166,8 @@ const Dashboard = () => {
             <motion.div variants={itemVariants} className="lg:col-span-5">
               <AccuracyHeroCard 
                 accuracy={overallStats?.accuracy_percentage ?? 0}
+                premiumAccuracy={premiumStats?.accuracy ?? 0}
+                premiumTotal={premiumStats?.total ?? 0}
                 trend={trendData?.trend ?? 0}
                 isLoading={isLoading}
               />
