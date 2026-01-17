@@ -221,15 +221,6 @@ const Index: React.FC = () => {
             isLoading={homeDataLoading}
             loadingMatchId={loadingMatchId}
             onMatchSelect={handleMatchSelect}
-            onSync={async () => {
-              toast.loading('Maçlar senkronize ediliyor...', { id: 'sync' });
-              await syncMatches();
-              // Wait a bit then refetch from database
-              setTimeout(async () => {
-                await refetch();
-                toast.success('Maçlar güncellendi!', { id: 'sync' });
-              }, 3000);
-            }}
           />
         </motion.section>
 

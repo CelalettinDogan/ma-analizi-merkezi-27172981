@@ -143,14 +143,14 @@ const H2HTimeline: React.FC<H2HTimelineProps> = ({ h2h, homeTeam, awayTeam }) =>
                   className="flex flex-col items-center"
                 >
                   <div className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold border-2 bg-card z-10 shadow-sm",
+                    "w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-xs md:text-sm font-bold border-2 bg-card z-10 shadow-sm",
                     result === 'home' && "border-primary text-primary",
                     result === 'away' && "border-secondary text-secondary",
                     result === 'draw' && "border-muted-foreground text-muted-foreground"
                   )}>
                     {match.score}
                   </div>
-                  <span className="text-xs text-muted-foreground mt-2 whitespace-nowrap">
+                  <span className="text-[10px] md:text-xs text-muted-foreground mt-1.5 md:mt-2 whitespace-nowrap">
                     {formatDate(match.date)}
                   </span>
                 </motion.div>

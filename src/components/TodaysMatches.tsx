@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles, RefreshCw } from 'lucide-react';
+import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Match } from '@/types/footballApi';
-import { format } from 'date-fns';
+import { format, isToday, isTomorrow, addDays } from 'date-fns';
+import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 interface TodaysMatchesProps {
@@ -13,7 +14,6 @@ interface TodaysMatchesProps {
   isLoading?: boolean;
   loadingMatchId?: number | null;
   onMatchSelect: (match: Match) => void;
-  onSync?: () => Promise<void>;
 }
 
 // Big teams for featured match selection
@@ -48,6 +48,14 @@ const getFeaturedReason = (match: Match, allMatches: Match[]): string => {
   return 'Önerilen';
 };
 
+// Get date label for grouping
+const getDateLabel = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  if (isToday(date)) return 'Bugün';
+  if (isTomorrow(date)) return 'Yarın';
+  return format(date, 'd MMMM EEEE', { locale: tr });
+};
+
 // Stagger animation for list items
 const listItemVariants = {
   hidden: { opacity: 0, x: -10 },
@@ -58,44 +66,56 @@ const listItemVariants = {
   })
 };
 
-const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = false, loadingMatchId, onMatchSelect, onSync }) => {
+const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = false, loadingMatchId, onMatchSelect }) => {
   const [showAll, setShowAll] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  const handleSync = async () => {
-    if (!onSync || isSyncing) return;
-    setIsSyncing(true);
-    try {
-      await onSync();
-    } finally {
-      setIsSyncing(false);
-    }
-  };
 
   // Find featured match (first big match or soonest upcoming match)
-  const { featuredMatch, otherMatches, featuredReason } = useMemo(() => {
-    if (matches.length === 0) return { featuredMatch: null, otherMatches: [], featuredReason: '' };
+  const { featuredMatch, otherMatches, featuredReason, hasMatchesToday, title } = useMemo(() => {
+    if (matches.length === 0) return { featuredMatch: null, otherMatches: [], featuredReason: '', hasMatchesToday: false, title: 'Bugünün Maçları' };
+    
+    // Check if any match is today
+    const todayMatches = matches.filter(m => isToday(new Date(m.utcDate)));
+    const hasToday = todayMatches.length > 0;
     
     const bigMatch = matches.find(isBigMatch);
     const featured = bigMatch || matches[0];
     const others = matches.filter(m => m.id !== featured?.id);
     const reason = getFeaturedReason(featured, matches);
     
-    return { featuredMatch: featured, otherMatches: others, featuredReason: reason };
+    return { 
+      featuredMatch: featured, 
+      otherMatches: others, 
+      featuredReason: reason,
+      hasMatchesToday: hasToday,
+      title: hasToday ? 'Bugünün Maçları' : 'Yaklaşan Maçlar'
+    };
   }, [matches]);
+
+  // Group matches by date
+  const groupedMatches = useMemo(() => {
+    const groups: { [key: string]: Match[] } = {};
+    otherMatches.forEach(match => {
+      const dateKey = match.utcDate.split('T')[0];
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(match);
+    });
+    return groups;
+  }, [otherMatches]);
 
   const displayedMatches = showAll ? otherMatches : otherMatches.slice(0, 5);
 
   if (isLoading) {
     return (
-      <Card className="p-6">
+      <Card className="p-4 md:p-6">
         <div className="flex items-center gap-2 mb-4">
           <Calendar className="w-5 h-5 text-primary" />
-          <h2 className="font-semibold">Bugünün Maçları</h2>
+          <h2 className="font-semibold text-sm md:text-base">Bugünün Maçları</h2>
         </div>
         {/* Skeleton loading */}
         <div className="space-y-3">
-          <div className="h-32 rounded-xl bg-muted/50 animate-pulse" />
+          <div className="h-28 md:h-32 rounded-xl bg-muted/50 animate-pulse" />
           {[...Array(3)].map((_, i) => (
             <div key={i} className="h-12 rounded-lg bg-muted/30 animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
           ))}
@@ -106,56 +126,29 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
 
   if (matches.length === 0) {
     return (
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary" />
-            <h2 className="font-semibold">Bugünün Maçları</h2>
-          </div>
-          {onSync && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSync}
-              disabled={isSyncing}
-              className="gap-2"
-            >
-              <RefreshCw className={cn("w-4 h-4", isSyncing && "animate-spin")} />
-              {isSyncing ? 'Senkronize ediliyor...' : 'Verileri Güncelle'}
-            </Button>
-          )}
+      <Card className="p-4 md:p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Calendar className="w-5 h-5 text-primary" />
+          <h2 className="font-semibold text-sm md:text-base">Bugünün Maçları</h2>
         </div>
-        <div className="text-center py-12">
-          <Calendar className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
-          <p className="text-muted-foreground">Bugün planlanmış maç yok</p>
-          <p className="text-sm text-muted-foreground mt-1">Verileri güncellemek için butona tıklayın</p>
+        <div className="text-center py-8 md:py-12">
+          <Calendar className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 text-muted-foreground/50" />
+          <p className="text-muted-foreground text-sm md:text-base">Planlanmış maç bulunamadı</p>
+          <p className="text-xs md:text-sm text-muted-foreground/70 mt-1">Ligler arasından seçim yaparak maçları görüntüleyebilirsiniz</p>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="p-4 md:p-6">
+    <Card className="p-3 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3 md:mb-4">
         <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-primary" />
-          <h2 className="font-semibold">Bugünün Maçları</h2>
+          <Calendar className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+          <h2 className="font-semibold text-sm md:text-base">{title}</h2>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary">{matches.length} maç</Badge>
-          {onSync && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleSync}
-              disabled={isSyncing}
-              title="Verileri güncelle"
-            >
-              <RefreshCw className={cn("w-4 h-4", isSyncing && "animate-spin")} />
-            </Button>
-          )}
-        </div>
+        <Badge variant="secondary" className="text-xs">{matches.length} maç</Badge>
       </div>
 
       {/* Featured Match - Large Card */}
@@ -165,7 +158,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
           animate={{ opacity: 1, y: 0 }}
           onClick={() => !loadingMatchId && onMatchSelect(featuredMatch)}
           className={cn(
-            "relative p-4 rounded-xl cursor-pointer mb-4 transition-all group",
+            "relative p-3 md:p-4 rounded-xl cursor-pointer mb-3 md:mb-4 transition-all group",
             "bg-primary/5 border-2 border-primary/20 hover:border-primary/40 hover:shadow-lg",
             loadingMatchId === featuredMatch.id && "opacity-80 pointer-events-none",
             loadingMatchId && loadingMatchId !== featuredMatch.id && "opacity-50"
@@ -179,8 +172,8 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
               className="absolute inset-0 bg-background/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10"
             >
               <div className="flex flex-col items-center gap-2">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                <span className="text-sm font-medium text-foreground">Analiz ediliyor...</span>
+                <Loader2 className="w-6 h-6 md:w-8 md:h-8 text-primary animate-spin" />
+                <span className="text-xs md:text-sm font-medium text-foreground">Analiz ediliyor...</span>
               </div>
             </motion.div>
           )}
@@ -197,51 +190,56 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
               )}
               {featuredReason}
             </Badge>
+            {!hasMatchesToday && (
+              <Badge variant="outline" className="text-[10px]">
+                {getDateLabel(featuredMatch.utcDate)}
+              </Badge>
+            )}
           </div>
 
           {/* Match Content */}
           <div className="flex items-center justify-between mt-6">
             {/* Home Team */}
-            <div className="flex items-center gap-3 flex-1">
+            <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
               {featuredMatch.homeTeam.crest ? (
                 <img 
                   src={featuredMatch.homeTeam.crest} 
                   alt="" 
-                  className="w-10 h-10 object-contain"
+                  className="w-8 h-8 md:w-10 md:h-10 object-contain flex-shrink-0"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-lg font-bold">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-muted flex items-center justify-center text-sm md:text-lg font-bold flex-shrink-0">
                   {featuredMatch.homeTeam.shortName?.[0] || featuredMatch.homeTeam.name[0]}
                 </div>
               )}
-              <span className="font-semibold truncate">
+              <span className="font-semibold text-sm md:text-base truncate">
                 {featuredMatch.homeTeam.shortName || featuredMatch.homeTeam.name}
               </span>
             </div>
 
             {/* Time */}
-            <div className="px-4 text-center">
-              <div className="text-lg font-bold text-primary">
+            <div className="px-2 md:px-4 text-center flex-shrink-0">
+              <div className="text-base md:text-lg font-bold text-primary">
                 {format(new Date(featuredMatch.utcDate), 'HH:mm')}
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-[10px] md:text-xs text-muted-foreground">
                 {featuredMatch.competition.code}
               </div>
             </div>
 
             {/* Away Team */}
-            <div className="flex items-center gap-3 flex-1 justify-end">
-              <span className="font-semibold truncate text-right">
+            <div className="flex items-center gap-2 md:gap-3 flex-1 justify-end min-w-0">
+              <span className="font-semibold text-sm md:text-base truncate text-right">
                 {featuredMatch.awayTeam.shortName || featuredMatch.awayTeam.name}
               </span>
               {featuredMatch.awayTeam.crest ? (
                 <img 
                   src={featuredMatch.awayTeam.crest} 
                   alt="" 
-                  className="w-10 h-10 object-contain"
+                  className="w-8 h-8 md:w-10 md:h-10 object-contain flex-shrink-0"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-lg font-bold">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-muted flex items-center justify-center text-sm md:text-lg font-bold flex-shrink-0">
                   {featuredMatch.awayTeam.shortName?.[0] || featuredMatch.awayTeam.name[0]}
                 </div>
               )}
@@ -249,21 +247,21 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
           </div>
 
           {/* CTA */}
-          <div className="flex justify-center mt-4">
+          <div className="flex justify-center mt-3 md:mt-4">
             <Button 
               size="sm" 
-              className="gap-2 group-hover:bg-primary/90"
+              className="gap-2 group-hover:bg-primary/90 text-xs md:text-sm"
               disabled={!!loadingMatchId}
             >
               {loadingMatchId === featuredMatch.id ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin" />
                   Yükleniyor...
                 </>
               ) : (
                 <>
                   Analiz Et
-                  <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                  <ChevronRight className="w-3 h-3 md:w-4 md:h-4 transition-transform group-hover:translate-x-0.5" />
                 </>
               )}
             </Button>
@@ -274,80 +272,98 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
       {/* Other Matches - Compact List with Stagger Animation */}
       <AnimatePresence>
         <div className="space-y-1">
+          {/* Date group headers for upcoming matches */}
+          {!hasMatchesToday && displayedMatches.length > 0 && (
+            <div className="text-xs text-muted-foreground font-medium py-1 px-2">
+              {getDateLabel(displayedMatches[0].utcDate)}
+            </div>
+          )}
+          
           {displayedMatches.map((match, index) => {
             const matchTime = format(new Date(match.utcDate), 'HH:mm');
             const isThisLoading = loadingMatchId === match.id;
             const isAnyLoading = !!loadingMatchId;
 
+            // Show date separator if date changes
+            const prevMatch = displayedMatches[index - 1];
+            const showDateSeparator = !hasMatchesToday && prevMatch && 
+              match.utcDate.split('T')[0] !== prevMatch.utcDate.split('T')[0];
+
             return (
-              <motion.div
-                key={match.id}
-                custom={index}
-                initial="hidden"
-                animate="visible"
-                variants={listItemVariants}
-                whileHover={!isAnyLoading ? { x: 4, backgroundColor: 'hsl(var(--muted) / 0.5)' } : {}}
-                onClick={() => !isAnyLoading && onMatchSelect(match)}
-                className={cn(
-                  "flex items-center gap-3 p-3 rounded-lg transition-all relative",
-                  "min-h-[48px]",
-                  isAnyLoading && !isThisLoading && "opacity-50",
-                  isThisLoading && "bg-primary/10 border border-primary/30",
-                  !isAnyLoading && "cursor-pointer hover:bg-muted/50"
-                )}
-              >
-                {/* Loading indicator for this specific match */}
-                {isThisLoading && (
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="absolute left-3"
-                  >
-                    <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                  </motion.div>
-                )}
-
-                {/* Time */}
-                <span className={cn(
-                  "text-sm font-medium w-12 shrink-0",
-                  isThisLoading ? "text-primary ml-5" : "text-muted-foreground"
-                )}>
-                  {matchTime}
-                </span>
-
-                {/* Teams */}
-                <div className="flex-1 min-w-0 flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                    {match.homeTeam.crest && (
-                      <img src={match.homeTeam.crest} alt="" className="w-5 h-5 object-contain shrink-0" />
-                    )}
-                    <span className={cn("text-sm truncate", isThisLoading && "font-medium")}>
-                      {match.homeTeam.shortName || match.homeTeam.name}
-                    </span>
+              <React.Fragment key={match.id}>
+                {showDateSeparator && (
+                  <div className="text-xs text-muted-foreground font-medium py-2 px-2 border-t border-border/50 mt-2">
+                    {getDateLabel(match.utcDate)}
                   </div>
-                  <span className="text-muted-foreground text-xs">vs</span>
-                  <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
-                    <span className={cn("text-sm truncate text-right", isThisLoading && "font-medium")}>
-                      {match.awayTeam.shortName || match.awayTeam.name}
-                    </span>
-                    {match.awayTeam.crest && (
-                      <img src={match.awayTeam.crest} alt="" className="w-5 h-5 object-contain shrink-0" />
-                    )}
-                  </div>
-                </div>
-
-                {/* League */}
-                <span className="text-xs text-muted-foreground shrink-0 hidden sm:block">
-                  {match.competition.code}
-                </span>
-
-                {/* Arrow or Loading */}
-                {isThisLoading ? (
-                  <span className="text-xs text-primary font-medium">Analiz ediliyor...</span>
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
                 )}
-              </motion.div>
+                <motion.div
+                  custom={index}
+                  initial="hidden"
+                  animate="visible"
+                  variants={listItemVariants}
+                  whileHover={!isAnyLoading ? { x: 4, backgroundColor: 'hsl(var(--muted) / 0.5)' } : {}}
+                  onClick={() => !isAnyLoading && onMatchSelect(match)}
+                  className={cn(
+                    "flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-lg transition-all relative",
+                    "min-h-[44px] md:min-h-[48px]",
+                    isAnyLoading && !isThisLoading && "opacity-50",
+                    isThisLoading && "bg-primary/10 border border-primary/30",
+                    !isAnyLoading && "cursor-pointer hover:bg-muted/50"
+                  )}
+                >
+                  {/* Loading indicator for this specific match */}
+                  {isThisLoading && (
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="absolute left-2"
+                    >
+                      <Loader2 className="w-3 h-3 md:w-4 md:h-4 text-primary animate-spin" />
+                    </motion.div>
+                  )}
+
+                  {/* Time */}
+                  <span className={cn(
+                    "text-xs md:text-sm font-medium w-10 md:w-12 shrink-0",
+                    isThisLoading ? "text-primary ml-4 md:ml-5" : "text-muted-foreground"
+                  )}>
+                    {matchTime}
+                  </span>
+
+                  {/* Teams */}
+                  <div className="flex-1 min-w-0 flex items-center gap-1 md:gap-2">
+                    <div className="flex items-center gap-1 md:gap-1.5 flex-1 min-w-0">
+                      {match.homeTeam.crest && (
+                        <img src={match.homeTeam.crest} alt="" className="w-4 h-4 md:w-5 md:h-5 object-contain shrink-0" />
+                      )}
+                      <span className={cn("text-xs md:text-sm truncate", isThisLoading && "font-medium")}>
+                        {match.homeTeam.shortName || match.homeTeam.name}
+                      </span>
+                    </div>
+                    <span className="text-muted-foreground text-[10px] md:text-xs">vs</span>
+                    <div className="flex items-center gap-1 md:gap-1.5 flex-1 min-w-0 justify-end">
+                      <span className={cn("text-xs md:text-sm truncate text-right", isThisLoading && "font-medium")}>
+                        {match.awayTeam.shortName || match.awayTeam.name}
+                      </span>
+                      {match.awayTeam.crest && (
+                        <img src={match.awayTeam.crest} alt="" className="w-4 h-4 md:w-5 md:h-5 object-contain shrink-0" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* League */}
+                  <span className="text-[10px] md:text-xs text-muted-foreground shrink-0 hidden sm:block">
+                    {match.competition.code}
+                  </span>
+
+                  {/* Arrow or Loading */}
+                  {isThisLoading ? (
+                    <span className="text-[10px] md:text-xs text-primary font-medium hidden sm:block">Analiz ediliyor...</span>
+                  ) : (
+                    <ChevronRight className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground/50" />
+                  )}
+                </motion.div>
+              </React.Fragment>
             );
           })}
         </div>
@@ -359,7 +375,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
           variant="ghost"
           size="sm"
           onClick={() => setShowAll(true)}
-          className="w-full mt-3 text-primary"
+          className="w-full mt-3 text-primary text-xs md:text-sm"
         >
           Tümünü Gör (+{otherMatches.length - 5} maç)
         </Button>
