@@ -69,14 +69,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             <span className="text-primary">Maç Analizi</span>
           </h1>
 
-          {/* Subtitle - Inline Stats with Count-up */}
-          <p className="text-muted-foreground mb-6 flex items-center justify-center gap-2 flex-wrap text-sm md:text-base">
+          {/* Subtitle - Inline Stats with Count-up - Responsive */}
+          <div className="text-muted-foreground mb-6 flex items-center justify-center gap-1.5 md:gap-2 flex-wrap text-xs md:text-base">
             {stats.accuracy > 0 && (
               <>
                 <span className="font-semibold text-primary tabular-nums">
                   %{animatedAccuracy}
                 </span>
-                <span>Doğruluk</span>
+                <span className="hidden xs:inline">Doğruluk</span>
+                <span className="xs:hidden">Başarı</span>
                 <span className="text-border">•</span>
               </>
             )}
@@ -93,16 +94,16 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
-                  <span className="relative flex h-2 w-2">
+                  <span className="relative flex h-1.5 w-1.5 md:h-2 md:w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 md:h-2 md:w-2 bg-destructive" />
                   </span>
                   <span className="font-semibold text-foreground">{stats.liveCount}</span>
                   <span>Canlı</span>
                 </motion.span>
               </>
             )}
-          </p>
+          </div>
 
           {/* Single CTA Button */}
           <Button

@@ -90,9 +90,10 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
       {/* Section Title */}
       <h4 className="text-sm font-medium text-muted-foreground">Diğer Tahminler</h4>
 
-      {/* Pills Container - Horizontal Scroll on Mobile */}
-      <div className="overflow-x-auto pb-2 -mx-1 px-1 scrollbar-none">
-        <div className="flex gap-2 min-w-max">
+      {/* Pills Container - Horizontal Scroll on Mobile with hint */}
+      <div className="relative">
+        <div className="overflow-x-auto pb-2 -mx-1 px-1 scrollbar-none">
+          <div className="flex gap-2 min-w-max">
           {sortedPredictions.map((prediction, index) => {
             const isSelected = selectedIndex === index;
             const inSlip = isInSlip(prediction);
@@ -123,7 +124,10 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
               </button>
             );
           })}
+          </div>
         </div>
+        {/* Scroll hint gradient for mobile */}
+        <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-card to-transparent pointer-events-none md:hidden" />
       </div>
 
       {/* Expanded Detail - Slide Up Animation */}

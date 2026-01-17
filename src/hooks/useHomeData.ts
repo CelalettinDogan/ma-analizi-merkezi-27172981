@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Match, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { supabase } from '@/integrations/supabase/client';
+import { addDays, startOfDay, endOfDay } from 'date-fns';
 
 interface HomeStats {
   liveCount: number;
@@ -153,23 +154,26 @@ export const useHomeData = (): HomeData => {
     setError(null);
 
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const todayStart = `${today}T00:00:00Z`;
-      const tomorrowStart = new Date(new Date(today).getTime() + 86400000).toISOString();
+      const today = new Date();
+      const todayStart = startOfDay(today).toISOString();
+      const tomorrowStart = startOfDay(addDays(today, 1)).toISOString();
+      const threeDaysLater = endOfDay(addDays(today, 3)).toISOString();
       const supportedCodes = SUPPORTED_COMPETITIONS.map(c => c.code);
+      const todayDateStr = today.toISOString().split('T')[0];
 
       // Fetch ALL data from database cache in parallel (NO RATE LIMITS!)
       const [
         todayCountResult,
         overallStatsResult,
         premiumStatsResult,
-        cachedMatchesResult,
+        cachedTodayMatchesResult,
+        cachedUpcomingMatchesResult,
         cachedLiveMatchesResult,
       ] = await Promise.all([
         supabase
           .from('predictions')
           .select('*', { count: 'exact', head: true })
-          .gte('created_at', today),
+          .gte('created_at', todayDateStr),
         supabase
           .from('overall_stats')
           .select('accuracy_percentage')
@@ -188,6 +192,16 @@ export const useHomeData = (): HomeData => {
           .gte('utc_date', todayStart)
           .lt('utc_date', tomorrowStart)
           .order('utc_date', { ascending: true }),
+        // Upcoming matches (next 3 days) as fallback
+        supabase
+          .from('cached_matches')
+          .select('*')
+          .in('status', ['SCHEDULED', 'TIMED'])
+          .in('competition_code', supportedCodes)
+          .gte('utc_date', todayStart)
+          .lt('utc_date', threeDaysLater)
+          .order('utc_date', { ascending: true })
+          .limit(20),
         // Live matches from cached_live_matches table
         supabase
           .from('cached_live_matches')
@@ -197,16 +211,20 @@ export const useHomeData = (): HomeData => {
       ]);
 
       // Transform cached matches
-      const todayMatches = (cachedMatchesResult.data || []).map(transformCachedMatch);
+      const todayMatches = (cachedTodayMatchesResult.data || []).map(transformCachedMatch);
+      const upcomingMatches = (cachedUpcomingMatchesResult.data || []).map(transformCachedMatch);
       const liveData = (cachedLiveMatchesResult.data || []).map(transformCachedLiveMatch);
 
-      // If no cached data, trigger sync in background
-      if (todayMatches.length === 0 && liveData.length === 0) {
+      // Use today's matches if available, otherwise fall back to upcoming matches
+      const matchesToShow = todayMatches.length > 0 ? todayMatches : upcomingMatches;
+
+      // If no cached data at all, trigger sync in background
+      if (matchesToShow.length === 0 && liveData.length === 0) {
         console.log('[useHomeData] No cached data, triggering sync...');
         syncMatches(); // Don't await, run in background
       }
 
-      setTodaysMatches(todayMatches);
+      setTodaysMatches(matchesToShow);
       setLiveMatches(liveData);
 
       setStats({
