@@ -3,17 +3,75 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Radio, RefreshCw, Loader2, WifiOff, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import AppHeader from '@/components/layout/AppHeader';
 import LiveMatchCard2 from '@/components/live/LiveMatchCard2';
 import LeagueGrid from '@/components/league/LeagueGrid';
 import BottomNav from '@/components/navigation/BottomNav';
 import CommandPalette from '@/components/navigation/CommandPalette';
 import { Match, CompetitionCode, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
-import { footballApiRequest } from '@/services/apiRequestManager';
+import { supabase } from '@/integrations/supabase/client';
 import { staggerContainer, staggerItem, fadeInUp } from '@/lib/animations';
+import { toast } from 'sonner';
 
-const REFRESH_INTERVAL = 30000;
+const REFRESH_INTERVAL = 15000; // 15 seconds - faster since we read from cache
+
+// Transform cached match to Match type
+const transformCachedLiveMatch = (cached: {
+  match_id: number;
+  competition_code: string;
+  competition_name: string | null;
+  home_team_id: number | null;
+  home_team_name: string;
+  home_team_crest: string | null;
+  away_team_id: number | null;
+  away_team_name: string;
+  away_team_crest: string | null;
+  home_score: number | null;
+  away_score: number | null;
+  status: string;
+  matchday: number | null;
+  utc_date: string;
+  half_time_home: number | null;
+  half_time_away: number | null;
+  updated_at: string | null;
+}): Match => ({
+  id: cached.match_id,
+  utcDate: cached.utc_date,
+  status: cached.status as Match['status'],
+  matchday: cached.matchday || undefined,
+  competition: {
+    id: 0,
+    name: cached.competition_name || '',
+    code: cached.competition_code as CompetitionCode,
+    emblem: '',
+    area: { id: 0, name: '', code: '', flag: '' }
+  },
+  homeTeam: {
+    id: cached.home_team_id || 0,
+    name: cached.home_team_name,
+    shortName: cached.home_team_name,
+    tla: cached.home_team_name.substring(0, 3).toUpperCase(),
+    crest: cached.home_team_crest || ''
+  },
+  awayTeam: {
+    id: cached.away_team_id || 0,
+    name: cached.away_team_name,
+    shortName: cached.away_team_name,
+    tla: cached.away_team_name.substring(0, 3).toUpperCase(),
+    crest: cached.away_team_crest || ''
+  },
+  score: {
+    winner: null,
+    fullTime: {
+      home: cached.home_score,
+      away: cached.away_score
+    },
+    halfTime: {
+      home: cached.half_time_home,
+      away: cached.half_time_away
+    }
+  }
+});
 
 const LivePage: React.FC = () => {
   const navigate = useNavigate();
@@ -24,31 +82,45 @@ const LivePage: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [commandOpen, setCommandOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  const fetchLiveMatches = useCallback(async (showRefreshIndicator = false) => {
-    if (showRefreshIndicator) setIsRefreshing(true);
-    setError(null);
-
+  // Fetch from database cache
+  const fetchFromCache = useCallback(async () => {
     try {
-      // Which leagues to show (keep existing behavior)
-      const competitions = selectedLeague 
-        ? [selectedLeague]
-        : SUPPORTED_COMPETITIONS.slice(0, 2).map(c => c.code);
+      let query = supabase
+        .from('cached_live_matches')
+        .select('*')
+        .order('utc_date', { ascending: true });
 
-      const allowed = new Set(competitions);
+      if (selectedLeague) {
+        query = query.eq('competition_code', selectedLeague);
+      } else {
+        // Default to first 2 leagues if none selected
+        const defaultCodes = SUPPORTED_COMPETITIONS.slice(0, 2).map(c => c.code);
+        query = query.in('competition_code', defaultCodes);
+      }
 
-      const response = await footballApiRequest<{ matches: Match[] }>({
-        action: 'live',
-      });
+      const { data, error: fetchError } = await query;
 
-      const allMatches = (response?.matches || [])
-        .filter(m => allowed.has(m.competition?.code as CompetitionCode))
-        .sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
+      if (fetchError) throw fetchError;
 
-      setLiveMatches(allMatches);
-      setLastUpdated(new Date());
+      const matches = (data || []).map(transformCachedLiveMatch);
+      setLiveMatches(matches);
+      
+      // Get last updated time from most recent record
+      if (data && data.length > 0) {
+        const latestUpdate = data.reduce((latest, m) => {
+          const mTime = m.updated_at ? new Date(m.updated_at).getTime() : 0;
+          return mTime > latest ? mTime : latest;
+        }, 0);
+        if (latestUpdate) setLastUpdated(new Date(latestUpdate));
+      } else {
+        setLastUpdated(new Date());
+      }
+
+      setError(null);
     } catch (e) {
-      console.error('Error fetching live matches:', e);
+      console.error('Error fetching from cache:', e);
       setError('Canlı maçlar yüklenirken hata oluştu');
     } finally {
       setIsLoading(false);
@@ -56,18 +128,45 @@ const LivePage: React.FC = () => {
     }
   }, [selectedLeague]);
 
-  useEffect(() => {
-    setIsLoading(true);
-    fetchLiveMatches();
-  }, [selectedLeague, fetchLiveMatches]);
+  // Trigger sync edge function
+  const syncLiveMatches = useCallback(async () => {
+    setIsSyncing(true);
+    try {
+      const { error: syncError } = await supabase.functions.invoke('sync-live-matches');
+      if (syncError) throw syncError;
+      
+      // Refetch from cache after sync
+      await fetchFromCache();
+      toast.success('Canlı maçlar güncellendi');
+    } catch (e) {
+      console.error('Sync error:', e);
+      toast.error('Senkronizasyon hatası');
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [fetchFromCache]);
 
+  // Initial load
   useEffect(() => {
-    const interval = setInterval(() => fetchLiveMatches(), REFRESH_INTERVAL);
+    const init = async () => {
+      setIsLoading(true);
+      // First fetch from cache
+      await fetchFromCache();
+      // Then trigger sync in background
+      syncLiveMatches();
+    };
+    init();
+  }, [selectedLeague]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-refresh from cache
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchFromCache();
+    }, REFRESH_INTERVAL);
     return () => clearInterval(interval);
-  }, [fetchLiveMatches]);
+  }, [fetchFromCache]);
 
   const handleMatchSelect = (match: Match) => {
-    // Navigate to home with match data for analysis
     navigate('/', { state: { selectedMatch: match } });
   };
 
@@ -76,6 +175,11 @@ const LivePage: React.FC = () => {
     return lastUpdated.toLocaleTimeString('tr-TR', { 
       hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await syncLiveMatches();
   };
 
   const headerRightContent = (
@@ -88,17 +192,16 @@ const LivePage: React.FC = () => {
       <Button
         variant="outline"
         size="icon"
-        onClick={() => fetchLiveMatches(true)}
-        disabled={isRefreshing}
+        onClick={handleRefresh}
+        disabled={isRefreshing || isSyncing}
       >
-        <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+        <RefreshCw className={`w-4 h-4 ${isRefreshing || isSyncing ? 'animate-spin' : ''}`} />
       </Button>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-8">
-      {/* Header */}
       <AppHeader rightContent={headerRightContent} />
 
       <main className="container mx-auto px-4 py-6 space-y-6">
@@ -121,7 +224,7 @@ const LivePage: React.FC = () => {
           <div className="text-center py-16">
             <WifiOff className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
             <p className="text-muted-foreground mb-4">{error}</p>
-            <Button variant="outline" onClick={() => fetchLiveMatches(true)}>
+            <Button variant="outline" onClick={handleRefresh}>
               Tekrar Dene
             </Button>
           </div>
@@ -130,9 +233,7 @@ const LivePage: React.FC = () => {
             {...fadeInUp}
             className="rounded-2xl bg-gradient-to-br from-card via-card to-muted/20 border border-border/50 overflow-hidden"
           >
-            {/* Hero empty state */}
             <div className="relative p-8 text-center">
-              {/* Background decoration */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
               
@@ -143,10 +244,9 @@ const LivePage: React.FC = () => {
                 
                 <h3 className="font-display font-bold text-xl mb-2">Şu an canlı maç yok</h3>
                 <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
-                  Desteklenen liglerde şu anda oynanmakta olan maç bulunmuyor. Sayfa her 30 saniyede otomatik güncellenir.
+                  Desteklenen liglerde şu anda oynanmakta olan maç bulunmuyor. Sayfa her 15 saniyede otomatik güncellenir.
                 </p>
 
-                {/* Quick actions */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                   <Button 
                     variant="default" 
@@ -158,17 +258,17 @@ const LivePage: React.FC = () => {
                   </Button>
                   <Button 
                     variant="outline" 
-                    onClick={() => fetchLiveMatches(true)}
+                    onClick={handleRefresh}
+                    disabled={isSyncing}
                     className="gap-2"
                   >
-                    <RefreshCw className="w-4 h-4" />
+                    <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
                     Yenile
                   </Button>
                 </div>
               </div>
             </div>
 
-            {/* Auto-refresh indicator */}
             <div className="px-6 py-4 border-t border-border/30 bg-muted/10">
               <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                 <motion.div
@@ -213,15 +313,12 @@ const LivePage: React.FC = () => {
               transition={{ duration: 2, repeat: Infinity }}
               className="w-2 h-2 rounded-full bg-green-500"
             />
-            <span>Otomatik güncelleme aktif (30 sn)</span>
+            <span>Otomatik güncelleme aktif (15 sn)</span>
           </motion.div>
         )}
       </main>
 
-      {/* Bottom Navigation */}
       <BottomNav onSearchClick={() => setCommandOpen(true)} />
-      
-      {/* Command Palette */}
       <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
     </div>
   );
