@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Trophy, Target, ArrowRight, TrendingUp, Flame, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
 import { staggerContainer, staggerItem } from '@/lib/animations';
 import { Link } from 'react-router-dom';
 
@@ -11,63 +10,15 @@ interface HeroStats {
   todayPredictions: number;
   accuracy: number;
   premiumAccuracy: number;
-  totalMatches: number;
-  hottestMatch: {
-    home: string;
-    away: string;
-  } | null;
 }
 
-const HeroSection: React.FC = () => {
-  const [stats, setStats] = useState<HeroStats>({
-    liveCount: 0,
-    todayPredictions: 0,
-    accuracy: 0,
-    premiumAccuracy: 0,
-    totalMatches: 0,
-    hottestMatch: null
-  });
+interface HeroSectionProps {
+  stats?: HeroStats;
+}
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const today = new Date().toISOString().split('T')[0];
-        
-        // Fetch all stats in parallel
-        const [todayCountResult, overallStatsResult, premiumStatsResult, liveResult] = await Promise.all([
-          supabase
-            .from('predictions')
-            .select('*', { count: 'exact', head: true })
-            .gte('created_at', today),
-          supabase
-            .from('overall_stats')
-            .select('accuracy_percentage')
-            .single(),
-          supabase
-            .from('ml_model_stats')
-            .select('premium_accuracy')
-            .limit(1)
-            .maybeSingle(),
-          supabase.functions.invoke('football-api', {
-            body: { action: 'live' },
-          }),
-        ]);
-
-        setStats({
-          todayPredictions: todayCountResult.count || 0,
-          accuracy: Math.round(overallStatsResult.data?.accuracy_percentage || 0),
-          premiumAccuracy: Math.round(premiumStatsResult.data?.premium_accuracy || 0),
-          liveCount: liveResult.data?.matches?.length || 0,
-          totalMatches: 0,
-          hottestMatch: null, // Would need separate logic to determine "hottest" match
-        });
-      } catch (e) {
-        console.error('Error fetching hero stats:', e);
-      }
-    };
-    fetchStats();
-  }, []);
-
+const HeroSection: React.FC<HeroSectionProps> = ({ 
+  stats = { liveCount: 0, todayPredictions: 0, accuracy: 0, premiumAccuracy: 0 } 
+}) => {
   return (
     <section className="relative py-10 md:py-16 overflow-hidden">
       {/* Animated Background */}

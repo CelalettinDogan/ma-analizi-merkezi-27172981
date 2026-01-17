@@ -4,13 +4,13 @@ import { Sparkles, Clock, ChevronRight, TrendingUp, Zap } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Match, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
-import { supabase } from '@/integrations/supabase/client';
+import { Match, CompetitionCode } from '@/types/footballApi';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 interface FeaturedMatchCardProps {
+  matches: Match[];
   onMatchSelect: (match: Match) => void;
 }
 
@@ -23,95 +23,46 @@ const LEAGUE_COLORS: Record<CompetitionCode, string> = {
   CL: 'from-indigo-600 to-indigo-900',
 };
 
-// Big teams for featuring
 const BIG_TEAMS = ['Arsenal', 'Liverpool', 'Barcelona', 'Real Madrid', 'Bayern', 'PSG', 'Manchester City', 'Manchester United', 'Chelsea', 'Juventus', 'Inter', 'AC Milan', 'Dortmund', 'Atletico'];
 
-const FeaturedMatchCard: React.FC<FeaturedMatchCardProps> = ({ onMatchSelect }) => {
-  const [featuredMatch, setFeaturedMatch] = useState<Match | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+const FeaturedMatchCard: React.FC<FeaturedMatchCardProps> = ({ matches, onMatchSelect }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [allFeaturedMatches, setAllFeaturedMatches] = useState<Match[]>([]);
 
-  useEffect(() => {
-    const fetchFeaturedMatch = async () => {
-      setIsLoading(true);
-      const allMatches: Match[] = [];
-      const today = new Date().toISOString().split('T')[0];
+  // Find "big" matches
+  const bigMatches = matches.filter(match => {
+    const home = match.homeTeam.name.toLowerCase();
+    const away = match.awayTeam.name.toLowerCase();
+    return BIG_TEAMS.some(team => 
+      home.includes(team.toLowerCase()) || away.includes(team.toLowerCase())
+    );
+  }).slice(0, 3);
 
-      // Fetch from first 2 leagues to avoid rate limiting
-      for (const comp of SUPPORTED_COMPETITIONS.slice(0, 2)) {
-        try {
-          const { data, error } = await supabase.functions.invoke('football-api', {
-            body: { 
-              action: 'matches', 
-              competitionCode: comp.code, 
-              status: 'SCHEDULED',
-              dateFrom: today,
-              dateTo: today
-            },
-          });
-
-          if (!error && data?.matches) {
-            allMatches.push(...data.matches);
-          }
-
-          await new Promise(resolve => setTimeout(resolve, 800));
-        } catch (e) {
-          console.error(`Error fetching matches for ${comp.code}:`, e);
-        }
-      }
-
-      // Find "big" matches
-      const bigMatches = allMatches.filter(match => {
-        const home = match.homeTeam.name.toLowerCase();
-        const away = match.awayTeam.name.toLowerCase();
-        return BIG_TEAMS.some(team => 
-          home.includes(team.toLowerCase()) || away.includes(team.toLowerCase())
-        );
-      });
-
-      // Sort by time (closest first)
-      bigMatches.sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
-
-      // Take top 3 for rotation
-      const topMatches = bigMatches.slice(0, 3);
-      
-      setAllFeaturedMatches(topMatches);
-      setFeaturedMatch(topMatches[0] || allMatches[0] || null);
-      setIsLoading(false);
-    };
-
-    fetchFeaturedMatch();
-  }, []);
+  const featuredMatches = bigMatches.length > 0 ? bigMatches : matches.slice(0, 3);
+  const featuredMatch = featuredMatches[currentIndex] || null;
 
   // Auto-rotate featured matches every 10 seconds
   useEffect(() => {
-    if (allFeaturedMatches.length <= 1) return;
+    if (featuredMatches.length <= 1) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex(prev => (prev + 1) % allFeaturedMatches.length);
+      setCurrentIndex(prev => (prev + 1) % featuredMatches.length);
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [allFeaturedMatches.length]);
-
-  // Update featured match when index changes
-  useEffect(() => {
-    if (allFeaturedMatches[currentIndex]) {
-      setFeaturedMatch(allFeaturedMatches[currentIndex]);
-    }
-  }, [currentIndex, allFeaturedMatches]);
-
-  if (isLoading) {
-    return (
-      <Card className="p-6 glass-card animate-pulse">
-        <div className="h-32 bg-muted/30 rounded-lg" />
-      </Card>
-    );
-  }
+  }, [featuredMatches.length]);
 
   if (!featuredMatch) {
-    return null;
+    return (
+      <Card className="p-6 glass-card">
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="w-5 h-5 text-secondary" />
+          <span className="font-display font-bold">Önerilen Maç</span>
+        </div>
+        <div className="text-center py-8">
+          <p className="text-muted-foreground text-sm">Bugün önerilen maç yok</p>
+        </div>
+      </Card>
+    );
   }
 
   const matchTime = format(new Date(featuredMatch.utcDate), 'HH:mm');
@@ -234,9 +185,9 @@ const FeaturedMatchCard: React.FC<FeaturedMatchCardProps> = ({ onMatchSelect }) 
         </Button>
 
         {/* Rotation Indicators */}
-        {allFeaturedMatches.length > 1 && (
+        {featuredMatches.length > 1 && (
           <div className="flex items-center justify-center gap-1.5 mt-4">
-            {allFeaturedMatches.map((_, idx) => (
+            {featuredMatches.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentIndex(idx)}

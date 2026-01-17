@@ -26,6 +26,7 @@ import { MatchInput } from '@/types/match';
 import { Match as ApiMatch, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
 import { useOnboarding } from '@/hooks/useOnboarding';
+import { useHomeData } from '@/hooks/useHomeData';
 import { Loader2, Calendar, Search, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,6 +38,9 @@ const Index: React.FC = () => {
   const { analysis, isLoading: analysisLoading, analyzeMatch } = useMatchAnalysis();
   const { user } = useAuth();
   const { showOnboarding, completeOnboarding } = useOnboarding();
+  
+  // Centralized data fetching - single source of truth
+  const { stats, liveMatches, todaysMatches, isLoading: homeDataLoading } = useHomeData();
   
   const [selectedLeague, setSelectedLeague] = useState<CompetitionCode | ''>('');
   const [upcomingMatches, setUpcomingMatches] = useState<ApiMatch[]>([]);
@@ -129,34 +133,41 @@ const Index: React.FC = () => {
       {/* Header */}
       <AppHeader rightContent={searchButton} />
 
-      {/* Hero Section - Compact */}
-      <HeroSection />
+      {/* Hero Section - Uses centralized stats */}
+      <HeroSection stats={stats} />
 
       {/* Main Content - Bento Grid Layout */}
       <main className="container mx-auto px-4 py-6 space-y-8">
         {/* Bento Grid: Featured Match + Today's Matches */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Featured Match */}
+          {/* Featured Match - Uses centralized data */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="lg:col-span-1"
           >
-            <FeaturedMatchCard onMatchSelect={handleMatchSelect} />
+            <FeaturedMatchCard 
+              matches={todaysMatches} 
+              onMatchSelect={handleMatchSelect} 
+            />
           </motion.div>
 
-          {/* Today's Matches */}
+          {/* Today's Matches - Uses centralized data */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="lg:col-span-2"
           >
-            <TodaysMatches onMatchSelect={handleMatchSelect} />
+            <TodaysMatches 
+              matches={todaysMatches}
+              isLoading={homeDataLoading}
+              onMatchSelect={handleMatchSelect} 
+            />
           </motion.div>
         </div>
 
-        {/* League Selection */}
+        {/* League Selection - Uses centralized live data */}
         <motion.section 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -166,6 +177,7 @@ const Index: React.FC = () => {
           <LeagueGrid 
             selectedLeague={selectedLeague} 
             onLeagueSelect={handleLeagueSelect}
+            liveMatches={liveMatches}
           />
         </motion.section>
 

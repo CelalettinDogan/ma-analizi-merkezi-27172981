@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, ChevronRight, Loader2, Flame, Users, Zap } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Flame, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Match, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
-import { supabase } from '@/integrations/supabase/client';
+import { Match, CompetitionCode } from '@/types/footballApi';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { staggerContainer, staggerItem } from '@/lib/animations';
 import { cn } from '@/lib/utils';
 
 interface TodaysMatchesProps {
+  matches: Match[];
+  isLoading?: boolean;
   onMatchSelect: (match: Match) => void;
 }
 
@@ -24,7 +25,6 @@ const LEAGUE_COLORS: Record<CompetitionCode, string> = {
   CL: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
 };
 
-// Simulated "hot" matches - in production this would come from analysis count
 const HOT_TEAMS = ['Arsenal', 'Liverpool', 'Barcelona', 'Real Madrid', 'Bayern', 'PSG', 'Manchester City', 'Manchester United'];
 
 const isHotMatch = (match: Match): boolean => {
@@ -35,48 +35,8 @@ const isHotMatch = (match: Match): boolean => {
   );
 };
 
-const TodaysMatches: React.FC<TodaysMatchesProps> = ({ onMatchSelect }) => {
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = false, onMatchSelect }) => {
   const [showAll, setShowAll] = useState(false);
-
-  useEffect(() => {
-    const fetchTodaysMatches = async () => {
-      setIsLoading(true);
-      const allMatches: Match[] = [];
-      const today = new Date().toISOString().split('T')[0];
-
-      const competitionsToFetch = SUPPORTED_COMPETITIONS.slice(0, 3);
-
-      for (const comp of competitionsToFetch) {
-        try {
-          const { data, error } = await supabase.functions.invoke('football-api', {
-            body: { 
-              action: 'matches', 
-              competitionCode: comp.code, 
-              status: 'SCHEDULED',
-              dateFrom: today,
-              dateTo: today
-            },
-          });
-
-          if (!error && data?.matches) {
-            allMatches.push(...data.matches);
-          }
-
-          await new Promise(resolve => setTimeout(resolve, 800));
-        } catch (e) {
-          console.error(`Error fetching matches for ${comp.code}:`, e);
-        }
-      }
-
-      allMatches.sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
-      setMatches(allMatches);
-      setIsLoading(false);
-    };
-
-    fetchTodaysMatches();
-  }, []);
 
   // Group matches by hour
   const groupedMatches = matches.reduce((groups, match) => {
