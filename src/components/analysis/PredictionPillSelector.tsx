@@ -1,12 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Plus, Sparkles, Check, Star, AlertTriangle, Info } from 'lucide-react';
+import { Plus, Sparkles, Check, Star, AlertTriangle, Info } from 'lucide-react';
 import { Prediction, MatchInput } from '@/types/match';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useBetSlip } from '@/contexts/BetSlipContext';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { CONFIDENCE_THRESHOLDS } from '@/constants/predictions';
 
 interface PredictionPillSelectorProps {
@@ -28,29 +27,26 @@ const getConfidenceLevel = (percentage: number): 'yüksek' | 'orta' | 'düşük'
   return 'düşük';
 };
 
-// Confidence level badge config
-const confidenceLevelConfig = {
+// Confidence level config - simplified
+const confidenceConfig = {
   'yüksek': { 
     icon: Star, 
-    label: 'Yüksek', 
-    className: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
+    color: 'text-emerald-400',
+    pillClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20',
+    inSlipClass: 'bg-emerald-500/30 text-emerald-300 border-emerald-400'
   },
   'orta': { 
     icon: Info, 
-    label: 'Orta', 
-    className: 'bg-amber-500/20 text-amber-400 border-amber-500/30' 
+    color: 'text-amber-400',
+    pillClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20',
+    inSlipClass: 'bg-amber-500/30 text-amber-300 border-amber-400'
   },
   'düşük': { 
     icon: AlertTriangle, 
-    label: 'Düşük', 
-    className: 'bg-muted text-muted-foreground border-border' 
+    color: 'text-muted-foreground',
+    pillClass: 'bg-muted/50 text-muted-foreground border-border hover:bg-muted',
+    inSlipClass: 'bg-muted text-foreground border-muted-foreground'
   },
-};
-
-const confidenceColors = {
-  'yüksek': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  'orta': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  'düşük': 'bg-muted text-muted-foreground border-border',
 };
 
 const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predictions, matchInput }) => {
@@ -91,130 +87,108 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
       transition={{ delay: 0.2 }}
       className="space-y-4"
     >
-      {/* Pills Container */}
-      <div className="flex flex-wrap gap-2">
-        {sortedPredictions.map((prediction, index) => {
-          const isSelected = selectedIndex === index;
-          const inSlip = isInSlip(prediction);
-          const hybridConfidence = getHybridConfidence(prediction);
-          const confidenceLevel = getConfidenceLevel(hybridConfidence);
-          const LevelIcon = confidenceLevelConfig[confidenceLevel].icon;
-          
-          return (
-            <button
-              key={index}
-              onClick={() => setSelectedIndex(isSelected ? null : index)}
-              className={cn(
-                "relative px-3 py-2 rounded-xl text-sm font-medium transition-all border",
-                "hover:scale-105 active:scale-95",
-                isSelected 
-                  ? "bg-primary/20 text-primary border-primary/40 shadow-lg shadow-primary/10" 
-                  : confidenceLevelConfig[confidenceLevel].className,
-                inSlip && "ring-2 ring-emerald-500/50"
-              )}
-            >
-              <div className="flex items-center gap-2">
-                {prediction.isAIPowered && <Sparkles className="w-3 h-3" />}
-                <span>{prediction.type}</span>
-                <LevelIcon className="w-3 h-3" />
-                {inSlip && <Check className="w-3 h-3 text-emerald-400" />}
-                <ChevronDown className={cn(
-                  "w-3 h-3 transition-transform",
-                  isSelected && "rotate-180"
-                )} />
-              </div>
-            </button>
-          );
-        })}
+      {/* Section Title */}
+      <h4 className="text-sm font-medium text-muted-foreground">Diğer Tahminler</h4>
+
+      {/* Pills Container - Horizontal Scroll on Mobile */}
+      <div className="overflow-x-auto pb-2 -mx-1 px-1 scrollbar-none">
+        <div className="flex gap-2 min-w-max">
+          {sortedPredictions.map((prediction, index) => {
+            const isSelected = selectedIndex === index;
+            const inSlip = isInSlip(prediction);
+            const hybridConfidence = getHybridConfidence(prediction);
+            const confidenceLevel = getConfidenceLevel(hybridConfidence);
+            const { icon: LevelIcon, pillClass, inSlipClass } = confidenceConfig[confidenceLevel];
+            
+            return (
+              <button
+                key={index}
+                onClick={() => setSelectedIndex(isSelected ? null : index)}
+                className={cn(
+                  "relative px-3 py-2 rounded-xl text-sm font-medium transition-all border whitespace-nowrap",
+                  "active:scale-95",
+                  isSelected 
+                    ? "bg-primary/20 text-primary border-primary/50 shadow-lg shadow-primary/10" 
+                    : inSlip 
+                      ? inSlipClass
+                      : pillClass
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  {/* Simplified: just type + confidence icon */}
+                  <span>{prediction.type}</span>
+                  <LevelIcon className="w-3.5 h-3.5" />
+                  {inSlip && <Check className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Expanded Detail */}
+      {/* Expanded Detail - Slide Up Animation */}
       <AnimatePresence>
         {selectedIndex !== null && sortedPredictions[selectedIndex] && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.2 }}
           >
             {(() => {
               const selectedPrediction = sortedPredictions[selectedIndex];
               const hybridConfidence = getHybridConfidence(selectedPrediction);
               const confidenceLevel = getConfidenceLevel(hybridConfidence);
-              const LevelIcon = confidenceLevelConfig[confidenceLevel].icon;
+              const { color } = confidenceConfig[confidenceLevel];
+              const inSlip = isInSlip(selectedPrediction);
               
               return (
                 <div className="p-4 rounded-xl bg-card border border-border/50 space-y-4">
-                  {/* Prediction Header */}
+                  {/* Prediction Header - Cleaner */}
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-semibold text-foreground">{selectedPrediction.type}</h4>
-                      <p className="text-sm text-muted-foreground">Tahmin</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Tahmin Detayı</p>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <div className={cn(
-                        "px-4 py-2 rounded-lg text-lg font-bold",
-                        confidenceLevelConfig[confidenceLevel].className
-                      )}>
+                    <div className="text-right">
+                      <div className="text-xl font-bold text-foreground">
                         {selectedPrediction.prediction}
                       </div>
-                      {/* Confidence Level Badge */}
-                      <Badge 
-                        variant="outline" 
-                        className={cn("text-xs", confidenceLevelConfig[confidenceLevel].className)}
-                      >
-                        <LevelIcon className="w-3 h-3 mr-1" />
-                        {confidenceLevelConfig[confidenceLevel].label} Güven (%{Math.round(hybridConfidence)})
-                      </Badge>
+                      <span className={cn("text-sm font-medium", color)}>
+                        %{Math.round(hybridConfidence)} güven
+                      </span>
                     </div>
                   </div>
 
-                  {/* Confidence Bars */}
-                  {selectedPrediction.isAIPowered && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground flex items-center gap-1">
-                            <Sparkles className="w-3 h-3" /> AI Güveni
-                          </span>
-                          <span className="font-medium">
-                            %{Math.round((selectedPrediction.aiConfidence || 0) * 100)}
-                          </span>
-                        </div>
-                        <Progress 
-                          value={(selectedPrediction.aiConfidence || 0) * 100} 
-                          className="h-1.5"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">📊 Matematik</span>
-                          <span className="font-medium">
-                            %{Math.round((selectedPrediction.mathConfidence || 0) * 100)}
-                          </span>
-                        </div>
-                        <Progress 
-                          value={(selectedPrediction.mathConfidence || 0) * 100} 
-                          className="h-1.5"
-                        />
-                      </div>
+                  {/* Single Hybrid Progress Bar */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" /> Hibrit Skor
+                      </span>
+                      <span className={cn("font-medium", color)}>%{Math.round(hybridConfidence)}</span>
                     </div>
-                  )}
+                    <Progress value={hybridConfidence} className="h-2" />
+                  </div>
 
                   {/* Reasoning */}
-                  <p className="text-sm text-muted-foreground">
-                    {selectedPrediction.reasoning}
-                  </p>
+                  {selectedPrediction.reasoning && (
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {selectedPrediction.reasoning}
+                    </p>
+                  )}
 
                   {/* Add to Slip */}
                   <Button
                     size="sm"
-                    variant={isInSlip(selectedPrediction) ? "secondary" : "default"}
                     onClick={() => handleAddToSlipClick(selectedPrediction)}
-                    disabled={isInSlip(selectedPrediction)}
-                    className="w-full gap-2"
+                    disabled={inSlip}
+                    className={cn(
+                      "w-full gap-2",
+                      inSlip && "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+                    )}
                   >
-                    {isInSlip(selectedPrediction) ? (
+                    {inSlip ? (
                       <>
                         <Check className="w-4 h-4" />
                         Kuponda
