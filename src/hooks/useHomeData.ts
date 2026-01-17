@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Match, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
+import { Match, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { supabase } from '@/integrations/supabase/client';
-import { footballApiRequest } from '@/services/apiRequestManager';
 
 interface HomeStats {
   liveCount: number;
@@ -20,12 +19,8 @@ interface HomeData {
   syncMatches: () => Promise<void>;
 }
 
-interface MatchesResponse {
-  matches: Match[];
-}
-
-interface CachedMatch {
-  id: number;
+// Transform cached match to Match type
+const transformCachedMatch = (cached: {
   match_id: number;
   competition_code: string;
   competition_name: string | null;
@@ -40,25 +35,15 @@ interface CachedMatch {
   matchday: number | null;
   home_score: number | null;
   away_score: number | null;
-  winner: string | null;
-  raw_data: Record<string, unknown> | null;
-  updated_at: string;
-}
-
-// Transform cached match to Match type
-const transformCachedMatch = (cached: CachedMatch): Match => ({
+  winner?: string | null;
+}): Match => ({
   id: cached.match_id,
   competition: {
     id: 0,
     name: cached.competition_name || '',
-    code: cached.competition_code,
+    code: cached.competition_code as CompetitionCode,
     emblem: '',
-    area: {
-      id: 0,
-      name: '',
-      code: '',
-      flag: '',
-    },
+    area: { id: 0, name: '', code: '', flag: '' },
   },
   homeTeam: {
     id: cached.home_team_id || 0,
@@ -78,19 +63,64 @@ const transformCachedMatch = (cached: CachedMatch): Match => ({
   status: cached.status as Match['status'],
   matchday: cached.matchday || 1,
   score: {
-    winner: cached.winner as 'HOME_TEAM' | 'AWAY_TEAM' | 'DRAW' | null,
-    fullTime: {
-      home: cached.home_score,
-      away: cached.away_score,
-    },
-    halfTime: {
-      home: null,
-      away: null,
-    },
+    winner: (cached.winner as 'HOME_TEAM' | 'AWAY_TEAM' | 'DRAW') || null,
+    fullTime: { home: cached.home_score, away: cached.away_score },
+    halfTime: { home: null, away: null },
   },
 });
 
-// Centralized data fetching for homepage with database cache
+// Transform cached live match to Match type
+const transformCachedLiveMatch = (cached: {
+  match_id: number;
+  competition_code: string;
+  competition_name: string | null;
+  home_team_id: number | null;
+  home_team_name: string;
+  home_team_crest: string | null;
+  away_team_id: number | null;
+  away_team_name: string;
+  away_team_crest: string | null;
+  utc_date: string;
+  status: string;
+  matchday: number | null;
+  home_score: number | null;
+  away_score: number | null;
+  half_time_home: number | null;
+  half_time_away: number | null;
+}): Match => ({
+  id: cached.match_id,
+  competition: {
+    id: 0,
+    name: cached.competition_name || '',
+    code: cached.competition_code as CompetitionCode,
+    emblem: '',
+    area: { id: 0, name: '', code: '', flag: '' },
+  },
+  homeTeam: {
+    id: cached.home_team_id || 0,
+    name: cached.home_team_name,
+    shortName: cached.home_team_name,
+    tla: cached.home_team_name.substring(0, 3).toUpperCase(),
+    crest: cached.home_team_crest || '',
+  },
+  awayTeam: {
+    id: cached.away_team_id || 0,
+    name: cached.away_team_name,
+    shortName: cached.away_team_name,
+    tla: cached.away_team_name.substring(0, 3).toUpperCase(),
+    crest: cached.away_team_crest || '',
+  },
+  utcDate: cached.utc_date,
+  status: cached.status as Match['status'],
+  matchday: cached.matchday || 1,
+  score: {
+    winner: null,
+    fullTime: { home: cached.home_score, away: cached.away_score },
+    halfTime: { home: cached.half_time_home, away: cached.half_time_away },
+  },
+});
+
+// Centralized data fetching for homepage - ALL from database cache (no rate limits!)
 export const useHomeData = (): HomeData => {
   const [stats, setStats] = useState<HomeStats>({
     liveCount: 0,
@@ -103,16 +133,16 @@ export const useHomeData = (): HomeData => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Trigger sync-matches edge function
+  // Trigger sync edge functions in background
   const syncMatches = useCallback(async () => {
-    console.log('[useHomeData] Triggering sync-matches...');
+    console.log('[useHomeData] Triggering sync functions...');
     try {
-      const { data, error } = await supabase.functions.invoke('sync-matches');
-      if (error) {
-        console.error('[useHomeData] Sync error:', error);
-      } else {
-        console.log('[useHomeData] Sync result:', data);
-      }
+      // Trigger both sync functions in parallel
+      await Promise.all([
+        supabase.functions.invoke('sync-matches'),
+        supabase.functions.invoke('sync-live-matches'),
+      ]);
+      console.log('[useHomeData] Sync completed');
     } catch (e) {
       console.error('[useHomeData] Sync exception:', e);
     }
@@ -126,13 +156,15 @@ export const useHomeData = (): HomeData => {
       const today = new Date().toISOString().split('T')[0];
       const todayStart = `${today}T00:00:00Z`;
       const tomorrowStart = new Date(new Date(today).getTime() + 86400000).toISOString();
+      const supportedCodes = SUPPORTED_COMPETITIONS.map(c => c.code);
 
-      // Fetch ALL data from database in parallel (no rate limit!)
+      // Fetch ALL data from database cache in parallel (NO RATE LIMITS!)
       const [
         todayCountResult,
         overallStatsResult,
         premiumStatsResult,
         cachedMatchesResult,
+        cachedLiveMatchesResult,
       ] = await Promise.all([
         supabase
           .from('predictions')
@@ -147,61 +179,35 @@ export const useHomeData = (): HomeData => {
           .select('premium_accuracy')
           .limit(1)
           .maybeSingle(),
-        // Read matches from cached_matches table (rate limit free!)
+        // Today's matches from cached_matches table
         supabase
           .from('cached_matches')
           .select('*')
           .in('status', ['SCHEDULED', 'TIMED'])
+          .in('competition_code', supportedCodes)
           .gte('utc_date', todayStart)
           .lt('utc_date', tomorrowStart)
           .order('utc_date', { ascending: true }),
+        // Live matches from cached_live_matches table
+        supabase
+          .from('cached_live_matches')
+          .select('*')
+          .in('competition_code', supportedCodes)
+          .order('utc_date', { ascending: true }),
       ]);
 
-      // Transform cached matches to Match type
-      const cachedMatches = (cachedMatchesResult.data as CachedMatch[] || [])
-        .map(transformCachedMatch);
+      // Transform cached matches
+      const todayMatches = (cachedMatchesResult.data || []).map(transformCachedMatch);
+      const liveData = (cachedLiveMatchesResult.data || []).map(transformCachedLiveMatch);
 
-      // If no cached data, trigger sync and try API as fallback
-      if (cachedMatches.length === 0) {
-        console.log('[useHomeData] No cached matches, triggering sync...');
-        
-        // Trigger sync in background (don't await)
-        syncMatches();
-        
-        // Try API as fallback (one attempt)
-        try {
-          const response = await footballApiRequest<MatchesResponse>({
-            action: 'matches',
-            dateFrom: today,
-            dateTo: today,
-            status: 'SCHEDULED,TIMED',
-          });
-
-          const allowedCodes = new Set<string>(SUPPORTED_COMPETITIONS.map(c => c.code));
-          const apiMatches = (response?.matches || [])
-            .filter(m => allowedCodes.has(m.competition?.code))
-            .filter(m => m.status === 'TIMED' || m.status === 'SCHEDULED')
-            .sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
-          
-          setTodaysMatches(apiMatches);
-        } catch (e) {
-          console.warn('[useHomeData] API fallback also failed:', e);
-          setTodaysMatches([]);
-        }
-      } else {
-        setTodaysMatches(cachedMatches);
+      // If no cached data, trigger sync in background
+      if (todayMatches.length === 0 && liveData.length === 0) {
+        console.log('[useHomeData] No cached data, triggering sync...');
+        syncMatches(); // Don't await, run in background
       }
 
-      // Live matches still need API (real-time requirement)
-      let liveData: Match[] = [];
-      try {
-        const response = await footballApiRequest<MatchesResponse>({
-          action: 'live',
-        });
-        liveData = response?.matches || [];
-      } catch (e) {
-        console.warn('[useHomeData] Live matches fetch failed:', e);
-      }
+      setTodaysMatches(todayMatches);
+      setLiveMatches(liveData);
 
       setStats({
         todayPredictions: todayCountResult.count || 0,
@@ -209,8 +215,6 @@ export const useHomeData = (): HomeData => {
         premiumAccuracy: Math.round(premiumStatsResult.data?.premium_accuracy || 0),
         liveCount: liveData.length,
       });
-
-      setLiveMatches(liveData);
 
     } catch (e) {
       console.error('[useHomeData] Error fetching home data:', e);
