@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   User, 
@@ -25,7 +25,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { ProfileSkeleton } from '@/components/ui/skeletons';
+import AppHeader from '@/components/layout/AppHeader';
 import BottomNav from '@/components/navigation/BottomNav';
+import { Link } from 'react-router-dom';
 
 const Profile: React.FC = () => {
   const { user, signOut, isLoading: authLoading } = useAuth();
@@ -84,6 +86,7 @@ const Profile: React.FC = () => {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background pb-20">
+        <AppHeader />
         <div className="container mx-auto px-4 py-8">
           <ProfileSkeleton />
         </div>
@@ -118,6 +121,7 @@ const Profile: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      <AppHeader />
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <motion.div
           variants={containerVariants}

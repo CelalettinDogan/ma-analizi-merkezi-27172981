@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Trophy, ArrowLeft, RefreshCw, Loader2 } from 'lucide-react';
+import { Trophy, RefreshCw, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import AppHeader from '@/components/layout/AppHeader';
 import LeagueGrid from '@/components/league/LeagueGrid';
 import BottomNav from '@/components/navigation/BottomNav';
 import CommandPalette from '@/components/navigation/CommandPalette';
@@ -102,38 +102,21 @@ const StandingsPage: React.FC = () => {
 
   const table = standingsData?.standings?.find(s => s.type === 'TOTAL')?.table || [];
 
+  const headerRightContent = (
+    <Button
+      variant="outline"
+      size="icon"
+      onClick={() => fetchStandings(true)}
+      disabled={isRefreshing}
+    >
+      <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+    </Button>
+  );
+
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-8">
       {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-background/80 border-b border-border/50">
-        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link to="/">
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-            </Link>
-            <div className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-secondary" />
-              <span className="font-display font-bold">Puan Durumu</span>
-            </div>
-            {standingsData && (
-              <Badge variant="secondary" className="hidden sm:flex">
-                Hafta {standingsData.season?.currentMatchday}
-              </Badge>
-            )}
-          </div>
-          
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => fetchStandings(true)}
-            disabled={isRefreshing}
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          </Button>
-        </div>
-      </header>
+      <AppHeader rightContent={headerRightContent} />
 
       <main className="container mx-auto px-4 py-6 space-y-6">
         {/* League Selector */}

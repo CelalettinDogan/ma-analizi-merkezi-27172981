@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { NavLink } from "@/components/NavLink";
-import UserMenu from "@/components/UserMenu";
+import AppHeader from "@/components/layout/AppHeader";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, LogIn, LayoutDashboard } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
@@ -82,42 +81,25 @@ const Dashboard = () => {
     }
   };
 
+  const headerRightContent = (
+    <div className="flex items-center gap-2">
+      <AutoVerifyButton onVerificationComplete={loadData} />
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleRefresh}
+        disabled={isRefreshing}
+        className="h-9 w-9"
+      >
+        <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+      </Button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Compact Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/50">
-        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <NavLink to="/" className="flex items-center gap-2">
-              <LayoutDashboard className="w-5 h-5 text-primary" />
-              <span className="font-semibold text-foreground hidden sm:inline">Dashboard</span>
-            </NavLink>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <AutoVerifyButton onVerificationComplete={loadData} />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="h-9 w-9"
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
-            </Button>
-            {user ? (
-              <UserMenu />
-            ) : (
-              <NavLink to="/auth">
-                <Button variant="outline" size="sm" className="h-9">
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Giriş Yap
-                </Button>
-              </NavLink>
-            )}
-          </div>
-        </div>
-      </header>
+      {/* Header */}
+      <AppHeader rightContent={headerRightContent} />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
