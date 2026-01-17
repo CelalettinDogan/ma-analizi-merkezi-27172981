@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import LiveMatchCard from './LiveMatchCard';
 import { Match, CompetitionCode, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
-import { supabase } from '@/integrations/supabase/client';
+import { footballApiRequest } from '@/services/apiRequestManager';
 import {
   Select,
   SelectContent,
@@ -34,33 +34,18 @@ const LiveMatchesSection: React.FC<LiveMatchesSectionProps> = ({ onSelectMatch }
     setError(null);
 
     try {
-      const competitions = selectedLeague === 'ALL' 
-        ? SUPPORTED_COMPETITIONS.map(c => c.code)
-        : [selectedLeague];
+      const allowedCodes = selectedLeague === 'ALL'
+        ? new Set(SUPPORTED_COMPETITIONS.map(c => c.code))
+        : new Set([selectedLeague]);
 
-      const allMatches: Match[] = [];
+      const response = await footballApiRequest<{ matches: Match[] }>({
+        action: 'live',
+      });
 
-      for (const code of competitions) {
-        try {
-          const { data, error: apiError } = await supabase.functions.invoke('football-api', {
-            body: {
-              action: 'matches',
-              competitionCode: code,
-              status: 'LIVE', // This fetches both IN_PLAY and PAUSED
-            },
-          });
+      const allMatches: Match[] = (response?.matches || [])
+        .filter(m => allowedCodes.has(m.competition?.code as CompetitionCode))
+        .sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
 
-          if (!apiError && data?.matches) {
-            allMatches.push(...data.matches);
-          }
-        } catch (e) {
-          console.error(`Error fetching live matches for ${code}:`, e);
-        }
-      }
-
-      // Sort by match start time
-      allMatches.sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
-      
       setLiveMatches(allMatches);
       setLastUpdated(new Date());
     } catch (e) {
