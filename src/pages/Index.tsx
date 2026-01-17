@@ -41,8 +41,9 @@ const Index: React.FC = () => {
   const { user } = useAuth();
   const { showOnboarding, completeOnboarding } = useOnboarding();
   
-  // Refs for scroll behavior
+// Refs for scroll behavior
   const upcomingMatchesRef = useRef<HTMLDivElement>(null);
+  const pendingAnalysisScrollRef = useRef(false);
   
   // Centralized data fetching - single source of truth
   const { stats, liveMatches, todaysMatches, isLoading: homeDataLoading, refetch, syncMatches } = useHomeData();
@@ -122,6 +123,29 @@ const Index: React.FC = () => {
   } | null>(null);
   const analysisLoadingRef = useRef<HTMLDivElement>(null);
 
+  // Scroll to AI recommendation after analysis completes
+  useEffect(() => {
+    if (analysis && !analysisLoading && pendingAnalysisScrollRef.current) {
+      pendingAnalysisScrollRef.current = false;
+      
+      // Use requestAnimationFrame to ensure DOM is painted
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const anchor = document.getElementById('ai-recommendation-anchor');
+          if (anchor) {
+            anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else {
+            // Fallback to analysis section
+            document.getElementById('analysis-section')?.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'start' 
+            });
+          }
+        });
+      });
+    }
+  }, [analysis, analysisLoading]);
+
   const handleMatchSelect = async (match: ApiMatch) => {
     // Set loading state immediately for instant feedback
     setLoadingMatchId(match.id);
@@ -148,18 +172,14 @@ const Index: React.FC = () => {
       matchDate: match.utcDate.split('T')[0],
     };
     
+    // Mark scroll request for after analysis completes
+    pendingAnalysisScrollRef.current = true;
+    
     try {
       await analyzeMatch(matchInput);
-      
-      // Scroll to Match Hero (Team vs Team header) after completion
-      setTimeout(() => {
-        document.getElementById('ai-recommendation-section')?.scrollIntoView({ 
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }, 100);
     } catch (error) {
       toast.error('Analiz yüklenirken hata oluştu');
+      pendingAnalysisScrollRef.current = false;
     } finally {
       setLoadingMatchId(null);
       setAnalyzingMatchInfo(null);
@@ -167,13 +187,8 @@ const Index: React.FC = () => {
   };
 
   const handleFormSubmit = async (data: MatchInput) => {
+    pendingAnalysisScrollRef.current = true;
     await analyzeMatch(data);
-    setTimeout(() => {
-      document.getElementById('ai-recommendation-section')?.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }, 100);
   };
 
   const handleCommandLeagueSelect = (code: string) => {
@@ -297,8 +312,8 @@ const Index: React.FC = () => {
               className="space-y-6 pb-32"
               style={{ scrollMarginTop: '80px' }}
             >
-              {/* Match Hero Card - Team vs Team Header (Scroll Target) */}
-              <div id="ai-recommendation-section" style={{ scrollMarginTop: '80px' }}>
+              {/* Match Hero Card - Team vs Team Header */}
+              <div id="match-hero-section">
                 <MatchHeroCard 
                   match={analysis.input} 
                   insights={analysis.insights}
@@ -306,6 +321,9 @@ const Index: React.FC = () => {
                   awayTeamCrest={analysis.input.awayTeamCrest}
                 />
               </div>
+
+              {/* Stable Scroll Anchor - Above AI Recommendation */}
+              <div id="ai-recommendation-anchor" style={{ scrollMarginTop: '80px' }} />
 
               {/* AI Recommendation */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
