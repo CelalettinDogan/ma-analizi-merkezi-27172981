@@ -151,9 +151,9 @@ const Index: React.FC = () => {
     try {
       await analyzeMatch(matchInput);
       
-      // Scroll to AI recommendation section (top of analysis) after completion
+      // Scroll to Match Hero (Team vs Team header) after completion
       setTimeout(() => {
-        document.getElementById('analysis-section')?.scrollIntoView({ 
+        document.getElementById('ai-recommendation-section')?.scrollIntoView({ 
           behavior: 'smooth',
           block: 'start'
         });
@@ -169,7 +169,7 @@ const Index: React.FC = () => {
   const handleFormSubmit = async (data: MatchInput) => {
     await analyzeMatch(data);
     setTimeout(() => {
-      document.getElementById('analysis-section')?.scrollIntoView({ 
+      document.getElementById('ai-recommendation-section')?.scrollIntoView({ 
         behavior: 'smooth',
         block: 'start'
       });
@@ -297,8 +297,18 @@ const Index: React.FC = () => {
               className="space-y-6 pb-32"
               style={{ scrollMarginTop: '80px' }}
             >
-              {/* AI Recommendation - First for scroll target */}
-              <div id="ai-recommendation-section" className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Match Hero Card - Team vs Team Header (Scroll Target) */}
+              <div id="ai-recommendation-section" style={{ scrollMarginTop: '80px' }}>
+                <MatchHeroCard 
+                  match={analysis.input} 
+                  insights={analysis.insights}
+                  homeTeamCrest={analysis.input.homeTeamCrest}
+                  awayTeamCrest={analysis.input.awayTeamCrest}
+                />
+              </div>
+
+              {/* AI Recommendation */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <AIRecommendationCard 
                   predictions={analysis.predictions} 
                   matchInput={analysis.input} 
@@ -312,14 +322,6 @@ const Index: React.FC = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Match Hero Card */}
-              <MatchHeroCard 
-                match={analysis.input} 
-                insights={analysis.insights}
-                homeTeamCrest={analysis.input.homeTeamCrest}
-                awayTeamCrest={analysis.input.awayTeamCrest}
-              />
 
               {/* Team Comparison Card - Merged Stats + Power */}
               <TeamComparisonCard
