@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Clock, 
@@ -10,7 +11,9 @@ import {
   Database,
   Loader2,
   Calendar,
-  Zap
+  Zap,
+  ShieldAlert,
+  Lock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +21,8 @@ import { Badge } from '@/components/ui/badge';
 import AppHeader from '@/components/layout/AppHeader';
 import BottomNav from '@/components/navigation/BottomNav';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from 'sonner';
 import { fadeInUp, staggerContainer, staggerItem } from '@/lib/animations';
 
@@ -35,12 +40,22 @@ interface CronJob {
 }
 
 const AdminPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { user, isLoading: authLoading } = useAuth();
+  const { isAdmin, isLoading: roleLoading } = useUserRole();
+  
   const [jobs, setJobs] = useState<CronJob[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [triggeringJob, setTriggeringJob] = useState<string | null>(null);
 
+  // Access control check
+  const isAuthorized = user && isAdmin;
+  const isCheckingAuth = authLoading || roleLoading;
+
   const fetchCronStatus = useCallback(async () => {
+    if (!isAuthorized) return;
+    
     try {
       const { data, error } = await supabase.functions.invoke('admin-cron-status');
       
@@ -54,15 +69,27 @@ const AdminPage: React.FC = () => {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [isAuthorized]);
 
   useEffect(() => {
+    if (isCheckingAuth) return;
+    
+    if (!user) {
+      navigate('/auth', { replace: true });
+      return;
+    }
+
+    if (!isAdmin) {
+      setIsLoading(false);
+      return;
+    }
+
     fetchCronStatus();
     
     // Auto-refresh every 30 seconds
     const interval = setInterval(fetchCronStatus, 30000);
     return () => clearInterval(interval);
-  }, [fetchCronStatus]);
+  }, [isCheckingAuth, user, isAdmin, fetchCronStatus, navigate]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -77,7 +104,6 @@ const AdminPage: React.FC = () => {
       
       toast.success(`${functionName} başarıyla çalıştırıldı`);
       
-      // Refresh status after triggering
       setTimeout(fetchCronStatus, 2000);
     } catch (e) {
       console.error('Error triggering job:', e);
@@ -134,15 +160,66 @@ const AdminPage: React.FC = () => {
     });
   };
 
+  // Loading state
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Unauthorized state
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-background pb-20 md:pb-8">
+        <AppHeader />
+        <main className="container mx-auto px-4 py-12">
+          <motion.div 
+            {...fadeInUp}
+            className="max-w-md mx-auto text-center"
+          >
+            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-500/10 flex items-center justify-center border border-red-500/30">
+              <ShieldAlert className="w-10 h-10 text-red-500" />
+            </div>
+            
+            <h1 className="text-2xl font-bold mb-2">Erişim Engellendi</h1>
+            <p className="text-muted-foreground mb-6">
+              Bu sayfaya erişim yetkiniz bulunmuyor. Admin paneline sadece yetkili kullanıcılar erişebilir.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button onClick={() => navigate('/')} className="gap-2">
+                Ana Sayfaya Dön
+              </Button>
+              {!user && (
+                <Button variant="outline" onClick={() => navigate('/auth')} className="gap-2">
+                  <Lock className="w-4 h-4" />
+                  Giriş Yap
+                </Button>
+              )}
+            </div>
+          </motion.div>
+        </main>
+        <BottomNav />
+      </div>
+    );
+  }
+
   const headerRightContent = (
-    <Button
-      variant="outline"
-      size="icon"
-      onClick={handleRefresh}
-      disabled={isRefreshing}
-    >
-      <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-    </Button>
+    <div className="flex items-center gap-2">
+      <Badge variant="outline" className="text-green-500 border-green-500/30">
+        Admin
+      </Badge>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={handleRefresh}
+        disabled={isRefreshing}
+      >
+        <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+      </Button>
+    </div>
   );
 
   return (
@@ -258,7 +335,6 @@ const AdminPage: React.FC = () => {
                   </CardHeader>
                   
                   <CardContent className="space-y-4">
-                    {/* Schedule Info */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-muted-foreground" />
@@ -295,7 +371,6 @@ const AdminPage: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Cron Expression */}
                     <div className="flex items-center justify-between pt-3 border-t border-border/50">
                       <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
                         {job.schedule}
