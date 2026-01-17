@@ -128,21 +128,21 @@ const Index: React.FC = () => {
     if (analysis && !analysisLoading && pendingAnalysisScrollRef.current) {
       pendingAnalysisScrollRef.current = false;
       
-      // Use requestAnimationFrame to ensure DOM is painted
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const anchor = document.getElementById('ai-recommendation-anchor');
-          if (anchor) {
-            anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          } else {
-            // Fallback to analysis section
-            document.getElementById('analysis-section')?.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'start' 
-            });
-          }
-        });
-      });
+      // Wait for Framer Motion animation to complete (300ms) + buffer
+      const scrollTimeout = setTimeout(() => {
+        const anchor = document.getElementById('ai-recommendation-anchor');
+        if (anchor) {
+          anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          // Fallback to analysis section
+          document.getElementById('analysis-section')?.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }
+      }, 350);
+      
+      return () => clearTimeout(scrollTimeout);
     }
   }, [analysis, analysisLoading]);
 
@@ -301,6 +301,11 @@ const Index: React.FC = () => {
           )}
         </AnimatePresence>
 
+        {/* Stable Scroll Anchor - Outside AnimatePresence for reliable targeting */}
+        {analysis && !analysisLoading && (
+          <div id="ai-recommendation-anchor" style={{ scrollMarginTop: '80px' }} />
+        )}
+
         {/* Analysis Section */}
         <AnimatePresence>
           {analysis && !analysisLoading && (
@@ -321,9 +326,6 @@ const Index: React.FC = () => {
                   awayTeamCrest={analysis.input.awayTeamCrest}
                 />
               </div>
-
-              {/* Stable Scroll Anchor - Above AI Recommendation */}
-              <div id="ai-recommendation-anchor" style={{ scrollMarginTop: '80px' }} />
 
               {/* AI Recommendation */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
