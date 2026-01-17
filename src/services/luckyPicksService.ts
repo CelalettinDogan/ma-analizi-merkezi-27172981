@@ -15,29 +15,59 @@ export interface LuckyPick {
 
 /**
  * Get the top N highest confidence predictions for upcoming matches
- * Uses cached_matches to find upcoming games and predictions table for confidence data
+ * Only includes matches that haven't started yet (status = TIMED or SCHEDULED)
  */
 export async function getLuckyPicks(limit: number = 3): Promise<LuckyPick[]> {
+  const now = new Date().toISOString();
+
+  // First get upcoming matches from cache to know which ones are actually not played
+  const { data: upcomingMatches, error: matchError } = await supabase
+    .from('cached_matches')
+    .select('home_team_name, away_team_name, competition_code, utc_date, status')
+    .gt('utc_date', now)
+    .in('status', ['TIMED', 'SCHEDULED'])
+    .order('utc_date', { ascending: true })
+    .limit(100);
+
+  if (matchError) {
+    console.error('Error fetching upcoming matches:', matchError);
+    throw new Error('Şanslı tahminler yüklenemedi');
+  }
+
+  if (!upcomingMatches || upcomingMatches.length === 0) {
+    throw new Error('Yaklaşan maç bulunamadı');
+  }
+
+  // Create a set of valid upcoming match keys
+  const upcomingMatchKeys = new Set(
+    upcomingMatches.map(m => `${m.home_team_name}-${m.away_team_name}`)
+  );
+
   const today = format(new Date(), 'yyyy-MM-dd');
   const nextWeek = format(addDays(new Date(), 7), 'yyyy-MM-dd');
 
-  // First try to get from predictions table (existing analyzed matches)
+  // Get predictions and filter only those that match upcoming games
   const { data: predictions, error: predictionsError } = await supabase
     .from('predictions')
     .select('*')
     .gte('match_date', today)
     .lte('match_date', nextWeek)
-    .is('is_correct', null) // Not yet verified (upcoming)
+    .is('is_correct', null) // Not yet verified
     .not('hybrid_confidence', 'is', null)
     .order('hybrid_confidence', { ascending: false })
-    .limit(50); // Get more to filter unique matches
+    .limit(100);
 
   if (predictionsError) {
     console.error('Error fetching predictions for lucky picks:', predictionsError);
     throw new Error('Şanslı tahminler yüklenemedi');
   }
 
-  if (!predictions || predictions.length === 0) {
+  // Filter predictions to only include upcoming matches
+  const validPredictions = predictions?.filter(pred => 
+    upcomingMatchKeys.has(`${pred.home_team}-${pred.away_team}`)
+  ) || [];
+
+  if (validPredictions.length === 0) {
     // Fallback: Get from cached matches and calculate simple confidence
     return await getLuckyPicksFromCachedMatches(limit);
   }
@@ -45,7 +75,7 @@ export async function getLuckyPicks(limit: number = 3): Promise<LuckyPick[]> {
   // Get unique matches with their highest confidence prediction
   const matchMap = new Map<string, LuckyPick>();
   
-  for (const pred of predictions) {
+  for (const pred of validPredictions) {
     const matchKey = `${pred.home_team}-${pred.away_team}`;
     
     // Skip if we already have this match with higher confidence
