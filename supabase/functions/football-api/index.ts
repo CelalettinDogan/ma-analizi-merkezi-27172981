@@ -80,7 +80,13 @@ serve(async (req) => {
           if (status) params.append('status', status);
           if (params.toString()) url += `?${params.toString()}`;
         } else {
+          // Global matches endpoint - keep query params (dateFrom/dateTo/status) to limit payload
           url = `${FOOTBALL_DATA_BASE_URL}/matches`;
+          const params = new URLSearchParams();
+          if (dateFrom) params.append('dateFrom', dateFrom);
+          if (dateTo) params.append('dateTo', dateTo);
+          if (status) params.append('status', status);
+          if (params.toString()) url += `?${params.toString()}`;
         }
         break;
         

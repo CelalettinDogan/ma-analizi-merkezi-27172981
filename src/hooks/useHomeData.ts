@@ -71,30 +71,24 @@ export const useHomeData = (): HomeData => {
         console.warn('Live matches fetch failed:', e);
       }
 
-      // Fetch today's scheduled matches from ALL leagues
-      // The centralized manager handles rate limiting (7s intervals) and caching (5min)
+      // Fetch today's scheduled matches in ONE request to avoid rate limits
+      // (The global /matches endpoint returns all competitions; we filter to our supported set)
       const scheduledMatches: Match[] = [];
-      
-      // Queue all league requests in parallel - the manager will process them sequentially
-      const matchPromises = SUPPORTED_COMPETITIONS.map(league => 
-        footballApiRequest<MatchesResponse>({
+
+      try {
+        const response = await footballApiRequest<MatchesResponse>({
           action: 'matches',
-          competitionCode: league.code,
           status: 'SCHEDULED',
           dateFrom: today,
           dateTo: today,
-        }).catch(e => {
-          console.warn(`Matches fetch failed for ${league.code}:`, e);
-          return { matches: [] } as MatchesResponse;
-        })
-      );
+        });
 
-      const results = await Promise.all(matchPromises);
-      results.forEach(result => {
-        if (result?.matches) {
-          scheduledMatches.push(...result.matches);
-        }
-      });
+        const allowedCodes = new Set<string>(SUPPORTED_COMPETITIONS.map(c => c.code));
+        const filtered = (response?.matches || []).filter(m => allowedCodes.has(m.competition?.code));
+        scheduledMatches.push(...filtered);
+      } catch (e) {
+        console.warn('Today matches fetch failed:', e);
+      }
 
       // Sort by time
       scheduledMatches.sort((a, b) => 

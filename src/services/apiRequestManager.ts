@@ -31,7 +31,7 @@ const CACHE_DURATIONS = {
 // Rate limiting configuration
 const REQUEST_INTERVAL = 7000; // 7 seconds between requests (safe margin for 10 req/min)
 const MAX_RETRIES = 2;
-const RETRY_DELAY_BASE = 10000; // 10 seconds base delay for retries
+const RETRY_JITTER_MS = 500; // small buffer to avoid retrying exactly at reset boundary
 
 // Queue state
 let requestQueue: QueuedRequest[] = [];
@@ -72,16 +72,33 @@ async function waitForRateLimit(): Promise<void> {
   lastRequestTime = Date.now();
 }
 
+function extractRetryAfterSeconds(message: string): number | null {
+  // supabase-js error message often contains the function response JSON for 429s
+  // Example: Edge function returned 429: Error, {"error":"Rate limit exceeded","retryAfter":19,...}
+  const match = message.match(/"retryAfter"\s*:\s*(\d+)/);
+  if (match?.[1]) return parseInt(match[1], 10);
+  return null;
+}
+
 async function executeRequest(body: Record<string, unknown>): Promise<unknown> {
   const { data, error } = await supabase.functions.invoke('football-api', {
     body,
   });
 
   if (error) {
-    throw new Error(error.message || 'API çağrısı başarısız');
+    const message = (error as unknown as { message?: string })?.message || 'API çağrısı başarısız';
+
+    // When the function returns a non-2xx (e.g., 429), supabase-js surfaces it as `error`
+    // so we need to interpret it here to trigger our backoff/retry logic.
+    if (message.includes('returned 429')) {
+      const retryAfter = extractRetryAfterSeconds(message) ?? 15;
+      throw new Error(`RATE_LIMIT:${retryAfter}`);
+    }
+
+    throw new Error(message);
   }
 
-  // Check for rate limit error in response
+  // If the function responds with 200 but includes a rate-limit payload (defensive)
   if (data?.error?.includes?.('Rate limit') || data?.retryAfter) {
     const retryAfter = data.retryAfter || 10;
     throw new Error(`RATE_LIMIT:${retryAfter}`);
@@ -122,8 +139,8 @@ async function processQueue(): Promise<void> {
         if (request.retryCount < MAX_RETRIES) {
           console.log(`[Rate Limited] Retrying in ${retryAfter}s (attempt ${request.retryCount + 1}/${MAX_RETRIES})`);
           
-          // Wait for the retry-after period
-          await new Promise(resolve => setTimeout(resolve, retryAfter * 1000 + RETRY_DELAY_BASE));
+          // Wait for the retry-after period (+ small jitter)
+          await new Promise(resolve => setTimeout(resolve, retryAfter * 1000 + RETRY_JITTER_MS));
           
           // Re-queue with incremented retry count
           requestQueue.unshift({ ...request, retryCount: request.retryCount + 1 });
