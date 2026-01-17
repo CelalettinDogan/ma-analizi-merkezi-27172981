@@ -96,12 +96,13 @@ function checkPredictionCorrect(
   }
 }
 
-// Get pending predictions that haven't been verified yet
+// Get pending predictions that haven't been verified yet (only primary predictions)
 export async function getPendingPredictions(): Promise<PredictionRecord[]> {
   const { data, error } = await supabase
     .from('predictions')
     .select('*')
     .is('is_correct', null)
+    .eq('is_primary', true) // Only verify primary predictions
     .order('match_date', { ascending: false });
 
   if (error) {
