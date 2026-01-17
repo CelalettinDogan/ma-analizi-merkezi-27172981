@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import HeroSection from '@/components/HeroSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
 import BetSlipButton from '@/components/betslip/BetSlipButton';
@@ -38,6 +39,9 @@ const Index: React.FC = () => {
   const { user } = useAuth();
   const { showOnboarding, completeOnboarding } = useOnboarding();
   
+  // Refs for scroll behavior
+  const upcomingMatchesRef = useRef<HTMLDivElement>(null);
+  
   // Centralized data fetching - single source of truth
   const { stats, liveMatches, todaysMatches, isLoading: homeDataLoading } = useHomeData();
   
@@ -45,6 +49,13 @@ const Index: React.FC = () => {
   const [upcomingMatches, setUpcomingMatches] = useState<ApiMatch[]>([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+
+  // Footer stats - derived from useHomeData
+  const footerStats = {
+    totalAnalysis: stats.todayPredictions,
+    accuracy: stats.accuracy,
+    premiumAccuracy: stats.premiumAccuracy
+  };
 
   // Handle match from Live page navigation
   useEffect(() => {
@@ -80,6 +91,20 @@ const Index: React.FC = () => {
 
   const handleLeagueSelect = (code: CompetitionCode) => {
     setSelectedLeague(code);
+    
+    // Show toast notification
+    const leagueName = SUPPORTED_COMPETITIONS.find(c => c.code === code)?.name || code;
+    toast.info(`${leagueName} maçları yükleniyor...`, {
+      duration: 2000,
+    });
+
+    // Scroll to upcoming matches section after a short delay
+    setTimeout(() => {
+      upcomingMatchesRef.current?.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }, 300);
   };
 
   const handleMatchSelect = async (match: ApiMatch) => {
@@ -131,12 +156,12 @@ const Index: React.FC = () => {
       {/* Header */}
       <AppHeader rightContent={searchButton} />
 
-      {/* Hero Section - Simplified */}
+      {/* Hero Section - Simplified with count-up */}
       <HeroSection stats={stats} />
 
       {/* Main Content - Clean Single Column Flow */}
-      <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* League Selection - Compact Pills */}
+      <main className="container mx-auto px-4 py-8 space-y-8">
+        {/* League Selection - Compact Pills with Scroll Indicator */}
         <motion.section 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -148,7 +173,7 @@ const Index: React.FC = () => {
           />
         </motion.section>
 
-        {/* Today's Matches - Full Width with Featured */}
+        {/* Today's Matches - Full Width with Featured & Stagger Animation */}
         <motion.section 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -164,6 +189,7 @@ const Index: React.FC = () => {
         {/* Upcoming Matches Carousel - Only when league selected */}
         {selectedLeague && (
           <motion.section 
+            ref={upcomingMatchesRef}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -284,8 +310,8 @@ const Index: React.FC = () => {
         </AnimatePresence>
       </main>
 
-      {/* Footer */}
-      <AppFooter />
+      {/* Footer - Props-based data, no separate API call */}
+      <AppFooter stats={footerStats} />
 
       {/* Bet Slip Floating Button */}
       <BetSlipButton />
