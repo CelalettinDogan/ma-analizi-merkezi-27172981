@@ -107,7 +107,19 @@ const Index: React.FC = () => {
     }, 300);
   };
 
+  // Track which match is currently loading analysis
+  const [loadingMatchId, setLoadingMatchId] = useState<number | null>(null);
+
   const handleMatchSelect = async (match: ApiMatch) => {
+    // Set loading state immediately for instant feedback
+    setLoadingMatchId(match.id);
+    
+    // Show toast for instant feedback
+    toast.loading(`${match.homeTeam.shortName || match.homeTeam.name} vs ${match.awayTeam.shortName || match.awayTeam.name} analiz ediliyor...`, {
+      id: 'match-analysis',
+      duration: 10000,
+    });
+    
     const leagueCode = SUPPORTED_COMPETITIONS.find(
       c => c.code === match.competition.code
     )?.code || 'PL';
@@ -119,11 +131,18 @@ const Index: React.FC = () => {
       matchDate: match.utcDate.split('T')[0],
     };
     
-    await analyzeMatch(matchInput);
-    
-    setTimeout(() => {
-      document.getElementById('analysis-section')?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+    try {
+      await analyzeMatch(matchInput);
+      toast.success('Analiz tamamlandı!', { id: 'match-analysis' });
+      
+      setTimeout(() => {
+        document.getElementById('analysis-section')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } catch (error) {
+      toast.error('Analiz yüklenirken hata oluştu', { id: 'match-analysis' });
+    } finally {
+      setLoadingMatchId(null);
+    }
   };
 
   const handleFormSubmit = async (data: MatchInput) => {
@@ -182,6 +201,7 @@ const Index: React.FC = () => {
           <TodaysMatches 
             matches={todaysMatches}
             isLoading={homeDataLoading}
+            loadingMatchId={loadingMatchId}
             onMatchSelect={handleMatchSelect} 
           />
         </motion.section>
