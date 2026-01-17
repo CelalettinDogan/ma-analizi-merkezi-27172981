@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -48,30 +48,41 @@ const AdminPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [triggeringJob, setTriggeringJob] = useState<string | null>(null);
+  
+  // Refs for cleanup
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
 
   // Access control check
   const isAuthorized = user && isAdmin;
   const isCheckingAuth = authLoading || roleLoading;
 
   const fetchCronStatus = useCallback(async () => {
-    if (!isAuthorized) return;
+    if (!isAuthorized || !isMountedRef.current) return;
     
     try {
       const { data, error } = await supabase.functions.invoke('admin-cron-status');
       
       if (error) throw error;
+      if (!isMountedRef.current) return;
       
       setJobs(data.jobs || []);
     } catch (e) {
       console.error('Error fetching cron status:', e);
-      toast.error('Cron durumu alınamadı');
+      if (isMountedRef.current) {
+        toast.error('Cron durumu alınamadı');
+      }
     } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
     }
   }, [isAuthorized]);
 
   useEffect(() => {
+    isMountedRef.current = true;
+    
     if (isCheckingAuth) return;
     
     if (!user) {
@@ -88,7 +99,13 @@ const AdminPage: React.FC = () => {
     
     // Auto-refresh every 30 seconds
     const interval = setInterval(fetchCronStatus, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      isMountedRef.current = false;
+      clearInterval(interval);
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
   }, [isCheckingAuth, user, isAdmin, fetchCronStatus, navigate]);
 
   const handleRefresh = () => {
@@ -102,14 +119,24 @@ const AdminPage: React.FC = () => {
       const { error } = await supabase.functions.invoke(functionName);
       if (error) throw error;
       
-      toast.success(`${functionName} başarıyla çalıştırıldı`);
+      if (isMountedRef.current) {
+        toast.success(`${functionName} başarıyla çalıştırıldı`);
+      }
       
-      setTimeout(fetchCronStatus, 2000);
+      // Clear previous timeout if exists
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+      refreshTimeoutRef.current = setTimeout(fetchCronStatus, 2000);
     } catch (e) {
       console.error('Error triggering job:', e);
-      toast.error(`${functionName} çalıştırılamadı`);
+      if (isMountedRef.current) {
+        toast.error(`${functionName} çalıştırılamadı`);
+      }
     } finally {
-      setTriggeringJob(null);
+      if (isMountedRef.current) {
+        setTriggeringJob(null);
+      }
     }
   };
 

@@ -95,8 +95,62 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    let isMounted = true;
+    
+    const fetchData = async () => {
+      try {
+        if (user) {
+          // User-specific data
+          const [overall, byType, recent, trend, premium, slipStats] = await Promise.all([
+            getUserOverallStats(user.id),
+            getUserPredictionStats(user.id),
+            getUserRecentPredictions(user.id, 50),
+            getUserAccuracyTrend(user.id, 7),
+            getUserPremiumStats(user.id),
+            getBetSlipStats(user.id)
+          ]);
+          
+          if (!isMounted) return;
+          
+          setOverallStats(overall);
+          setPredictionStats(byType);
+          setRecentPredictions(recent);
+          setTrendData(trend);
+          setPremiumStats(premium);
+          setSlipCount(slipStats.total);
+        } else {
+          // Platform-wide data for guests
+          const [overall, byType, recent, trend, premium] = await Promise.all([
+            getOverallStats(),
+            getPredictionStats(),
+            getRecentPredictions(50),
+            getAccuracyTrend(7),
+            getPremiumStats()
+          ]);
+          
+          if (!isMounted) return;
+          
+          setOverallStats(overall);
+          setPredictionStats(byType);
+          setRecentPredictions(recent);
+          setTrendData(trend);
+          setPremiumStats(premium);
+        }
+      } catch (error) {
+        console.error("Dashboard data loading error:", error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+    
     setIsLoading(true);
-    loadData();
+    fetchData();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
 
   const handleRefresh = async () => {
