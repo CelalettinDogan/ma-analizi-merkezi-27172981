@@ -18,12 +18,13 @@ import {
   MatchHeroCard,
   AIRecommendationCard,
   PredictionPillSelector,
-  QuickStatsRow,
   H2HTimeline,
-  CollapsibleAnalysis,
   AnalysisLoadingState,
+  TeamComparisonCard,
+  AdvancedAnalysisTabs,
+  StickyAnalysisCTA,
 } from '@/components/analysis';
-import { MatchInput } from '@/types/match';
+import { MatchInput, Prediction } from '@/types/match';
 import { Match as ApiMatch, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
 import { useOnboarding } from '@/hooks/useOnboarding';
@@ -314,7 +315,6 @@ const Index: React.FC = () => {
                 />
                 <div className="space-y-4">
                   <div className="p-4 rounded-xl bg-card border border-border">
-                    <h4 className="text-sm font-semibold text-foreground mb-4">Tüm Tahminler</h4>
                     <PredictionPillSelector 
                       predictions={analysis.predictions} 
                       matchInput={analysis.input} 
@@ -323,8 +323,8 @@ const Index: React.FC = () => {
                 </div>
               </div>
 
-              {/* Quick Stats Row */}
-              <QuickStatsRow
+              {/* Team Comparison Card - Merged Stats + Power */}
+              <TeamComparisonCard
                 homeTeam={analysis.input.homeTeam}
                 awayTeam={analysis.input.awayTeam}
                 homeStats={analysis.homeTeamStats}
@@ -340,8 +340,8 @@ const Index: React.FC = () => {
                 awayTeam={analysis.input.awayTeam}
               />
 
-              {/* Collapsible Advanced Analysis */}
-              <CollapsibleAnalysis analysis={analysis} />
+              {/* Advanced Analysis Tabs */}
+              <AdvancedAnalysisTabs analysis={analysis} />
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
@@ -358,6 +358,20 @@ const Index: React.FC = () => {
               {/* Legal Disclaimer */}
               <LegalDisclaimer />
             </motion.section>
+          )}
+        </AnimatePresence>
+
+        {/* Sticky CTA - Shows when analysis is visible */}
+        <AnimatePresence>
+          {analysis && !analysisLoading && analysis.predictions.length > 0 && (
+            <StickyAnalysisCTA
+              prediction={[...analysis.predictions].sort((a, b) => {
+                const aHybrid = ((a.aiConfidence || 0) + (a.mathConfidence || 0)) / 2;
+                const bHybrid = ((b.aiConfidence || 0) + (b.mathConfidence || 0)) / 2;
+                return bHybrid - aHybrid;
+              })[0]}
+              matchInput={analysis.input}
+            />
           )}
         </AnimatePresence>
       </main>
