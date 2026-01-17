@@ -43,8 +43,10 @@
     --gradient-hero: linear-gradient(135deg, hsl(222 47% 8%) 0%, hsl(222 47% 4%) 100%);
     
     --shadow-glow: 0 0 40px hsl(142 71% 45% / 0.15);
+    --shadow-glow-strong: 0 0 60px hsl(142 71% 45% / 0.25);
     --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.3);
     --shadow-elevated: 0 8px 32px hsl(0 0% 0% / 0.4);
+    --shadow-premium: 0 4px 20px hsl(45 93% 47% / 0.15);
 
     /* Team colors */
     --win: 142 71% 45%;
@@ -88,8 +90,10 @@
     --gradient-hero: linear-gradient(135deg, hsl(220 14% 97%) 0%, hsl(0 0% 100%) 100%);
     
     --shadow-glow: 0 0 40px hsl(142 71% 35% / 0.15);
+    --shadow-glow-strong: 0 0 60px hsl(142 71% 35% / 0.25);
     --shadow-card: 0 4px 24px hsl(222 47% 11% / 0.06);
     --shadow-elevated: 0 8px 32px hsl(222 47% 11% / 0.1);
+    --shadow-premium: 0 4px 20px hsl(38 92% 45% / 0.15);
   }
 }
 
@@ -119,6 +123,7 @@
     background-image: var(--gradient-gold);
   }
 
+  /* Standard glass card */
   .glass-card {
     @apply bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl relative overflow-hidden;
     box-shadow: var(--shadow-card);
@@ -129,14 +134,28 @@
     @apply absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none;
   }
 
+  /* Premium glass card with stronger effects */
+  .glass-card-premium {
+    @apply bg-card/70 backdrop-blur-2xl border border-border/40 rounded-2xl relative overflow-hidden;
+    box-shadow: 
+      var(--shadow-elevated),
+      inset 0 1px 0 0 hsl(var(--foreground) / 0.05),
+      inset 0 -1px 0 0 hsl(var(--foreground) / 0.02);
+  }
+
+  .glass-card-premium::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-white/8 via-transparent to-transparent pointer-events-none;
+  }
+
+  /* Interactive glass card with hover effects */
   .glass-card-hover {
-    @apply glass-card transition-all duration-300;
+    @apply glass-card transition-all duration-300 cursor-pointer;
   }
 
   .glass-card-hover:hover {
-    @apply border-primary/30;
+    @apply border-primary/30 -translate-y-0.5;
     box-shadow: var(--shadow-elevated), var(--shadow-glow);
-    transform: translateY(-2px);
   }
 
   .stat-card {
@@ -149,6 +168,10 @@
 
   .glow-effect {
     box-shadow: var(--shadow-glow);
+  }
+
+  .glow-effect-strong {
+    box-shadow: var(--shadow-glow-strong);
   }
 
   .hero-gradient {
@@ -167,6 +190,25 @@
     content: '';
     @apply absolute inset-0 bg-gradient-to-br from-primary/3 via-transparent to-secondary/3 pointer-events-none;
   }
+
+  /* Button glow on hover */
+  .btn-glow {
+    @apply transition-all duration-300;
+  }
+
+  .btn-glow:hover {
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-1px);
+  }
+
+  /* Card with premium glow */
+  .card-premium-glow {
+    @apply transition-all duration-300;
+  }
+
+  .card-premium-glow:hover {
+    box-shadow: var(--shadow-premium);
+  }
 }
 
 @layer utilities {
@@ -178,12 +220,40 @@
     animation: float 6s ease-in-out infinite;
   }
 
+  .animate-float-slow {
+    animation: float-slow 8s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite;
+  }
+
   @keyframes float {
     0%, 100% {
       transform: translateY(0px);
     }
     50% {
       transform: translateY(-10px);
+    }
+  }
+
+  @keyframes float-slow {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-20px) rotate(2deg);
+    }
+  }
+
+  @keyframes glow {
+    0%, 100% {
+      opacity: 1;
+      box-shadow: var(--shadow-glow);
+    }
+    50% {
+      opacity: 0.8;
+      box-shadow: var(--shadow-glow-strong);
     }
   }
 
@@ -206,5 +276,20 @@
 
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Text shadow for better readability on gradients */
+  .text-shadow {
+    text-shadow: 0 2px 10px hsl(var(--background) / 0.3);
+  }
+
+  /* Backdrop enhancement for iOS */
+  @supports (-webkit-backdrop-filter: blur(20px)) or (backdrop-filter: blur(20px)) {
+    .glass-card,
+    .glass-card-premium,
+    .glass-card-hover {
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(20px) saturate(180%);
+    }
   }
 }
