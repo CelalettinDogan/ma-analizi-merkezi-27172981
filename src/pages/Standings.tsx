@@ -127,7 +127,6 @@ const StandingsPage: React.FC = () => {
           <LeagueGrid 
             selectedLeague={selectedLeague} 
             onLeagueSelect={(code) => code && setSelectedLeague(code)}
-            compact
           />
         </motion.div>
 

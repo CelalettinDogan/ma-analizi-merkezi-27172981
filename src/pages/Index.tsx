@@ -12,7 +12,6 @@ import BottomNav from '@/components/navigation/BottomNav';
 import CommandPalette from '@/components/navigation/CommandPalette';
 import Onboarding from '@/components/Onboarding';
 import TodaysMatches from '@/components/TodaysMatches';
-import FeaturedMatchCard from '@/components/FeaturedMatchCard';
 import { MatchCardSkeleton } from '@/components/ui/skeletons';
 import {
   MatchHeroCard,
@@ -52,7 +51,6 @@ const Index: React.FC = () => {
     const state = location.state as { selectedMatch?: ApiMatch } | null;
     if (state?.selectedMatch) {
       handleMatchSelect(state.selectedMatch);
-      // Clear state
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
@@ -133,47 +131,16 @@ const Index: React.FC = () => {
       {/* Header */}
       <AppHeader rightContent={searchButton} />
 
-      {/* Hero Section - Uses centralized stats */}
+      {/* Hero Section - Simplified */}
       <HeroSection stats={stats} />
 
-      {/* Main Content - Bento Grid Layout */}
-      <main className="container mx-auto px-4 py-6 space-y-8">
-        {/* Bento Grid: Featured Match + Today's Matches */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Featured Match - Uses centralized data */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-1"
-          >
-            <FeaturedMatchCard 
-              matches={todaysMatches} 
-              onMatchSelect={handleMatchSelect} 
-            />
-          </motion.div>
-
-          {/* Today's Matches - Uses centralized data */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="lg:col-span-2"
-          >
-            <TodaysMatches 
-              matches={todaysMatches}
-              isLoading={homeDataLoading}
-              onMatchSelect={handleMatchSelect} 
-            />
-          </motion.div>
-        </div>
-
-        {/* League Selection - Uses centralized live data */}
+      {/* Main Content - Clean Single Column Flow */}
+      <main className="container mx-auto px-4 py-6 space-y-6">
+        {/* League Selection - Compact Pills */}
         <motion.section 
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
         >
-          <h2 className="font-display font-bold text-lg mb-4">Lig Seçin</h2>
           <LeagueGrid 
             selectedLeague={selectedLeague} 
             onLeagueSelect={handleLeagueSelect}
@@ -181,17 +148,29 @@ const Index: React.FC = () => {
           />
         </motion.section>
 
-        {/* Upcoming Matches Carousel */}
+        {/* Today's Matches - Full Width with Featured */}
+        <motion.section 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <TodaysMatches 
+            matches={todaysMatches}
+            isLoading={homeDataLoading}
+            onMatchSelect={handleMatchSelect} 
+          />
+        </motion.section>
+
+        {/* Upcoming Matches Carousel - Only when league selected */}
         {selectedLeague && (
           <motion.section 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-primary" />
-                <h2 className="font-display font-bold text-lg">
+                <h2 className="font-semibold">
                   Yaklaşan Maçlar
                 </h2>
                 <span className="text-sm text-muted-foreground">
@@ -226,24 +205,22 @@ const Index: React.FC = () => {
           >
             <div className="relative">
               <Loader2 className="w-12 h-12 animate-spin text-primary" />
-              <div className="absolute inset-0 w-12 h-12 bg-primary/20 rounded-full animate-ping" />
             </div>
             <p className="text-muted-foreground mt-4">AI analiz yapılıyor...</p>
-            <p className="text-sm text-muted-foreground">Form, gol istatistikleri ve H2H hesaplanıyor</p>
           </motion.div>
         )}
 
-        {/* Analysis Section - Modern 2026 Redesign */}
+        {/* Analysis Section */}
         <AnimatePresence>
           {analysis && !analysisLoading && (
             <motion.section 
               id="analysis-section"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -30 }}
+              exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              {/* Match Hero Card - Compact */}
+              {/* Match Hero Card */}
               <MatchHeroCard 
                 match={analysis.input} 
                 insights={analysis.insights}
@@ -251,14 +228,14 @@ const Index: React.FC = () => {
                 awayTeamCrest={analysis.input.awayTeamCrest}
               />
 
-              {/* AI Recommendation + Prediction Pills - Hero Section */}
+              {/* AI Recommendation + Prediction Pills */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <AIRecommendationCard 
                   predictions={analysis.predictions} 
                   matchInput={analysis.input} 
                 />
                 <div className="space-y-4">
-                  <div className="p-4 rounded-xl bg-card border border-border/50">
+                  <div className="p-4 rounded-xl bg-card border border-border">
                     <h4 className="text-sm font-semibold text-foreground mb-4">Tüm Tahminler</h4>
                     <PredictionPillSelector 
                       predictions={analysis.predictions} 
@@ -268,7 +245,7 @@ const Index: React.FC = () => {
                 </div>
               </div>
 
-              {/* Quick Stats Row - Form + Power Index */}
+              {/* Quick Stats Row */}
               <QuickStatsRow
                 homeTeam={analysis.input.homeTeam}
                 awayTeam={analysis.input.awayTeam}
@@ -307,13 +284,13 @@ const Index: React.FC = () => {
         </AnimatePresence>
       </main>
 
-      {/* Footer - Desktop only */}
+      {/* Footer */}
       <AppFooter />
 
       {/* Bet Slip Floating Button */}
       <BetSlipButton />
 
-      {/* Bottom Navigation - Mobile */}
+      {/* Bottom Navigation */}
       <BottomNav onSearchClick={() => setCommandOpen(true)} />
 
       {/* Command Palette */}
