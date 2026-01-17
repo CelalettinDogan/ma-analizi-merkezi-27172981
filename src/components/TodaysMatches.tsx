@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles } from 'lucide-react';
+import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles, RefreshCw } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,7 @@ interface TodaysMatchesProps {
   isLoading?: boolean;
   loadingMatchId?: number | null;
   onMatchSelect: (match: Match) => void;
+  onSync?: () => Promise<void>;
 }
 
 // Big teams for featured match selection
@@ -57,8 +58,19 @@ const listItemVariants = {
   })
 };
 
-const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = false, loadingMatchId, onMatchSelect }) => {
+const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = false, loadingMatchId, onMatchSelect, onSync }) => {
   const [showAll, setShowAll] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSync = async () => {
+    if (!onSync || isSyncing) return;
+    setIsSyncing(true);
+    try {
+      await onSync();
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   // Find featured match (first big match or soonest upcoming match)
   const { featuredMatch, otherMatches, featuredReason } = useMemo(() => {
@@ -95,14 +107,28 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
   if (matches.length === 0) {
     return (
       <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Calendar className="w-5 h-5 text-primary" />
-          <h2 className="font-semibold">Bugünün Maçları</h2>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-primary" />
+            <h2 className="font-semibold">Bugünün Maçları</h2>
+          </div>
+          {onSync && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSync}
+              disabled={isSyncing}
+              className="gap-2"
+            >
+              <RefreshCw className={cn("w-4 h-4", isSyncing && "animate-spin")} />
+              {isSyncing ? 'Senkronize ediliyor...' : 'Verileri Güncelle'}
+            </Button>
+          )}
         </div>
         <div className="text-center py-12">
           <Calendar className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
           <p className="text-muted-foreground">Bugün planlanmış maç yok</p>
-          <p className="text-sm text-muted-foreground mt-1">Yaklaşan maçlar için bir lig seçin</p>
+          <p className="text-sm text-muted-foreground mt-1">Verileri güncellemek için butona tıklayın</p>
         </div>
       </Card>
     );
@@ -116,7 +142,20 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
           <Calendar className="w-5 h-5 text-primary" />
           <h2 className="font-semibold">Bugünün Maçları</h2>
         </div>
-        <Badge variant="secondary">{matches.length} maç</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary">{matches.length} maç</Badge>
+          {onSync && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSync}
+              disabled={isSyncing}
+              title="Verileri güncelle"
+            >
+              <RefreshCw className={cn("w-4 h-4", isSyncing && "animate-spin")} />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Featured Match - Large Card */}
