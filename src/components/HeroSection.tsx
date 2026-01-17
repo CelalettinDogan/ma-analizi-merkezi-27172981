@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Trophy, Target, ArrowRight } from 'lucide-react';
+import { Zap, Trophy, Target, ArrowRight, TrendingUp, Flame, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { staggerContainer, staggerItem } from '@/lib/animations';
@@ -10,40 +10,56 @@ interface HeroStats {
   liveCount: number;
   todayPredictions: number;
   accuracy: number;
+  premiumAccuracy: number;
+  totalMatches: number;
+  hottestMatch: {
+    home: string;
+    away: string;
+  } | null;
 }
 
 const HeroSection: React.FC = () => {
   const [stats, setStats] = useState<HeroStats>({
     liveCount: 0,
     todayPredictions: 0,
-    accuracy: 0
+    accuracy: 0,
+    premiumAccuracy: 0,
+    totalMatches: 0,
+    hottestMatch: null
   });
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Get today's predictions count
         const today = new Date().toISOString().split('T')[0];
-        const { count: todayCount } = await supabase
-          .from('predictions')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', today);
-
-        // Get overall accuracy from view
-        const { data: overallStats } = await supabase
-          .from('overall_stats')
-          .select('accuracy_percentage')
-          .single();
-
-        // Get live matches count (approximate from recent matches)
-        const { data: liveData } = await supabase.functions.invoke('football-api', {
-          body: { action: 'live' },
-        });
+        
+        // Fetch all stats in parallel
+        const [todayCountResult, overallStatsResult, premiumStatsResult, liveResult] = await Promise.all([
+          supabase
+            .from('predictions')
+            .select('*', { count: 'exact', head: true })
+            .gte('created_at', today),
+          supabase
+            .from('overall_stats')
+            .select('accuracy_percentage')
+            .single(),
+          supabase
+            .from('ml_model_stats')
+            .select('premium_accuracy')
+            .limit(1)
+            .maybeSingle(),
+          supabase.functions.invoke('football-api', {
+            body: { action: 'live' },
+          }),
+        ]);
 
         setStats({
-          todayPredictions: todayCount || 0,
-          accuracy: Math.round(overallStats?.accuracy_percentage || 0),
-          liveCount: liveData?.matches?.length || 0,
+          todayPredictions: todayCountResult.count || 0,
+          accuracy: Math.round(overallStatsResult.data?.accuracy_percentage || 0),
+          premiumAccuracy: Math.round(premiumStatsResult.data?.premium_accuracy || 0),
+          liveCount: liveResult.data?.matches?.length || 0,
+          totalMatches: 0,
+          hottestMatch: null, // Would need separate logic to determine "hottest" match
         });
       } catch (e) {
         console.error('Error fetching hero stats:', e);
@@ -53,35 +69,64 @@ const HeroSection: React.FC = () => {
   }, []);
 
   return (
-    <section className="relative py-8 md:py-12 overflow-hidden">
-      {/* Background Effects - More subtle */}
-      <div className="absolute inset-0 hero-gradient opacity-80" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/5 rounded-full blur-3xl" />
+    <section className="relative py-10 md:py-16 overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 hero-gradient" />
+      
+      {/* Floating Orbs - Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary/10 blur-3xl"
+          animate={{
+            x: [0, 30, 0],
+            y: [0, -20, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-secondary/10 blur-3xl"
+          animate={{
+            x: [0, -20, 0],
+            y: [0, 30, 0],
+            scale: [1, 1.15, 1],
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-1/2 right-1/3 w-40 h-40 rounded-full bg-primary/5 blur-2xl"
+          animate={{
+            x: [0, 15, 0],
+            y: [0, 15, 0],
+          }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </div>
       
       <div className="relative container mx-auto px-4">
         <motion.div 
-          className="text-center max-w-2xl mx-auto"
+          className="text-center max-w-3xl mx-auto"
           variants={staggerContainer}
           initial="initial"
           animate="animate"
         >
-          {/* Compact Badge */}
+          {/* Enhanced Badge */}
           <motion.div 
             variants={staggerItem}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-6"
           >
             <motion.div
-              animate={{ scale: [1, 1.2, 1] }}
+              animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="w-2 h-2 rounded-full bg-primary"
+              className="w-2.5 h-2.5 rounded-full bg-primary shadow-lg shadow-primary/50"
             />
-            <span className="text-xs font-medium text-primary">AI Destekli Analiz</span>
+            <span className="text-sm font-medium text-primary">AI Destekli Tahmin Motoru</span>
           </motion.div>
 
-          {/* Compact Title */}
+          {/* Main Title */}
           <motion.h1 
             variants={staggerItem}
-            className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-3"
+            className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground mb-4"
           >
             Akıllı Maç{' '}
             <span className="gradient-text">Tahminleri</span>
@@ -90,61 +135,115 @@ const HeroSection: React.FC = () => {
           {/* Subtitle */}
           <motion.p 
             variants={staggerItem}
-            className="text-sm md:text-base text-muted-foreground max-w-lg mx-auto mb-6"
+            className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-8"
           >
-            Veri odaklı analizler ve AI destekli tahminlerle futbolu daha iyi anlayın
+            Yapay zeka destekli analizler, istatistiksel modeller ve geçmiş verilerle
+            futbol maçlarını daha iyi anlayın
           </motion.p>
 
-          {/* Live Stats Bar */}
+          {/* Floating Stats Cards - Bento Style */}
           <motion.div 
             variants={staggerItem}
-            className="flex items-center justify-center gap-4 md:gap-8 mb-6"
+            className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8"
           >
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-              </span>
-              <span className="text-xs font-medium text-red-400">
-                {stats.liveCount} Canlı
-              </span>
-            </div>
-            
-            <div className="text-center">
-              <div className="text-lg md:text-xl font-bold text-foreground">{stats.todayPredictions}</div>
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Bugün Analiz</div>
-            </div>
+            {/* Live Matches Card */}
+            <motion.div
+              whileHover={{ scale: 1.02, y: -2 }}
+              className="glass-card-hover p-4 text-left"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+                </span>
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Canlı</span>
+              </div>
+              <div className="text-2xl md:text-3xl font-bold text-foreground">{stats.liveCount}</div>
+              <div className="text-xs text-muted-foreground">maç devam ediyor</div>
+            </motion.div>
 
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20">
-              <Target className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-medium text-primary">
-                {stats.accuracy > 0 ? `%${stats.accuracy}` : '—'} Doğruluk
-              </span>
-            </div>
+            {/* Today's Analysis Card */}
+            <motion.div
+              whileHover={{ scale: 1.02, y: -2 }}
+              className="glass-card-hover p-4 text-left"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Bugün</span>
+              </div>
+              <div className="text-2xl md:text-3xl font-bold text-foreground">{stats.todayPredictions}</div>
+              <div className="text-xs text-muted-foreground">analiz yapıldı</div>
+            </motion.div>
+
+            {/* Accuracy Card */}
+            <motion.div
+              whileHover={{ scale: 1.02, y: -2 }}
+              className="glass-card-hover p-4 text-left"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Doğruluk</span>
+              </div>
+              <div className="text-2xl md:text-3xl font-bold gradient-text">
+                {stats.accuracy > 0 ? `%${stats.accuracy}` : '—'}
+              </div>
+              <div className="text-xs text-muted-foreground">genel başarı</div>
+            </motion.div>
+
+            {/* Premium Accuracy Card */}
+            <motion.div
+              whileHover={{ scale: 1.02, y: -2 }}
+              className="glass-card-hover p-4 text-left border-primary/30"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Flame className="w-3.5 h-3.5 text-secondary" />
+                <span className="text-xs font-medium text-secondary uppercase tracking-wider">Premium</span>
+              </div>
+              <div className="text-2xl md:text-3xl font-bold gradient-text-gold">
+                {stats.premiumAccuracy > 0 ? `%${stats.premiumAccuracy}` : '—'}
+              </div>
+              <div className="text-xs text-muted-foreground">yüksek güvenli</div>
+            </motion.div>
           </motion.div>
 
-          {/* Quick Actions */}
+          {/* Quick Action Pills */}
           <motion.div 
             variants={staggerItem}
             className="flex flex-wrap items-center justify-center gap-3"
           >
             <Button
               asChild
-              className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
+              size="lg"
+              className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all"
             >
               <Link to="/live">
-                <Zap className="w-4 h-4" />
+                <span className="relative flex h-2 w-2 mr-1">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-current" />
+                </span>
                 Canlı Maçlar
               </Link>
             </Button>
             <Button
               variant="outline"
+              size="lg"
               asChild
-              className="gap-2"
+              className="gap-2 border-border/50 hover:border-primary/50 hover:bg-primary/5"
             >
               <Link to="/dashboard">
                 <Trophy className="w-4 h-4" />
                 Dashboard
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="lg"
+              asChild
+              className="gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <Link to="/standings">
+                <TrendingUp className="w-4 h-4" />
+                Lig Sıralamaları
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>

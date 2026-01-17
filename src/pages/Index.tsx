@@ -5,12 +5,14 @@ import HeroSection from '@/components/HeroSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
 import BetSlipButton from '@/components/betslip/BetSlipButton';
 import AppHeader from '@/components/layout/AppHeader';
+import AppFooter from '@/components/layout/AppFooter';
 import LeagueGrid from '@/components/league/LeagueGrid';
 import MatchCarousel from '@/components/match/MatchCarousel';
 import BottomNav from '@/components/navigation/BottomNav';
 import CommandPalette from '@/components/navigation/CommandPalette';
 import Onboarding from '@/components/Onboarding';
 import TodaysMatches from '@/components/TodaysMatches';
+import FeaturedMatchCard from '@/components/FeaturedMatchCard';
 import { MatchCardSkeleton } from '@/components/ui/skeletons';
 import {
   MatchHeroCard,
@@ -132,19 +134,33 @@ const Index: React.FC = () => {
 
       {/* Main Content - Bento Grid Layout */}
       <main className="container mx-auto px-4 py-6 space-y-8">
-        {/* Today's Matches - Always visible */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <TodaysMatches onMatchSelect={handleMatchSelect} />
-        </motion.section>
+        {/* Bento Grid: Featured Match + Today's Matches */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Featured Match */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="lg:col-span-1"
+          >
+            <FeaturedMatchCard onMatchSelect={handleMatchSelect} />
+          </motion.div>
+
+          {/* Today's Matches */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="lg:col-span-2"
+          >
+            <TodaysMatches onMatchSelect={handleMatchSelect} />
+          </motion.div>
+        </div>
 
         {/* League Selection */}
         <motion.section 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.2 }}
         >
           <h2 className="font-display font-bold text-lg mb-4">Lig Seçin</h2>
           <LeagueGrid 
@@ -280,22 +296,7 @@ const Index: React.FC = () => {
       </main>
 
       {/* Footer - Desktop only */}
-      <footer className="hidden md:block py-8 border-t border-border/50">
-        <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xs">FT</span>
-            </div>
-            <span className="font-display font-semibold text-foreground">FutbolTahmin</span>
-          </div>
-          <p className="text-sm text-muted-foreground mb-2">
-            © {new Date().getFullYear()} FutbolTahmin. Tüm hakları saklıdır.
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Bu site yalnızca bilgilendirme amaçlıdır. 18 yaş altı kullanıcılara yönelik değildir.
-          </p>
-        </div>
-      </footer>
+      <AppFooter />
 
       {/* Bet Slip Floating Button */}
       <BetSlipButton />
