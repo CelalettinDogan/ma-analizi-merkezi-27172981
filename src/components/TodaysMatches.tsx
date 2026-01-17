@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 interface TodaysMatchesProps {
   matches: Match[];
   isLoading?: boolean;
+  loadingMatchId?: number | null;
   onMatchSelect: (match: Match) => void;
 }
 
@@ -56,7 +57,7 @@ const listItemVariants = {
   })
 };
 
-const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = false, onMatchSelect }) => {
+const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = false, loadingMatchId, onMatchSelect }) => {
   const [showAll, setShowAll] = useState(false);
 
   // Find featured match (first big match or soonest upcoming match)
@@ -123,12 +124,28 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          onClick={() => onMatchSelect(featuredMatch)}
+          onClick={() => !loadingMatchId && onMatchSelect(featuredMatch)}
           className={cn(
             "relative p-4 rounded-xl cursor-pointer mb-4 transition-all group",
-            "bg-primary/5 border-2 border-primary/20 hover:border-primary/40 hover:shadow-lg"
+            "bg-primary/5 border-2 border-primary/20 hover:border-primary/40 hover:shadow-lg",
+            loadingMatchId === featuredMatch.id && "opacity-80 pointer-events-none",
+            loadingMatchId && loadingMatchId !== featuredMatch.id && "opacity-50"
           )}
         >
+          {/* Loading Overlay */}
+          {loadingMatchId === featuredMatch.id && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="absolute inset-0 bg-background/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10"
+            >
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                <span className="text-sm font-medium text-foreground">Analiz ediliyor...</span>
+              </div>
+            </motion.div>
+          )}
+
           {/* Featured Label with reason */}
           <div className="absolute top-2 left-2 flex items-center gap-2">
             <Badge className="bg-secondary text-secondary-foreground text-[10px]">
@@ -194,9 +211,22 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
 
           {/* CTA */}
           <div className="flex justify-center mt-4">
-            <Button size="sm" className="gap-2 group-hover:bg-primary/90">
-              Analiz Et
-              <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+            <Button 
+              size="sm" 
+              className="gap-2 group-hover:bg-primary/90"
+              disabled={!!loadingMatchId}
+            >
+              {loadingMatchId === featuredMatch.id ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Yükleniyor...
+                </>
+              ) : (
+                <>
+                  Analiz Et
+                  <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                </>
+              )}
             </Button>
           </div>
         </motion.div>
@@ -207,6 +237,8 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
         <div className="space-y-1">
           {displayedMatches.map((match, index) => {
             const matchTime = format(new Date(match.utcDate), 'HH:mm');
+            const isThisLoading = loadingMatchId === match.id;
+            const isAnyLoading = !!loadingMatchId;
 
             return (
               <motion.div
@@ -215,15 +247,32 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
                 initial="hidden"
                 animate="visible"
                 variants={listItemVariants}
-                whileHover={{ x: 4, backgroundColor: 'hsl(var(--muted) / 0.5)' }}
-                onClick={() => onMatchSelect(match)}
+                whileHover={!isAnyLoading ? { x: 4, backgroundColor: 'hsl(var(--muted) / 0.5)' } : {}}
+                onClick={() => !isAnyLoading && onMatchSelect(match)}
                 className={cn(
-                  "flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors",
-                  "hover:bg-muted/50 min-h-[48px]"
+                  "flex items-center gap-3 p-3 rounded-lg transition-all relative",
+                  "min-h-[48px]",
+                  isAnyLoading && !isThisLoading && "opacity-50",
+                  isThisLoading && "bg-primary/10 border border-primary/30",
+                  !isAnyLoading && "cursor-pointer hover:bg-muted/50"
                 )}
               >
+                {/* Loading indicator for this specific match */}
+                {isThisLoading && (
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="absolute left-3"
+                  >
+                    <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                  </motion.div>
+                )}
+
                 {/* Time */}
-                <span className="text-sm font-medium text-muted-foreground w-12 shrink-0">
+                <span className={cn(
+                  "text-sm font-medium w-12 shrink-0",
+                  isThisLoading ? "text-primary ml-5" : "text-muted-foreground"
+                )}>
                   {matchTime}
                 </span>
 
@@ -233,13 +282,13 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
                     {match.homeTeam.crest && (
                       <img src={match.homeTeam.crest} alt="" className="w-5 h-5 object-contain shrink-0" />
                     )}
-                    <span className="text-sm truncate">
+                    <span className={cn("text-sm truncate", isThisLoading && "font-medium")}>
                       {match.homeTeam.shortName || match.homeTeam.name}
                     </span>
                   </div>
                   <span className="text-muted-foreground text-xs">vs</span>
                   <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
-                    <span className="text-sm truncate text-right">
+                    <span className={cn("text-sm truncate text-right", isThisLoading && "font-medium")}>
                       {match.awayTeam.shortName || match.awayTeam.name}
                     </span>
                     {match.awayTeam.crest && (
@@ -253,8 +302,12 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
                   {match.competition.code}
                 </span>
 
-                {/* Arrow */}
-                <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
+                {/* Arrow or Loading */}
+                {isThisLoading ? (
+                  <span className="text-xs text-primary font-medium">Analiz ediliyor...</span>
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
+                )}
               </motion.div>
             );
           })}
