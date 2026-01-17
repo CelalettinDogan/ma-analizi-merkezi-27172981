@@ -8,9 +8,11 @@ import { SUPPORTED_COMPETITIONS } from '@/types/footballApi';
 interface MatchHeroCardProps {
   match: MatchInput;
   insights?: MatchInsights;
+  homeTeamCrest?: string;
+  awayTeamCrest?: string;
 }
 
-const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights }) => {
+const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights, homeTeamCrest, awayTeamCrest }) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('tr-TR', {
@@ -22,6 +24,33 @@ const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights }) => {
 
   const getLeagueName = (code: string) => {
     return SUPPORTED_COMPETITIONS.find(c => c.code === code)?.name || code;
+  };
+
+  const TeamLogo = ({ crest, teamName, gradient }: { crest?: string; teamName: string; gradient: string }) => {
+    if (crest) {
+      return (
+        <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-2 rounded-xl bg-background/50 flex items-center justify-center border border-border/30 p-2">
+          <img 
+            src={crest} 
+            alt={teamName}
+            className="w-full h-full object-contain"
+            onError={(e) => {
+              // Fallback to letter if image fails
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.parentElement!.innerHTML = `<span class="text-xl md:text-2xl font-bold ${gradient.includes('primary') ? 'text-primary' : 'text-secondary'}">${teamName.charAt(0)}</span>`;
+            }}
+          />
+        </div>
+      );
+    }
+    
+    return (
+      <div className={`w-12 h-12 md:w-16 md:h-16 mx-auto mb-2 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center border ${gradient.includes('primary') ? 'border-primary/20' : 'border-secondary/20'}`}>
+        <span className={`text-xl md:text-2xl font-bold ${gradient.includes('primary') ? 'text-primary' : 'text-secondary'}`}>
+          {teamName.charAt(0)}
+        </span>
+      </div>
+    );
   };
 
   return (
@@ -54,11 +83,11 @@ const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights }) => {
         <div className="flex items-center justify-center gap-3 md:gap-6">
           {/* Home Team */}
           <div className="flex-1 text-center">
-            <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/20">
-              <span className="text-xl md:text-2xl font-bold text-primary">
-                {match.homeTeam.charAt(0)}
-              </span>
-            </div>
+            <TeamLogo 
+              crest={homeTeamCrest} 
+              teamName={match.homeTeam} 
+              gradient="from-primary/20 to-primary/10"
+            />
             <h2 className="text-sm md:text-base font-semibold text-foreground line-clamp-2">{match.homeTeam}</h2>
             <span className="text-xs text-muted-foreground">Ev Sahibi</span>
           </div>
@@ -72,11 +101,11 @@ const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights }) => {
 
           {/* Away Team */}
           <div className="flex-1 text-center">
-            <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-2 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center border border-secondary/20">
-              <span className="text-xl md:text-2xl font-bold text-secondary">
-                {match.awayTeam.charAt(0)}
-              </span>
-            </div>
+            <TeamLogo 
+              crest={awayTeamCrest} 
+              teamName={match.awayTeam} 
+              gradient="from-secondary/20 to-secondary/10"
+            />
             <h2 className="text-sm md:text-base font-semibold text-foreground line-clamp-2">{match.awayTeam}</h2>
             <span className="text-xs text-muted-foreground">Deplasman</span>
           </div>

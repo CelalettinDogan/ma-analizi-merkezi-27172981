@@ -83,20 +83,22 @@ const StandingsPage: React.FC = () => {
 
   const getPositionBg = (position: number, totalTeams: number): string => {
     // Champions League zone (top 4 for most leagues)
-    if (position <= 4) return 'bg-primary/20 border-l-4 border-l-primary';
+    if (position <= 4) return 'bg-primary/10 border-l-4 border-l-primary';
     // Europa League zone
-    if (position <= 6) return 'bg-secondary/20 border-l-4 border-l-secondary';
+    if (position <= 6) return 'bg-blue-500/10 border-l-4 border-l-blue-500';
+    // Conference League zone (usually 7th)
+    if (position === 7) return 'bg-cyan-500/10 border-l-4 border-l-cyan-500';
     // Relegation zone (bottom 3)
-    if (position > totalTeams - 3) return 'bg-destructive/20 border-l-4 border-l-destructive';
+    if (position > totalTeams - 3) return 'bg-destructive/10 border-l-4 border-l-destructive';
     return '';
   };
 
   const getFormIcon = (result: string) => {
-    switch (result) {
-      case 'W': return <span className="w-5 h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">G</span>;
-      case 'D': return <span className="w-5 h-5 rounded-full bg-secondary/20 text-secondary flex items-center justify-center text-xs font-bold">B</span>;
-      case 'L': return <span className="w-5 h-5 rounded-full bg-destructive/20 text-destructive flex items-center justify-center text-xs font-bold">M</span>;
-      default: return <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs">-</span>;
+    switch (result.trim().toUpperCase()) {
+      case 'W': return <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold border border-primary/30">G</span>;
+      case 'D': return <span className="w-6 h-6 rounded-full bg-secondary/20 text-secondary flex items-center justify-center text-xs font-bold border border-secondary/30">B</span>;
+      case 'L': return <span className="w-6 h-6 rounded-full bg-destructive/20 text-destructive flex items-center justify-center text-xs font-bold border border-destructive/30">M</span>;
+      default: return <span className="w-6 h-6 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs">-</span>;
     }
   };
 
@@ -228,11 +230,15 @@ const StandingsPage: React.FC = () => {
                       <TableCell className="text-center font-bold text-lg">{team.points}</TableCell>
                       <TableCell className="hidden lg:table-cell">
                         <div className="flex items-center justify-center gap-1">
-                          {team.form?.split(',').slice(0, 5).map((result, i) => (
-                            <React.Fragment key={i}>
-                              {getFormIcon(result)}
-                            </React.Fragment>
-                          ))}
+                          {team.form ? (
+                            team.form.split(',').slice(0, 5).map((result, i) => (
+                              <React.Fragment key={i}>
+                                {getFormIcon(result)}
+                              </React.Fragment>
+                            ))
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -245,15 +251,19 @@ const StandingsPage: React.FC = () => {
             {/* Legend */}
             <div className="p-4 border-t border-border/50 flex flex-wrap gap-4 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded bg-primary/50" />
+                <div className="w-3 h-3 rounded bg-primary/50 border border-primary/50" />
                 <span>Şampiyonlar Ligi</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded bg-secondary/50" />
+                <div className="w-3 h-3 rounded bg-blue-500/50 border border-blue-500/50" />
                 <span>Avrupa Ligi</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded bg-destructive/50" />
+                <div className="w-3 h-3 rounded bg-cyan-500/50 border border-cyan-500/50" />
+                <span>Konferans Ligi</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded bg-destructive/50 border border-destructive/50" />
                 <span>Düşme Hattı</span>
               </div>
             </div>

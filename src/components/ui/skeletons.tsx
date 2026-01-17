@@ -174,6 +174,78 @@ export const AuthFormSkeleton = () => (
   </div>
 );
 
+// Dashboard Skeleton (Bento Grid)
+export const DashboardSkeleton = () => (
+  <div className="space-y-6">
+    {/* Top Row */}
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div className="lg:col-span-5">
+        <SkeletonBase className="h-[220px] rounded-xl" />
+      </div>
+      <div className="lg:col-span-7 grid grid-cols-2 gap-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <SkeletonBase key={i} className="h-[100px] rounded-xl" />
+        ))}
+      </div>
+    </div>
+    {/* AI Bar */}
+    <SkeletonBase className="h-20 rounded-xl" />
+    {/* Bottom Row */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <SkeletonBase className="h-[280px] rounded-xl" />
+      <SkeletonBase className="h-[280px] rounded-xl" />
+    </div>
+  </div>
+);
+
+// Live Matches Skeleton
+export const LiveMatchesSkeleton = () => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {Array.from({ length: 6 }).map((_, i) => (
+      <div key={i} className="glass-card p-4 space-y-4">
+        <div className="flex items-center justify-between">
+          <SkeletonBase className="h-4 w-24" />
+          <SkeletonBase className="h-6 w-16 rounded-full" />
+        </div>
+        <div className="flex items-center justify-between gap-4 py-4">
+          <div className="text-center flex-1">
+            <SkeletonBase className="w-12 h-12 rounded-full mx-auto mb-2" />
+            <SkeletonBase className="h-4 w-20 mx-auto" />
+          </div>
+          <SkeletonBase className="h-8 w-16" />
+          <div className="text-center flex-1">
+            <SkeletonBase className="w-12 h-12 rounded-full mx-auto mb-2" />
+            <SkeletonBase className="h-4 w-20 mx-auto" />
+          </div>
+        </div>
+        <SkeletonBase className="h-3 w-32 mx-auto" />
+      </div>
+    ))}
+  </div>
+);
+
+// Standings Table Skeleton
+export const StandingsTableSkeleton = () => (
+  <div className="rounded-xl border border-border/50 overflow-hidden bg-card">
+    <div className="p-4 bg-muted/30">
+      <SkeletonBase className="h-6 w-48" />
+    </div>
+    <div className="divide-y divide-border/30">
+      {Array.from({ length: 10 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-4 p-4">
+          <SkeletonBase className="h-5 w-6" />
+          <SkeletonBase className="h-8 w-8 rounded-full" />
+          <SkeletonBase className="h-5 w-32 flex-1" />
+          <SkeletonBase className="h-5 w-8" />
+          <SkeletonBase className="h-5 w-8" />
+          <SkeletonBase className="h-5 w-8" />
+          <SkeletonBase className="h-5 w-12" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 // Full Page Skeleton
 export const PageSkeleton = () => (
   <div className="min-h-screen bg-background p-4 space-y-6">

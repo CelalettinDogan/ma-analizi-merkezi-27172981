@@ -3,11 +3,12 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import AppHeader from "@/components/layout/AppHeader";
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, TrendingUp, Target, Clock, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 // Dashboard components
 import { AccuracyHeroCard } from "@/components/dashboard/AccuracyHeroCard";
@@ -81,6 +82,11 @@ const Dashboard = () => {
     }
   };
 
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
+
   const headerRightContent = (
     <div className="flex items-center gap-2">
       <AutoVerifyButton onVerificationComplete={loadData} />
@@ -95,6 +101,38 @@ const Dashboard = () => {
       </Button>
     </div>
   );
+
+  // Quick stats for the 2x2 grid
+  const quickStats = [
+    {
+      icon: Target,
+      label: "Toplam",
+      value: overallStats?.total_predictions ?? 0,
+      color: "text-primary",
+      bgColor: "bg-primary/10",
+    },
+    {
+      icon: Clock,
+      label: "Beklemede",
+      value: overallStats?.pending_predictions ?? 0,
+      color: "text-secondary",
+      bgColor: "bg-secondary/10",
+    },
+    {
+      icon: CheckCircle2,
+      label: "Başarılı",
+      value: overallStats?.correct_predictions ?? 0,
+      color: "text-primary",
+      bgColor: "bg-primary/10",
+    },
+    {
+      icon: TrendingUp,
+      label: "Başarı Oranı",
+      value: `%${Math.round(overallStats?.accuracy_percentage ?? 0)}`,
+      color: "text-secondary",
+      bgColor: "bg-secondary/10",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -112,69 +150,99 @@ const Dashboard = () => {
           {/* Welcome Message */}
           {user && (
             <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              variants={itemVariants}
               className="text-sm text-muted-foreground"
             >
               Hoş geldin, <span className="text-foreground font-medium">{user.email?.split("@")[0]}</span>
             </motion.p>
           )}
 
-          {/* Top Row: Accuracy Hero + Quick Stats */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <AccuracyHeroCard 
-              accuracy={overallStats?.accuracy_percentage ?? 0}
-              trend={trendData?.trend ?? 0}
-              isLoading={isLoading}
-            />
-            <QuickStatsGrid 
-              stats={overallStats}
-              isLoading={isLoading}
-            />
-          </div>
+          {/* Bento Grid Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            {/* Row 1: Accuracy Hero (large) + Quick Stats Grid (2x2) */}
+            <motion.div variants={itemVariants} className="lg:col-span-5">
+              <AccuracyHeroCard 
+                accuracy={overallStats?.accuracy_percentage ?? 0}
+                trend={trendData?.trend ?? 0}
+                isLoading={isLoading}
+              />
+            </motion.div>
+            
+            <motion.div variants={itemVariants} className="lg:col-span-7">
+              <div className="grid grid-cols-2 gap-3 h-full">
+                {quickStats.map((stat, index) => (
+                  <Card 
+                    key={stat.label}
+                    className="p-4 bg-card/50 backdrop-blur-sm border-border/50 flex items-center gap-3 hover:bg-card/80 transition-colors"
+                  >
+                    <div className={`p-2.5 rounded-xl ${stat.bgColor}`}>
+                      <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">{stat.label}</p>
+                      <p className="text-xl font-bold text-foreground">
+                        {isLoading ? (
+                          <span className="inline-block w-12 h-6 bg-muted/50 rounded animate-pulse" />
+                        ) : (
+                          stat.value
+                        )}
+                      </p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </motion.div>
 
-          {/* AI Learning Bar */}
-          <AILearningBar
-            correct={overallStats?.correct_predictions ?? 0}
-            total={overallStats?.total_predictions ?? 0}
-            isLoading={isLoading}
-          />
+            {/* Row 2: AI Learning Bar (full width) */}
+            <motion.div variants={itemVariants} className="lg:col-span-12">
+              <AILearningBar
+                correct={overallStats?.correct_predictions ?? 0}
+                total={overallStats?.total_predictions ?? 0}
+                isLoading={isLoading}
+              />
+            </motion.div>
 
-          {/* Bottom Row: Prediction Types + Activity Feed */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <PredictionTypePills 
-              stats={predictionStats}
-              isLoading={isLoading}
-            />
-            <ActivityFeed 
-              predictions={recentPredictions}
-              isLoading={isLoading}
-            />
+            {/* Row 3: Prediction Type Pills + Activity Feed */}
+            <motion.div variants={itemVariants} className="lg:col-span-5">
+              <PredictionTypePills 
+                stats={predictionStats}
+                isLoading={isLoading}
+              />
+            </motion.div>
+            
+            <motion.div variants={itemVariants} className="lg:col-span-7">
+              <ActivityFeed 
+                predictions={recentPredictions}
+                isLoading={isLoading}
+              />
+            </motion.div>
           </div>
 
           {/* Collapsible Slips Section (Only for logged in users) */}
           {user && (
-            <Collapsible open={slipsOpen} onOpenChange={setSlipsOpen}>
-              <CollapsibleTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-between h-12 bg-card/50 hover:bg-card/80 border-border/50"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">Kuponlarım</span>
-                    {slipCount > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        {slipCount}
-                      </Badge>
-                    )}
-                  </div>
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${slipsOpen ? "rotate-180" : ""}`} />
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-4">
-                <SavedSlipsList />
-              </CollapsibleContent>
-            </Collapsible>
+            <motion.div variants={itemVariants}>
+              <Collapsible open={slipsOpen} onOpenChange={setSlipsOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-between h-12 bg-card/50 hover:bg-card/80 border-border/50"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">Kuponlarım</span>
+                      {slipCount > 0 && (
+                        <Badge variant="secondary" className="text-xs">
+                          {slipCount}
+                        </Badge>
+                      )}
+                    </div>
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${slipsOpen ? "rotate-180" : ""}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-4">
+                  <SavedSlipsList />
+                </CollapsibleContent>
+              </Collapsible>
+            </motion.div>
           )}
         </motion.div>
       </main>
