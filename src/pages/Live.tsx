@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radio, RefreshCw, Loader2, WifiOff } from 'lucide-react';
+import { Radio, RefreshCw, Loader2, WifiOff, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import AppHeader from '@/components/layout/AppHeader';
@@ -148,15 +148,57 @@ const LivePage: React.FC = () => {
         ) : liveMatches.length === 0 ? (
           <motion.div 
             {...fadeInUp}
-            className="text-center py-16 rounded-2xl bg-muted/10 border border-dashed border-border"
+            className="rounded-2xl bg-gradient-to-br from-card via-card to-muted/20 border border-border/50 overflow-hidden"
           >
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted/30 flex items-center justify-center">
-              <Radio className="w-8 h-8 text-muted-foreground" />
+            {/* Hero empty state */}
+            <div className="relative p-8 text-center">
+              {/* Background decoration */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+              
+              <div className="relative z-10">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-muted/50 to-muted/30 flex items-center justify-center border border-border/50">
+                  <Radio className="w-10 h-10 text-muted-foreground" />
+                </div>
+                
+                <h3 className="font-display font-bold text-xl mb-2">Şu an canlı maç yok</h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
+                  Desteklenen liglerde şu anda oynanmakta olan maç bulunmuyor. Sayfa her 30 saniyede otomatik güncellenir.
+                </p>
+
+                {/* Quick actions */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Button 
+                    variant="default" 
+                    onClick={() => navigate('/')}
+                    className="gap-2"
+                  >
+                    <Trophy className="w-4 h-4" />
+                    Yaklaşan Maçlara Git
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => fetchLiveMatches(true)}
+                    className="gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Yenile
+                  </Button>
+                </div>
+              </div>
             </div>
-            <h3 className="font-semibold text-lg mb-2">Şu an canlı maç yok</h3>
-            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-              Desteklenen liglerde şu anda oynanmakta olan maç bulunmuyor. Her 30 saniyede otomatik güncellenir.
-            </p>
+
+            {/* Auto-refresh indicator */}
+            <div className="px-6 py-4 border-t border-border/30 bg-muted/10">
+              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="w-2 h-2 rounded-full bg-primary/50"
+                />
+                <span>Otomatik güncelleme aktif</span>
+              </div>
+            </div>
           </motion.div>
         ) : (
           <motion.div

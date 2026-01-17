@@ -216,7 +216,12 @@ const Index: React.FC = () => {
               className="space-y-6"
             >
               {/* Match Hero Card - Compact */}
-              <MatchHeroCard match={analysis.input} insights={analysis.insights} />
+              <MatchHeroCard 
+                match={analysis.input} 
+                insights={analysis.insights}
+                homeTeamCrest={analysis.input.homeTeamCrest}
+                awayTeamCrest={analysis.input.awayTeamCrest}
+              />
 
               {/* AI Recommendation + Prediction Pills - Hero Section */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

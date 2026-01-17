@@ -76,14 +76,15 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
           <motion.button
             key={league.code}
             variants={staggerItem}
-            whileHover={cardHover}
-            whileTap={cardTap}
+            whileHover={{ scale: 1.02, y: -4 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => onLeagueSelect(league.code)}
             className={cn(
               "relative group p-4 rounded-2xl text-left transition-all duration-300",
-              "bg-gradient-to-br border backdrop-blur-sm",
+              "bg-gradient-to-br border backdrop-blur-xl",
+              "shadow-lg hover:shadow-xl",
               colorClass,
-              isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background"
+              isSelected && "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-primary/20"
             )}
           >
             {/* Selection indicator - positioned on left to avoid favorite button conflict */}

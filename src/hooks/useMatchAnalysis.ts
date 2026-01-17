@@ -346,6 +346,11 @@ export function useMatchAnalysis() {
 
       const result: MatchAnalysis = {
         ...mathResult,
+        input: {
+          ...mathResult.input,
+          homeTeamCrest: homeStanding.team.crest,
+          awayTeamCrest: awayStanding.team.crest,
+        },
         predictions: finalPredictions,
         isAIEnhanced,
         // Advanced data
