@@ -1,85 +1,111 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, RefreshCw, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { toast } from 'sonner';
 import AppHeader from '@/components/layout/AppHeader';
 import LeagueGrid from '@/components/league/LeagueGrid';
 import BottomNav from '@/components/navigation/BottomNav';
 import CommandPalette from '@/components/navigation/CommandPalette';
 import { CompetitionCode } from '@/types/footballApi';
-import { footballApiRequest } from '@/services/apiRequestManager';
+import { supabase } from '@/integrations/supabase/client';
 import { fadeInUp } from '@/lib/animations';
 import { cn } from '@/lib/utils';
 
-interface Standing {
+interface CachedStanding {
+  id: number;
+  competition_code: string;
+  competition_name: string | null;
   position: number;
-  team: {
-    id: number;
-    name: string;
-    shortName: string;
-    tla: string;
-    crest: string;
-  };
-  playedGames: number;
+  team_id: number;
+  team_name: string;
+  team_short_name: string | null;
+  team_tla: string | null;
+  team_crest: string | null;
+  played_games: number;
   form: string | null;
   won: number;
   draw: number;
   lost: number;
   points: number;
-  goalsFor: number;
-  goalsAgainst: number;
-  goalDifference: number;
-}
-
-interface StandingsData {
-  competition: {
-    name: string;
-    emblem: string;
-  };
-  season: {
-    currentMatchday: number;
-  };
-  standings: Array<{
-    type: string;
-    table: Standing[];
-  }>;
+  goals_for: number;
+  goals_against: number;
+  goal_difference: number;
+  updated_at: string;
 }
 
 const StandingsPage: React.FC = () => {
   const [selectedLeague, setSelectedLeague] = useState<CompetitionCode>('PL');
-  const [standingsData, setStandingsData] = useState<StandingsData | null>(null);
+  const [standings, setStandings] = useState<CachedStanding[]>([]);
+  const [competitionName, setCompetitionName] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [commandOpen, setCommandOpen] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
-  const fetchStandings = async (showRefreshIndicator = false) => {
-    if (showRefreshIndicator) setIsRefreshing(true);
+  // Sync standings from API to database
+  const syncStandings = useCallback(async () => {
+    setIsSyncing(true);
+    toast.loading('Puan durumu senkronize ediliyor...', { id: 'sync-standings' });
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-standings');
+      if (error) {
+        console.error('Sync error:', error);
+        toast.error('Senkronizasyon başarısız', { id: 'sync-standings' });
+      } else {
+        console.log('Sync result:', data);
+        toast.success(`${data?.synced || 0} takım güncellendi!`, { id: 'sync-standings' });
+        // Refetch from database after sync
+        setTimeout(() => fetchStandings(), 2000);
+      }
+    } catch (e) {
+      console.error('Sync exception:', e);
+      toast.error('Senkronizasyon hatası', { id: 'sync-standings' });
+    } finally {
+      setIsSyncing(false);
+    }
+  }, []);
+
+  // Fetch standings from database (no rate limit!)
+  const fetchStandings = useCallback(async () => {
     setError(null);
 
     try {
-      const data = await footballApiRequest<StandingsData>({
-        action: 'standings',
-        competitionCode: selectedLeague,
-      });
+      const { data, error } = await supabase
+        .from('cached_standings')
+        .select('*')
+        .eq('competition_code', selectedLeague)
+        .order('position', { ascending: true });
 
-      setStandingsData(data);
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        setStandings(data as CachedStanding[]);
+        setCompetitionName(data[0]?.competition_name || selectedLeague);
+        setLastUpdated(data[0]?.updated_at || null);
+      } else {
+        // No cached data - trigger sync
+        setStandings([]);
+        setCompetitionName(selectedLeague);
+        console.log('No cached standings, triggering sync...');
+        syncStandings();
+      }
     } catch (e) {
       console.error('Error fetching standings:', e);
       setError('Puan durumu yüklenirken hata oluştu');
     } finally {
       setIsLoading(false);
-      setIsRefreshing(false);
     }
-  };
+  }, [selectedLeague, syncStandings]);
 
   useEffect(() => {
     setIsLoading(true);
     fetchStandings();
-  }, [selectedLeague]);
+  }, [fetchStandings]);
 
   const getPositionBg = (position: number, totalTeams: number): string => {
     // Champions League zone (top 4 for most leagues)
@@ -102,16 +128,17 @@ const StandingsPage: React.FC = () => {
     }
   };
 
-  const table = standingsData?.standings?.find(s => s.type === 'TOTAL')?.table || [];
+  // Use standings directly from state (already sorted by position)
 
   const headerRightContent = (
     <Button
       variant="outline"
       size="icon"
-      onClick={() => fetchStandings(true)}
-      disabled={isRefreshing}
+      onClick={syncStandings}
+      disabled={isSyncing}
+      title="Verileri güncelle"
     >
-      <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+      <RefreshCw className={cn("w-4 h-4", isSyncing && "animate-spin")} />
     </Button>
   );
 
@@ -131,22 +158,20 @@ const StandingsPage: React.FC = () => {
         </motion.div>
 
         {/* Competition Header */}
-        {standingsData && (
+        {standings.length > 0 && (
           <motion.div 
             {...fadeInUp}
-            className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border/50"
+            className="flex items-center justify-between p-4 rounded-xl bg-card border border-border/50"
           >
-            {standingsData.competition?.emblem && (
-              <img 
-                src={standingsData.competition.emblem} 
-                alt={standingsData.competition.name}
-                className="w-12 h-12 object-contain"
-              />
-            )}
             <div>
-              <h2 className="font-display font-bold text-lg">{standingsData.competition?.name}</h2>
+              <h2 className="font-display font-bold text-lg">{competitionName}</h2>
               <p className="text-sm text-muted-foreground">
-                2024/25 Sezonu • Hafta {standingsData.season?.currentMatchday}
+                2024/25 Sezonu
+                {lastUpdated && (
+                  <span className="ml-2 text-xs">
+                    • Son güncelleme: {new Date(lastUpdated).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                )}
               </p>
             </div>
           </motion.div>
@@ -162,8 +187,8 @@ const StandingsPage: React.FC = () => {
           <div className="text-center py-16">
             <Trophy className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
             <p className="text-muted-foreground mb-4">{error}</p>
-            <Button variant="outline" onClick={() => fetchStandings(true)}>
-              Tekrar Dene
+            <Button variant="outline" onClick={syncStandings} disabled={isSyncing}>
+              {isSyncing ? 'Senkronize ediliyor...' : 'Tekrar Dene'}
             </Button>
           </div>
         ) : (
@@ -189,12 +214,12 @@ const StandingsPage: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {table.map((team, index) => (
+                  {standings.map((team) => (
                     <TableRow
-                      key={team.team.id}
+                      key={team.team_id}
                       className={cn(
                         "hover:bg-muted/20 transition-colors",
-                        getPositionBg(team.position, table.length)
+                        getPositionBg(team.position, standings.length)
                       )}
                     >
                       <TableCell className="text-center font-semibold">
@@ -202,29 +227,29 @@ const StandingsPage: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          {team.team.crest && (
+                          {team.team_crest && (
                             <img 
-                              src={team.team.crest} 
-                              alt={team.team.name}
+                              src={team.team_crest} 
+                              alt={team.team_name}
                               className="w-6 h-6 object-contain"
                             />
                           )}
                           <span className="font-medium truncate max-w-[120px] sm:max-w-none">
-                            {team.team.shortName || team.team.name}
+                            {team.team_short_name || team.team_name}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-center">{team.playedGames}</TableCell>
+                      <TableCell className="text-center">{team.played_games}</TableCell>
                       <TableCell className="text-center hidden sm:table-cell text-primary font-medium">{team.won}</TableCell>
                       <TableCell className="text-center hidden sm:table-cell text-secondary">{team.draw}</TableCell>
                       <TableCell className="text-center hidden sm:table-cell text-destructive">{team.lost}</TableCell>
-                      <TableCell className="text-center hidden md:table-cell">{team.goalsFor}</TableCell>
-                      <TableCell className="text-center hidden md:table-cell">{team.goalsAgainst}</TableCell>
+                      <TableCell className="text-center hidden md:table-cell">{team.goals_for}</TableCell>
+                      <TableCell className="text-center hidden md:table-cell">{team.goals_against}</TableCell>
                       <TableCell className={cn(
                         "text-center font-medium",
-                        team.goalDifference > 0 ? "text-primary" : team.goalDifference < 0 ? "text-destructive" : ""
+                        team.goal_difference > 0 ? "text-primary" : team.goal_difference < 0 ? "text-destructive" : ""
                       )}>
-                        {team.goalDifference > 0 ? '+' : ''}{team.goalDifference}
+                        {team.goal_difference > 0 ? '+' : ''}{team.goal_difference}
                       </TableCell>
                       <TableCell className="text-center font-bold text-lg">{team.points}</TableCell>
                       <TableCell className="hidden lg:table-cell">

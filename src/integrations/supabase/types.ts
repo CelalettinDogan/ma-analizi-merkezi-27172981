@@ -172,6 +172,72 @@ export type Database = {
         }
         Relationships: []
       }
+      cached_standings: {
+        Row: {
+          competition_code: string
+          competition_name: string | null
+          draw: number | null
+          form: string | null
+          goal_difference: number | null
+          goals_against: number | null
+          goals_for: number | null
+          id: number
+          lost: number | null
+          played_games: number | null
+          points: number | null
+          position: number
+          team_crest: string | null
+          team_id: number
+          team_name: string
+          team_short_name: string | null
+          team_tla: string | null
+          updated_at: string | null
+          won: number | null
+        }
+        Insert: {
+          competition_code: string
+          competition_name?: string | null
+          draw?: number | null
+          form?: string | null
+          goal_difference?: number | null
+          goals_against?: number | null
+          goals_for?: number | null
+          id?: number
+          lost?: number | null
+          played_games?: number | null
+          points?: number | null
+          position: number
+          team_crest?: string | null
+          team_id: number
+          team_name: string
+          team_short_name?: string | null
+          team_tla?: string | null
+          updated_at?: string | null
+          won?: number | null
+        }
+        Update: {
+          competition_code?: string
+          competition_name?: string | null
+          draw?: number | null
+          form?: string | null
+          goal_difference?: number | null
+          goals_against?: number | null
+          goals_for?: number | null
+          id?: number
+          lost?: number | null
+          played_games?: number | null
+          points?: number | null
+          position?: number
+          team_crest?: string | null
+          team_id?: number
+          team_name?: string
+          team_short_name?: string | null
+          team_tla?: string | null
+          updated_at?: string | null
+          won?: number | null
+        }
+        Relationships: []
+      }
       league_averages: {
         Row: {
           avg_away_goals: number | null
