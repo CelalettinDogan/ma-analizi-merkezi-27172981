@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2, Save, Receipt, AlertCircle } from 'lucide-react';
+import { Trash2, Save, Receipt, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -16,6 +16,8 @@ const BetSlipDrawer: React.FC = () => {
     removeFromSlip,
     clearSlip,
     saveSlip,
+    addLuckyPicks,
+    isLoadingLucky,
   } = useBetSlip();
 
   const [isSaving, setIsSaving] = useState(false);
@@ -27,6 +29,10 @@ const BetSlipDrawer: React.FC = () => {
     if (success) {
       setIsOpen(false);
     }
+  };
+
+  const handleLuckyPicks = async () => {
+    await addLuckyPicks();
   };
 
   // Count predictions by confidence
@@ -59,9 +65,24 @@ const BetSlipDrawer: React.FC = () => {
               <Receipt className="h-8 w-8 text-muted-foreground" />
             </div>
             <p className="text-muted-foreground">Kuponunuz boş</p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-1 mb-4">
               Tahminleri kupona eklemek için "Kupona Ekle" butonuna tıklayın.
             </p>
+            
+            {/* Lucky Picks Button - Empty State */}
+            <Button
+              variant="outline"
+              className="gap-2 border-primary/50 text-primary hover:bg-primary/10 hover:border-primary"
+              onClick={handleLuckyPicks}
+              disabled={isLoadingLucky}
+            >
+              {isLoadingLucky ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+              {isLoadingLucky ? 'Yükleniyor...' : 'Kendimi Şanslı Hissediyorum'}
+            </Button>
           </div>
         ) : (
           <>
@@ -71,6 +92,22 @@ const BetSlipDrawer: React.FC = () => {
                 Gerçek bahis oranları mevcut değildir. Bu kupon yalnızca tahmin takibi içindir.
               </AlertDescription>
             </Alert>
+
+            {/* Lucky Picks Button - Has Items State */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2 border-primary/50 text-primary hover:bg-primary/10 hover:border-primary mt-2"
+              onClick={handleLuckyPicks}
+              disabled={isLoadingLucky}
+            >
+              {isLoadingLucky ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+              {isLoadingLucky ? 'Yükleniyor...' : '🍀 Kendimi Şanslı Hissediyorum'}
+            </Button>
 
             <ScrollArea className="flex-1 -mx-6 px-6">
               <div className="space-y-3 py-4">

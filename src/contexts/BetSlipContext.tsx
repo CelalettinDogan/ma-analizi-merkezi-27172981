@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { BetSlipItem } from '@/types/betslip';
 import { saveBetSlip } from '@/services/betSlipService';
+import { getLuckyPicks, luckyPickToBetSlipItem } from '@/services/luckyPicksService';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -14,6 +15,8 @@ interface BetSlipContextType {
   saveSlip: (name?: string) => Promise<boolean>;
   isInSlip: (homeTeam: string, awayTeam: string, predictionType: string) => boolean;
   setIsOpen: (open: boolean) => void;
+  addLuckyPicks: () => Promise<number>;
+  isLoadingLucky: boolean;
 }
 
 const BetSlipContext = createContext<BetSlipContextType | undefined>(undefined);
@@ -21,6 +24,7 @@ const BetSlipContext = createContext<BetSlipContextType | undefined>(undefined);
 export function BetSlipProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<BetSlipItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoadingLucky, setIsLoadingLucky] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -99,6 +103,71 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
     );
   }, [items]);
 
+  const addLuckyPicks = useCallback(async (): Promise<number> => {
+    if (!user) {
+      toast({
+        title: 'Giriş Gerekli',
+        description: 'Şanslı kupon için lütfen giriş yapın.',
+        variant: 'destructive',
+      });
+      return 0;
+    }
+
+    setIsLoadingLucky(true);
+    try {
+      const luckyPicks = await getLuckyPicks(3);
+      
+      if (luckyPicks.length === 0) {
+        toast({
+          title: 'Tahmin Bulunamadı',
+          description: 'Şu an için yeterli tahmin mevcut değil. Önce maç analizi yapın.',
+          variant: 'destructive',
+        });
+        return 0;
+      }
+
+      let addedCount = 0;
+      const newItems: BetSlipItem[] = [];
+
+      for (const pick of luckyPicks) {
+        // Skip if already in slip
+        if (isInSlip(pick.homeTeam, pick.awayTeam, pick.predictionType)) {
+          continue;
+        }
+
+        const slipItem = luckyPickToBetSlipItem(pick);
+        const id = `${slipItem.homeTeam}-${slipItem.awayTeam}-${slipItem.predictionType}-${Date.now()}-${addedCount}`;
+        newItems.push({ ...slipItem, id });
+        addedCount++;
+      }
+
+      if (newItems.length > 0) {
+        setItems((prev) => [...prev, ...newItems]);
+        toast({
+          title: '🍀 Şanslı Kupon!',
+          description: `${newItems.length} yüksek güvenli tahmin eklendi.`,
+        });
+      } else {
+        toast({
+          title: 'Tahminler Zaten Kuponda',
+          description: 'Seçilen tahminler zaten kuponunuzda mevcut.',
+        });
+      }
+
+      return addedCount;
+    } catch (error) {
+      console.error('Lucky picks error:', error);
+      toast({
+        title: 'Hata',
+        description: 'Şanslı tahminler yüklenemedi.',
+        variant: 'destructive',
+      });
+      return 0;
+    } finally {
+      setIsLoadingLucky(false);
+    }
+  }, [user, toast, isInSlip]);
+
   const value = useMemo(
     () => ({
       items,
@@ -110,8 +179,10 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
       saveSlip,
       isInSlip,
       setIsOpen,
+      addLuckyPicks,
+      isLoadingLucky,
     }),
-    [items, itemCount, isOpen, addToSlip, removeFromSlip, clearSlip, saveSlip, isInSlip]
+    [items, itemCount, isOpen, addToSlip, removeFromSlip, clearSlip, saveSlip, isInSlip, addLuckyPicks, isLoadingLucky]
   );
 
   return <BetSlipContext.Provider value={value}>{children}</BetSlipContext.Provider>;
