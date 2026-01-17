@@ -1,37 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Target, BarChart3, Twitter, Github, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 
-const AppFooter: React.FC = () => {
-  const [stats, setStats] = useState({
-    totalAnalysis: 0,
-    accuracy: 0,
-    premiumAccuracy: 0,
-  });
+interface FooterStats {
+  totalAnalysis: number;
+  accuracy: number;
+  premiumAccuracy: number;
+}
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const [totalResult, accuracyResult, premiumResult] = await Promise.all([
-          supabase.from('predictions').select('*', { count: 'exact', head: true }),
-          supabase.from('overall_stats').select('accuracy_percentage').single(),
-          supabase.from('ml_model_stats').select('premium_accuracy').limit(1).maybeSingle(),
-        ]);
+interface AppFooterProps {
+  stats?: FooterStats;
+}
 
-        setStats({
-          totalAnalysis: totalResult.count || 0,
-          accuracy: Math.round(accuracyResult.data?.accuracy_percentage || 0),
-          premiumAccuracy: Math.round(premiumResult.data?.premium_accuracy || 0),
-        });
-      } catch (e) {
-        console.error('Error fetching footer stats:', e);
-      }
-    };
-
-    fetchStats();
-  }, []);
+const AppFooter: React.FC<AppFooterProps> = ({ stats }) => {
+  // Use passed stats or defaults
+  const displayStats = stats || { totalAnalysis: 0, accuracy: 0, premiumAccuracy: 0 };
 
   return (
     <footer className="hidden md:block py-12 border-t border-border/50 bg-gradient-to-t from-background to-transparent">
@@ -48,7 +32,7 @@ const AppFooter: React.FC = () => {
               <BarChart3 className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <div className="text-xl font-bold text-foreground">{stats.totalAnalysis.toLocaleString()}</div>
+              <div className="text-xl font-bold text-foreground">{displayStats.totalAnalysis.toLocaleString()}</div>
               <div className="text-xs text-muted-foreground">Toplam Analiz</div>
             </div>
           </div>
@@ -60,7 +44,7 @@ const AppFooter: React.FC = () => {
               <Target className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <div className="text-xl font-bold gradient-text">%{stats.accuracy}</div>
+              <div className="text-xl font-bold gradient-text">%{displayStats.accuracy}</div>
               <div className="text-xs text-muted-foreground">Genel Doğruluk</div>
             </div>
           </div>
@@ -72,7 +56,7 @@ const AppFooter: React.FC = () => {
               <Trophy className="w-5 h-5 text-secondary" />
             </div>
             <div>
-              <div className="text-xl font-bold gradient-text-gold">%{stats.premiumAccuracy}</div>
+              <div className="text-xl font-bold gradient-text-gold">%{displayStats.premiumAccuracy}</div>
               <div className="text-xs text-muted-foreground">Premium Doğruluk</div>
             </div>
           </div>
