@@ -52,6 +52,11 @@
     --win: 142 71% 45%;
     --loss: 0 84% 60%;
     --draw: 45 93% 47%;
+    
+    /* Confidence colors - Standardized */
+    --confidence-high: 142 71% 45%;
+    --confidence-medium: 45 93% 47%;
+    --confidence-low: 215 20% 65%;
   }
 
   /* Light theme - Enhanced contrast */
@@ -94,6 +99,11 @@
     --shadow-card: 0 4px 24px hsl(222 47% 11% / 0.08);
     --shadow-elevated: 0 8px 32px hsl(222 47% 11% / 0.12);
     --shadow-premium: 0 4px 20px hsl(38 92% 40% / 0.2);
+    
+    /* Confidence colors - Light mode */
+    --confidence-high: 142 71% 32%;
+    --confidence-medium: 38 92% 40%;
+    --confidence-low: 220 13% 35%;
   }
 }
 

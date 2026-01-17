@@ -29,7 +29,7 @@ import { Match as ApiMatch, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/ty
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { useHomeData } from '@/hooks/useHomeData';
-import { Calendar, Search, RefreshCw } from 'lucide-react';
+import { Calendar, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { footballApiRequest } from '@/services/apiRequestManager';
@@ -343,19 +343,7 @@ const Index: React.FC = () => {
               {/* Advanced Analysis Tabs */}
               <AdvancedAnalysisTabs analysis={analysis} />
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <Button 
-                  variant="outline" 
-                  className="flex-1 gap-2"
-                  onClick={() => analyzeMatch(analysis.input)}
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  Yeniden Analiz
-                </Button>
-              </div>
-
-              {/* Legal Disclaimer */}
+              {/* Legal Disclaimer - Collapsible */}
               <LegalDisclaimer />
             </motion.section>
           )}

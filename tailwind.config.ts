@@ -54,6 +54,11 @@ export default {
         win: "hsl(var(--win))",
         loss: "hsl(var(--loss))",
         draw: "hsl(var(--draw))",
+        confidence: {
+          high: "hsl(var(--confidence-high))",
+          medium: "hsl(var(--confidence-medium))",
+          low: "hsl(var(--confidence-low))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
