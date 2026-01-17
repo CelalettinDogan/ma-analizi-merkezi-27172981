@@ -1,8 +1,9 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Calendar } from 'lucide-react';
 import { BetSlipItem as BetSlipItemType } from '@/types/betslip';
-import { formatOdds } from '@/utils/oddsCalculator';
 import { Button } from '@/components/ui/button';
+import { format, parseISO } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
 interface BetSlipItemProps {
   item: BetSlipItemType;
@@ -21,12 +22,32 @@ const confidenceColors = {
   yüksek: 'text-win',
 };
 
+const formatMatchDate = (dateString: string): string => {
+  try {
+    const date = parseISO(dateString);
+    return format(date, 'd MMM', { locale: tr });
+  } catch {
+    return dateString;
+  }
+};
+
 const BetSlipItemComponent: React.FC<BetSlipItemProps> = ({ item, onRemove }) => {
   return (
     <div className="bg-muted/50 rounded-lg p-3 space-y-2 animate-fade-in">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-muted-foreground truncate">{item.league}</p>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="truncate">{item.league}</span>
+            {item.matchDate && (
+              <>
+                <span className="text-border">•</span>
+                <span className="flex items-center gap-1 shrink-0">
+                  <Calendar className="h-3 w-3" />
+                  {formatMatchDate(item.matchDate)}
+                </span>
+              </>
+            )}
+          </div>
           <p className="text-sm font-medium text-foreground truncate">
             {item.homeTeam} vs {item.awayTeam}
           </p>

@@ -141,16 +141,21 @@ export function BetSlipProvider({ children }: { children: React.ReactNode }) {
         addedCount++;
       }
 
+      const skippedCount = luckyPicks.length - newItems.length;
+      
       if (newItems.length > 0) {
         setItems((prev) => [...prev, ...newItems]);
+        const skippedMessage = skippedCount > 0 
+          ? ` (${skippedCount} tahmin zaten kuponda)`
+          : '';
         toast({
           title: '🍀 Şanslı Kupon!',
-          description: `${newItems.length} yüksek güvenli tahmin eklendi.`,
+          description: `${newItems.length} yüksek güvenli tahmin eklendi${skippedMessage}`,
         });
       } else {
         toast({
           title: 'Tahminler Zaten Kuponda',
-          description: 'Seçilen tahminler zaten kuponunuzda mevcut.',
+          description: `${luckyPicks.length} seçili tahmin de zaten kuponunuzda mevcut.`,
         });
       }
 
