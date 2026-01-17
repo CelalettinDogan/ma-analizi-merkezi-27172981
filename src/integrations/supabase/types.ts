@@ -109,6 +109,75 @@ export type Database = {
         }
         Relationships: []
       }
+      cached_live_matches: {
+        Row: {
+          away_score: number | null
+          away_team_crest: string | null
+          away_team_id: number | null
+          away_team_name: string
+          competition_code: string
+          competition_name: string | null
+          half_time_away: number | null
+          half_time_home: number | null
+          home_score: number | null
+          home_team_crest: string | null
+          home_team_id: number | null
+          home_team_name: string
+          id: number
+          match_id: number
+          matchday: number | null
+          minute: string | null
+          raw_data: Json | null
+          status: string
+          updated_at: string | null
+          utc_date: string
+        }
+        Insert: {
+          away_score?: number | null
+          away_team_crest?: string | null
+          away_team_id?: number | null
+          away_team_name: string
+          competition_code: string
+          competition_name?: string | null
+          half_time_away?: number | null
+          half_time_home?: number | null
+          home_score?: number | null
+          home_team_crest?: string | null
+          home_team_id?: number | null
+          home_team_name: string
+          id?: number
+          match_id: number
+          matchday?: number | null
+          minute?: string | null
+          raw_data?: Json | null
+          status: string
+          updated_at?: string | null
+          utc_date: string
+        }
+        Update: {
+          away_score?: number | null
+          away_team_crest?: string | null
+          away_team_id?: number | null
+          away_team_name?: string
+          competition_code?: string
+          competition_name?: string | null
+          half_time_away?: number | null
+          half_time_home?: number | null
+          home_score?: number | null
+          home_team_crest?: string | null
+          home_team_id?: number | null
+          home_team_name?: string
+          id?: number
+          match_id?: number
+          matchday?: number | null
+          minute?: string | null
+          raw_data?: Json | null
+          status?: string
+          updated_at?: string | null
+          utc_date?: string
+        }
+        Relationships: []
+      }
       cached_matches: {
         Row: {
           away_score: number | null
