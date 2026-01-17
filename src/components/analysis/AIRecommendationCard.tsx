@@ -1,6 +1,6 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Sparkles, Brain, Plus, Star, AlertTriangle, Info } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles, Plus, Star, AlertTriangle, Info, ChevronDown } from 'lucide-react';
 import { Prediction, MatchInput } from '@/types/match';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,6 @@ import { useBetSlip } from '@/contexts/BetSlipContext';
 import { cn } from '@/lib/utils';
 import ShareCard from '@/components/ShareCard';
 import { formatMatchDate } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { CONFIDENCE_THRESHOLDS } from '@/constants/predictions';
 
 interface AIRecommendationCardProps {
@@ -31,8 +30,16 @@ const getConfidenceLevel = (value: number): 'yüksek' | 'orta' | 'düşük' => {
   return 'düşük';
 };
 
+const confidenceConfig = {
+  'yüksek': { icon: Star, label: 'Yüksek Güven', color: 'text-emerald-400', bg: 'bg-emerald-500/20' },
+  'orta': { icon: Info, label: 'Orta Güven', color: 'text-amber-400', bg: 'bg-amber-500/20' },
+  'düşük': { icon: AlertTriangle, label: 'Düşük Güven', color: 'text-muted-foreground', bg: 'bg-muted' },
+};
+
 const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions, matchInput }) => {
-  const { addToSlip } = useBetSlip();
+  const { addToSlip, items } = useBetSlip();
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [showFullReasoning, setShowFullReasoning] = useState(false);
   
   // Sort predictions by hybrid confidence (highest first) and select best one
   const sortedPredictions = [...predictions].sort((a, b) => {
@@ -45,16 +52,16 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
   
   if (!mainPrediction) return null;
 
-  const aiConfidence = (mainPrediction.aiConfidence || 0) * 100;
-  const mathConfidence = (mainPrediction.mathConfidence || 0) * 100;
-  const avgConfidence = (aiConfidence + mathConfidence) / 2;
-  const confidenceLevel = getConfidenceLevel((aiConfidence + mathConfidence) / 200);
+  const hybridConfidence = getHybridConfidence(mainPrediction) * 100;
+  const confidenceLevel = getConfidenceLevel(getHybridConfidence(mainPrediction));
+  const { icon: ConfidenceIcon, label: confidenceLabel, color, bg } = confidenceConfig[confidenceLevel];
 
-  const getConfidenceColor = (value: number) => {
-    if (value >= 70) return 'text-emerald-400';
-    if (value >= 50) return 'text-amber-400';
-    return 'text-muted-foreground';
-  };
+  const isInSlip = items.some(
+    item => 
+      item.homeTeam === matchInput.homeTeam &&
+      item.awayTeam === matchInput.awayTeam &&
+      item.predictionType === mainPrediction.type
+  );
 
   const handleAddToSlipClick = () => {
     addToSlip({
@@ -69,106 +76,125 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
     });
   };
 
+  const reasoning = mainPrediction.reasoning || '';
+  const isLongReasoning = reasoning.length > 150;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-card to-secondary/10 border border-primary/20 p-4 md:p-6"
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-card to-secondary/10 border border-primary/20"
     >
-      {/* Glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
+      {/* Subtle glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
 
-      <div className="relative z-10">
-        {/* Header */}
+      <div className="relative z-10 p-4 md:p-5">
+        {/* Compact Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-primary" />
             </div>
             <span className="text-sm font-medium text-muted-foreground">AI Önerisi</span>
-            {/* Best Pick Badge */}
-            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">
-              <Star className="w-3 h-3 mr-1" />
-              En İyi Seçim
-            </Badge>
           </div>
-          {/* Confidence Level Badge */}
-          <div className={cn(
-            "px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1.5",
-            confidenceLevel === 'yüksek' ? "bg-emerald-500/20 text-emerald-400" :
-            confidenceLevel === 'orta' ? "bg-amber-500/20 text-amber-400" :
-            "bg-muted text-muted-foreground"
-          )}>
-            {confidenceLevel === 'yüksek' && <Star className="w-3 h-3" />}
-            {confidenceLevel === 'orta' && <Info className="w-3 h-3" />}
-            {confidenceLevel === 'düşük' && <AlertTriangle className="w-3 h-3" />}
-            {confidenceLevel === 'yüksek' ? 'Yüksek' : confidenceLevel === 'orta' ? 'Orta' : 'Düşük'} Güven
+          {/* Single Confidence Badge */}
+          <div className={cn("px-3 py-1.5 rounded-full text-sm font-semibold flex items-center gap-1.5", bg, color)}>
+            <ConfidenceIcon className="w-3.5 h-3.5" />
+            {confidenceLabel}
           </div>
         </div>
 
-        {/* Main Prediction */}
-        <div className="text-center mb-6">
-          <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+        {/* Main Prediction - Cleaner */}
+        <div className="text-center mb-5">
+          <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
             {mainPrediction.prediction}
           </h3>
-          <div className="flex items-center justify-center gap-2">
-            <p className="text-sm text-muted-foreground">{mainPrediction.type}</p>
-            <span className="text-xs text-primary font-medium">%{Math.round(avgConfidence)}</span>
-          </div>
+          <p className="text-sm text-muted-foreground">{mainPrediction.type}</p>
         </div>
 
-        {/* Dual Progress Bars */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="flex items-center gap-1 text-muted-foreground">
-                <Sparkles className="w-3 h-3" /> AI
-              </span>
-              <span className={cn("font-semibold", getConfidenceColor(aiConfidence))}>
-                %{Math.round(aiConfidence)}
-              </span>
-            </div>
-            <Progress value={aiConfidence} className="h-2" />
+        {/* Single Hybrid Confidence Bar */}
+        <div className="mb-5">
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className="text-muted-foreground">Hibrit Güven Skoru</span>
+            <span className={cn("font-bold text-sm", color)}>%{Math.round(hybridConfidence)}</span>
           </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="flex items-center gap-1 text-muted-foreground">
-                <Brain className="w-3 h-3" /> Matematik
-              </span>
-              <span className={cn("font-semibold", getConfidenceColor(mathConfidence))}>
-                %{Math.round(mathConfidence)}
-              </span>
-            </div>
-            <Progress value={mathConfidence} className="h-2" />
-          </div>
+          <Progress value={hybridConfidence} className="h-2.5" />
         </div>
 
-        {/* Reasoning */}
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2 md:line-clamp-3">
-          {mainPrediction.reasoning}
-        </p>
-
-        {/* External Factors Disclaimer */}
-        <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 mb-4">
-          <div className="flex items-start gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-amber-300/80">
-              Bu analiz istatistiksel verilere dayanmaktadır. TD değişiklikleri, sakatlıklar ve 
-              takım içi sorunlar gibi dış faktörler dikkate alınamamaktadır.
+        {/* Reasoning - Expandable */}
+        {reasoning && (
+          <div className="mb-4">
+            <p className={cn(
+              "text-sm text-muted-foreground transition-all",
+              !showFullReasoning && isLongReasoning && "line-clamp-2"
+            )}>
+              {reasoning}
             </p>
+            {isLongReasoning && (
+              <button
+                onClick={() => setShowFullReasoning(!showFullReasoning)}
+                className="text-xs text-primary hover:underline mt-1"
+              >
+                {showFullReasoning ? 'Daha az göster' : 'Devamını oku'}
+              </button>
+            )}
           </div>
-        </div>
+        )}
+
+        {/* Collapsible Disclaimer */}
+        <button
+          onClick={() => setShowDisclaimer(!showDisclaimer)}
+          className="w-full flex items-center justify-between text-xs text-amber-400/70 hover:text-amber-400 transition-colors mb-4"
+        >
+          <span className="flex items-center gap-1.5">
+            <AlertTriangle className="w-3 h-3" />
+            Dış faktörler hakkında
+          </span>
+          <ChevronDown className={cn("w-3 h-3 transition-transform", showDisclaimer && "rotate-180")} />
+        </button>
+        
+        <AnimatePresence>
+          {showDisclaimer && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 mb-4">
+                <p className="text-xs text-amber-300/80">
+                  Bu analiz istatistiksel verilere dayanmaktadır. TD değişiklikleri, sakatlıklar ve 
+                  takım içi sorunlar gibi dış faktörler dikkate alınamamaktadır.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Action Buttons */}
         <div className="flex gap-2">
           <Button 
             onClick={handleAddToSlipClick}
-            className="flex-1 gap-2 bg-gradient-to-r from-primary to-emerald-500 hover:from-primary/90 hover:to-emerald-500/90"
+            disabled={isInSlip}
+            className={cn(
+              "flex-1 gap-2",
+              isInSlip 
+                ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30" 
+                : "bg-gradient-to-r from-primary to-emerald-500 hover:from-primary/90 hover:to-emerald-500/90"
+            )}
           >
-            <Plus className="w-4 h-4" />
-            Kupona Ekle
+            {isInSlip ? (
+              <>
+                <Star className="w-4 h-4" />
+                Kuponda
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4" />
+                Kupona Ekle
+              </>
+            )}
           </Button>
           <ShareCard
             homeTeam={matchInput.homeTeam}

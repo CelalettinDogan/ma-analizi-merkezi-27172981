@@ -113,14 +113,26 @@ const H2HTimeline: React.FC<H2HTimelineProps> = ({ h2h, homeTeam, awayTeam }) =>
 
       {/* Timeline - only show if there are matches */}
       {lastMatches.length > 0 && (
-        <div className="relative">
+        <div className="relative pt-2">
           {/* Timeline Line */}
           <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-border/50 -translate-y-1/2" />
           
           {/* Match Bubbles */}
-          <div className="relative flex justify-between">
+          <div className="relative flex justify-between gap-1">
             {lastMatches.slice(0, 5).map((match, index) => {
               const result = getMatchResult(match);
+              
+              // Format date nicely: "17 Oca"
+              const formatDate = (dateStr?: string) => {
+                if (!dateStr) return '-';
+                try {
+                  const [year, month, day] = dateStr.split('-');
+                  const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+                  return `${parseInt(day)} ${months[parseInt(month) - 1]}`;
+                } catch {
+                  return '-';
+                }
+              };
               
               return (
                 <motion.div
@@ -131,15 +143,15 @@ const H2HTimeline: React.FC<H2HTimelineProps> = ({ h2h, homeTeam, awayTeam }) =>
                   className="flex flex-col items-center"
                 >
                   <div className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold border-2 bg-card z-10",
+                    "w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold border-2 bg-card z-10 shadow-sm",
                     result === 'home' && "border-primary text-primary",
                     result === 'away' && "border-secondary text-secondary",
                     result === 'draw' && "border-muted-foreground text-muted-foreground"
                   )}>
                     {match.score}
                   </div>
-                  <span className="text-[10px] text-muted-foreground mt-1.5 truncate max-w-[50px]">
-                    {match.date?.split('-').slice(1).join('/') || '-'}
+                  <span className="text-xs text-muted-foreground mt-2 whitespace-nowrap">
+                    {formatDate(match.date)}
                   </span>
                 </motion.div>
               );
