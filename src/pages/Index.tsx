@@ -44,7 +44,7 @@ const Index: React.FC = () => {
   const upcomingMatchesRef = useRef<HTMLDivElement>(null);
   
   // Centralized data fetching - single source of truth
-  const { stats, liveMatches, todaysMatches, isLoading: homeDataLoading } = useHomeData();
+  const { stats, liveMatches, todaysMatches, isLoading: homeDataLoading, refetch, syncMatches } = useHomeData();
   
   const [selectedLeague, setSelectedLeague] = useState<CompetitionCode | ''>('');
   const [upcomingMatches, setUpcomingMatches] = useState<ApiMatch[]>([]);
@@ -219,7 +219,16 @@ const Index: React.FC = () => {
             matches={todaysMatches}
             isLoading={homeDataLoading}
             loadingMatchId={loadingMatchId}
-            onMatchSelect={handleMatchSelect} 
+            onMatchSelect={handleMatchSelect}
+            onSync={async () => {
+              toast.loading('Maçlar senkronize ediliyor...', { id: 'sync' });
+              await syncMatches();
+              // Wait a bit then refetch from database
+              setTimeout(async () => {
+                await refetch();
+                toast.success('Maçlar güncellendi!', { id: 'sync' });
+              }, 3000);
+            }}
           />
         </motion.section>
 
