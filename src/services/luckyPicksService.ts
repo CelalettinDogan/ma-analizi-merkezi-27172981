@@ -107,35 +107,12 @@ export async function getLuckyPicks(limit: number = 3): Promise<LuckyPick[]> {
 }
 
 /**
- * Fallback: Get upcoming matches from cache and create simple predictions
+ * Fallback: Throw error when no predictions available
+ * This ensures users only get analyzed matches with real confidence scores
  */
-async function getLuckyPicksFromCachedMatches(limit: number): Promise<LuckyPick[]> {
-  const now = new Date().toISOString();
-
-  const { data: matches, error } = await supabase
-    .from('cached_matches')
-    .select('*')
-    .gt('utc_date', now)
-    .in('status', ['TIMED', 'SCHEDULED'])
-    .order('utc_date', { ascending: true })
-    .limit(limit);
-
-  if (error || !matches) {
-    console.error('Error fetching cached matches:', error);
-    throw new Error('Maç bulunamadı');
-  }
-
-  // Create simple predictions based on home advantage (mock high confidence)
-  return matches.map((match) => ({
-    homeTeam: match.home_team_name,
-    awayTeam: match.away_team_name,
-    league: match.competition_code,
-    matchDate: format(new Date(match.utc_date), 'yyyy-MM-dd'),
-    predictionType: 'Maç Sonucu',
-    predictionValue: 'Ev Sahibi Kazanır',
-    confidence: 'yüksek' as const,
-    hybridConfidence: 65,
-  }));
+async function getLuckyPicksFromCachedMatches(_limit: number): Promise<LuckyPick[]> {
+  // Instead of generating fake predictions, inform the user to analyze matches first
+  throw new Error('Henüz analiz edilmiş tahmin bulunmuyor. Önce maç analizi yapın.');
 }
 
 /**

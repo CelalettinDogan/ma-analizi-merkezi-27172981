@@ -72,7 +72,7 @@ const BetSlipDrawer: React.FC = () => {
             {/* Lucky Picks Button - Empty State */}
             <Button
               variant="outline"
-              className="gap-2 border-primary/50 text-primary hover:bg-primary/10 hover:border-primary"
+              className="gap-2 border-primary/50 text-primary hover:bg-primary/10 hover:border-primary min-w-[220px]"
               onClick={handleLuckyPicks}
               disabled={isLoadingLucky}
             >
@@ -81,7 +81,9 @@ const BetSlipDrawer: React.FC = () => {
               ) : (
                 <Sparkles className="h-4 w-4" />
               )}
-              {isLoadingLucky ? 'Yükleniyor...' : 'Kendimi Şanslı Hissediyorum'}
+              <span className="truncate">
+                {isLoadingLucky ? 'Tahminler Yükleniyor...' : '🍀 Kendimi Şanslı Hissediyorum'}
+              </span>
             </Button>
           </div>
         ) : (
@@ -97,7 +99,7 @@ const BetSlipDrawer: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              className="w-full gap-2 border-primary/50 text-primary hover:bg-primary/10 hover:border-primary mt-2"
+              className="w-full gap-2 border-primary/50 text-primary hover:bg-primary/10 hover:border-primary mt-2 min-h-[36px]"
               onClick={handleLuckyPicks}
               disabled={isLoadingLucky}
             >
@@ -106,7 +108,9 @@ const BetSlipDrawer: React.FC = () => {
               ) : (
                 <Sparkles className="h-4 w-4" />
               )}
-              {isLoadingLucky ? 'Yükleniyor...' : '🍀 Kendimi Şanslı Hissediyorum'}
+              <span className="truncate">
+                {isLoadingLucky ? 'Tahminler Yükleniyor...' : '🍀 Kendimi Şanslı Hissediyorum'}
+              </span>
             </Button>
 
             <ScrollArea className="flex-1 -mx-6 px-6">
