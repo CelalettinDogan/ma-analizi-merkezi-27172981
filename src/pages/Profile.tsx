@@ -12,8 +12,7 @@ import {
   RefreshCw,
   Mail,
   Calendar,
-  Receipt,
-  LogIn
+  Receipt
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -99,70 +98,7 @@ const Profile: React.FC = () => {
   }
 
   if (!user) {
-    return (
-      <div className="min-h-screen bg-background pb-24">
-        <AppHeader />
-        <div className="container mx-auto px-4 py-8 max-w-2xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            {/* Guest Profile Card */}
-            <Card className="border-border/50 bg-gradient-to-br from-card to-card/80">
-              <CardContent className="pt-8 pb-8 text-center">
-                <div className="flex justify-center mb-4">
-                  <Avatar className="h-20 w-20 border-2 border-primary/20">
-                    <AvatarFallback className="bg-muted text-muted-foreground text-2xl">
-                      <User className="w-8 h-8" />
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-                <h1 className="text-xl font-display font-bold text-foreground mb-2">
-                  Hoş Geldiniz!
-                </h1>
-                <p className="text-sm text-muted-foreground mb-6">
-                  Tahminlerinizi kaydetmek ve istatistiklerinizi takip etmek için giriş yapın.
-                </p>
-                <div className="flex flex-col gap-3">
-                  <Button asChild className="w-full">
-                    <Link to="/auth">
-                      <LogIn className="w-4 h-4 mr-2" />
-                      Giriş Yap / Kayıt Ol
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Platform Features Preview */}
-            <Card className="border-border/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Trophy className="w-5 h-5 text-primary" />
-                  Üyelik Avantajları
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-3 text-sm">
-                  <BarChart3 className="w-4 h-4 text-emerald-500" />
-                  <span>Kişisel tahmin istatistikleri</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <Heart className="w-4 h-4 text-red-500" />
-                  <span>Favori takım ve ligler</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <Receipt className="w-4 h-4 text-blue-500" />
-                  <span>Kupon kaydetme ve takibi</span>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-        <BottomNav />
-      </div>
-    );
+    return <Navigate to="/auth" replace />;
   }
 
   const displayName = user.user_metadata?.display_name || user.email?.split('@')[0] || 'Kullanıcı';
