@@ -504,44 +504,51 @@ serve(async (req) => {
               .eq('prediction_id', prediction.id);
 
             // === BET SLIP ITEMS VERIFICATION ===
-            // Find matching bet slip items for this match
-            const { data: matchingSlipItems } = await supabase
+            // Find ALL pending bet slip items (not matched by exact team names)
+            const { data: allPendingSlipItems } = await supabase
               .from('bet_slip_items')
-              .select('id, slip_id, prediction_type, prediction_value')
-              .eq('home_team', prediction.home_team)
-              .eq('away_team', prediction.away_team)
+              .select('id, slip_id, prediction_type, prediction_value, home_team, away_team')
               .is('is_correct', null);
 
-            if (matchingSlipItems && matchingSlipItems.length > 0) {
-              console.log(`[auto-verify] Found ${matchingSlipItems.length} bet slip items for this match`);
+            if (allPendingSlipItems && allPendingSlipItems.length > 0) {
+              // Filter items that match this prediction using normalized team names
+              const matchingSlipItems = allPendingSlipItems.filter(item => {
+                const homeMatches = teamsMatch(item.home_team, prediction.home_team);
+                const awayMatches = teamsMatch(item.away_team, prediction.away_team);
+                return homeMatches && awayMatches;
+              });
               
-              for (const slipItem of matchingSlipItems) {
-                const itemCorrect = checkPredictionCorrect(
-                  slipItem.prediction_type,
-                  slipItem.prediction_value,
-                  homeScore,
-                  awayScore,
-                  prediction.home_team,
-                  prediction.away_team,
-                  halfTimeHome,
-                  halfTimeAway
-                );
+              if (matchingSlipItems.length > 0) {
+                console.log(`[auto-verify] Found ${matchingSlipItems.length} bet slip items for this match (normalized matching)`);
                 
-                if (itemCorrect !== null) {
-                  // Update the bet slip item
-                  await supabase
-                    .from('bet_slip_items')
-                    .update({
-                      is_correct: itemCorrect,
-                      home_score: homeScore,
-                      away_score: awayScore,
-                    })
-                    .eq('id', slipItem.id);
+                for (const slipItem of matchingSlipItems) {
+                  const itemCorrect = checkPredictionCorrect(
+                    slipItem.prediction_type,
+                    slipItem.prediction_value,
+                    homeScore,
+                    awayScore,
+                    prediction.home_team,
+                    prediction.away_team,
+                    halfTimeHome,
+                    halfTimeAway
+                  );
                   
-                  console.log(`[auto-verify] Updated slip item ${slipItem.id}: ${itemCorrect ? 'CORRECT' : 'WRONG'}`);
-                  
-                  // Update the parent bet slip status
-                  await updateBetSlipStatus(supabase, slipItem.slip_id);
+                  if (itemCorrect !== null) {
+                    // Update the bet slip item
+                    await supabase
+                      .from('bet_slip_items')
+                      .update({
+                        is_correct: itemCorrect,
+                        home_score: homeScore,
+                        away_score: awayScore,
+                      })
+                      .eq('id', slipItem.id);
+                    
+                    console.log(`[auto-verify] Updated slip item ${slipItem.id}: ${itemCorrect ? 'CORRECT' : 'WRONG'}`);
+                    
+                    // Update the parent bet slip status
+                    await updateBetSlipStatus(supabase, slipItem.slip_id);
+                  }
                 }
               }
             }
