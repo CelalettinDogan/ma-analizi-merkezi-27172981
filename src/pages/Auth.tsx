@@ -315,7 +315,7 @@ const Auth: React.FC = () => {
         </Card>
 
         <p className="text-xs text-muted-foreground text-center mt-4">
-          18 yaş altı kullanıcılar için uygun değildir. Sorumlu bahis oynayın.
+          İçerikler bilgilendirme amaçlıdır ve tavsiye niteliği taşımaz.
         </p>
       </div>
 
