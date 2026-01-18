@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles } from 'lucide-react';
+import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles, RefreshCw } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Match } from '@/types/footballApi';
-import { format, isToday, isTomorrow, addDays } from 'date-fns';
+import { format, isToday, isTomorrow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
@@ -14,6 +14,8 @@ interface TodaysMatchesProps {
   isLoading?: boolean;
   loadingMatchId?: number | null;
   onMatchSelect: (match: Match) => void;
+  lastUpdated?: Date | null;
+  onRefresh?: () => void;
 }
 
 // Big teams for featured match selection
@@ -56,6 +58,20 @@ const getDateLabel = (dateStr: string): string => {
   return format(date, 'd MMMM EEEE', { locale: tr });
 };
 
+// Format last updated time
+const formatLastUpdated = (date: Date | null): string => {
+  if (!date) return '';
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  
+  if (diffMins < 1) return 'Az önce';
+  if (diffMins === 1) return '1 dk önce';
+  if (diffMins < 60) return `${diffMins} dk önce`;
+  
+  return format(date, 'HH:mm', { locale: tr });
+};
+
 // Stagger animation for list items
 const listItemVariants = {
   hidden: { opacity: 0, x: -10 },
@@ -66,8 +82,25 @@ const listItemVariants = {
   })
 };
 
-const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = false, loadingMatchId, onMatchSelect }) => {
+const TodaysMatches: React.FC<TodaysMatchesProps> = ({ 
+  matches, 
+  isLoading = false, 
+  loadingMatchId, 
+  onMatchSelect,
+  lastUpdated,
+  onRefresh 
+}) => {
   const [showAll, setShowAll] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Handle manual refresh
+  const handleRefresh = async () => {
+    if (!onRefresh || isRefreshing) return;
+    setIsRefreshing(true);
+    onRefresh();
+    // Reset after a short delay
+    setTimeout(() => setIsRefreshing(false), 1000);
+  };
 
   // Find featured match (first big match or soonest upcoming match)
   const { featuredMatch, otherMatches, featuredReason, hasMatchesToday, title } = useMemo(() => {
@@ -90,19 +123,6 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
       title: hasToday ? 'Bugünün Maçları' : 'Yaklaşan Maçlar'
     };
   }, [matches]);
-
-  // Group matches by date
-  const groupedMatches = useMemo(() => {
-    const groups: { [key: string]: Match[] } = {};
-    otherMatches.forEach(match => {
-      const dateKey = match.utcDate.split('T')[0];
-      if (!groups[dateKey]) {
-        groups[dateKey] = [];
-      }
-      groups[dateKey].push(match);
-    });
-    return groups;
-  }, [otherMatches]);
 
   const displayedMatches = showAll ? otherMatches : otherMatches.slice(0, 5);
 
@@ -127,9 +147,22 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
   if (matches.length === 0) {
     return (
       <Card className="p-4 md:p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Calendar className="w-5 h-5 text-primary" />
-          <h2 className="font-semibold text-sm md:text-base">Bugünün Maçları</h2>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-primary" />
+            <h2 className="font-semibold text-sm md:text-base">Bugünün Maçları</h2>
+          </div>
+          {onRefresh && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="h-8 w-8"
+            >
+              <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
+            </Button>
+          )}
         </div>
         <div className="text-center py-8 md:py-12">
           <Calendar className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 text-muted-foreground/50" />
@@ -146,9 +179,30 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
       <div className="flex items-center justify-between mb-3 md:mb-4">
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 md:w-5 md:h-5 text-primary" />
-          <h2 className="font-semibold text-sm md:text-base">{title}</h2>
+          <div>
+            <h2 className="font-semibold text-sm md:text-base">{title}</h2>
+            {lastUpdated && (
+              <p className="text-[10px] text-muted-foreground">
+                {formatLastUpdated(lastUpdated)}
+              </p>
+            )}
+          </div>
         </div>
-        <Badge variant="secondary" className="text-xs">{matches.length} maç</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-xs">{matches.length} maç</Badge>
+          {onRefresh && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="h-7 w-7"
+              title="Yenile"
+            >
+              <RefreshCw className={cn("w-3.5 h-3.5", isRefreshing && "animate-spin")} />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Featured Match - Large Card */}
