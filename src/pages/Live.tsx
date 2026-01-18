@@ -210,23 +210,11 @@ const LivePage: React.FC = () => {
     await syncLiveMatches();
   };
 
-  const headerRightContent = (
-    <div className="flex items-center gap-2">
-      {lastUpdated && (
-        <span className="text-xs text-muted-foreground hidden sm:block">
-          {formatLastUpdated()}
-        </span>
-      )}
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={handleRefresh}
-        disabled={isRefreshing || isSyncing}
-      >
-        <RefreshCw className={`w-4 h-4 ${isRefreshing || isSyncing ? 'animate-spin' : ''}`} />
-      </Button>
-    </div>
-  );
+  const headerRightContent = lastUpdated ? (
+    <span className="text-xs text-muted-foreground hidden sm:block">
+      {formatLastUpdated()}
+    </span>
+  ) : null;
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-8">
