@@ -374,7 +374,8 @@ export async function getAccuracyTrend(days: number = 7): Promise<TrendData> {
 
   const currentAccuracy = calculateAccuracy(currentPeriod);
   const previousAccuracy = calculateAccuracy(previousPeriod);
-  const trend = Math.round(currentAccuracy - previousAccuracy);
+  // Only calculate trend if we have data from the previous period
+  const trend = previousPeriod.length > 0 ? Math.round(currentAccuracy - previousAccuracy) : 0;
 
   return {
     currentAccuracy,
@@ -398,6 +399,7 @@ export async function getPremiumStats(): Promise<PremiumStats> {
       .from('predictions')
       .select('is_correct')
       .eq('is_premium', true)
+      .eq('is_primary', true) // Only primary predictions for accurate stats
       .not('is_correct', 'is', null);
 
     if (error) {
@@ -527,6 +529,7 @@ export async function getUserPremiumStats(userId: string): Promise<PremiumStats>
       .select('is_correct')
       .eq('user_id', userId)
       .eq('is_premium', true)
+      .eq('is_primary', true) // Only primary predictions for accurate stats
       .not('is_correct', 'is', null);
 
     if (error) {
@@ -579,7 +582,8 @@ export async function getUserAccuracyTrend(userId: string, days: number = 7): Pr
 
   const currentAccuracy = calculateAccuracy(currentPeriod);
   const previousAccuracy = calculateAccuracy(previousPeriod);
-  const trend = Math.round(currentAccuracy - previousAccuracy);
+  // Only calculate trend if we have data from the previous period
+  const trend = previousPeriod.length > 0 ? Math.round(currentAccuracy - previousAccuracy) : 0;
 
   return {
     currentAccuracy,

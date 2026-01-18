@@ -43,100 +43,49 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const loadData = async () => {
+  const loadData = async (isMountedRef?: { current: boolean }) => {
     try {
-      if (user) {
-        // User-specific data
-        const [overall, byType, recent, trend, premium] = await Promise.all([
-          getUserOverallStats(user.id),
-          getUserPredictionStats(user.id),
-          getUserRecentPredictions(user.id, 50),
-          getUserAccuracyTrend(user.id, 7),
-          getUserPremiumStats(user.id),
-        ]);
-        
-        setOverallStats(overall);
-        setPredictionStats(byType);
-        setRecentPredictions(recent);
-        setTrendData(trend);
-        setPremiumStats(premium);
-      } else {
-        // Platform-wide data for guests
-        const [overall, byType, recent, trend, premium] = await Promise.all([
-          getOverallStats(),
-          getPredictionStats(),
-          getRecentPredictions(50),
-          getAccuracyTrend(7),
-          getPremiumStats()
-        ]);
-        
-        setOverallStats(overall);
-        setPredictionStats(byType);
-        setRecentPredictions(recent);
-        setTrendData(trend);
-        setPremiumStats(premium);
-      }
-    } catch (error) {
-      console.error("Dashboard data loading error:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    let isMounted = true;
-    
-    const fetchData = async () => {
-      try {
-        if (user) {
-          // User-specific data
-          const [overall, byType, recent, trend, premium] = await Promise.all([
+      const [overall, byType, recent, trend, premium] = user
+        ? await Promise.all([
             getUserOverallStats(user.id),
             getUserPredictionStats(user.id),
             getUserRecentPredictions(user.id, 50),
             getUserAccuracyTrend(user.id, 7),
             getUserPremiumStats(user.id),
-          ]);
-          
-          if (!isMounted) return;
-          
-          setOverallStats(overall);
-          setPredictionStats(byType);
-          setRecentPredictions(recent);
-          setTrendData(trend);
-          setPremiumStats(premium);
-        } else {
-          // Platform-wide data for guests
-          const [overall, byType, recent, trend, premium] = await Promise.all([
+          ])
+        : await Promise.all([
             getOverallStats(),
             getPredictionStats(),
             getRecentPredictions(50),
             getAccuracyTrend(7),
-            getPremiumStats()
+            getPremiumStats(),
           ]);
-          
-          if (!isMounted) return;
-          
-          setOverallStats(overall);
-          setPredictionStats(byType);
-          setRecentPredictions(recent);
-          setTrendData(trend);
-          setPremiumStats(premium);
-        }
-      } catch (error) {
-        console.error("Dashboard data loading error:", error);
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
+
+      // Check if still mounted
+      if (isMountedRef && !isMountedRef.current) return;
+
+      setOverallStats(overall);
+      setPredictionStats(byType);
+      setRecentPredictions(recent);
+      setTrendData(trend);
+      setPremiumStats(premium);
+    } catch (error) {
+      console.error("Dashboard data loading error:", error);
+    }
+  };
+
+  useEffect(() => {
+    const isMountedRef = { current: true };
     
     setIsLoading(true);
-    fetchData();
-    
+    loadData(isMountedRef).finally(() => {
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
+    });
+
     return () => {
-      isMounted = false;
+      isMountedRef.current = false;
     };
   }, [user]);
 
@@ -259,16 +208,16 @@ const Dashboard = () => {
                 {quickStats.map((stat, index) => (
                   <Card 
                     key={stat.label}
-                    className="p-4 bg-card/50 backdrop-blur-sm border-border/50 flex items-center gap-3 hover:bg-card/80 transition-colors"
+                    className="p-3 sm:p-4 bg-card/50 backdrop-blur-sm border-border/50 flex items-center gap-2 sm:gap-3 hover:bg-card/80 transition-colors"
                   >
-                    <div className={`p-2.5 rounded-xl ${stat.bgColor}`}>
-                      <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                    <div className={`p-2 sm:p-2.5 rounded-xl ${stat.bgColor}`}>
+                      <stat.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${stat.color}`} />
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">{stat.label}</p>
-                      <p className="text-xl font-bold text-foreground">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">{stat.label}</p>
+                      <p className="text-lg sm:text-xl font-bold text-foreground">
                         {isLoading ? (
-                          <span className="inline-block w-12 h-6 bg-muted/50 rounded animate-pulse" />
+                          <span className="inline-block w-10 sm:w-12 h-5 sm:h-6 bg-muted/50 rounded animate-pulse" />
                         ) : (
                           stat.value
                         )}
@@ -293,7 +242,11 @@ const Dashboard = () => {
                         Yüksek güvenli tahminlere öncelikli erişim, detaylı analiz raporları ve özel öneriler
                       </p>
                     </div>
-                    <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">
+                    <Button 
+                      size="sm" 
+                      className="bg-amber-500 hover:bg-amber-600 text-white"
+                      onClick={() => toast.info("Premium özellikler yakında aktif olacak!")}
+                    >
                       Keşfet
                     </Button>
                   </div>

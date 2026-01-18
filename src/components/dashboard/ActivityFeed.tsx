@@ -74,8 +74,12 @@ export const ActivityFeed = ({ predictions, isLoading }: ActivityFeedProps) => {
             {TYPE_LABELS[prediction.prediction_type] || prediction.prediction_type}
           </span>
           <span className="text-xs text-muted-foreground">•</span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground truncate max-w-[80px]">
             {prediction.prediction_value}
+          </span>
+          <span className="text-xs text-muted-foreground">•</span>
+          <span className="text-xs text-muted-foreground">
+            {format(new Date(prediction.match_date), "d MMM", { locale: tr })}
           </span>
         </div>
       </div>

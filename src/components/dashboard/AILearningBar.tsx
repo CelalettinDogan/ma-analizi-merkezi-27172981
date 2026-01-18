@@ -112,7 +112,7 @@ export const AILearningBar = ({ correct, total, isLoading }: AILearningBarProps)
 
             {/* Stats */}
             <p className="text-xs text-muted-foreground mt-1.5">
-              {correct} doğru / {total} toplam tahmin
+              {correct} doğru / {total} doğrulanmış tahmin
             </p>
           </div>
         </div>

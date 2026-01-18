@@ -85,7 +85,9 @@ export const PredictionTypePills = ({ stats, isLoading }: PredictionTypePillsPro
                   transition={{ delay: 0.5 + index * 0.05 }}
                 >
                   <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-muted-foreground truncate">{label}</span>
+                    <span className="text-muted-foreground truncate">
+                      {label} <span className="text-[10px] opacity-70">({stat.total_predictions})</span>
+                    </span>
                     <span className="font-medium text-foreground ml-2">%{Math.round(percentage)}</span>
                   </div>
                   <div className="h-1.5 bg-muted/50 rounded-full overflow-hidden">
