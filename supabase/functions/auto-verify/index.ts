@@ -328,6 +328,135 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // =========================================
+    // STEP 1: BACKFILL - Verify pending bet_slip_items directly
+    // This catches items where predictions were already verified
+    // =========================================
+    console.log('[auto-verify] === STEP 1: Bet Slip Items Backfill ===');
+    
+    let backfillVerified = 0;
+    let backfillNotFound = 0;
+    
+    // Get pending bet slip items (is_correct IS NULL) from the last 14 days
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+    
+    const { data: pendingSlipItems, error: slipItemsError } = await supabase
+      .from('bet_slip_items')
+      .select('id, slip_id, home_team, away_team, match_date, league, prediction_type, prediction_value')
+      .is('is_correct', null)
+      .gte('match_date', fourteenDaysAgo)
+      .limit(200);
+    
+    if (slipItemsError) {
+      console.error('[auto-verify] Error fetching pending slip items:', slipItemsError);
+    } else if (pendingSlipItems && pendingSlipItems.length > 0) {
+      console.log(`[auto-verify] Found ${pendingSlipItems.length} pending bet slip items for backfill`);
+      
+      // Group by league
+      const slipItemsByLeague = pendingSlipItems.reduce((acc, item) => {
+        const league = item.league || 'UNKNOWN';
+        if (!acc[league]) acc[league] = [];
+        acc[league].push(item);
+        return acc;
+      }, {} as Record<string, typeof pendingSlipItems>);
+      
+      // Process each league
+      for (const [league, items] of Object.entries(slipItemsByLeague)) {
+        const competitionCode = normalizeLeagueName(league);
+        
+        if (!competitionCode) {
+          console.warn(`[auto-verify] Backfill: Unsupported league "${league}", skipping ${items.length} items`);
+          backfillNotFound += items.length;
+          continue;
+        }
+        
+        console.log(`[auto-verify] Backfill: Fetching finished matches for ${competitionCode} (${items.length} items)`);
+        
+        try {
+          const finishedMatches = await fetchFinishedMatches(competitionCode, footballApiKey);
+          console.log(`[auto-verify] Backfill: ${finishedMatches.length} finished matches for ${competitionCode}`);
+          
+          for (const item of items) {
+            const itemDate = new Date(item.match_date).toISOString().split('T')[0];
+            
+            // Find matching match
+            let matchingMatch: Match | null = null;
+            for (const match of finishedMatches) {
+              const matchDate = match.utcDate.split('T')[0];
+              const dateDiff = Math.abs(new Date(itemDate).getTime() - new Date(matchDate).getTime());
+              const daysDiff = dateDiff / (1000 * 60 * 60 * 24);
+              
+              if (daysDiff > 1) continue;
+              
+              const homeMatches = teamsMatch(item.home_team, match.homeTeam.name) ||
+                                 teamsMatch(item.home_team, match.homeTeam.shortName || '');
+              const awayMatches = teamsMatch(item.away_team, match.awayTeam.name) ||
+                                 teamsMatch(item.away_team, match.awayTeam.shortName || '');
+              
+              if (homeMatches && awayMatches) {
+                matchingMatch = match;
+                break;
+              }
+            }
+            
+            if (matchingMatch && matchingMatch.score?.fullTime?.home !== null) {
+              const homeScore = matchingMatch.score.fullTime.home ?? 0;
+              const awayScore = matchingMatch.score.fullTime.away ?? 0;
+              const halfTimeHome = matchingMatch.score.halfTime?.home ?? null;
+              const halfTimeAway = matchingMatch.score.halfTime?.away ?? null;
+              
+              const itemCorrect = checkPredictionCorrect(
+                item.prediction_type,
+                item.prediction_value,
+                homeScore,
+                awayScore,
+                item.home_team,
+                item.away_team,
+                halfTimeHome,
+                halfTimeAway
+              );
+              
+              if (itemCorrect !== null) {
+                // Update the bet slip item
+                await supabase
+                  .from('bet_slip_items')
+                  .update({
+                    is_correct: itemCorrect,
+                    home_score: homeScore,
+                    away_score: awayScore,
+                  })
+                  .eq('id', item.id);
+                
+                console.log(`[auto-verify] Backfill: ✅ ${item.home_team} vs ${item.away_team} = ${itemCorrect ? 'CORRECT' : 'WRONG'}`);
+                
+                // Update the parent bet slip status
+                await updateBetSlipStatus(supabase, item.slip_id);
+                backfillVerified++;
+              }
+            } else {
+              console.log(`[auto-verify] Backfill: ⚠ No match found for ${item.home_team} vs ${item.away_team}`);
+              backfillNotFound++;
+            }
+          }
+          
+          // Rate limit between leagues
+          await new Promise(resolve => setTimeout(resolve, 6500));
+          
+        } catch (leagueError) {
+          console.error(`[auto-verify] Backfill error for ${league}:`, leagueError);
+        }
+      }
+    } else {
+      console.log('[auto-verify] No pending bet slip items for backfill');
+    }
+    
+    console.log(`[auto-verify] Backfill complete: verified=${backfillVerified}, notFound=${backfillNotFound}`);
+
+    // =========================================
+    // STEP 2: Verify pending predictions (original flow)
+    // =========================================
+    console.log('[auto-verify] === STEP 2: Pending Predictions ===');
+
     // Get pending PRIMARY predictions only
     const { data: pendingPredictions, error: fetchError } = await supabase
       .from('predictions')
@@ -347,6 +476,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         success: true,
         message: 'No pending predictions to verify',
+        backfillVerified,
+        backfillNotFound,
         verified: 0,
         notFound: 0,
         duration: Date.now() - startTime,
@@ -581,10 +712,12 @@ serve(async (req) => {
 
     const duration = Date.now() - startTime;
     console.log(`=== [auto-verify] Completed in ${duration}ms ===`);
-    console.log(`[auto-verify] Summary: Verified=${totalVerified}, NotFound=${totalNotFound}, Skipped=${totalSkipped}`);
+    console.log(`[auto-verify] Summary: Backfill=${backfillVerified}, Verified=${totalVerified}, NotFound=${totalNotFound}, Skipped=${totalSkipped}`);
 
     return new Response(JSON.stringify({
       success: true,
+      backfillVerified,
+      backfillNotFound,
       verified: totalVerified,
       notFound: totalNotFound,
       skipped: totalSkipped,
