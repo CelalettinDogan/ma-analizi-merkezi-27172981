@@ -65,7 +65,7 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
           id="leagues" 
           ref={scrollRef}
           onScroll={handleScroll}
-          className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"
+          className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 scrollbar-hide"
         >
           {SUPPORTED_COMPETITIONS.map((league) => {
             const isSelected = selectedLeague === league.code;
@@ -79,19 +79,19 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className={cn(
-                      "flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all",
-                      "border",
+                      "flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-full whitespace-nowrap transition-all",
+                      "border flex-shrink-0",
                       isSelected
                         ? "bg-primary text-primary-foreground border-primary shadow-md"
                         : "bg-card border-border hover:border-primary/50 hover:bg-primary/5"
                     )}
                   >
-                    <span className="text-lg">{league.flag}</span>
-                    <span className="text-sm font-medium">{league.name}</span>
+                    <span className="text-base sm:text-lg">{league.flag}</span>
+                    <span className="text-xs sm:text-sm font-medium">{league.name}</span>
                     {hasLive && (
                       <Badge 
                         variant="destructive" 
-                        className="text-[10px] px-1.5 py-0 h-4 ml-1 animate-pulse"
+                        className="text-[10px] px-1.5 py-0 h-4 ml-0.5 sm:ml-1 animate-pulse"
                       >
                         {matchCounts[league.code]}
                       </Badge>
@@ -108,13 +108,13 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
 
         {/* Scroll hint indicator */}
         {(showScrollHint || canScrollRight) && (
-          <div className="absolute right-0 top-0 bottom-2 w-12 bg-gradient-to-l from-background via-background/80 to-transparent pointer-events-none flex items-center justify-end pr-1">
+          <div className="absolute right-0 top-0 bottom-2 w-8 sm:w-12 bg-gradient-to-l from-background via-background/80 to-transparent pointer-events-none flex items-center justify-end pr-1">
             <motion.div
               animate={{ x: [0, 4, 0] }}
               transition={{ duration: 1.5, repeat: Infinity }}
               className="text-muted-foreground"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </motion.div>
           </div>
         )}
