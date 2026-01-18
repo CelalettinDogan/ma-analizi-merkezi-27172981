@@ -26,14 +26,34 @@ const ResetPassword = () => {
 
     // Check if user has a valid recovery session
     const checkSession = async () => {
+      // 1. Önce URL hash'inde recovery token var mı kontrol et (PKCE flow)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const type = hashParams.get('type');
+      
+      // Recovery token varsa, geçerli kabul et
+      if (type === 'recovery' && accessToken) {
+        setIsValidSession(true);
+        setIsCheckingSession(false);
+        return;
+      }
+
+      // 2. Normal session kontrolü yap
       const { data: { session } } = await supabase.auth.getSession();
-      setIsValidSession(!!session);
+      if (session) {
+        setIsValidSession(true);
+        setIsCheckingSession(false);
+        return;
+      }
+
+      // 3. Hiçbiri yoksa geçersiz
       setIsCheckingSession(false);
+      setIsValidSession(false);
     };
 
     checkSession();
 
-    // Listen for auth state changes (recovery link clicked)
+    // Listen for auth state changes (recovery link clicked) - yedek olarak
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setIsValidSession(true);
