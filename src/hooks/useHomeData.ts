@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Match, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { supabase } from '@/integrations/supabase/client';
 import { addDays, startOfDay, endOfDay } from 'date-fns';
@@ -16,9 +16,13 @@ interface HomeData {
   todaysMatches: Match[];
   isLoading: boolean;
   error: string | null;
+  lastUpdated: Date | null;
   refetch: () => void;
   syncMatches: () => Promise<void>;
 }
+
+// Auto-refresh interval (5 minutes)
+const AUTO_REFRESH_INTERVAL = 5 * 60 * 1000;
 
 // Transform cached match to Match type
 const transformCachedMatch = (cached: {
@@ -133,6 +137,10 @@ export const useHomeData = (): HomeData => {
   const [todaysMatches, setTodaysMatches] = useState<Match[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  
+  const isMountedRef = useRef(true);
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Trigger sync edge functions in background
   const syncMatches = useCallback(async () => {
@@ -150,6 +158,8 @@ export const useHomeData = (): HomeData => {
   }, []);
 
   const fetchData = useCallback(async () => {
+    if (!isMountedRef.current) return;
+    
     setIsLoading(true);
     setError(null);
 
@@ -183,7 +193,7 @@ export const useHomeData = (): HomeData => {
           .select('premium_accuracy')
           .limit(1)
           .maybeSingle(),
-        // Today's matches from cached_matches table
+        // Today's matches from cached_matches table (only SCHEDULED and TIMED - not FINISHED)
         supabase
           .from('cached_matches')
           .select('*')
@@ -210,6 +220,8 @@ export const useHomeData = (): HomeData => {
           .order('utc_date', { ascending: true }),
       ]);
 
+      if (!isMountedRef.current) return;
+
       // Transform cached matches
       const todayMatches = (cachedTodayMatchesResult.data || []).map(transformCachedMatch);
       const upcomingMatches = (cachedUpcomingMatchesResult.data || []).map(transformCachedMatch);
@@ -226,6 +238,7 @@ export const useHomeData = (): HomeData => {
 
       setTodaysMatches(matchesToShow);
       setLiveMatches(liveData);
+      setLastUpdated(new Date());
 
       setStats({
         todayPredictions: todayCountResult.count || 0,
@@ -236,15 +249,71 @@ export const useHomeData = (): HomeData => {
 
     } catch (e) {
       console.error('[useHomeData] Error fetching home data:', e);
-      setError('Veriler yüklenirken bir hata oluştu');
+      if (isMountedRef.current) {
+        setError('Veriler yüklenirken bir hata oluştu');
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [syncMatches]);
 
+  // Initial fetch
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Auto-refresh interval
+  useEffect(() => {
+    refreshIntervalRef.current = setInterval(() => {
+      console.log('[useHomeData] Auto-refreshing data...');
+      fetchData();
+    }, AUTO_REFRESH_INTERVAL);
+
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
+  }, [fetchData]);
+
+  // Realtime subscription for cached_matches changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('cached_matches_realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'cached_matches',
+        },
+        (payload) => {
+          console.log('[useHomeData] Realtime update received:', payload.eventType);
+          // Debounce: only refetch if not already loading
+          if (!isLoading) {
+            fetchData();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchData, isLoading]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
+  }, []);
 
   return {
     stats,
@@ -252,6 +321,7 @@ export const useHomeData = (): HomeData => {
     todaysMatches,
     isLoading,
     error,
+    lastUpdated,
     refetch: fetchData,
     syncMatches,
   };

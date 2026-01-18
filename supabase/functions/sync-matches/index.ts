@@ -32,20 +32,37 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get today and tomorrow dates
+    // === STEP 1: Clean up old finished matches BEFORE syncing ===
+    const now = new Date();
+    const todayStart = now.toISOString().split('T')[0];
+    
+    console.log(`[sync-matches] Cleaning up old FINISHED matches...`);
+    const { error: cleanupError, count: cleanupCount } = await supabase
+      .from('cached_matches')
+      .delete()
+      .eq('status', 'FINISHED')
+      .lt('utc_date', todayStart);
+    
+    if (cleanupError) {
+      console.warn('[sync-matches] Cleanup warning:', cleanupError);
+    } else {
+      console.log(`[sync-matches] Cleaned up ${cleanupCount || 0} old finished matches`);
+    }
+
+    // === STEP 2: Get date range (today + 3 days) ===
     const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const threeDaysLater = new Date(today);
+    threeDaysLater.setDate(threeDaysLater.getDate() + 3);
     
     const dateFrom = today.toISOString().split('T')[0];
-    const dateTo = tomorrow.toISOString().split('T')[0];
+    const dateTo = threeDaysLater.toISOString().split('T')[0];
 
     console.log(`[sync-matches] Starting sync for ${dateFrom} to ${dateTo}`);
 
     const allMatches: any[] = [];
     const errors: string[] = [];
 
-    // Fetch matches for each league with rate limiting
+    // === STEP 3: Fetch matches for each league with rate limiting ===
     for (let i = 0; i < SUPPORTED_LEAGUES.length; i++) {
       const league = SUPPORTED_LEAGUES[i];
       
@@ -89,7 +106,7 @@ serve(async (req) => {
 
     console.log(`[sync-matches] Total matches fetched: ${allMatches.length}`);
 
-    // Upsert matches to database
+    // === STEP 4: Upsert matches to database ===
     let upsertedCount = 0;
     let upsertErrors = 0;
 
@@ -133,6 +150,7 @@ serve(async (req) => {
       total_fetched: allMatches.length,
       upsert_errors: upsertErrors,
       fetch_errors: errors,
+      cleaned_up: cleanupCount || 0,
       timestamp: new Date().toISOString(),
       date_range: { from: dateFrom, to: dateTo },
     };
