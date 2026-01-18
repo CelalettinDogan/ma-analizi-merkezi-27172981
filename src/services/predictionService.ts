@@ -6,6 +6,36 @@ import { PREDICTION_TYPES } from '@/constants/predictions';
 // Confidence threshold for premium predictions (70%)
 const PREMIUM_CONFIDENCE_THRESHOLD = 0.70;
 
+// Normalize league name to standard code for consistent storage
+function normalizeLeagueCode(league: string): string {
+  const LEAGUE_CODE_MAP: Record<string, string> = {
+    // Full names to codes
+    'La Liga': 'PD',
+    'LaLiga': 'PD',
+    'Premier League': 'PL',
+    'Serie A': 'SA',
+    'Bundesliga': 'BL1',
+    'Ligue 1': 'FL1',
+    'Champions League': 'CL',
+    'UEFA Champions League': 'CL',
+    // Turkish names to codes
+    'İngiltere Premier Ligi': 'PL',
+    'Almanya Bundesliga': 'BL1',
+    'İspanya La Liga': 'PD',
+    'İtalya Serie A': 'SA',
+    'Fransa Ligue 1': 'FL1',
+    'UEFA Şampiyonlar Ligi': 'CL',
+    // Already codes - keep as-is
+    'PL': 'PL',
+    'BL1': 'BL1',
+    'PD': 'PD',
+    'SA': 'SA',
+    'FL1': 'FL1',
+    'CL': 'CL',
+  };
+  return LEAGUE_CODE_MAP[league] || league;
+}
+
 // Calculate hybrid confidence from AI and Math confidence
 function calculateHybridConfidence(prediction: Prediction): number {
   const ai = prediction.aiConfidence || 0;
@@ -21,6 +51,9 @@ export async function savePredictions(
   predictions: Prediction[],
   userId?: string
 ): Promise<void> {
+  // Normalize league code for consistent storage
+  const normalizedLeague = normalizeLeagueCode(league);
+  
   // Find the prediction with the highest hybrid confidence
   const bestPrediction = predictions.reduce((best, current) => {
     const currentHybrid = calculateHybridConfidence(current);
@@ -64,7 +97,7 @@ export async function savePredictions(
     });
 
   const record = {
-    league,
+    league: normalizedLeague, // Use normalized league code
     home_team: homeTeam,
     away_team: awayTeam,
     match_date: matchDate,
