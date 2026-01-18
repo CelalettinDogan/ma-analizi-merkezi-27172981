@@ -220,10 +220,10 @@ const LivePage: React.FC = () => {
     <div className="min-h-screen bg-background pb-20 md:pb-8">
       <AppHeader rightContent={headerRightContent} />
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
+      <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
         {/* League Filter */}
         <motion.div {...fadeInUp}>
-          <h3 className="text-sm font-medium text-muted-foreground mb-3">Lig Filtresi</h3>
+          <h3 className="text-xs sm:text-sm font-medium text-muted-foreground mb-2 sm:mb-3">Lig Filtresi</h3>
           <LeagueGrid 
             selectedLeague={selectedLeague} 
             onLeagueSelect={(code) => setSelectedLeague(code === selectedLeague ? '' : code)}
@@ -249,25 +249,26 @@ const LivePage: React.FC = () => {
             {...fadeInUp}
             className="rounded-2xl bg-gradient-to-br from-card via-card to-muted/20 border border-border/50 overflow-hidden"
           >
-            <div className="relative p-8 text-center">
+            <div className="relative p-6 sm:p-8 text-center">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
               
               <div className="relative z-10">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-muted/50 to-muted/30 flex items-center justify-center border border-border/50">
-                  <Radio className="w-10 h-10 text-muted-foreground" />
+                <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 rounded-2xl bg-gradient-to-br from-muted/50 to-muted/30 flex items-center justify-center border border-border/50">
+                  <Radio className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground" />
                 </div>
                 
-                <h3 className="font-display font-bold text-xl mb-2">Şu an canlı maç yok</h3>
-                <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
+                <h3 className="font-display font-bold text-lg sm:text-xl mb-2">Şu an canlı maç yok</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto mb-4 sm:mb-6 px-2">
                   Desteklenen liglerde şu anda oynanmakta olan maç bulunmuyor. Sayfa her 15 saniyede otomatik güncellenir.
                 </p>
 
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
                   <Button 
                     variant="default" 
                     onClick={() => navigate('/')}
-                    className="gap-2"
+                    className="gap-2 w-full sm:w-auto"
+                    size="sm"
                   >
                     <Trophy className="w-4 h-4" />
                     Yaklaşan Maçlara Git
@@ -276,7 +277,8 @@ const LivePage: React.FC = () => {
                     variant="outline" 
                     onClick={handleRefresh}
                     disabled={isSyncing}
-                    className="gap-2"
+                    className="gap-2 w-full sm:w-auto"
+                    size="sm"
                   >
                     <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
                     Yenile
@@ -285,8 +287,8 @@ const LivePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-border/30 bg-muted/10">
-              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border/30 bg-muted/10">
+              <div className="flex items-center justify-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
                 <motion.div
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
@@ -301,7 +303,7 @@ const LivePage: React.FC = () => {
             variants={staggerContainer}
             initial="initial"
             animate="animate"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
           >
             <AnimatePresence mode="popLayout">
               {liveMatches.map((match) => (
@@ -322,7 +324,7 @@ const LivePage: React.FC = () => {
         {!isLoading && liveMatches.length > 0 && (
           <motion.div 
             {...fadeInUp}
-            className="flex items-center justify-center gap-2 text-xs text-muted-foreground"
+            className="flex items-center justify-center gap-2 text-[10px] sm:text-xs text-muted-foreground"
           >
             <motion.div
               animate={{ scale: [1, 1.2, 1] }}
