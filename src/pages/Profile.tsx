@@ -11,7 +11,8 @@ import {
   ChevronRight,
   RefreshCw,
   Mail,
-  Calendar
+  Calendar,
+  Receipt
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +29,7 @@ import { ProfileSkeleton } from '@/components/ui/skeletons';
 import AppHeader from '@/components/layout/AppHeader';
 import BottomNav from '@/components/navigation/BottomNav';
 import { Link } from 'react-router-dom';
+import SavedSlipsList from '@/components/betslip/SavedSlipsList';
 
 const Profile: React.FC = () => {
   const { user, signOut, isLoading: authLoading } = useAuth();
@@ -234,6 +236,11 @@ const Profile: React.FC = () => {
             </Card>
           </motion.div>
 
+          {/* Kuponlarım Section */}
+          <motion.div variants={itemVariants}>
+            <SavedSlipsList />
+          </motion.div>
+
           {/* Premium CTA */}
           <motion.div variants={itemVariants}>
             <Card className="p-4 bg-gradient-to-r from-amber-500/10 via-primary/5 to-amber-500/10 border-amber-500/30">
@@ -268,7 +275,7 @@ const Profile: React.FC = () => {
                   <Button variant="ghost" className="w-full justify-between rounded-none h-12 px-6">
                     <div className="flex items-center gap-3">
                       <BarChart3 className="w-5 h-5 text-primary" />
-                      <span>Kuponlarım & Dashboard</span>
+                      <span>İstatistiklerim</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </Button>

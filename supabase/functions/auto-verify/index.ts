@@ -208,6 +208,47 @@ function checkPredictionCorrect(
   }
 }
 
+// Update bet slip status based on all items
+async function updateBetSlipStatus(supabase: any, slipId: string) {
+  // Get all items for this slip
+  const { data: items, error } = await supabase
+    .from('bet_slip_items')
+    .select('is_correct')
+    .eq('slip_id', slipId);
+  
+  if (error || !items || items.length === 0) return;
+  
+  const total = items.length;
+  const verified = items.filter((i: any) => i.is_correct !== null).length;
+  const correct = items.filter((i: any) => i.is_correct === true).length;
+  const wrong = items.filter((i: any) => i.is_correct === false).length;
+  
+  // Only update status when all items are verified
+  if (verified === total) {
+    let status: 'won' | 'lost' | 'partial';
+    
+    if (correct === total) {
+      status = 'won';  // All correct
+    } else if (wrong === total) {
+      status = 'lost'; // All wrong
+    } else {
+      status = 'partial'; // Mixed results
+    }
+    
+    await supabase
+      .from('bet_slips')
+      .update({ 
+        status, 
+        is_verified: true 
+      })
+      .eq('id', slipId);
+    
+    console.log(`[auto-verify] Updated bet slip ${slipId}: status=${status}, verified=true`);
+  } else {
+    console.log(`[auto-verify] Bet slip ${slipId}: ${verified}/${total} items verified, waiting for more`);
+  }
+}
+
 // Fetch finished matches for a competition
 async function fetchFinishedMatches(
   competitionCode: string, 
@@ -461,6 +502,49 @@ serve(async (req) => {
                 actual_result: actualResult,
               })
               .eq('prediction_id', prediction.id);
+
+            // === BET SLIP ITEMS VERIFICATION ===
+            // Find matching bet slip items for this match
+            const { data: matchingSlipItems } = await supabase
+              .from('bet_slip_items')
+              .select('id, slip_id, prediction_type, prediction_value')
+              .eq('home_team', prediction.home_team)
+              .eq('away_team', prediction.away_team)
+              .is('is_correct', null);
+
+            if (matchingSlipItems && matchingSlipItems.length > 0) {
+              console.log(`[auto-verify] Found ${matchingSlipItems.length} bet slip items for this match`);
+              
+              for (const slipItem of matchingSlipItems) {
+                const itemCorrect = checkPredictionCorrect(
+                  slipItem.prediction_type,
+                  slipItem.prediction_value,
+                  homeScore,
+                  awayScore,
+                  prediction.home_team,
+                  prediction.away_team,
+                  halfTimeHome,
+                  halfTimeAway
+                );
+                
+                if (itemCorrect !== null) {
+                  // Update the bet slip item
+                  await supabase
+                    .from('bet_slip_items')
+                    .update({
+                      is_correct: itemCorrect,
+                      home_score: homeScore,
+                      away_score: awayScore,
+                    })
+                    .eq('id', slipItem.id);
+                  
+                  console.log(`[auto-verify] Updated slip item ${slipItem.id}: ${itemCorrect ? 'CORRECT' : 'WRONG'}`);
+                  
+                  // Update the parent bet slip status
+                  await updateBetSlipStatus(supabase, slipItem.slip_id);
+                }
+              }
+            }
 
             totalVerified++;
             verifiedDetails.push({

@@ -6,19 +6,13 @@ import BottomNav from "@/components/navigation/BottomNav";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, TrendingUp, Target, Clock, CheckCircle2, Crown } from "lucide-react";
 import { toast } from "sonner";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
 // Dashboard components
 import { AccuracyHeroCard } from "@/components/dashboard/AccuracyHeroCard";
-import { QuickStatsGrid } from "@/components/dashboard/QuickStatsGrid";
 import { AILearningBar } from "@/components/dashboard/AILearningBar";
 import { PredictionTypePills } from "@/components/dashboard/PredictionTypePills";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
-import SavedSlipsList from "@/components/betslip/SavedSlipsList";
-
 
 // Services
 import { 
@@ -35,7 +29,6 @@ import {
   TrendData, 
   PremiumStats 
 } from "@/services/predictionService";
-import { getBetSlipStats } from "@/services/betSlipService";
 
 // Types
 import { OverallStats, PredictionStats, PredictionRecord } from "@/types/prediction";
@@ -47,22 +40,19 @@ const Dashboard = () => {
   const [recentPredictions, setRecentPredictions] = useState<PredictionRecord[]>([]);
   const [trendData, setTrendData] = useState<TrendData | null>(null);
   const [premiumStats, setPremiumStats] = useState<PremiumStats | null>(null);
-  const [slipCount, setSlipCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [slipsOpen, setSlipsOpen] = useState(false);
 
   const loadData = async () => {
     try {
       if (user) {
         // User-specific data
-        const [overall, byType, recent, trend, premium, slipStats] = await Promise.all([
+        const [overall, byType, recent, trend, premium] = await Promise.all([
           getUserOverallStats(user.id),
           getUserPredictionStats(user.id),
           getUserRecentPredictions(user.id, 50),
           getUserAccuracyTrend(user.id, 7),
           getUserPremiumStats(user.id),
-          getBetSlipStats(user.id)
         ]);
         
         setOverallStats(overall);
@@ -70,7 +60,6 @@ const Dashboard = () => {
         setRecentPredictions(recent);
         setTrendData(trend);
         setPremiumStats(premium);
-        setSlipCount(slipStats.total);
       } else {
         // Platform-wide data for guests
         const [overall, byType, recent, trend, premium] = await Promise.all([
@@ -101,13 +90,12 @@ const Dashboard = () => {
       try {
         if (user) {
           // User-specific data
-          const [overall, byType, recent, trend, premium, slipStats] = await Promise.all([
+          const [overall, byType, recent, trend, premium] = await Promise.all([
             getUserOverallStats(user.id),
             getUserPredictionStats(user.id),
             getUserRecentPredictions(user.id, 50),
             getUserAccuracyTrend(user.id, 7),
             getUserPremiumStats(user.id),
-            getBetSlipStats(user.id)
           ]);
           
           if (!isMounted) return;
@@ -117,7 +105,6 @@ const Dashboard = () => {
           setRecentPredictions(recent);
           setTrendData(trend);
           setPremiumStats(premium);
-          setSlipCount(slipStats.total);
         } else {
           // Platform-wide data for guests
           const [overall, byType, recent, trend, premium] = await Promise.all([
@@ -339,32 +326,6 @@ const Dashboard = () => {
             </motion.div>
           </div>
 
-          {/* Collapsible Slips Section (Only for logged in users) */}
-          {user && (
-            <motion.div variants={itemVariants}>
-              <Collapsible open={slipsOpen} onOpenChange={setSlipsOpen}>
-                <CollapsibleTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-between h-12 bg-card/50 hover:bg-card/80 border-border/50"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">Kuponlarım</span>
-                      {slipCount > 0 && (
-                        <Badge variant="secondary" className="text-xs">
-                          {slipCount}
-                        </Badge>
-                      )}
-                    </div>
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${slipsOpen ? "rotate-180" : ""}`} />
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-4">
-                  <SavedSlipsList />
-                </CollapsibleContent>
-              </Collapsible>
-            </motion.div>
-          )}
         </motion.div>
       </main>
 
