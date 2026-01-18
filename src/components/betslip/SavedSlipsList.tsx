@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Receipt, Trash2, CheckCircle, XCircle, Clock, TrendingUp } from 'lucide-react';
+import { Receipt, Trash2, CheckCircle, XCircle, Clock, TrendingUp, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SavedSlipsListProps {
   isLoading?: boolean;
@@ -41,6 +42,7 @@ const SavedSlipsList: React.FC<SavedSlipsListProps> = ({ isLoading: externalLoad
   const [slips, setSlips] = useState<BetSlip[]>([]);
   const [stats, setStats] = useState({ total: 0, won: 0, lost: 0, pending: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -63,6 +65,41 @@ const SavedSlipsList: React.FC<SavedSlipsListProps> = ({ isLoading: externalLoad
   useEffect(() => {
     loadSlips();
   }, []);
+
+  const handleVerifyResults = async () => {
+    setIsVerifying(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('auto-verify');
+      
+      if (error) throw error;
+      
+      const verified = (data?.backfillVerified || 0) + (data?.verified || 0);
+      
+      if (verified > 0) {
+        toast({ 
+          title: 'Sonuçlar güncellendi', 
+          description: `${verified} tahmin doğrulandı` 
+        });
+      } else {
+        toast({ 
+          title: 'Güncel', 
+          description: 'Tüm sonuçlar zaten güncel' 
+        });
+      }
+      
+      await loadSlips();
+      onRefresh?.();
+    } catch (error) {
+      console.error('Verification error:', error);
+      toast({ 
+        title: 'Hata', 
+        description: 'Sonuçlar kontrol edilemedi', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   const handleDelete = async (id: string) => {
     const success = await deleteBetSlip(id);
@@ -104,6 +141,17 @@ const SavedSlipsList: React.FC<SavedSlipsListProps> = ({ isLoading: externalLoad
           <div className="flex items-center gap-2 text-base sm:text-lg">
             <Receipt className="h-5 w-5 text-primary" />
             Kuponlarım
+            {/* Verify button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-muted-foreground hover:text-primary"
+              onClick={handleVerifyResults}
+              disabled={isVerifying}
+              title="Sonuçları kontrol et"
+            >
+              <RefreshCw className={cn("h-4 w-4", isVerifying && "animate-spin")} />
+            </Button>
           </div>
           <div className="flex gap-2 text-xs sm:text-sm font-normal">
             <Badge variant="outline" className="bg-win/20 text-win border-win/30 px-2 py-0.5">
@@ -127,7 +175,7 @@ const SavedSlipsList: React.FC<SavedSlipsListProps> = ({ isLoading: externalLoad
             </p>
           </div>
         ) : (
-          <ScrollArea className="h-[400px] pr-2 sm:pr-4">
+          <ScrollArea className="h-auto max-h-[400px] sm:h-[400px] pr-2 sm:pr-4">
             <div className="space-y-3">
               {slips.map((slip) => {
                 const StatusIcon = statusConfig[slip.status].icon;
