@@ -33,16 +33,26 @@ interface PredictionRecord {
   hybrid_confidence?: number;
 }
 
-// League to competition code mapping
+// League to competition code mapping - EXTENDED with all variations
 const LEAGUE_MAP: Record<string, string> = {
+  // Short codes (primary - used in database)
+  'PL': 'PL',
+  'BL1': 'BL1',
+  'PD': 'PD',
+  'SA': 'SA',
+  'FL1': 'FL1',
+  'CL': 'CL',
+  
   // English names
   'Premier League': 'PL',
   'Bundesliga': 'BL1',
   'La Liga': 'PD',
+  'LaLiga': 'PD',
   'Serie A': 'SA',
   'Ligue 1': 'FL1',
   'UEFA Champions League': 'CL',
   'Champions League': 'CL',
+  
   // Turkish names
   'İngiltere Premier Ligi': 'PL',
   'Almanya Bundesliga': 'BL1',
@@ -50,14 +60,33 @@ const LEAGUE_MAP: Record<string, string> = {
   'İtalya Serie A': 'SA',
   'Fransa Ligue 1': 'FL1',
   'UEFA Şampiyonlar Ligi': 'CL',
-  // Short codes (for backwards compatibility)
-  'PL': 'PL',
-  'BL1': 'BL1',
-  'PD': 'PD',
-  'SA': 'SA',
-  'FL1': 'FL1',
-  'CL': 'CL',
 };
+
+// Normalize league name for flexible matching
+function normalizeLeagueName(league: string): string | null {
+  // Direct match first
+  if (LEAGUE_MAP[league]) {
+    return LEAGUE_MAP[league];
+  }
+  
+  // Case-insensitive match
+  const lowerLeague = league.toLowerCase();
+  for (const [key, value] of Object.entries(LEAGUE_MAP)) {
+    if (key.toLowerCase() === lowerLeague) {
+      return value;
+    }
+  }
+  
+  // Partial match
+  if (lowerLeague.includes('la liga') || lowerLeague.includes('laliga')) return 'PD';
+  if (lowerLeague.includes('premier')) return 'PL';
+  if (lowerLeague.includes('serie a')) return 'SA';
+  if (lowerLeague.includes('bundesliga')) return 'BL1';
+  if (lowerLeague.includes('ligue 1')) return 'FL1';
+  if (lowerLeague.includes('champions')) return 'CL';
+  
+  return null;
+}
 
 // Normalize team names for matching
 function normalizeTeamName(name: string): string {
@@ -94,7 +123,9 @@ function checkPredictionCorrect(
   homeScore: number,
   awayScore: number,
   homeTeam: string,
-  awayTeam: string
+  awayTeam: string,
+  halfTimeHome?: number | null,
+  halfTimeAway?: number | null
 ): boolean | null {
   const totalGoals = homeScore + awayScore;
 
@@ -109,6 +140,10 @@ function checkPredictionCorrect(
     case 'Toplam Gol Alt/Üst': {
       if (prediction.includes('2.5 Üst') && totalGoals > 2.5) return true;
       if (prediction.includes('2.5 Alt') && totalGoals < 2.5) return true;
+      if (prediction.includes('1.5 Üst') && totalGoals > 1.5) return true;
+      if (prediction.includes('1.5 Alt') && totalGoals < 1.5) return true;
+      if (prediction.includes('3.5 Üst') && totalGoals > 3.5) return true;
+      if (prediction.includes('3.5 Alt') && totalGoals < 3.5) return true;
       return false;
     }
 
@@ -123,11 +158,49 @@ function checkPredictionCorrect(
       return prediction === `${homeScore}-${awayScore}`;
     }
 
-    case 'İlk Yarı Sonucu':
-    case 'İlk Yarı / Maç Sonucu':
+    case 'İlk Yarı Sonucu': {
+      if (halfTimeHome === null || halfTimeHome === undefined || 
+          halfTimeAway === null || halfTimeAway === undefined) {
+        return null; // Cannot verify without HT data
+      }
+      if (halfTimeHome > halfTimeAway && prediction.includes(homeTeam)) return true;
+      if (halfTimeAway > halfTimeHome && prediction.includes(awayTeam)) return true;
+      if (halfTimeHome === halfTimeAway && prediction.includes('Beraberlik')) return true;
+      return false;
+    }
+
+    case 'İlk Yarı / Maç Sonucu': {
+      if (halfTimeHome === null || halfTimeHome === undefined || 
+          halfTimeAway === null || halfTimeAway === undefined) {
+        return null;
+      }
+      const [htPrediction, ftPrediction] = prediction.split(' / ');
+      
+      let htCorrect = false;
+      if (halfTimeHome > halfTimeAway && htPrediction.includes('Ev')) htCorrect = true;
+      if (halfTimeAway > halfTimeHome && htPrediction.includes('Dep')) htCorrect = true;
+      if (halfTimeHome === halfTimeAway && htPrediction.includes('Ber')) htCorrect = true;
+      
+      let ftCorrect = false;
+      if (homeScore > awayScore && ftPrediction.includes('Ev')) ftCorrect = true;
+      if (awayScore > homeScore && ftPrediction.includes('Dep')) ftCorrect = true;
+      if (homeScore === awayScore && ftPrediction.includes('Ber')) ftCorrect = true;
+      
+      return htCorrect && ftCorrect;
+    }
+
     case 'İki Yarıda da Gol': {
-      // Cannot verify without half-time data
-      return null;
+      if (halfTimeHome === null || halfTimeHome === undefined || 
+          halfTimeAway === null || halfTimeAway === undefined) {
+        return null;
+      }
+      const firstHalfGoals = halfTimeHome + halfTimeAway;
+      const secondHalfGoals = totalGoals - firstHalfGoals;
+      const bothHalvesGoal = firstHalfGoals > 0 && secondHalfGoals > 0;
+      
+      if (prediction === 'Evet' && bothHalvesGoal) return true;
+      if (prediction === 'Hayır' && !bothHalvesGoal) return true;
+      return false;
     }
 
     default:
@@ -146,19 +219,19 @@ async function fetchFinishedMatches(
   
   const url = `${FOOTBALL_DATA_BASE_URL}/competitions/${competitionCode}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}&status=FINISHED`;
   
-  console.log(`Fetching finished matches from: ${url}`);
+  console.log(`[auto-verify] Fetching: ${url}`);
   
   const response = await fetch(url, {
     headers: { 'X-Auth-Token': apiKey },
   });
   
   if (response.status === 429) {
-    console.warn('Rate limited, skipping this competition');
+    console.warn(`[auto-verify] Rate limited for ${competitionCode}`);
     return [];
   }
   
   if (!response.ok) {
-    console.error(`API error for ${competitionCode}: ${response.status}`);
+    console.error(`[auto-verify] API error for ${competitionCode}: ${response.status}`);
     return [];
   }
   
@@ -200,7 +273,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  console.log('=== Auto-verify cron job started ===');
+  console.log('=== [auto-verify] Started ===');
   const startTime = Date.now();
 
   try {
@@ -214,19 +287,20 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get pending predictions
+    // Get pending PRIMARY predictions only
     const { data: pendingPredictions, error: fetchError } = await supabase
       .from('predictions')
       .select('*')
       .is('is_correct', null)
+      .eq('is_primary', true) // Only verify primary predictions
       .order('match_date', { ascending: false })
-      .limit(100); // Process max 100 at a time
+      .limit(100);
 
     if (fetchError) {
       throw new Error(`Failed to fetch predictions: ${fetchError.message}`);
     }
 
-    console.log(`Found ${pendingPredictions?.length || 0} pending predictions`);
+    console.log(`[auto-verify] Found ${pendingPredictions?.length || 0} pending primary predictions`);
 
     if (!pendingPredictions || pendingPredictions.length === 0) {
       return new Response(JSON.stringify({
@@ -240,43 +314,54 @@ serve(async (req) => {
       });
     }
 
-    // Group by league
+    // Group by league and log details
     const predictionsByLeague = pendingPredictions.reduce((acc, pred) => {
       if (!acc[pred.league]) acc[pred.league] = [];
       acc[pred.league].push(pred);
       return acc;
     }, {} as Record<string, PredictionRecord[]>);
 
+    console.log(`[auto-verify] Leagues to process:`, Object.keys(predictionsByLeague));
+
     let totalVerified = 0;
     let totalNotFound = 0;
     let totalSkipped = 0;
     const errors: string[] = [];
+    const verifiedDetails: { match: string; result: string; correct: boolean }[] = [];
 
-    // Process each league with rate limiting (6.5s between requests)
+    // Process each league with rate limiting
     for (const [league, leaguePredictions] of Object.entries(predictionsByLeague)) {
       const predictions = leaguePredictions as PredictionRecord[];
-      const competitionCode = LEAGUE_MAP[league];
+      
+      // Use flexible league normalization
+      const competitionCode = normalizeLeagueName(league);
       
       if (!competitionCode) {
-        console.warn(`Unsupported league: ${league}`);
+        console.error(`[auto-verify] ❌ Unsupported league: "${league}"`);
+        console.error(`[auto-verify] Available mappings:`, Object.keys(LEAGUE_MAP));
         errors.push(`Unsupported league: ${league}`);
         totalNotFound += predictions.length;
         continue;
       }
 
-      console.log(`Processing ${predictions.length} predictions for ${league} (${competitionCode})`);
+      console.log(`[auto-verify] Processing ${predictions.length} predictions for "${league}" → ${competitionCode}`);
 
       try {
-        // Fetch finished matches
         const finishedMatches = await fetchFinishedMatches(competitionCode, footballApiKey);
-        console.log(`Found ${finishedMatches.length} finished matches for ${competitionCode}`);
+        console.log(`[auto-verify] Found ${finishedMatches.length} finished matches for ${competitionCode}`);
 
         for (const prediction of predictions) {
+          console.log(`[auto-verify] Checking: ${prediction.home_team} vs ${prediction.away_team} (${prediction.match_date})`);
+          
           const matchingMatch = findMatchingApiMatch(prediction, finishedMatches);
           
           if (matchingMatch && matchingMatch.score?.fullTime?.home !== null) {
             const homeScore = matchingMatch.score.fullTime.home ?? 0;
             const awayScore = matchingMatch.score.fullTime.away ?? 0;
+            const halfTimeHome = matchingMatch.score.halfTime?.home ?? null;
+            const halfTimeAway = matchingMatch.score.halfTime?.away ?? null;
+            
+            console.log(`[auto-verify] ✓ Match found: ${matchingMatch.homeTeam.name} vs ${matchingMatch.awayTeam.name} (${homeScore}-${awayScore})`);
             
             const isCorrect = checkPredictionCorrect(
               prediction.prediction_type,
@@ -284,11 +369,13 @@ serve(async (req) => {
               homeScore,
               awayScore,
               prediction.home_team,
-              prediction.away_team
+              prediction.away_team,
+              halfTimeHome,
+              halfTimeAway
             );
 
             if (isCorrect === null) {
-              // Cannot verify this prediction type
+              console.log(`[auto-verify] ⏭ Skipped (needs HT data): ${prediction.prediction_type}`);
               totalSkipped++;
               continue;
             }
@@ -308,13 +395,12 @@ serve(async (req) => {
               .eq('id', prediction.id);
 
             if (updateError) {
-              console.error(`Error updating prediction ${prediction.id}:`, updateError);
+              console.error(`[auto-verify] Error updating prediction ${prediction.id}:`, updateError);
               errors.push(`Update error: ${prediction.id}`);
               continue;
             }
 
-            // Update ML model stats (only for premium predictions)
-            // First check if this prediction is premium (high confidence)
+            // Update ML model stats
             const isPremium = prediction.is_premium === true;
             
             const { error: mlError } = await supabase.rpc('increment_ml_stats', {
@@ -335,7 +421,6 @@ serve(async (req) => {
                 const newCorrect = (existing.correct_predictions || 0) + (isCorrect ? 1 : 0);
                 const newAccuracy = (newCorrect / newTotal) * 100;
                 
-                // Update premium stats only if this is a premium prediction
                 const premiumTotal = isPremium ? (existing.premium_total || 0) + 1 : (existing.premium_total || 0);
                 const premiumCorrect = isPremium ? (existing.premium_correct || 0) + (isCorrect ? 1 : 0) : (existing.premium_correct || 0);
                 const premiumAccuracy = premiumTotal > 0 ? (premiumCorrect / premiumTotal) * 100 : 0;
@@ -378,9 +463,14 @@ serve(async (req) => {
               .eq('prediction_id', prediction.id);
 
             totalVerified++;
-            console.log(`Verified: ${prediction.home_team} vs ${prediction.away_team} = ${isCorrect ? '✓' : '✗'}`);
+            verifiedDetails.push({
+              match: `${prediction.home_team} vs ${prediction.away_team}`,
+              result: actualResult,
+              correct: isCorrect,
+            });
+            console.log(`[auto-verify] ✅ Verified: ${prediction.home_team} vs ${prediction.away_team} = ${isCorrect ? 'CORRECT' : 'WRONG'}`);
           } else {
-            // Match not found or not finished yet
+            console.log(`[auto-verify] ⚠ No match found for: ${prediction.home_team} vs ${prediction.away_team}`);
             const matchDate = new Date(prediction.match_date);
             if (matchDate < new Date()) {
               totalNotFound++;
@@ -393,20 +483,21 @@ serve(async (req) => {
         
       } catch (leagueError) {
         const errorMsg = leagueError instanceof Error ? leagueError.message : 'Unknown error';
-        console.error(`Error processing ${league}:`, errorMsg);
+        console.error(`[auto-verify] Error processing ${league}:`, errorMsg);
         errors.push(`${league}: ${errorMsg}`);
       }
     }
 
     const duration = Date.now() - startTime;
-    console.log(`=== Auto-verify completed in ${duration}ms ===`);
-    console.log(`Verified: ${totalVerified}, Not found: ${totalNotFound}, Skipped: ${totalSkipped}`);
+    console.log(`=== [auto-verify] Completed in ${duration}ms ===`);
+    console.log(`[auto-verify] Summary: Verified=${totalVerified}, NotFound=${totalNotFound}, Skipped=${totalSkipped}`);
 
     return new Response(JSON.stringify({
       success: true,
       verified: totalVerified,
       notFound: totalNotFound,
       skipped: totalSkipped,
+      verifiedDetails: verifiedDetails.slice(0, 10), // Return first 10 details
       errors: errors.length > 0 ? errors : undefined,
       duration,
       timestamp: new Date().toISOString(),
@@ -415,7 +506,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Auto-verify error:', error);
+    console.error('[auto-verify] Fatal error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     
     return new Response(JSON.stringify({
