@@ -83,11 +83,20 @@ export async function getLuckyPicks(limit: number = 3): Promise<LuckyPick[]> {
       continue;
     }
 
-    // Map confidence from percentage to category
-    const hybridConf = pred.hybrid_confidence || 50;
-    let confidence: 'düşük' | 'orta' | 'yüksek' = 'düşük';
-    if (hybridConf >= 70) confidence = 'yüksek';
-    else if (hybridConf >= 50) confidence = 'orta';
+    // Use database confidence if valid, otherwise calculate from hybrid_confidence
+    let confidence: 'düşük' | 'orta' | 'yüksek';
+    if (pred.confidence === 'yüksek' || pred.confidence === 'orta' || pred.confidence === 'düşük') {
+      confidence = pred.confidence;
+    } else {
+      // Scale hybrid_confidence from 0-1 to 0-100 for threshold comparison
+      const hybridConfPercent = (pred.hybrid_confidence || 0.5) * 100;
+      if (hybridConfPercent >= 70) confidence = 'yüksek';
+      else if (hybridConfPercent >= 50) confidence = 'orta';
+      else confidence = 'düşük';
+    }
+    
+    // Also scale for display (0-1 to 0-100)
+    const hybridConf = (pred.hybrid_confidence || 0.5) * 100;
 
     matchMap.set(matchKey, {
       homeTeam: pred.home_team,
