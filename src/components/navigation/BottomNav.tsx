@@ -23,7 +23,7 @@ interface BottomNavProps {
   onSearchClick?: () => void;
 }
 
-const BottomNav: React.FC<BottomNavProps> = ({ onSearchClick }) => {
+const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(({ onSearchClick }, ref) => {
   const location = useLocation();
 
   const handleClick = (item: NavItem, e: React.MouseEvent) => {
@@ -90,6 +90,8 @@ const BottomNav: React.FC<BottomNavProps> = ({ onSearchClick }) => {
       </div>
     </nav>
   );
-};
+});
+
+BottomNav.displayName = 'BottomNav';
 
 export default BottomNav;
