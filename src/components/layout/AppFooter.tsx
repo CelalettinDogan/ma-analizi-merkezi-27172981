@@ -90,7 +90,7 @@ const AppFooter: React.FC = () => {
               </li>
               <li>
                 <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Sorumlu Bahis
+                  Sorumluluk Reddi
                 </a>
               </li>
             </ul>
@@ -103,8 +103,7 @@ const AppFooter: React.FC = () => {
             © {new Date().getFullYear()} FutbolTahmin. Tüm hakları saklıdır.
           </p>
           <p className="text-xs text-muted-foreground">
-            Bu site yalnızca bilgilendirme amaçlıdır. 18 yaş altı kullanıcılara yönelik değildir. 
-            Bahis oynamadan önce lütfen yerel yasaları kontrol edin.
+            Tüm içerikler bilgilendirme amaçlıdır ve tavsiye niteliği taşımaz.
           </p>
         </div>
       </div>
