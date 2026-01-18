@@ -126,8 +126,12 @@ const SavedSlipsList: React.FC<SavedSlipsListProps> = ({ isLoading: externalLoad
         ) : (
           <ScrollArea className="h-[400px] pr-4">
             <div className="space-y-3">
-              {slips.map((slip) => {
+            {slips.map((slip) => {
                 const StatusIcon = statusConfig[slip.status].icon;
+                const totalItems = slip.items?.length || 0;
+                const verifiedItems = slip.items?.filter(i => i.is_correct !== null).length || 0;
+                const correctItems = slip.items?.filter(i => i.is_correct === true).length || 0;
+                
                 return (
                   <div
                     key={slip.id}
@@ -139,17 +143,33 @@ const SavedSlipsList: React.FC<SavedSlipsListProps> = ({ isLoading: externalLoad
                           {format(new Date(slip.created_at), 'dd MMM yyyy, HH:mm', { locale: tr })}
                         </p>
                         <p className="text-sm font-medium text-foreground">
-                          {slip.items?.length || 0} Tahmin
+                          {totalItems} Tahmin
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className={statusConfig[slip.status].className}
-                        >
-                          <StatusIcon className="h-3 w-3 mr-1" />
-                          {statusConfig[slip.status].label}
-                        </Badge>
+                        {/* Enhanced status badge with result count */}
+                        {slip.is_verified ? (
+                          <Badge
+                            variant="outline"
+                            className={statusConfig[slip.status].className}
+                          >
+                            <StatusIcon className="h-3 w-3 mr-1" />
+                            {correctItems}/{totalItems} Doğru - {statusConfig[slip.status].label}
+                          </Badge>
+                        ) : verifiedItems > 0 ? (
+                          <Badge variant="outline" className="bg-amber-500/20 text-amber-500 border-amber-500/30">
+                            <Clock className="h-3 w-3 mr-1" />
+                            {verifiedItems}/{totalItems} Doğrulandı
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className={statusConfig[slip.status].className}
+                          >
+                            <StatusIcon className="h-3 w-3 mr-1" />
+                            {statusConfig[slip.status].label}
+                          </Badge>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
