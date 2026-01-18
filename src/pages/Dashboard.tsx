@@ -18,7 +18,7 @@ import { AILearningBar } from "@/components/dashboard/AILearningBar";
 import { PredictionTypePills } from "@/components/dashboard/PredictionTypePills";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import SavedSlipsList from "@/components/betslip/SavedSlipsList";
-import AutoVerifyButton from "@/components/dashboard/AutoVerifyButton";
+
 
 // Services
 import { 
@@ -174,18 +174,15 @@ const Dashboard = () => {
   };
 
   const headerRightContent = (
-    <div className="flex items-center gap-2">
-      <AutoVerifyButton onVerificationComplete={loadData} />
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={handleRefresh}
-        disabled={isRefreshing}
-        className="h-9 w-9"
-      >
-        <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
-      </Button>
-    </div>
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={handleRefresh}
+      disabled={isRefreshing}
+      className="h-9 w-9"
+    >
+      <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+    </Button>
   );
 
   // Quick stats for the 2x2 grid
