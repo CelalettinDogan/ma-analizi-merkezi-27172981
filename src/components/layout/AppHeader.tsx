@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Trophy, BarChart3, Radio } from 'lucide-react';
+import { Trophy, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from '@/components/ThemeToggle';
 import UserMenu from '@/components/UserMenu';
 import { cn } from '@/lib/utils';
+import logoImage from '@/assets/logo.png';
 
 interface AppHeaderProps {
   showSearch?: boolean;
@@ -32,10 +33,12 @@ const AppHeader: React.FC<AppHeaderProps> = ({
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center shadow-lg shadow-primary/20">
-            <span className="text-primary-foreground font-bold text-sm">FT</span>
-          </div>
+        <Link to="/" className="flex items-center gap-2 group">
+          <img 
+            src={logoImage} 
+            alt="FutbolTahmin Logo" 
+            className="w-9 h-9 sm:w-10 sm:h-10 object-contain drop-shadow-md transition-transform group-hover:scale-105 dark:drop-shadow-[0_0_8px_rgba(234,179,8,0.3)]"
+          />
           <span className="font-display font-bold text-lg text-foreground hidden sm:block">FutbolTahmin</span>
         </Link>
         
