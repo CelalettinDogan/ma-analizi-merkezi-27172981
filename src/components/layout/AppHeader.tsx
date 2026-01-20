@@ -31,19 +31,19 @@ const AppHeader: React.FC<AppHeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50">
-      <div className="container mx-auto px-4 h-14 flex items-center justify-between">
+      <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group">
+        <Link to="/" className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
           <img 
             src={logoImage} 
             alt="FutbolTahmin Logo" 
-            className="w-9 h-9 xs:w-10 xs:h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 object-contain drop-shadow-lg transition-all duration-200 group-hover:scale-110 dark:drop-shadow-[0_0_12px_rgba(234,179,8,0.5)] dark:brightness-110"
+            className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain drop-shadow-lg transition-all duration-200 group-hover:scale-110 dark:drop-shadow-[0_0_12px_rgba(234,179,8,0.5)] dark:brightness-110"
           />
-          <span className="font-display font-bold text-base xs:text-lg sm:text-xl text-foreground hidden xs:block">FutbolTahmin</span>
+          <span className="font-display font-bold text-base xs:text-lg md:text-xl text-foreground hidden xs:block">FutbolTahmin</span>
         </Link>
         
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-1">
+        {/* Desktop Nav - Show from lg breakpoint to avoid tablet overflow */}
+        <nav className="hidden lg:flex items-center gap-1">
           {navItems.map((item) => (
             <Button 
               key={item.path}
@@ -51,10 +51,11 @@ const AppHeader: React.FC<AppHeaderProps> = ({
               size="sm" 
               asChild
               className={cn(
+                "text-sm",
                 isActive(item.path) && "bg-primary/10 text-primary"
               )}
             >
-              <Link to={item.path} className="gap-1">
+              <Link to={item.path} className="gap-1.5">
                 {item.icon}
                 {item.label}
               </Link>
