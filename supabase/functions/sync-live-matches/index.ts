@@ -13,6 +13,12 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 // Supported competitions
 const SUPPORTED_LEAGUES = ['PL', 'BL1', 'PD', 'SA', 'FL1', 'CL'];
 
+// In-memory cache to prevent rate limiting
+let lastApiCallTime = 0;
+let cachedResponse: { matches: unknown[]; timestamp: number } | null = null;
+const MIN_API_INTERVAL = 60000; // 60 seconds minimum between API calls
+const CACHE_TTL = 45000; // 45 seconds cache validity
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -25,8 +31,64 @@ serve(async (req) => {
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const now = Date.now();
     
     console.log('Starting live matches sync...');
+    
+    // Check if we can use cached data
+    const timeSinceLastCall = now - lastApiCallTime;
+    if (cachedResponse && timeSinceLastCall < CACHE_TTL) {
+      console.log(`Using cached data (${Math.round(timeSinceLastCall / 1000)}s old)`);
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          synced: cachedResponse.matches.length,
+          cached: true,
+          timestamp: new Date().toISOString()
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
+    }
+    
+    // Rate limit protection
+    if (timeSinceLastCall < MIN_API_INTERVAL) {
+      const waitTime = Math.ceil((MIN_API_INTERVAL - timeSinceLastCall) / 1000);
+      console.log(`Rate limit protection: must wait ${waitTime}s before next API call`);
+      
+      // Return success with cached data if available, otherwise just acknowledge
+      if (cachedResponse) {
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            synced: cachedResponse.matches.length,
+            cached: true,
+            rateLimited: true,
+            timestamp: new Date().toISOString()
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 
+          }
+        );
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          synced: 0,
+          rateLimited: true,
+          waitSeconds: waitTime,
+          timestamp: new Date().toISOString()
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
+    }
     
     // Fetch live matches from Football-Data.org
     const response = await fetch(
@@ -38,9 +100,31 @@ serve(async (req) => {
       }
     );
 
+    // Update last call time AFTER the request
+    lastApiCallTime = Date.now();
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error('API error:', response.status, errorText);
+      
+      // On 429, return cached data if available
+      if (response.status === 429 && cachedResponse) {
+        console.log('429 received, returning cached data');
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            synced: cachedResponse.matches.length,
+            cached: true,
+            rateLimitHit: true,
+            timestamp: new Date().toISOString()
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 
+          }
+        );
+      }
+      
       throw new Error(`Football API error: ${response.status}`);
     }
 
@@ -48,9 +132,13 @@ serve(async (req) => {
     const allMatches = data.matches || [];
     
     // Filter only supported competitions
-    const liveMatches = allMatches.filter((m: any) => 
-      SUPPORTED_LEAGUES.includes(m.competition?.code)
-    );
+    const liveMatches = allMatches.filter((m: unknown) => {
+      const match = m as { competition?: { code?: string } };
+      return SUPPORTED_LEAGUES.includes(match.competition?.code || '');
+    });
+    
+    // Cache the response
+    cachedResponse = { matches: liveMatches, timestamp: now };
     
     console.log(`Found ${liveMatches.length} live matches in supported leagues`);
 
@@ -69,27 +157,43 @@ serve(async (req) => {
 
     // Upsert current live matches
     if (liveMatches.length > 0) {
-      const matchesToUpsert = liveMatches.map((match: any) => ({
-        match_id: match.id,
-        competition_code: match.competition?.code || 'UNKNOWN',
-        competition_name: match.competition?.name || null,
-        home_team_id: match.homeTeam?.id || null,
-        home_team_name: match.homeTeam?.name || 'TBD',
-        home_team_crest: match.homeTeam?.crest || null,
-        away_team_id: match.awayTeam?.id || null,
-        away_team_name: match.awayTeam?.name || 'TBD',
-        away_team_crest: match.awayTeam?.crest || null,
-        home_score: match.score?.fullTime?.home ?? match.score?.halfTime?.home ?? null,
-        away_score: match.score?.fullTime?.away ?? match.score?.halfTime?.away ?? null,
-        status: match.status,
-        matchday: match.matchday || null,
-        utc_date: match.utcDate,
-        minute: match.minute?.toString() || null,
-        half_time_home: match.score?.halfTime?.home ?? null,
-        half_time_away: match.score?.halfTime?.away ?? null,
-        raw_data: match,
-        updated_at: new Date().toISOString(),
-      }));
+      const matchesToUpsert = liveMatches.map((match: unknown) => {
+        const m = match as {
+          id: number;
+          competition?: { code?: string; name?: string };
+          homeTeam?: { id?: number; name?: string; crest?: string };
+          awayTeam?: { id?: number; name?: string; crest?: string };
+          score?: {
+            fullTime?: { home?: number; away?: number };
+            halfTime?: { home?: number; away?: number };
+          };
+          status?: string;
+          matchday?: number;
+          utcDate?: string;
+          minute?: string | number;
+        };
+        return {
+          match_id: m.id,
+          competition_code: m.competition?.code || 'UNKNOWN',
+          competition_name: m.competition?.name || null,
+          home_team_id: m.homeTeam?.id || null,
+          home_team_name: m.homeTeam?.name || 'TBD',
+          home_team_crest: m.homeTeam?.crest || null,
+          away_team_id: m.awayTeam?.id || null,
+          away_team_name: m.awayTeam?.name || 'TBD',
+          away_team_crest: m.awayTeam?.crest || null,
+          home_score: m.score?.fullTime?.home ?? m.score?.halfTime?.home ?? null,
+          away_score: m.score?.fullTime?.away ?? m.score?.halfTime?.away ?? null,
+          status: m.status,
+          matchday: m.matchday || null,
+          utc_date: m.utcDate,
+          minute: m.minute?.toString() || null,
+          half_time_home: m.score?.halfTime?.home ?? null,
+          half_time_away: m.score?.halfTime?.away ?? null,
+          raw_data: match,
+          updated_at: new Date().toISOString(),
+        };
+      });
 
       const { error: upsertError } = await supabase
         .from('cached_live_matches')
@@ -121,6 +225,7 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         synced: liveMatches.length,
+        cached: false,
         timestamp: new Date().toISOString()
       }),
       { 
@@ -143,4 +248,3 @@ serve(async (req) => {
     );
   }
 });
-
