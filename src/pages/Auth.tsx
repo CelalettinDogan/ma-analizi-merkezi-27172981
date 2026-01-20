@@ -130,9 +130,9 @@ const Auth: React.FC = () => {
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center">
-            <span className="text-primary-foreground font-bold">FT</span>
+            <span className="text-primary-foreground font-bold">GM</span>
           </div>
-          <span className="font-display font-bold text-2xl text-foreground">FutbolTahmin</span>
+          <span className="font-display font-bold text-2xl text-foreground">Gol Metrik</span>
         </div>
 
         <Card className="glass-card">

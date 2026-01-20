@@ -10,7 +10,7 @@ const ThemeToggle: React.FC = () => {
 
   useEffect(() => {
     // Check localStorage or system preference on mount
-    const stored = localStorage.getItem('futboltahmin-theme') as Theme | null;
+    const stored = localStorage.getItem('golmetrik-theme') as Theme | null;
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
     const initialTheme = stored || (systemPrefersDark ? 'dark' : 'light');
@@ -33,7 +33,7 @@ const ThemeToggle: React.FC = () => {
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
-    localStorage.setItem('futboltahmin-theme', newTheme);
+    localStorage.setItem('golmetrik-theme', newTheme);
     applyTheme(newTheme);
   };
 

@@ -14,9 +14,9 @@ const AppFooter: React.FC = () => {
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center shadow-lg shadow-primary/20">
-                <span className="text-primary-foreground font-bold">FT</span>
+                <span className="text-primary-foreground font-bold">GM</span>
               </div>
-              <span className="font-display font-bold text-xl text-foreground">FutbolTahmin</span>
+              <span className="font-display font-bold text-xl text-foreground">Gol Metrik</span>
             </div>
             <p className="text-sm text-muted-foreground max-w-md mb-4">
               AI destekli futbol analiz platformu. Veri odaklı istatistikler, 
@@ -38,7 +38,7 @@ const AppFooter: React.FC = () => {
                 <Github className="w-4 h-4 text-muted-foreground" />
               </a>
               <a 
-                href="mailto:info@futboltahmin.com" 
+                href="mailto:info@golmetrik.com" 
                 className="w-9 h-9 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 flex items-center justify-center transition-colors"
                 aria-label="Email"
               >
@@ -100,7 +100,7 @@ const AppFooter: React.FC = () => {
         {/* Copyright */}
         <div className="pt-8 border-t border-border/30 text-center">
           <p className="text-sm text-muted-foreground mb-2">
-            © {new Date().getFullYear()} FutbolTahmin. Tüm hakları saklıdır.
+            © {new Date().getFullYear()} Gol Metrik. Tüm hakları saklıdır.
           </p>
           <p className="text-xs text-muted-foreground">
             Tüm içerikler bilgilendirme amaçlıdır ve tavsiye niteliği taşımaz.
