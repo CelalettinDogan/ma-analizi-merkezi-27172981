@@ -163,19 +163,14 @@ const LivePage: React.FC = () => {
     }
   }, [fetchFromCache]);
 
-  // Initial load and cleanup
+  // Initial load - only fetch from cache, sync on mount only once
   useEffect(() => {
     isMountedRef.current = true;
     
     const init = async () => {
       if (!isMountedRef.current) return;
       setIsLoading(true);
-      // First fetch from cache
       await fetchFromCache();
-      // Then trigger sync in background
-      if (isMountedRef.current) {
-        syncLiveMatches();
-      }
     };
     init();
     
@@ -183,6 +178,11 @@ const LivePage: React.FC = () => {
       isMountedRef.current = false;
     };
   }, [selectedLeague]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Trigger sync only once on mount
+  useEffect(() => {
+    syncLiveMatches();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-refresh from cache
   useEffect(() => {
