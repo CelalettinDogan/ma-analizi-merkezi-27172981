@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const STORAGE_KEY = 'futboltahmin_onboarding_completed';
+const STORAGE_KEY = 'golmetrik_onboarding_completed';
 
 interface UseOnboardingReturn {
   hasSeenOnboarding: boolean;

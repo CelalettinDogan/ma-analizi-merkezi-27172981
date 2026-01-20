@@ -47,7 +47,7 @@ const ShareCard: React.FC<ShareCardProps> = ({
     return 'from-muted-foreground to-slate-500';
   };
 
-  const shareText = `⚽ ${homeTeam} vs ${awayTeam}\n📊 Tahmin: ${prediction}\n💪 Güven: ${confidence}\n🏆 ${league}\n\n#FutbolTahmin ile analiz ettim!`;
+  const shareText = `⚽ ${homeTeam} vs ${awayTeam}\n📊 Tahmin: ${prediction}\n💪 Güven: ${confidence}\n🏆 ${league}\n\n#GolMetrik ile analiz ettim!`;
   
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
 
@@ -89,7 +89,7 @@ const ShareCard: React.FC<ShareCardProps> = ({
       });
       
       const link = document.createElement('a');
-      link.download = `futboltahmin-${homeTeam}-vs-${awayTeam}.png`;
+      link.download = `golmetrik-${homeTeam}-vs-${awayTeam}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
       
@@ -174,7 +174,7 @@ const ShareCard: React.FC<ShareCardProps> = ({
 
           {/* Watermark */}
           <div className="relative mt-6 pt-4 border-t border-border/30 flex items-center justify-center gap-2">
-            <span className="text-xs font-bold gradient-text">⚽ FutbolTahmin</span>
+            <span className="text-xs font-bold gradient-text">⚽ Gol Metrik</span>
           </div>
         </div>
 

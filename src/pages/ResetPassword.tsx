@@ -22,7 +22,7 @@ const ResetPassword = () => {
 
   useEffect(() => {
     // Set page title
-    document.title = 'Şifre Sıfırla | FutbolTahmin';
+    document.title = 'Şifre Sıfırla | Gol Metrik';
 
     // Check if user has a valid recovery session
     const checkSession = async () => {

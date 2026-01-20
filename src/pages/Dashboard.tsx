@@ -286,7 +286,7 @@ const Dashboard = () => {
       <footer className="border-t border-border/50 mt-12 hidden md:block">
         <div className="container mx-auto px-4 py-6">
           <p className="text-center text-xs text-muted-foreground">
-            © 2026 FutbolTahmin. Tüm hakları saklıdır.
+            © 2026 Gol Metrik. Tüm hakları saklıdır.
           </p>
         </div>
       </footer>

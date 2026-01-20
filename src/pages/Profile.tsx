@@ -77,7 +77,7 @@ const Profile: React.FC = () => {
   });
 
   const handleResetOnboarding = () => {
-    localStorage.removeItem('futboltahmin_onboarding_completed');
+    localStorage.removeItem('golmetrik_onboarding_completed');
     window.location.reload();
   };
 

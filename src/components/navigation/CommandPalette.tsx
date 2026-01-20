@@ -24,7 +24,7 @@ interface TeamResult {
   leagueName: string;
 }
 
-const RECENT_SEARCHES_KEY = 'futboltahmin_recent_searches';
+const RECENT_SEARCHES_KEY = 'golmetrik_recent_searches';
 const MAX_RECENT_SEARCHES = 5;
 
 const CommandPalette: React.FC<CommandPaletteProps> = ({ 

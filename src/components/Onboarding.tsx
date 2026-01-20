@@ -28,7 +28,7 @@ const steps: OnboardingStep[] = [
   {
     icon: Sparkles,
     iconColor: 'text-yellow-400',
-    title: "FutbolTahmin'e Hoş Geldin! ⚽",
+    title: "Gol Metrik'e Hoş Geldin! ⚽",
     description: "Yapay zeka destekli futbol analiz platformu. Profesyonel istatistikler ve akıllı tahminlerle maçları analiz edin."
   },
   {
