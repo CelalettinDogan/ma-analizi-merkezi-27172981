@@ -33,13 +33,13 @@ const AppHeader: React.FC<AppHeaderProps> = ({
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
+        <Link to="/" className="flex items-center gap-2.5 group">
           <img 
             src={logoImage} 
             alt="FutbolTahmin Logo" 
-            className="w-9 h-9 sm:w-10 sm:h-10 object-contain drop-shadow-md transition-transform group-hover:scale-105 dark:drop-shadow-[0_0_8px_rgba(234,179,8,0.3)]"
+            className="w-9 h-9 xs:w-10 xs:h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 object-contain drop-shadow-lg transition-all duration-200 group-hover:scale-110 dark:drop-shadow-[0_0_12px_rgba(234,179,8,0.5)] dark:brightness-110"
           />
-          <span className="font-display font-bold text-lg text-foreground hidden sm:block">FutbolTahmin</span>
+          <span className="font-display font-bold text-base xs:text-lg sm:text-xl text-foreground hidden xs:block">FutbolTahmin</span>
         </Link>
         
         {/* Desktop Nav */}
