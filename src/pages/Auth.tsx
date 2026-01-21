@@ -9,10 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { useTranslation } from 'react-i18next';
 
 const Auth: React.FC = () => {
-  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
@@ -39,16 +37,16 @@ const Auth: React.FC = () => {
 
     if (error) {
       toast({
-        title: t('errors.error'),
+        title: 'Giriş Hatası',
         description: error.message === 'Invalid login credentials' 
-          ? t('errors.unauthorized')
+          ? 'E-posta veya şifre hatalı' 
           : error.message,
         variant: 'destructive',
       });
     } else {
       toast({
-        title: t('auth.welcome'),
-        description: t('auth.signInSuccess'),
+        title: 'Hoş Geldiniz!',
+        description: 'Başarıyla giriş yaptınız.',
       });
       navigate('/');
     }
@@ -62,8 +60,8 @@ const Auth: React.FC = () => {
 
     if (registerPassword.length < 6) {
       toast({
-        title: t('errors.error'),
-        description: t('auth.passwordTooShort'),
+        title: 'Şifre Hatası',
+        description: 'Şifre en az 6 karakter olmalıdır.',
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -74,14 +72,14 @@ const Auth: React.FC = () => {
 
     if (error) {
       toast({
-        title: t('errors.error'),
+        title: 'Kayıt Hatası',
         description: error.message,
         variant: 'destructive',
       });
     } else {
       toast({
-        title: t('auth.accountCreated'),
-        description: t('auth.signUpSuccess'),
+        title: 'Hesap Oluşturuldu!',
+        description: 'Başarıyla kayıt oldunuz.',
       });
       navigate('/');
     }
@@ -94,7 +92,7 @@ const Auth: React.FC = () => {
     const { error } = await signInWithGoogle();
     if (error) {
       toast({
-        title: t('errors.error'),
+        title: 'Google Giriş Hatası',
         description: error.message,
         variant: 'destructive',
       });
@@ -110,14 +108,14 @@ const Auth: React.FC = () => {
 
     if (error) {
       toast({
-        title: t('errors.error'),
+        title: 'Hata',
         description: error.message,
         variant: 'destructive',
       });
     } else {
       toast({
-        title: t('auth.resetLinkSent'),
-        description: t('auth.checkEmail'),
+        title: 'E-posta Gönderildi',
+        description: 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.',
       });
       setShowResetDialog(false);
       setResetEmail('');
@@ -139,9 +137,9 @@ const Auth: React.FC = () => {
 
         <Card className="glass-card">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-display">{t('auth.signIn')}</CardTitle>
+            <CardTitle className="text-2xl font-display">Hesap</CardTitle>
             <CardDescription>
-              {t('betSlip.signInToSave')}
+              Tahminlerinizi kaydetmek için giriş yapın veya kayıt olun
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -153,7 +151,7 @@ const Auth: React.FC = () => {
               disabled={isLoading}
             >
               <Chrome className="h-4 w-4 mr-2" />
-              {t('auth.signInWithGoogle')}
+              Google ile Giriş Yap
             </Button>
 
             {/* Divider */}
@@ -162,27 +160,27 @@ const Auth: React.FC = () => {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">{t('auth.orWithEmail')}</span>
+                <span className="bg-card px-2 text-muted-foreground">veya e-posta ile</span>
               </div>
             </div>
 
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-muted/50">
-                <TabsTrigger value="login">{t('auth.signIn')}</TabsTrigger>
-                <TabsTrigger value="register">{t('auth.signUp')}</TabsTrigger>
+                <TabsTrigger value="login">Giriş Yap</TabsTrigger>
+                <TabsTrigger value="register">Kayıt Ol</TabsTrigger>
               </TabsList>
 
               {/* Login Tab */}
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email">{t('auth.email')}</Label>
+                    <Label htmlFor="login-email">E-posta</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="login-email"
                         type="email"
-                        placeholder="email@example.com"
+                        placeholder="ornek@email.com"
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         className="pl-10 bg-muted/50"
@@ -193,13 +191,13 @@ const Auth: React.FC = () => {
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="login-password">{t('auth.password')}</Label>
+                      <Label htmlFor="login-password">Şifre</Label>
                       <button
                         type="button"
                         onClick={() => setShowResetDialog(true)}
                         className="text-xs text-primary hover:underline"
                       >
-                        {t('auth.forgotPassword')}
+                        Şifremi Unuttum
                       </button>
                     </div>
                     <div className="relative">
@@ -227,10 +225,10 @@ const Auth: React.FC = () => {
                     {isLoading ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        {t('auth.signingIn')}
+                        Giriş yapılıyor...
                       </>
                     ) : (
-                      t('auth.signIn')
+                      'Giriş Yap'
                     )}
                   </Button>
                 </form>
@@ -240,13 +238,13 @@ const Auth: React.FC = () => {
               <TabsContent value="register">
                 <form onSubmit={handleRegister} className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="register-name">{t('auth.name')}</Label>
+                    <Label htmlFor="register-name">İsim</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="register-name"
                         type="text"
-                        placeholder={t('auth.name')}
+                        placeholder="Adınız"
                         value={registerName}
                         onChange={(e) => setRegisterName(e.target.value)}
                         className="pl-10 bg-muted/50"
@@ -255,13 +253,13 @@ const Auth: React.FC = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="register-email">{t('auth.email')}</Label>
+                    <Label htmlFor="register-email">E-posta</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="register-email"
                         type="email"
-                        placeholder="email@example.com"
+                        placeholder="ornek@email.com"
                         value={registerEmail}
                         onChange={(e) => setRegisterEmail(e.target.value)}
                         className="pl-10 bg-muted/50"
@@ -271,13 +269,13 @@ const Auth: React.FC = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="register-password">{t('auth.password')}</Label>
+                    <Label htmlFor="register-password">Şifre</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="register-password"
                         type={showPassword ? 'text' : 'password'}
-                        placeholder={t('auth.passwordTooShort')}
+                        placeholder="En az 6 karakter"
                         value={registerPassword}
                         onChange={(e) => setRegisterPassword(e.target.value)}
                         className="pl-10 pr-10 bg-muted/50"
@@ -298,10 +296,10 @@ const Auth: React.FC = () => {
                     {isLoading ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        {t('auth.signingUp')}
+                        Kayıt yapılıyor...
                       </>
                     ) : (
-                      t('auth.signUp')
+                      'Kayıt Ol'
                     )}
                   </Button>
                 </form>
@@ -310,14 +308,14 @@ const Auth: React.FC = () => {
 
             <div className="mt-6 text-center">
               <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
-                ← {t('auth.backToHome')}
+                ← Anasayfaya Dön
               </Link>
             </div>
           </CardContent>
         </Card>
 
         <p className="text-xs text-muted-foreground text-center mt-4">
-          {t('footer.informationalContent')} {t('footer.notFinancialAdvice')}
+          İçerikler bilgilendirme amaçlıdır ve tavsiye niteliği taşımaz.
         </p>
       </div>
 
@@ -325,20 +323,20 @@ const Auth: React.FC = () => {
       <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t('auth.resetPassword')}</DialogTitle>
+            <DialogTitle>Şifre Sıfırlama</DialogTitle>
             <DialogDescription>
-              {t('auth.enterEmail')}
+              E-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleResetPassword} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="reset-email">{t('auth.email')}</Label>
+              <Label htmlFor="reset-email">E-posta</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="reset-email"
                   type="email"
-                  placeholder="email@example.com"
+                  placeholder="ornek@email.com"
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}
                   className="pl-10"
@@ -353,7 +351,7 @@ const Auth: React.FC = () => {
                 className="flex-1"
                 onClick={() => setShowResetDialog(false)}
               >
-                {t('common.cancel')}
+                İptal
               </Button>
               <Button
                 type="submit"
@@ -363,10 +361,10 @@ const Auth: React.FC = () => {
                 {isResetting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    {t('auth.sendingResetLink')}
+                    Gönderiliyor...
                   </>
                 ) : (
-                  t('auth.resetPassword')
+                  'Bağlantı Gönder'
                 )}
               </Button>
             </div>

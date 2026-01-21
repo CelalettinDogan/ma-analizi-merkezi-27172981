@@ -4,10 +4,8 @@ import { Trophy, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from '@/components/ThemeToggle';
 import UserMenu from '@/components/UserMenu';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { cn } from '@/lib/utils';
 import logoImage from '@/assets/logo.png';
-import { useTranslation } from 'react-i18next';
 
 interface AppHeaderProps {
   showSearch?: boolean;
@@ -21,15 +19,14 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   rightContent 
 }) => {
   const location = useLocation();
-  const { t } = useTranslation();
   
   const isActive = (path: string) => location.pathname === path;
 
   const navItems = [
-    { path: '/', labelKey: 'nav.home' },
-    { path: '/live', labelKey: 'nav.live', icon: <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" /> },
-    { path: '/standings', labelKey: 'nav.standings', icon: <Trophy className="w-4 h-4" /> },
-    { path: '/dashboard', labelKey: 'nav.dashboard', icon: <BarChart3 className="w-4 h-4" /> },
+    { path: '/', label: 'Anasayfa' },
+    { path: '/live', label: 'Canlı', icon: <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" /> },
+    { path: '/standings', label: 'Sıralama', icon: <Trophy className="w-4 h-4" /> },
+    { path: '/dashboard', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" /> },
   ];
 
   return (
@@ -60,16 +57,15 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             >
               <Link to={item.path} className="gap-1.5">
                 {item.icon}
-                {t(item.labelKey)}
+                {item.label}
               </Link>
             </Button>
           ))}
         </nav>
 
         {/* Right Side */}
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-2">
           {rightContent}
-          <LanguageSwitcher />
           <ThemeToggle />
           <UserMenu />
         </div>
