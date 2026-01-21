@@ -3,20 +3,21 @@ import { Link, useLocation } from 'react-router-dom';
 import { Home, Zap, Trophy, BarChart3, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface NavItem {
   icon: React.ElementType;
-  label: string;
+  labelKey: string;
   path: string;
   isAction?: boolean;
 }
 
 const navItems: NavItem[] = [
-  { icon: Home, label: 'Ana Sayfa', path: '/' },
-  { icon: Zap, label: 'Canlı', path: '/live' },
-  { icon: Trophy, label: 'Sıralama', path: '/standings' },
-  { icon: BarChart3, label: 'Dashboard', path: '/dashboard' },
-  { icon: User, label: 'Profil', path: '/profile' },
+  { icon: Home, labelKey: 'nav.home', path: '/' },
+  { icon: Zap, labelKey: 'nav.live', path: '/live' },
+  { icon: Trophy, labelKey: 'nav.standings', path: '/standings' },
+  { icon: BarChart3, labelKey: 'nav.dashboard', path: '/dashboard' },
+  { icon: User, labelKey: 'nav.profile', path: '/profile' },
 ];
 
 interface BottomNavProps {
@@ -25,6 +26,7 @@ interface BottomNavProps {
 
 const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(({ onSearchClick }, ref) => {
   const location = useLocation();
+  const { t } = useTranslation();
 
   const handleClick = (item: NavItem, e: React.MouseEvent) => {
     if (item.isAction && onSearchClick) {
@@ -53,7 +55,7 @@ const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(({ onSearchClick
                 key={item.path}
                 to={item.isAction ? '#' : item.path}
                 onClick={(e) => handleClick(item, e)}
-                aria-label={item.label}
+                aria-label={t(item.labelKey)}
                 aria-current={isActive ? 'page' : undefined}
                 className="relative flex flex-col items-center gap-0.5 py-2 px-3 min-w-[56px] min-h-[48px] touch-manipulation rounded-xl transition-colors"
               >
@@ -81,7 +83,7 @@ const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(({ onSearchClick
                   "text-[11px] font-medium transition-colors relative z-10",
                   isActive ? "text-primary" : "text-muted-foreground"
                 )}>
-                  {item.label}
+                  {t(item.labelKey)}
                 </span>
               </Link>
             );
