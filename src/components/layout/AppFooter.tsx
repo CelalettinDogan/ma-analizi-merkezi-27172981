@@ -2,8 +2,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Twitter, Github, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const AppFooter: React.FC = () => {
+  const { t } = useTranslation();
+
   return (
     <footer className="hidden md:block py-12 border-t border-border/50 bg-gradient-to-t from-background to-transparent">
       <div className="container mx-auto px-4">
@@ -19,8 +22,7 @@ const AppFooter: React.FC = () => {
               <span className="font-display font-bold text-xl text-foreground">Gol Metrik</span>
             </div>
             <p className="text-sm text-muted-foreground max-w-md mb-4">
-              AI destekli futbol analiz platformu. Veri odaklı istatistikler, 
-              makine öğrenimi tahminleri ve kapsamlı maç analizleri.
+              {t('footer.description')}
             </p>
             <div className="flex items-center gap-3">
               <a 
@@ -49,26 +51,26 @@ const AppFooter: React.FC = () => {
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Hızlı Erişim</h4>
+            <h4 className="font-semibold text-foreground mb-4">{t('footer.quickLinks')}</h4>
             <ul className="space-y-2">
               <li>
                 <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Ana Sayfa
+                  {t('nav.home')}
                 </Link>
               </li>
               <li>
                 <Link to="/live" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Canlı Maçlar
+                  {t('matches.liveMatches')}
                 </Link>
               </li>
               <li>
                 <Link to="/standings" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Lig Sıralamaları
+                  {t('standings.title')}
                 </Link>
               </li>
               <li>
                 <Link to="/dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Dashboard
+                  {t('nav.dashboard')}
                 </Link>
               </li>
             </ul>
@@ -76,21 +78,21 @@ const AppFooter: React.FC = () => {
 
           {/* Legal */}
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Yasal</h4>
+            <h4 className="font-semibold text-foreground mb-4">{t('footer.legal')}</h4>
             <ul className="space-y-2">
               <li>
                 <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Gizlilik Politikası
+                  {t('footer.privacyPolicy')}
                 </a>
               </li>
               <li>
                 <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Kullanım Şartları
+                  {t('footer.termsOfUse')}
                 </a>
               </li>
               <li>
                 <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Sorumluluk Reddi
+                  {t('footer.disclaimer')}
                 </a>
               </li>
             </ul>
@@ -100,10 +102,10 @@ const AppFooter: React.FC = () => {
         {/* Copyright */}
         <div className="pt-8 border-t border-border/30 text-center">
           <p className="text-sm text-muted-foreground mb-2">
-            © {new Date().getFullYear()} Gol Metrik. Tüm hakları saklıdır.
+            © {new Date().getFullYear()} Gol Metrik. {t('footer.copyright')}
           </p>
           <p className="text-xs text-muted-foreground">
-            Tüm içerikler bilgilendirme amaçlıdır ve tavsiye niteliği taşımaz.
+            {t('footer.informationalContent')} {t('footer.notFinancialAdvice')}
           </p>
         </div>
       </div>

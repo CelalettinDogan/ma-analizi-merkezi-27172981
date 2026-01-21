@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface HeroStats {
   liveCount: number;
@@ -48,6 +49,7 @@ const useCountUp = (target: number, duration: number = 1500) => {
 const HeroSection: React.FC<HeroSectionProps> = ({ 
   stats = { liveCount: 0, todayPredictions: 0, accuracy: 0, premiumAccuracy: 0 } 
 }) => {
+  const { t } = useTranslation();
   const animatedAccuracy = useCountUp(stats.accuracy);
   const animatedPredictions = useCountUp(stats.todayPredictions);
 
@@ -65,8 +67,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         >
           {/* Main Title */}
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-3">
-            Yapay Zeka Destekli{' '}
-            <span className="text-primary">Maç Analizi</span>
+            {t('hero.title')}{' '}
+            <span className="text-primary">{t('hero.matchAnalysis')}</span>
           </h1>
 
           {/* Subtitle - Inline Stats with Count-up - Responsive */}
@@ -76,15 +78,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                 <span className="font-semibold text-primary tabular-nums">
                   %{animatedAccuracy}
                 </span>
-                <span className="hidden xs:inline">Doğruluk</span>
-                <span className="xs:hidden">Başarı</span>
+                <span className="hidden xs:inline">{t('hero.accuracy')}</span>
+                <span className="xs:hidden">{t('hero.accuracy')}</span>
                 <span className="text-border">•</span>
               </>
             )}
             <span className="font-semibold text-foreground tabular-nums">
               {animatedPredictions.toLocaleString()}
             </span>
-            <span>Analiz</span>
+            <span>{t('hero.analyses')}</span>
             {stats.liveCount > 0 && (
               <>
                 <span className="text-border">•</span>
@@ -99,7 +101,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 md:h-2 md:w-2 bg-destructive" />
                   </span>
                   <span className="font-semibold text-foreground">{stats.liveCount}</span>
-                  <span>Canlı</span>
+                  <span>{t('hero.live')}</span>
                 </motion.span>
               </>
             )}
@@ -113,7 +115,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           >
             <Link to="#leagues">
               <Zap className="w-4 h-4" />
-              Maç Seç ve Analiz Et
+              {t('hero.cta')}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </Button>
