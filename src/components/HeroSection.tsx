@@ -77,8 +77,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                 <span className="font-semibold text-primary tabular-nums">
                   %{animatedAccuracy}
                 </span>
-                <span className="hidden xs:inline">Doğruluk</span>
-                <span className="xs:hidden">Başarı</span>
+                <span>Başarı</span>
                 <span className="text-border">•</span>
               </>
             )}
@@ -87,8 +86,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                 <span className="font-semibold text-emerald-500 tabular-nums">
                   %{animatedPremiumAccuracy}
                 </span>
-                <span className="hidden xs:inline">Premium</span>
-                <span className="xs:hidden">Prem</span>
+                <span>Premium</span>
                 <span className="text-border">•</span>
               </>
             )}
