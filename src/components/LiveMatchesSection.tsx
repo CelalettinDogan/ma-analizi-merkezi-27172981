@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import LiveMatchCard from './LiveMatchCard';
 import { Match, CompetitionCode, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
-import { footballApiRequest } from '@/services/apiRequestManager';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Select,
   SelectContent,
@@ -27,6 +27,7 @@ const LiveMatchesSection: React.FC<LiveMatchesSectionProps> = ({ onSelectMatch }
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Fetch from cached_live_matches table (no API rate limits!)
   const fetchLiveMatches = useCallback(async (showRefreshIndicator = false) => {
     if (showRefreshIndicator) {
       setIsRefreshing(true);
@@ -35,16 +36,51 @@ const LiveMatchesSection: React.FC<LiveMatchesSectionProps> = ({ onSelectMatch }
 
     try {
       const allowedCodes = selectedLeague === 'ALL'
-        ? new Set(SUPPORTED_COMPETITIONS.map(c => c.code))
-        : new Set([selectedLeague]);
+        ? SUPPORTED_COMPETITIONS.map(c => c.code)
+        : [selectedLeague];
 
-      const response = await footballApiRequest<{ matches: Match[] }>({
-        action: 'live',
-      });
+      const { data, error: fetchError } = await supabase
+        .from('cached_live_matches')
+        .select('*')
+        .in('competition_code', allowedCodes)
+        .order('utc_date', { ascending: true });
 
-      const allMatches: Match[] = (response?.matches || [])
-        .filter(m => allowedCodes.has(m.competition?.code as CompetitionCode))
-        .sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
+      if (fetchError) throw fetchError;
+
+      // Transform cached data to Match format
+      const allMatches: Match[] = (data || []).map(m => ({
+        id: m.match_id,
+        utcDate: m.utc_date,
+        status: m.status as Match['status'],
+        matchday: m.matchday ?? 0,
+        minute: m.minute ?? undefined,
+        competition: {
+          id: 0,
+          code: m.competition_code as CompetitionCode,
+          name: m.competition_name || '',
+          emblem: '',
+          area: { id: 0, name: '', code: '', flag: '' },
+        },
+        homeTeam: {
+          id: m.home_team_id ?? 0,
+          name: m.home_team_name,
+          shortName: m.home_team_name,
+          tla: '',
+          crest: m.home_team_crest ?? '',
+        },
+        awayTeam: {
+          id: m.away_team_id ?? 0,
+          name: m.away_team_name,
+          shortName: m.away_team_name,
+          tla: '',
+          crest: m.away_team_crest ?? '',
+        },
+        score: {
+          winner: null,
+          fullTime: { home: m.home_score ?? null, away: m.away_score ?? null },
+          halfTime: { home: m.half_time_home ?? null, away: m.half_time_away ?? null },
+        },
+      }));
 
       setLiveMatches(allMatches);
       setLastUpdated(new Date());
