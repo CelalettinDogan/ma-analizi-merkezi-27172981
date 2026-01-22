@@ -32,7 +32,7 @@ import { useHomeData } from '@/hooks/useHomeData';
 import { Calendar, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { footballApiRequest } from '@/services/apiRequestManager';
+import { getUpcomingMatches } from '@/services/footballApiService';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -69,21 +69,15 @@ const Index: React.FC = () => {
     }
   }, [location.state]);
 
-  // Fetch upcoming matches when league changes (using centralized rate-limited manager)
-  const fetchUpcomingMatches = useCallback(async (leagueCode: CompetitionCode) => {
+  // Fetch upcoming matches when league changes (from cached database - NO API CALL!)
+  const fetchUpcomingMatchesFromCache = useCallback(async (leagueCode: CompetitionCode) => {
     setIsLoadingMatches(true);
     try {
-      const response = await footballApiRequest<{ matches: ApiMatch[] }>({
-        action: 'matches',
-        competitionCode: leagueCode,
-        status: 'SCHEDULED',
-      });
-      if (response?.matches) {
-        setUpcomingMatches(response.matches.slice(0, 10));
-      }
+      const matches = await getUpcomingMatches(leagueCode, 14);
+      setUpcomingMatches(matches.slice(0, 10));
     } catch (e) {
       console.error('Error fetching matches:', e);
-      toast.error('Maç verileri yüklenirken hata oluştu. Lütfen biraz bekleyip tekrar deneyin.');
+      toast.error('Maç verileri yüklenirken hata oluştu.');
     } finally {
       setIsLoadingMatches(false);
     }
@@ -91,9 +85,9 @@ const Index: React.FC = () => {
 
   useEffect(() => {
     if (selectedLeague) {
-      fetchUpcomingMatches(selectedLeague);
+      fetchUpcomingMatchesFromCache(selectedLeague);
     }
-  }, [selectedLeague, fetchUpcomingMatches]);
+  }, [selectedLeague, fetchUpcomingMatchesFromCache]);
 
   const handleLeagueSelect = (code: CompetitionCode) => {
     setSelectedLeague(code);

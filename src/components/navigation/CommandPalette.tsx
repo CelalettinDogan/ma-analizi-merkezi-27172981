@@ -4,7 +4,7 @@ import { Search, Home, BarChart3, Zap, User, Trophy, Clock, X, Loader2, Shield }
 import { Command as CommandPrimitive } from 'cmdk';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
-import { footballApiRequest } from '@/services/apiRequestManager';
+import { getTeams } from '@/services/footballApiService';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -63,18 +63,15 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
       setIsSearching(true);
       const teams: TeamResult[] = [];
       
-      // Fetch teams from first 3 leagues to avoid rate limits
-      for (const league of SUPPORTED_COMPETITIONS.slice(0, 3)) {
-        if (!isMounted) break; // Early exit if unmounted
+      // Fetch teams from all leagues using cached standings (NO API CALL!)
+      for (const league of SUPPORTED_COMPETITIONS) {
+        if (!isMounted) break;
         
         try {
-          const data = await footballApiRequest<{ teams?: any[] }>({
-            action: 'teams',
-            competitionCode: league.code,
-          });
-
-          if (data?.teams && isMounted) {
-            data.teams.forEach((team: any) => {
+          const teamData = await getTeams(league.code);
+          
+          if (teamData && isMounted) {
+            teamData.forEach((team) => {
               teams.push({
                 id: team.id,
                 name: team.name,
