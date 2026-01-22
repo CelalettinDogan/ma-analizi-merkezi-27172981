@@ -39,7 +39,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             alt="Gol Metrik Logo" 
             className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain drop-shadow-lg transition-all duration-200 group-hover:scale-110 dark:drop-shadow-[0_0_12px_rgba(234,179,8,0.5)] dark:brightness-110"
           />
-          <span className="font-display font-bold text-base xs:text-lg md:text-xl text-foreground hidden xs:block">Gol Metrik</span>
+          <span className="font-display font-bold text-sm xs:text-base sm:text-lg md:text-xl text-foreground">Gol Metrik</span>
         </Link>
         
         {/* Desktop Nav - Show from lg breakpoint to avoid tablet overflow */}
