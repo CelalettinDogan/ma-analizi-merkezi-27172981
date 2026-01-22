@@ -55,7 +55,7 @@ const Index: React.FC = () => {
 
   // Footer stats - derived from useHomeData
   const footerStats = {
-    totalAnalysis: stats.todayPredictions,
+    totalAnalysis: stats.totalPredictions,
     accuracy: stats.accuracy,
     premiumAccuracy: stats.premiumAccuracy
   };

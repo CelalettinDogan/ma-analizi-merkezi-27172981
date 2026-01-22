@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 
 interface HeroStats {
   liveCount: number;
-  todayPredictions: number;
+  totalPredictions: number;
   accuracy: number;
   premiumAccuracy: number;
 }
@@ -46,10 +46,11 @@ const useCountUp = (target: number, duration: number = 1500) => {
 };
 
 const HeroSection: React.FC<HeroSectionProps> = ({ 
-  stats = { liveCount: 0, todayPredictions: 0, accuracy: 0, premiumAccuracy: 0 } 
+  stats = { liveCount: 0, totalPredictions: 0, accuracy: 0, premiumAccuracy: 0 } 
 }) => {
   const animatedAccuracy = useCountUp(stats.accuracy);
-  const animatedPredictions = useCountUp(stats.todayPredictions);
+  const animatedPredictions = useCountUp(stats.totalPredictions);
+  const animatedPremiumAccuracy = useCountUp(stats.premiumAccuracy);
 
   return (
     <section className="relative py-12 md:py-16">
@@ -81,8 +82,18 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                 <span className="text-border">•</span>
               </>
             )}
+            {stats.premiumAccuracy > 0 && (
+              <>
+                <span className="font-semibold text-emerald-500 tabular-nums">
+                  %{animatedPremiumAccuracy}
+                </span>
+                <span className="hidden xs:inline">Premium</span>
+                <span className="xs:hidden">Prem</span>
+                <span className="text-border">•</span>
+              </>
+            )}
             <span className="font-semibold text-foreground tabular-nums">
-              {animatedPredictions.toLocaleString()}
+              {animatedPredictions.toLocaleString()}+
             </span>
             <span>Analiz</span>
             {stats.liveCount > 0 && (

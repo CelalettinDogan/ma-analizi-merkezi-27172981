@@ -5,7 +5,7 @@ import { addDays, startOfDay, endOfDay } from 'date-fns';
 
 interface HomeStats {
   liveCount: number;
-  todayPredictions: number;
+  totalPredictions: number;
   accuracy: number;
   premiumAccuracy: number;
 }
@@ -129,7 +129,7 @@ const transformCachedLiveMatch = (cached: {
 export const useHomeData = (): HomeData => {
   const [stats, setStats] = useState<HomeStats>({
     liveCount: 0,
-    todayPredictions: 0,
+    totalPredictions: 0,
     accuracy: 0,
     premiumAccuracy: 0,
   });
@@ -173,7 +173,6 @@ export const useHomeData = (): HomeData => {
 
       // Fetch ALL data from database cache in parallel (NO RATE LIMITS!)
       const [
-        todayCountResult,
         overallStatsResult,
         premiumStatsResult,
         cachedTodayMatchesResult,
@@ -181,12 +180,8 @@ export const useHomeData = (): HomeData => {
         cachedLiveMatchesResult,
       ] = await Promise.all([
         supabase
-          .from('predictions')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', todayDateStr),
-        supabase
           .from('overall_stats')
-          .select('accuracy_percentage')
+          .select('total_predictions, accuracy_percentage')
           .single(),
         supabase
           .from('ml_model_stats')
@@ -241,7 +236,7 @@ export const useHomeData = (): HomeData => {
       setLastUpdated(new Date());
 
       setStats({
-        todayPredictions: todayCountResult.count || 0,
+        totalPredictions: overallStatsResult.data?.total_predictions || 0,
         accuracy: Math.round(overallStatsResult.data?.accuracy_percentage || 0),
         premiumAccuracy: Math.round(premiumStatsResult.data?.premium_accuracy || 0),
         liveCount: liveData.length,
