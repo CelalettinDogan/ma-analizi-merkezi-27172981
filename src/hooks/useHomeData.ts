@@ -174,7 +174,7 @@ export const useHomeData = (): HomeData => {
       // Fetch ALL data from database cache in parallel (NO RATE LIMITS!)
       const [
         overallStatsResult,
-        premiumStatsResult,
+        premiumPredictionsResult,
         cachedTodayMatchesResult,
         cachedUpcomingMatchesResult,
         cachedLiveMatchesResult,
@@ -183,11 +183,13 @@ export const useHomeData = (): HomeData => {
           .from('overall_stats')
           .select('total_predictions, accuracy_percentage')
           .single(),
+        // Premium stats: same logic as Dashboard (from predictions table)
         supabase
-          .from('ml_model_stats')
-          .select('premium_accuracy')
-          .limit(1)
-          .maybeSingle(),
+          .from('predictions')
+          .select('is_correct')
+          .eq('is_premium', true)
+          .eq('is_primary', true)
+          .not('is_correct', 'is', null),
         // Today's matches from cached_matches table (only SCHEDULED and TIMED - not FINISHED)
         supabase
           .from('cached_matches')
@@ -235,10 +237,16 @@ export const useHomeData = (): HomeData => {
       setLiveMatches(liveData);
       setLastUpdated(new Date());
 
+      // Calculate premium accuracy from predictions (same logic as Dashboard)
+      const premiumData = premiumPredictionsResult.data || [];
+      const premiumTotal = premiumData.length;
+      const premiumCorrect = premiumData.filter(p => p.is_correct === true).length;
+      const premiumAccuracy = premiumTotal > 0 ? (premiumCorrect / premiumTotal) * 100 : 0;
+
       setStats({
         totalPredictions: overallStatsResult.data?.total_predictions || 0,
         accuracy: Math.round(overallStatsResult.data?.accuracy_percentage || 0),
-        premiumAccuracy: Math.round(premiumStatsResult.data?.premium_accuracy || 0),
+        premiumAccuracy: Math.round(premiumAccuracy),
         liveCount: liveData.length,
       });
 
