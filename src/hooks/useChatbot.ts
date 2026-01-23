@@ -70,11 +70,41 @@ export const useChatbot = (): UseChatbotReturn => {
     }
   }, [user]);
 
-  // Load usage on mount
+  // Check admin role on mount
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+
+      try {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+
+        if (data) {
+          setIsAdmin(true);
+          // Admin kullanıcılar için usage sınırsız
+          setUsage({ current: 0, limit: "∞", remaining: "∞" });
+        }
+      } catch (e) {
+        console.error('Error checking admin role:', e);
+      }
+    };
+
+    checkAdminRole();
+  }, [user]);
+
+  // Load usage on mount (only for non-admin users)
   useEffect(() => {
     const loadUsage = async () => {
-      if (!user) {
-        setUsage(null);
+      if (!user || isAdmin) {
+        // Admin için usage kontrolü yapma, zaten sınırsız
+        if (!user) setUsage(null);
         return;
       }
 
@@ -99,7 +129,7 @@ export const useChatbot = (): UseChatbotReturn => {
     };
 
     loadUsage();
-  }, [user]);
+  }, [user, isAdmin]);
 
   const sendMessage = useCallback(async (message: string, context?: Record<string, unknown>) => {
     if (!user || !session) {
