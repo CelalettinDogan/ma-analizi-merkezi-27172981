@@ -1,15 +1,14 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.a043c35180f74404bfb04355af0b4d37',
+  appId: 'app.golmetrik.android',
   appName: 'Gol Metrik',
   webDir: 'dist',
-  server: {
-    // Development mode - connects to Lovable preview
-    // Remove this entire 'server' block for production builds
-    url: 'https://a043c351-80f7-4404-bfb0-4355af0b4d37.lovableproject.com?forceHideBadge=true',
-    cleartext: true,
-  },
+  // NOTE: For development, uncomment the server block below
+  // server: {
+  //   url: 'https://a043c351-80f7-4404-bfb0-4355af0b4d37.lovableproject.com?forceHideBadge=true',
+  //   cleartext: true,
+  // },
   plugins: {
     SplashScreen: {
       launchAutoHide: false,
@@ -25,9 +24,9 @@ const config: CapacitorConfig = {
     },
   },
   android: {
-    allowMixedContent: true,
+    allowMixedContent: false, // PRODUCTION: Disable mixed content
     captureInput: true,
-    webContentsDebuggingEnabled: true, // Disable in production
+    webContentsDebuggingEnabled: false, // PRODUCTION: Disable debugging
   },
   ios: {
     contentInset: 'automatic',
