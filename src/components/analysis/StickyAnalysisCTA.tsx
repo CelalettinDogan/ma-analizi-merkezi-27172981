@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Check, Share2, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useBetSlip } from '@/contexts/BetSlipContext';
+import { useAnalysisSet } from '@/contexts/AnalysisSetContext';
 import { Prediction, MatchInput } from '@/types/match';
 import { cn } from '@/lib/utils';
 import { CONFIDENCE_THRESHOLDS } from '@/constants/predictions';
@@ -38,20 +38,20 @@ const StickyAnalysisCTA: React.FC<StickyAnalysisCTAProps> = ({
   matchInput,
   onShare,
 }) => {
-  const { addToSlip, items } = useBetSlip();
+  const { addToSet, items } = useAnalysisSet();
   
   const hybridConfidence = getHybridConfidence(prediction);
   const confidenceLevel = getConfidenceLevel(hybridConfidence);
   
-  const isInSlip = items.some(
+  const isInSet = items.some(
     item => 
       item.homeTeam === matchInput.homeTeam &&
       item.awayTeam === matchInput.awayTeam &&
       item.predictionType === prediction.type
   );
 
-  const handleAddToSlip = () => {
-    addToSlip({
+  const handleAddToSet = () => {
+    addToSet({
       homeTeam: matchInput.homeTeam,
       awayTeam: matchInput.awayTeam,
       league: matchInput.league,
@@ -104,24 +104,24 @@ const StickyAnalysisCTA: React.FC<StickyAnalysisCTAProps> = ({
               )}
               
               <Button
-                onClick={handleAddToSlip}
-                disabled={isInSlip}
+                onClick={handleAddToSet}
+                disabled={isInSet}
                 className={cn(
                   "gap-2 min-w-[120px]",
-                  isInSlip 
+                  isInSet 
                     ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30" 
                     : "bg-gradient-to-r from-primary to-emerald-500 hover:opacity-90"
                 )}
               >
-                {isInSlip ? (
+                {isInSet ? (
                   <>
                     <Check className="w-4 h-4" />
-                    Kuponda
+                    Sette
                   </>
                 ) : (
                   <>
                     <Plus className="w-4 h-4" />
-                    Kupona Ekle
+                    Analize Ekle
                   </>
                 )}
               </Button>

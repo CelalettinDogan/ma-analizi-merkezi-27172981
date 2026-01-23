@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { Target, TrendingUp, Sparkles } from 'lucide-react';
 import { Prediction, MatchInput } from '@/types/match';
-import AddToSlipButton from '@/components/betslip/AddToSlipButton';
+import { AddToSetButton } from '@/components/analysis-set';
 import { Progress } from '@/components/ui/progress';
 import { CONFIDENCE_LEVELS } from '@/constants/predictions';
 
@@ -78,7 +78,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matc
         
         {matchInput && (
           <div className="flex justify-end">
-            <AddToSlipButton prediction={prediction} matchInput={matchInput} />
+            <AddToSetButton prediction={prediction} matchInput={matchInput} />
           </div>
         )}
       </div>
