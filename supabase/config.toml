@@ -23,3 +23,9 @@ verify_jwt = false
 
 [functions.ai-chatbot]
 verify_jwt = false
+
+[functions.verify-purchase]
+verify_jwt = false
+
+[functions.play-store-webhook]
+verify_jwt = false

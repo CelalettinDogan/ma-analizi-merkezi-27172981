@@ -806,31 +806,52 @@ export type Database = {
       }
       premium_subscriptions: {
         Row: {
+          acknowledged: boolean | null
+          auto_renewing: boolean | null
           created_at: string | null
           expires_at: string
           id: string
           is_active: boolean | null
+          order_id: string | null
           plan_type: string
+          platform: string | null
+          product_id: string | null
+          purchase_state: number | null
+          purchase_token: string | null
           starts_at: string
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          acknowledged?: boolean | null
+          auto_renewing?: boolean | null
           created_at?: string | null
           expires_at: string
           id?: string
           is_active?: boolean | null
+          order_id?: string | null
           plan_type?: string
+          platform?: string | null
+          product_id?: string | null
+          purchase_state?: number | null
+          purchase_token?: string | null
           starts_at?: string
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          acknowledged?: boolean | null
+          auto_renewing?: boolean | null
           created_at?: string | null
           expires_at?: string
           id?: string
           is_active?: boolean | null
+          order_id?: string | null
           plan_type?: string
+          platform?: string | null
+          product_id?: string | null
+          purchase_state?: number | null
+          purchase_token?: string | null
           starts_at?: string
           updated_at?: string | null
           user_id?: string
