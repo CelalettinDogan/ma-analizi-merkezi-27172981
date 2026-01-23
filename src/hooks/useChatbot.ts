@@ -20,12 +20,13 @@ interface ChatUsage {
 interface UseChatbotReturn {
   messages: ChatMessage[];
   isLoading: boolean;
+  isLoadingHistory: boolean;
   usage: ChatUsage | null;
   isPremium: boolean | null;
   isAdmin: boolean;
   error: string | null;
   sendMessage: (message: string, context?: Record<string, unknown>) => Promise<void>;
-  clearMessages: () => void;
+  clearMessages: () => Promise<void>;
   loadHistory: () => Promise<void>;
 }
 
@@ -35,40 +36,11 @@ export const useChatbot = (): UseChatbotReturn => {
   const { user, session } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [usage, setUsage] = useState<ChatUsage | null>(null);
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Load chat history on mount
-  const loadHistory = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      const { data, error: historyError } = await supabase
-        .from('chat_history')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: true })
-        .limit(50);
-
-      if (historyError) throw historyError;
-
-      if (data && data.length > 0) {
-        const loadedMessages: ChatMessage[] = data
-          .filter(h => h.role !== 'system')
-          .map(h => ({
-            id: h.id,
-            role: h.role as 'user' | 'assistant',
-            content: h.content,
-            createdAt: new Date(h.created_at),
-          }));
-        setMessages(loadedMessages);
-      }
-    } catch (e) {
-      console.error('Error loading chat history:', e);
-    }
-  }, [user]);
 
   // Check admin role on mount
   useEffect(() => {
@@ -131,6 +103,40 @@ export const useChatbot = (): UseChatbotReturn => {
     loadUsage();
   }, [user, isAdmin]);
 
+  // Load chat history
+  const loadHistory = useCallback(async () => {
+    if (!user) return;
+
+    setIsLoadingHistory(true);
+    try {
+      const { data, error: historyError } = await supabase
+        .from('chat_history')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true })
+        .limit(50);
+
+      if (historyError) throw historyError;
+
+      if (data && data.length > 0) {
+        const loadedMessages: ChatMessage[] = data
+          .filter(h => h.role !== 'system')
+          .map(h => ({
+            id: h.id,
+            role: h.role as 'user' | 'assistant',
+            content: h.content,
+            createdAt: new Date(h.created_at || Date.now()),
+          }));
+        setMessages(loadedMessages);
+      }
+    } catch (e) {
+      console.error('Error loading chat history:', e);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, [user]);
+
+  // Send message with conversation history
   const sendMessage = useCallback(async (message: string, context?: Record<string, unknown>) => {
     if (!user || !session) {
       setError('Giriş yapmanız gerekiyor');
@@ -163,6 +169,12 @@ export const useChatbot = (): UseChatbotReturn => {
     setMessages(prev => [...prev, userMessage, loadingMessage]);
 
     try {
+      // Prepare conversation history (last 5 messages for context)
+      const conversationHistory = messages.slice(-5).map(m => ({
+        role: m.role,
+        content: m.content
+      }));
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chatbot`,
         {
@@ -171,7 +183,11 @@ export const useChatbot = (): UseChatbotReturn => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session.access_token}`,
           },
-          body: JSON.stringify({ message: message.trim(), context }),
+          body: JSON.stringify({ 
+            message: message.trim(), 
+            context,
+            conversationHistory 
+          }),
         }
       );
 
@@ -229,15 +245,35 @@ export const useChatbot = (): UseChatbotReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, session]);
+  }, [user, session, messages]);
 
-  const clearMessages = useCallback(() => {
+  // Clear messages (both local and database)
+  const clearMessages = useCallback(async () => {
     setMessages([]);
-  }, []);
+
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('chat_history')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error clearing chat history:', error);
+        toast.error('Sohbet geçmişi silinemedi');
+      } else {
+        toast.success('Sohbet geçmişi temizlendi');
+      }
+    } catch (e) {
+      console.error('Error clearing chat history:', e);
+    }
+  }, [user]);
 
   return {
     messages,
     isLoading,
+    isLoadingHistory,
     usage,
     isPremium,
     isAdmin,

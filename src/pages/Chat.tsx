@@ -47,6 +47,7 @@ const Chat: React.FC = () => {
   const {
     messages,
     isLoading: chatLoading,
+    isLoadingHistory,
     usage,
     isAdmin,
     sendMessage,
@@ -108,7 +109,7 @@ const Chat: React.FC = () => {
   // Auto-send context message when premium/admin user has match context
   useEffect(() => {
     const hasRemainingUsage = isAdmin || (usage && (typeof usage.remaining === 'number' ? usage.remaining > 0 : true));
-    if ((isPremium || isAdmin) && matchContext && !contextSent && hasRemainingUsage) {
+    if ((isPremium || isAdmin) && matchContext && !contextSent && hasRemainingUsage && !isLoadingHistory) {
       const contextMessage = `${matchContext.homeTeam} vs ${matchContext.awayTeam} maçını analiz et. Bu maç hakkında detaylı bilgi ver.`;
       
       // Build context object to send to AI
@@ -127,7 +128,7 @@ const Chat: React.FC = () => {
       sendMessage(contextMessage, aiContext);
       setContextSent(true);
     }
-  }, [isPremium, isAdmin, matchContext, contextSent, usage, sendMessage]);
+  }, [isPremium, isAdmin, matchContext, contextSent, usage, sendMessage, isLoadingHistory]);
 
   const handleSendMessage = (message: string) => {
     // If we have match context, include it in subsequent messages too
@@ -245,7 +246,8 @@ const Chat: React.FC = () => {
           <>
             <ChatContainer 
               messages={messages} 
-              isLoading={chatLoading} 
+              isLoading={chatLoading}
+              isLoadingHistory={isLoadingHistory}
               onQuickPrompt={handleSendMessage}
             />
             

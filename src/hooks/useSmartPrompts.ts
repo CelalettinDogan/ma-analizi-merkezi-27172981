@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { formatMatchTime } from "@/lib/utils";
 
 export interface SmartPrompt {
   text: string;
@@ -142,7 +141,6 @@ const TEAM_SHORT_NAMES: Record<string, string> = {
   'stade de reims': 'Reims',
   'le havre ac': 'Le Havre',
   'as saint-étienne': 'Saint-Etienne',
-  'ac pisa 1909': 'Pisa',
 };
 
 // Takım adını kısalt
@@ -199,6 +197,32 @@ const getMatchPopularity = (homeTeam: string, awayTeam: string): number => {
   return score;
 };
 
+// Format match day (Bugün/Yarın + saat)
+const formatMatchDay = (utcDate: string): string => {
+  const matchDate = new Date(utcDate);
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  // Saat formatı (Türkiye saati)
+  const time = matchDate.toLocaleTimeString('tr-TR', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    timeZone: 'Europe/Istanbul'
+  });
+  
+  // Tarih karşılaştırma (sadece gün)
+  const isToday = matchDate.toDateString() === today.toDateString();
+  const isTomorrow = matchDate.toDateString() === tomorrow.toDateString();
+  
+  if (isToday) return `Bugün ${time}`;
+  if (isTomorrow) return `Yarın ${time}`;
+  
+  // Hafta içi gün adı
+  const dayName = matchDate.toLocaleDateString('tr-TR', { weekday: 'short' });
+  return `${dayName} ${time}`;
+};
+
 // Fallback promptlar (her zaman geçerli)
 const FALLBACK_PROMPTS: SmartPrompt[] = [
   { text: "Premier Lig puan durumu", icon: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", type: 'standings' },
@@ -207,21 +231,54 @@ const FALLBACK_PROMPTS: SmartPrompt[] = [
   { text: "Bugün maç var mı?", icon: "📅", type: 'general' },
 ];
 
-export function useSmartPrompts(maxPrompts: number = 4) {
-  const [prompts, setPrompts] = useState<SmartPrompt[]>(FALLBACK_PROMPTS);
+// Cache duration (5 minutes)
+const CACHE_DURATION = 5 * 60 * 1000;
+
+interface CacheData {
+  prompts: SmartPrompt[];
+  timestamp: number;
+  maxPrompts: number;
+}
+
+interface UseSmartPromptsReturn {
+  prompts: SmartPrompt[];
+  isLoading: boolean;
+  error: string | null;
+}
+
+export function useSmartPrompts(maxPrompts: number = 4): UseSmartPromptsReturn {
+  const [prompts, setPrompts] = useState<SmartPrompt[]>(FALLBACK_PROMPTS.slice(0, maxPrompts));
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Cache ref to persist between renders
+  const cacheRef = useRef<CacheData | null>(null);
 
   useEffect(() => {
+    // Check cache first
+    const now = Date.now();
+    if (
+      cacheRef.current && 
+      now - cacheRef.current.timestamp < CACHE_DURATION &&
+      cacheRef.current.maxPrompts === maxPrompts &&
+      cacheRef.current.prompts.length > 0
+    ) {
+      setPrompts(cacheRef.current.prompts);
+      setIsLoading(false);
+      return;
+    }
+
     const fetchSmartPrompts = async () => {
+      setIsLoading(true);
+      setError(null);
+      
       try {
         const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
         const dayAfter = new Date(today);
         dayAfter.setDate(dayAfter.getDate() + 2);
 
         // Bugün ve yarının maçlarını çek
-        const { data: matches, error } = await supabase
+        const { data: matches, error: fetchError } = await supabase
           .from("cached_matches")
           .select("home_team_name, away_team_name, utc_date, competition_name")
           .gte("utc_date", today.toISOString().split('T')[0])
@@ -230,9 +287,13 @@ export function useSmartPrompts(maxPrompts: number = 4) {
           .order("utc_date", { ascending: true })
           .limit(50);
 
-        if (error || !matches || matches.length === 0) {
+        if (fetchError) {
+          throw fetchError;
+        }
+
+        if (!matches || matches.length === 0) {
           // Maç yoksa fallback kullan
-          setPrompts(FALLBACK_PROMPTS);
+          setPrompts(FALLBACK_PROMPTS.slice(0, maxPrompts));
           setIsLoading(false);
           return;
         }
@@ -243,16 +304,16 @@ export function useSmartPrompts(maxPrompts: number = 4) {
           popularity: getMatchPopularity(match.home_team_name, match.away_team_name)
         })).sort((a, b) => b.popularity - a.popularity);
 
-        // En popüler 2 maçı prompt olarak ekle (kısaltılmış isimlerle)
+        // En popüler 2 maçı prompt olarak ekle (kısaltılmış isimlerle + gün bilgisi)
         const matchPrompts: SmartPrompt[] = scoredMatches
           .slice(0, 2)
           .map(match => {
             const shortHome = getShortName(match.home_team_name);
             const shortAway = getShortName(match.away_team_name);
-            const matchTime = formatMatchTime(match.utc_date);
+            const dayLabel = formatMatchDay(match.utc_date);
             
             return {
-              text: `${shortHome} vs ${shortAway} (${matchTime})`,
+              text: `${shortHome} vs ${shortAway} (${dayLabel})`,
               icon: match.popularity >= 15 ? "🔥" : "⚽",
               type: 'match' as const,
               isPopular: match.popularity >= 15
@@ -266,10 +327,18 @@ export function useSmartPrompts(maxPrompts: number = 4) {
           { text: "Premier Lig puan durumu", icon: "🏆", type: 'standings' as const },
         ].slice(0, maxPrompts);
 
+        // Cache'e kaydet
+        cacheRef.current = {
+          prompts: dynamicPrompts,
+          timestamp: Date.now(),
+          maxPrompts
+        };
+
         setPrompts(dynamicPrompts);
       } catch (err) {
         console.error("Smart prompts error:", err);
-        setPrompts(FALLBACK_PROMPTS);
+        setError("Öneriler yüklenemedi");
+        setPrompts(FALLBACK_PROMPTS.slice(0, maxPrompts));
       } finally {
         setIsLoading(false);
       }
@@ -278,5 +347,5 @@ export function useSmartPrompts(maxPrompts: number = 4) {
     fetchSmartPrompts();
   }, [maxPrompts]);
 
-  return { prompts, isLoading };
+  return { prompts, isLoading, error };
 }

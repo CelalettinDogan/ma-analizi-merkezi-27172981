@@ -846,8 +846,8 @@ serve(async (req) => {
       );
     }
 
-    // Parse request body
-    const { message, context: providedContext } = await req.json();
+    // Parse request body (includes conversation history from frontend)
+    const { message, context: providedContext, conversationHistory } = await req.json();
 
     if (!message || typeof message !== "string" || message.trim().length === 0) {
       return new Response(
