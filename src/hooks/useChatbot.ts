@@ -12,9 +12,9 @@ export interface ChatMessage {
 }
 
 interface ChatUsage {
-  current: number;
-  limit: number;
-  remaining: number;
+  current: number | string;
+  limit: number | string;
+  remaining: number | string;
 }
 
 interface UseChatbotReturn {
@@ -22,6 +22,7 @@ interface UseChatbotReturn {
   isLoading: boolean;
   usage: ChatUsage | null;
   isPremium: boolean | null;
+  isAdmin: boolean;
   error: string | null;
   sendMessage: (message: string, context?: Record<string, unknown>) => Promise<void>;
   clearMessages: () => void;
@@ -36,6 +37,7 @@ export const useChatbot = (): UseChatbotReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [usage, setUsage] = useState<ChatUsage | null>(null);
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   // Load chat history on mount
@@ -185,6 +187,7 @@ export const useChatbot = (): UseChatbotReturn => {
       }
 
       setIsPremium(data.isPremium ?? true);
+      setIsAdmin(data.isAdmin ?? false);
 
     } catch (e) {
       console.error('Chatbot error:', e);
@@ -207,6 +210,7 @@ export const useChatbot = (): UseChatbotReturn => {
     isLoading,
     usage,
     isPremium,
+    isAdmin,
     error,
     sendMessage,
     clearMessages,
