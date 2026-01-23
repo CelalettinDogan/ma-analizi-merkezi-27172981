@@ -71,10 +71,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 transition={{ delay: index * 0.05 }}
                 onClick={() => handleQuickPrompt(prompt.text)}
                 disabled={isLoading}
-                className="px-3 py-1.5 text-xs bg-muted hover:bg-muted/80 rounded-full transition-colors flex items-center gap-1.5"
+                className="px-3 py-1.5 text-xs bg-muted hover:bg-muted/80 rounded-full transition-colors flex items-center gap-1.5 max-w-[220px]"
               >
-                <span>{prompt.icon}</span>
-                {prompt.text}
+                <span className="shrink-0">{prompt.icon}</span>
+                <span className="truncate">{prompt.text}</span>
+                {prompt.isPopular && (
+                  <span className="shrink-0 text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 px-1 py-0.5 rounded">
+                    HOT
+                  </span>
+                )}
               </motion.button>
             ))}
           </motion.div>

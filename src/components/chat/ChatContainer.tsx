@@ -7,6 +7,7 @@ import { ChatMessage as ChatMessageType } from '@/hooks/useChatbot';
 interface ChatContainerProps {
   messages: ChatMessageType[];
   isLoading: boolean;
+  onQuickPrompt?: (prompt: string) => void;
 }
 
 // Desteklenen ligler
@@ -18,7 +19,18 @@ const SUPPORTED_LEAGUES = [
   { icon: "🇫🇷", name: "Ligue 1", code: "FL1" },
 ];
 
-const WelcomeMessage: React.FC = () => (
+// Örnek sorular - tıklanabilir
+const EXAMPLE_QUESTIONS = [
+  "Liverpool form durumu",
+  "La Liga puan durumu",
+  "Bugünkü maçlar"
+];
+
+interface WelcomeMessageProps {
+  onQuickPrompt?: (prompt: string) => void;
+}
+
+const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ onQuickPrompt }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -94,7 +106,7 @@ const WelcomeMessage: React.FC = () => (
       </p>
     </motion.div>
 
-    {/* Örnek Sorular */}
+    {/* Örnek Sorular - Tıklanabilir */}
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -103,10 +115,16 @@ const WelcomeMessage: React.FC = () => (
     >
       <p className="mb-2">Örnek sorular:</p>
       <div className="flex flex-wrap gap-2 justify-center">
-        {["Liverpool form durumu", "La Liga puan durumu", "Bugünkü maçlar"].map((q) => (
-          <span key={q} className="px-2 py-1 rounded-full bg-muted/30 border border-border/30">
+        {EXAMPLE_QUESTIONS.map((q) => (
+          <motion.button
+            key={q}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => onQuickPrompt?.(q)}
+            className="px-3 py-1.5 rounded-full bg-muted/50 border border-border/50 hover:bg-muted hover:border-primary/30 transition-colors cursor-pointer"
+          >
             "{q}"
-          </span>
+          </motion.button>
         ))}
       </div>
     </motion.div>
@@ -124,7 +142,7 @@ const WelcomeMessage: React.FC = () => (
   </motion.div>
 );
 
-const ChatContainer: React.FC<ChatContainerProps> = ({ messages, isLoading }) => {
+const ChatContainer: React.FC<ChatContainerProps> = ({ messages, isLoading, onQuickPrompt }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom on new messages
@@ -137,7 +155,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({ messages, isLoading }) =>
   if (messages.length === 0) {
     return (
       <div className="flex-1 overflow-y-auto">
-        <WelcomeMessage />
+        <WelcomeMessage onQuickPrompt={onQuickPrompt} />
       </div>
     );
   }
