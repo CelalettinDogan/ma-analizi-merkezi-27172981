@@ -248,22 +248,49 @@ function findTeamByAlias(query: string): string | null {
   return null;
 }
 
+// Check if alias matches as a whole word (not part of another word)
+function matchesAsWord(text: string, alias: string): boolean {
+  // For short aliases (<=2 chars), require exact word match
+  if (alias.length <= 2) {
+    const regex = new RegExp(`\\b${alias}\\b`, 'i');
+    return regex.test(text);
+  }
+  // For longer aliases, simple includes is fine
+  return text.includes(alias);
+}
+
 // Extract team names from message with improved detection
 function extractTeamNames(message: string): string[] {
   const teams: string[] = [];
   const lowerMessage = message.toLowerCase();
   
+  // Skip team extraction if message is clearly about league only
+  const leagueOnlyPatterns = [
+    /premier\s*league.*şampiyon/i,
+    /la\s*liga.*şampiyon/i,
+    /serie\s*a.*şampiyon/i,
+    /bundesliga.*şampiyon/i,
+    /ligue\s*1.*şampiyon/i,
+    /kim.*şampiyon.*olur/i,
+    /şampiyon.*kim.*olur/i,
+    /sezon\s*sonu\s*sıralama/i
+  ];
+  
+  if (leagueOnlyPatterns.some(p => p.test(message))) {
+    return []; // Return empty - let league detection handle this
+  }
+  
   // Check for known team aliases first
   for (const [teamName, aliases] of Object.entries(TEAM_ALIASES)) {
     for (const alias of aliases) {
-      if (lowerMessage.includes(alias)) {
+      if (matchesAsWord(lowerMessage, alias)) {
         if (!teams.includes(teamName)) {
           teams.push(teamName);
         }
         break;
       }
     }
-    if (lowerMessage.includes(normalizeTeamName(teamName))) {
+    if (matchesAsWord(lowerMessage, normalizeTeamName(teamName))) {
       if (!teams.includes(teamName)) {
         teams.push(teamName);
       }
@@ -300,21 +327,105 @@ function extractTeamNames(message: string): string[] {
   return teams.slice(0, 2); // Max 2 teams
 }
 
+// League name mappings for detection
+const LEAGUE_PATTERNS: Record<string, { code: string; name: string; patterns: string[] }> = {
+  PL: { 
+    code: 'PL', 
+    name: 'Premier League',
+    patterns: ['premier league', 'premier lig', 'ingiltere ligi', 'ingiliz ligi', 'pl', 'epl', 'premiership']
+  },
+  PD: { 
+    code: 'PD', 
+    name: 'La Liga',
+    patterns: ['la liga', 'laliga', 'ispanya ligi', 'ispanyol ligi', 'primera division', 'spain']
+  },
+  SA: { 
+    code: 'SA', 
+    name: 'Serie A',
+    patterns: ['serie a', 'seri a', 'italya ligi', 'italian', 'calcio']
+  },
+  BL1: { 
+    code: 'BL1', 
+    name: 'Bundesliga',
+    patterns: ['bundesliga', 'bundes liga', 'almanya ligi', 'alman ligi', 'german league']
+  },
+  FL1: { 
+    code: 'FL1', 
+    name: 'Ligue 1',
+    patterns: ['ligue 1', 'ligue1', 'fransa ligi', 'fransız ligi', 'french league']
+  },
+  CL: { 
+    code: 'CL', 
+    name: 'Champions League',
+    patterns: ['şampiyonlar ligi', 'champions league', 'cl', 'uefa champions']
+  }
+};
+
+// Detect league from message
+function detectLeagueFromMessage(message: string): { code: string; name: string } | null {
+  const lowerMessage = message.toLowerCase();
+  
+  for (const [, league] of Object.entries(LEAGUE_PATTERNS)) {
+    for (const pattern of league.patterns) {
+      if (lowerMessage.includes(pattern)) {
+        return { code: league.code, name: league.name };
+      }
+    }
+  }
+  
+  return null;
+}
+
+// Detect long-term prediction keywords
+function isLongTermPredictionQuery(message: string): boolean {
+  const longTermPatterns = [
+    'şampiyon', 'şampiyonluk', 'sezon sonu', 'kim kazanır', 'kim alır',
+    'küme düş', 'relegation', 'ilk 4', 'top 4', 'avrupa', 'europa',
+    'sıralama', 'final sıralama', 'gol kralı', 'en çok gol'
+  ];
+  const lowerMessage = message.toLowerCase();
+  return longTermPatterns.some(p => lowerMessage.includes(p));
+}
+
 // Parse user intent to detect match analysis requests
-function parseUserIntent(message: string): { type: string; teams: string[]; isNewsRequest: boolean } {
+function parseUserIntent(message: string): { 
+  type: string; 
+  teams: string[]; 
+  isNewsRequest: boolean;
+  detectedLeague: { code: string; name: string } | null;
+  isLongTermQuery: boolean;
+} {
   const matchKeywords = ['maç', 'analiz', 'karşılaşma', 'oyun', 'tahmin', 'skor', 'form', 'istatistik', 'bugün', 'yarın'];
   const hasMatchIntent = matchKeywords.some(k => message.toLowerCase().includes(k));
   
   // Check if this is a news/rumor request
   const isNews = isNewsRequest(message);
   
+  // Detect league from message
+  const detectedLeague = detectLeagueFromMessage(message);
+  
+  // Detect long-term prediction query
+  const isLongTermQuery = isLongTermPredictionQuery(message);
+  
   // Extract team names with improved detection
   const teams = extractTeamNames(message);
   
+  // Determine intent type
+  let type = 'general';
+  if (hasMatchIntent || teams.length > 0) {
+    type = 'match_analysis';
+  } else if (isLongTermQuery && detectedLeague) {
+    type = 'league_analysis';
+  } else if (detectedLeague) {
+    type = 'league_query';
+  }
+  
   return {
-    type: hasMatchIntent || teams.length > 0 ? 'match_analysis' : 'general',
+    type,
     teams,
     isNewsRequest: isNews,
+    detectedLeague,
+    isLongTermQuery
   };
 }
 
@@ -496,6 +607,25 @@ async function fetchStandingsData(supabaseAdmin: any, teams: string[]): Promise<
   });
   
   return relevantStandings;
+}
+
+// Fetch league standings for championship/long-term queries
+async function fetchLeagueStandings(supabaseAdmin: any, leagueCode: string): Promise<any[]> {
+  console.log(`Fetching full standings for league: ${leagueCode}`);
+  
+  const { data: standings, error } = await supabaseAdmin
+    .from("cached_standings")
+    .select("*")
+    .eq("competition_code", leagueCode)
+    .order("position", { ascending: true })
+    .limit(20); // Top 20 for championship analysis
+  
+  if (error) {
+    console.error("Error fetching league standings:", error);
+    return [];
+  }
+  
+  return standings || [];
 }
 
 // Fetch today's matches if no specific team mentioned
@@ -728,7 +858,7 @@ serve(async (req) => {
 
     // Parse user intent
     const intent = parseUserIntent(message);
-    console.log(`Intent: ${intent.type}, Teams: ${intent.teams.join(", ")}, IsNews: ${intent.isNewsRequest}`);
+    console.log(`Intent: ${intent.type}, Teams: ${intent.teams.join(", ")}, IsNews: ${intent.isNewsRequest}, League: ${intent.detectedLeague?.name || "none"}, LongTerm: ${intent.isLongTermQuery}`);
 
     // If user is asking for news/rumors WITHOUT match context, return redirect response
     if (intent.isNewsRequest && !providedContext) {
@@ -767,7 +897,68 @@ serve(async (req) => {
     let dataSource = "provided";
     let dataAvailability: DataAvailability | null = null;
     
-    if (!context && intent.type === "match_analysis") {
+    // Handle league-based queries (championship, long-term predictions)
+    if (!context && (intent.type === "league_analysis" || intent.type === "league_query") && intent.detectedLeague) {
+      console.log(`League analysis request for: ${intent.detectedLeague.name} (${intent.detectedLeague.code})`);
+      
+      // Fetch league standings
+      const leagueStandings = await fetchLeagueStandings(supabaseAdmin, intent.detectedLeague.code);
+      
+      if (leagueStandings.length > 0) {
+        context = {
+          source: "database",
+          fetchedAt: new Date().toISOString(),
+          queryType: intent.isLongTermQuery ? "championship_analysis" : "league_standings",
+          league: {
+            code: intent.detectedLeague.code,
+            name: intent.detectedLeague.name
+          },
+          standings: leagueStandings.map((s: any) => ({
+            position: s.position,
+            team: s.team_name,
+            points: s.points,
+            played: s.played_games,
+            won: s.won,
+            draw: s.draw,
+            lost: s.lost,
+            goalsFor: s.goals_for,
+            goalsAgainst: s.goals_against,
+            goalDifference: s.goal_difference,
+            form: s.form
+          })),
+          analysisHint: intent.isLongTermQuery 
+            ? "Kullanıcı şampiyonluk/uzun vadeli tahmin soruyor. OLASILIK ve FAVORİ dili kullan. Kesin cevap verme."
+            : "Kullanıcı lig sıralaması hakkında soru soruyor."
+        };
+        dataSource = "database";
+        dataAvailability = {
+          hasData: true,
+          hasUpcoming: false,
+          hasRecent: false,
+          hasStandings: true,
+          hasLeagueContext: true,
+          limitedData: false,
+          reason: "",
+          searchedTeams: []
+        };
+        
+        console.log(`Built league context: ${leagueStandings.length} teams in standings`);
+      } else {
+        // League exists but no data
+        dataAvailability = {
+          hasData: false,
+          hasUpcoming: false,
+          hasRecent: false,
+          hasStandings: false,
+          hasLeagueContext: false,
+          limitedData: true,
+          reason: `${intent.detectedLeague.name} için güncel sıralama verisi bulunamadı.`,
+          searchedTeams: []
+        };
+      }
+    }
+    // Handle team-based match analysis
+    else if (!context && intent.type === "match_analysis") {
       console.log("No context provided, fetching from database...");
       
       if (intent.teams.length > 0) {
