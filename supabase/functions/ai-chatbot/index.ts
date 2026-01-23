@@ -6,7 +6,26 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const DAILY_LIMIT = 3;
+// Plan-based daily limits for AI chat
+const PLAN_LIMITS = {
+  free: 0,      // No access for free users
+  basic: 5,     // 5 messages per day
+  pro: 999,     // Practically unlimited
+  ultra: 999,   // Practically unlimited
+};
+
+// Determine plan type from subscription
+function getPlanType(subscription: any): 'free' | 'basic' | 'pro' | 'ultra' {
+  if (!subscription) return 'free';
+  
+  const planType = (subscription.plan_type || '').toLowerCase();
+  if (planType.includes('ultra')) return 'ultra';
+  if (planType.includes('pro')) return 'pro';
+  if (planType.includes('basic') || planType.includes('temel')) return 'basic';
+  
+  // Default premium is pro level
+  return 'pro';
+}
 
 // Supported leagues for context info
 const SUPPORTED_LEAGUES = ["Premier League", "La Liga", "Serie A", "Bundesliga", "Ligue 1", "Champions League"];
@@ -807,16 +826,20 @@ serve(async (req) => {
       .gte("expires_at", new Date().toISOString())
       .limit(1);
 
-    const isPremium = premiumData && premiumData.length > 0;
+    const subscription = premiumData && premiumData.length > 0 ? premiumData[0] : null;
+    const isPremium = !!subscription;
+    const planType = getPlanType(subscription);
+    const dailyLimit = PLAN_LIMITS[planType];
 
-    // Admins bypass premium check
+    // Free users cannot access chatbot at all
     if (!isPremium && !isAdmin) {
-      console.log(`User ${userId} is not premium and not admin`);
+      console.log(`User ${userId} is free user, no chatbot access`);
       return new Response(
         JSON.stringify({ 
-          error: "Bu özellik sadece Premium üyelere açıktır", 
+          error: "AI Asistan sadece Premium üyelere açıktır. Premium'a yükselterek AI destekli maç analizlerine erişin!", 
           code: "PREMIUM_REQUIRED",
-          isPremium: false 
+          isPremium: false,
+          planType: 'free'
         }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -832,15 +855,16 @@ serve(async (req) => {
 
     const currentUsage = usageData?.usage_count ?? 0;
 
-    // Admins bypass daily limit
-    if (currentUsage >= DAILY_LIMIT && !isAdmin) {
-      console.log(`User ${userId} exceeded daily limit: ${currentUsage}/${DAILY_LIMIT}`);
+    // Check plan-based limit (admins and pro/ultra bypass)
+    if (!isAdmin && planType === 'basic' && currentUsage >= dailyLimit) {
+      console.log(`User ${userId} exceeded daily limit: ${currentUsage}/${dailyLimit}`);
       return new Response(
         JSON.stringify({ 
-          error: "Günlük kullanım limitiniz doldu. Yarın tekrar deneyin!", 
+          error: `Günlük ${dailyLimit} mesaj limitiniz doldu. Pro plana yükselterek sınırsız AI chat'e erişin!`, 
           code: "LIMIT_EXCEEDED",
-          usage: { current: currentUsage, limit: DAILY_LIMIT },
-          isPremium: true
+          usage: { current: currentUsage, limit: dailyLimit },
+          isPremium: true,
+          planType
         }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -881,8 +905,8 @@ serve(async (req) => {
           message: redirectResponse,
           usage: {
             current: isAdmin ? 0 : currentUsage + 1,
-            limit: isAdmin ? "∞" : DAILY_LIMIT,
-            remaining: isAdmin ? "∞" : DAILY_LIMIT - currentUsage - 1
+            limit: isAdmin ? "∞" : dailyLimit,
+            remaining: isAdmin ? "∞" : dailyLimit - currentUsage - 1
           },
           isPremium: true,
           isAdmin,
@@ -1100,7 +1124,7 @@ serve(async (req) => {
       newUsageCount = newUsageData ?? currentUsage + 1;
     }
     
-    console.log(`User ${userId} new usage: ${isAdmin ? "∞ (admin)" : `${newUsageCount}/${DAILY_LIMIT}`}`);
+    console.log(`User ${userId} new usage: ${isAdmin ? "∞ (admin)" : `${newUsageCount}/${dailyLimit}`}`);
 
     // Save messages to chat history
     await supabaseAdmin.from("chat_history").insert([
@@ -1114,8 +1138,8 @@ serve(async (req) => {
         message: assistantMessage,
         usage: {
           current: isAdmin ? 0 : newUsageCount,
-          limit: isAdmin ? "∞" : DAILY_LIMIT,
-          remaining: isAdmin ? "∞" : DAILY_LIMIT - newUsageCount
+          limit: isAdmin ? "∞" : dailyLimit,
+          remaining: isAdmin ? "∞" : dailyLimit - newUsageCount
         },
         isPremium: true,
         isAdmin,

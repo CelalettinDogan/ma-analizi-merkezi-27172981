@@ -14,6 +14,7 @@ import CommandPalette from '@/components/navigation/CommandPalette';
 import Onboarding from '@/components/Onboarding';
 import TodaysMatches from '@/components/TodaysMatches';
 import { MatchCardSkeleton } from '@/components/ui/skeletons';
+import PremiumPromotionModal from '@/components/premium/PremiumPromotionModal';
 import {
   MatchHeroCard,
   AIRecommendationCard,
@@ -29,6 +30,9 @@ import { Match as ApiMatch, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/ty
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { useHomeData } from '@/hooks/useHomeData';
+import { useAnalysisLimit } from '@/hooks/useAnalysisLimit';
+import { usePremiumPromotion } from '@/hooks/usePremiumPromotion';
+import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { Calendar, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -40,8 +44,11 @@ const Index: React.FC = () => {
   const { analysis, isLoading: analysisLoading, analyzeMatch } = useMatchAnalysis();
   const { user } = useAuth();
   const { showOnboarding, completeOnboarding } = useOnboarding();
+  const { isPremium, planType } = usePremiumStatus();
+  const { canAnalyze, usageCount, dailyLimit, remaining, incrementUsage } = useAnalysisLimit();
+  const { showPromotion, dismissPromotion, promotionVisible, promotionType } = usePremiumPromotion();
   
-// Refs for scroll behavior
+  // Refs for scroll behavior
   const upcomingMatchesRef = useRef<HTMLDivElement>(null);
   const pendingAnalysisScrollRef = useRef(false);
   
@@ -160,6 +167,14 @@ const Index: React.FC = () => {
   }, [analysis, analysisLoading]);
 
   const handleMatchSelect = async (match: ApiMatch) => {
+    // Check analysis limit for non-premium users
+    if (user && !isPremium && planType === 'free') {
+      if (!canAnalyze) {
+        showPromotion('limit');
+        return;
+      }
+    }
+
     // Set loading state immediately for instant feedback
     setLoadingMatchId(match.id);
     setAnalyzingMatchInfo({
@@ -190,6 +205,23 @@ const Index: React.FC = () => {
     
     try {
       await analyzeMatch(matchInput);
+      
+      // Increment usage for non-premium users after successful analysis
+      if (user && !isPremium && planType === 'free') {
+        await incrementUsage();
+        
+        // Show usage toast
+        const newUsage = usageCount + 1;
+        if (newUsage < dailyLimit) {
+          toast.info(`Bugün ${newUsage}/${dailyLimit} analiz hakkınızı kullandınız. Premium ile sınırsız analiz!`, {
+            duration: 4000,
+          });
+        } else {
+          toast.warning('Günlük analiz hakkınız doldu. Premium ile sınırsız analiz yapın!', {
+            duration: 5000,
+          });
+        }
+      }
     } catch (error) {
       toast.error('Analiz yüklenirken hata oluştu');
       pendingAnalysisScrollRef.current = false;
@@ -445,6 +477,13 @@ const Index: React.FC = () => {
           <Onboarding onComplete={completeOnboarding} />
         )}
       </AnimatePresence>
+
+      {/* Premium Promotion Modal */}
+      <PremiumPromotionModal
+        isOpen={promotionVisible}
+        type={promotionType}
+        onClose={dismissPromotion}
+      />
     </div>
   );
 };
