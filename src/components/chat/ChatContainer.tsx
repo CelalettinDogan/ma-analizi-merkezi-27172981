@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bot, Sparkles } from 'lucide-react';
+import { Bot, Sparkles, Trophy, Info } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import { ChatMessage as ChatMessageType } from '@/hooks/useChatbot';
 
@@ -8,6 +8,15 @@ interface ChatContainerProps {
   messages: ChatMessageType[];
   isLoading: boolean;
 }
+
+// Desteklenen ligler
+const SUPPORTED_LEAGUES = [
+  { icon: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", name: "Premier League", code: "PL" },
+  { icon: "🇪🇸", name: "La Liga", code: "PD" },
+  { icon: "🇮🇹", name: "Serie A", code: "SA" },
+  { icon: "🇩🇪", name: "Bundesliga", code: "BL1" },
+  { icon: "🇫🇷", name: "Ligue 1", code: "FL1" },
+];
 
 const WelcomeMessage: React.FC = () => (
   <motion.div
@@ -45,30 +54,61 @@ const WelcomeMessage: React.FC = () => (
       Futbol maçları, takım istatistikleri ve tahminler hakkında sorularınızı yanıtlamak için buradayım.
     </motion.p>
 
-    {/* Capabilities */}
+    {/* Desteklenen Ligler */}
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.4 }}
-      className="grid grid-cols-2 gap-3 w-full max-w-sm"
+      className="w-full max-w-md mb-4"
     >
-      {[
-        { icon: '⚽', text: 'Maç Analizi' },
-        { icon: '📊', text: 'İstatistikler' },
-        { icon: '🎯', text: 'Tahminler' },
-        { icon: '🏆', text: 'Lig Durumu' },
-      ].map((item, index) => (
-        <motion.div
-          key={item.text}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 + index * 0.1 }}
-          className="flex items-center gap-2 p-3 rounded-xl bg-card border border-border"
-        >
-          <span className="text-lg">{item.icon}</span>
-          <span className="text-sm font-medium">{item.text}</span>
-        </motion.div>
-      ))}
+      <div className="flex items-center gap-2 mb-3 justify-center">
+        <Trophy className="w-4 h-4 text-primary" />
+        <span className="text-sm font-medium text-foreground">Desteklenen Ligler</span>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {SUPPORTED_LEAGUES.map((league, index) => (
+          <motion.div
+            key={league.code}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 + index * 0.05 }}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-card border border-border text-sm"
+          >
+            <span className="text-lg">{league.icon}</span>
+            <span className="text-muted-foreground text-xs truncate">{league.name}</span>
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+
+    {/* Bilgilendirme */}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.7 }}
+      className="flex items-start gap-2 p-3 rounded-xl bg-muted/30 border border-border/50 max-w-sm mb-4"
+    >
+      <Info className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+      <p className="text-xs text-muted-foreground text-left">
+        Türkiye Süper Ligi, Şampiyonlar Ligi ve diğer ligler için veri desteği henüz mevcut değil.
+      </p>
+    </motion.div>
+
+    {/* Örnek Sorular */}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.8 }}
+      className="text-xs text-muted-foreground/70"
+    >
+      <p className="mb-2">Örnek sorular:</p>
+      <div className="flex flex-wrap gap-2 justify-center">
+        {["Liverpool form durumu", "La Liga puan durumu", "Bugünkü maçlar"].map((q) => (
+          <span key={q} className="px-2 py-1 rounded-full bg-muted/30 border border-border/30">
+            "{q}"
+          </span>
+        ))}
+      </div>
     </motion.div>
 
     {/* Tip */}
