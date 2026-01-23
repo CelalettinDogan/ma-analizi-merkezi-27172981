@@ -1,21 +1,45 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Sparkles, MessageCircle, TrendingUp, Lock } from 'lucide-react';
+import { Crown, Sparkles, MessageCircle, TrendingUp, Lock, BarChart3, Star, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
 interface PremiumGateProps {
   onClose?: () => void;
+  variant?: 'chatbot' | 'analysis' | 'general';
 }
 
-const features = [
-  { icon: MessageCircle, label: 'Günlük 3 AI sohbet hakkı' },
-  { icon: TrendingUp, label: 'Detaylı maç analizleri' },
-  { icon: Sparkles, label: 'Kişiselleştirilmiş öneriler' },
+const variantContent = {
+  chatbot: {
+    title: 'AI Asistan Premium\'a Özel',
+    subtitle: 'Kişisel futbol danışmanınız sizi bekliyor',
+    icon: MessageCircle,
+    gradient: 'from-emerald-500 to-teal-600',
+  },
+  analysis: {
+    title: 'Analiz Limitine Ulaştınız',
+    subtitle: 'Günlük 2 ücretsiz analiz hakkınız doldu',
+    icon: BarChart3,
+    gradient: 'from-orange-500 to-red-500',
+  },
+  general: {
+    title: 'Premium Özellik',
+    subtitle: 'Bu özellik Premium üyelere özel',
+    icon: Crown,
+    gradient: 'from-amber-500 to-orange-500',
+  },
+};
+
+const plans = [
+  { name: 'Temel', price: '₺49/ay', aiChat: '5/gün', analysis: '10/gün' },
+  { name: 'Pro', price: '₺99/ay', aiChat: 'Sınırsız', analysis: 'Sınırsız', popular: true },
+  { name: 'Ultra', price: '₺149/ay', aiChat: 'Sınırsız', analysis: 'Sınırsız' },
 ];
 
-const PremiumGate: React.FC<PremiumGateProps> = ({ onClose }) => {
+const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' }) => {
   const navigate = useNavigate();
+  const content = variantContent[variant];
+  const IconComponent = content.icon;
 
   const handleUpgrade = () => {
     navigate('/profile', { state: { openPremium: true } });
@@ -25,16 +49,16 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose }) => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex flex-col items-center justify-center h-full p-6 text-center"
+      className="flex flex-col items-center justify-center h-full p-6 text-center relative"
     >
-      {/* Lock Icon */}
+      {/* Icon */}
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", stiffness: 200, damping: 15 }}
-        className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-6 shadow-lg shadow-amber-500/30"
+        className={`w-20 h-20 rounded-full bg-gradient-to-br ${content.gradient} flex items-center justify-center mb-6 shadow-lg`}
       >
-        <Crown className="w-10 h-10 text-white" />
+        <IconComponent className="w-10 h-10 text-white" />
       </motion.div>
 
       {/* Title */}
@@ -44,7 +68,7 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose }) => {
         transition={{ delay: 0.1 }}
         className="text-2xl font-bold mb-2"
       >
-        AI Asistan'a Erişim
+        {content.title}
       </motion.h2>
 
       {/* Description */}
@@ -54,30 +78,62 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose }) => {
         transition={{ delay: 0.2 }}
         className="text-muted-foreground mb-6 max-w-sm"
       >
-        Premium üyelikle AI futbol danışmanınıza 7/24 erişim sağlayın
+        {content.subtitle}
       </motion.p>
 
-      {/* Features */}
+      {/* Mini Plan Comparison */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="space-y-3 mb-8 w-full max-w-xs"
+        className="space-y-2 mb-6 w-full max-w-xs"
       >
-        {features.map((feature, index) => (
+        {plans.map((plan, index) => (
           <motion.div
-            key={feature.label}
+            key={plan.name}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 + index * 0.1 }}
-            className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border"
+            className={`flex items-center justify-between p-3 rounded-xl border ${
+              plan.popular 
+                ? 'bg-primary/10 border-primary/30' 
+                : 'bg-card border-border'
+            }`}
           >
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <feature.icon className="w-4 h-4 text-primary" />
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-sm">{plan.name}</span>
+              {plan.popular && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground">
+                  Popüler
+                </span>
+              )}
             </div>
-            <span className="text-sm font-medium">{feature.label}</span>
+            <div className="text-right">
+              <span className="text-sm font-bold">{plan.price}</span>
+            </div>
           </motion.div>
         ))}
+      </motion.div>
+
+      {/* Features highlight */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        className="flex items-center gap-4 text-xs text-muted-foreground mb-6"
+      >
+        <div className="flex items-center gap-1">
+          <MessageCircle className="w-3 h-3" />
+          <span>AI Chat</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <BarChart3 className="w-3 h-3" />
+          <span>Sınırsız Analiz</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Sparkles className="w-3 h-3" />
+          <span>Reklamsız</span>
+        </div>
       </motion.div>
 
       {/* CTA Button */}
@@ -89,10 +145,10 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose }) => {
       >
         <Button
           onClick={handleUpgrade}
-          className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-amber-500/30"
+          className={`w-full h-12 bg-gradient-to-r ${content.gradient} hover:opacity-90 text-white font-semibold rounded-xl shadow-lg`}
         >
           <Crown className="w-4 h-4 mr-2" />
-          Premium'a Yükselt
+          Planları Görüntüle
         </Button>
 
         {onClose && (
@@ -104,6 +160,19 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose }) => {
             Daha sonra
           </Button>
         )}
+      </motion.div>
+
+      {/* Discount badge */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.8 }}
+        className="mt-4"
+      >
+        <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Zap className="w-3 h-3 text-amber-500" />
+          Yıllık planlarda 2 ay bedava!
+        </span>
       </motion.div>
 
       {/* Decorative lock */}

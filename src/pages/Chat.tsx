@@ -239,8 +239,8 @@ const Chat: React.FC = () => {
             </div>
           </div>
         ) : !isPremium && !isAdmin ? (
-          // Premium gate
-          <PremiumGate onClose={() => navigate(-1)} />
+          // Premium gate - Free users cannot access chatbot
+          <PremiumGate onClose={() => navigate(-1)} variant="chatbot" />
         ) : (
           // Chat interface
           <>

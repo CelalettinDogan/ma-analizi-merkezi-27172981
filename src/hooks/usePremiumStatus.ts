@@ -10,13 +10,29 @@ interface PremiumSubscription {
   is_active: boolean;
 }
 
+export type PlanType = 'free' | 'basic' | 'pro' | 'ultra';
+
 interface UsePremiumStatusReturn {
   isPremium: boolean;
+  planType: PlanType;
   subscription: PremiumSubscription | null;
   isLoading: boolean;
   daysRemaining: number | null;
   refetch: () => void;
 }
+
+// Determine plan type from subscription
+const getPlanTypeFromSubscription = (subscription: PremiumSubscription | null): PlanType => {
+  if (!subscription) return 'free';
+  
+  const planType = subscription.plan_type?.toLowerCase() || '';
+  if (planType.includes('ultra')) return 'ultra';
+  if (planType.includes('pro')) return 'pro';
+  if (planType.includes('basic') || planType.includes('temel')) return 'basic';
+  
+  // Default premium is pro level
+  return 'pro';
+};
 
 export const usePremiumStatus = (): UsePremiumStatusReturn => {
   const { user } = useAuth();
@@ -59,6 +75,7 @@ export const usePremiumStatus = (): UsePremiumStatusReturn => {
   }, [fetchPremiumStatus]);
 
   const isPremium = !!subscription;
+  const planType = getPlanTypeFromSubscription(subscription);
 
   const daysRemaining = subscription 
     ? Math.ceil((new Date(subscription.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -66,6 +83,7 @@ export const usePremiumStatus = (): UsePremiumStatusReturn => {
 
   return {
     isPremium,
+    planType,
     subscription,
     isLoading,
     daysRemaining,

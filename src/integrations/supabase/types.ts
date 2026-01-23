@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      analysis_usage: {
+        Row: {
+          id: string
+          last_used_at: string | null
+          usage_count: number
+          usage_date: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          last_used_at?: string | null
+          usage_count?: number
+          usage_date?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          last_used_at?: string | null
+          usage_count?: number
+          usage_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bet_slip_items: {
         Row: {
           away_score: number | null
@@ -960,12 +984,14 @@ export type Database = {
       }
     }
     Functions: {
+      cleanup_old_analysis_usage: { Args: never; Returns: undefined }
       cleanup_old_bet_slips: { Args: never; Returns: undefined }
       cleanup_old_cached_matches: { Args: never; Returns: undefined }
       cleanup_old_chat_history: { Args: never; Returns: undefined }
       cleanup_old_chatbot_usage: { Args: never; Returns: undefined }
       cleanup_old_features: { Args: never; Returns: undefined }
       cleanup_old_predictions: { Args: never; Returns: undefined }
+      get_daily_analysis_usage: { Args: { p_user_id: string }; Returns: number }
       get_daily_usage: { Args: { p_user_id: string }; Returns: number }
       has_role: {
         Args: {
@@ -974,6 +1000,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_analysis_usage: { Args: { p_user_id: string }; Returns: number }
       increment_chatbot_usage: { Args: { p_user_id: string }; Returns: number }
       is_premium_user: { Args: { p_user_id: string }; Returns: boolean }
     }
