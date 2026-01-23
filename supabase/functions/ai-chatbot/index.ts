@@ -8,6 +8,10 @@ const corsHeaders = {
 
 const DAILY_LIMIT = 3;
 
+// Supported leagues for context info
+const SUPPORTED_LEAGUES = ["Premier League", "La Liga", "Serie A", "Bundesliga", "Ligue 1", "Champions League"];
+const SUPPORTED_LEAGUE_CODES = ["PL", "PD", "SA", "BL1", "FL1", "CL"];
+
 // Banned patterns for policy filter
 const BANNED_PATTERNS = [
   /kesinlikle kazan/gi,
@@ -106,6 +110,19 @@ Bu tür sorulara yanıtın:
 - Tahminlerin istatistiksel modellere dayandığını vurgula
 - Hiçbir zaman "duyduğuma göre", "haberlere göre", "söylentilere göre" deme
 - "Bana verilen verilere göre..." şeklinde konuş
+
+---
+
+📊 VERİ DURUMU KONTROLÜ:
+Eğer [VERİ DURUMU] bölümünde "hasData: false" veya "limitedData: true" görürsen:
+1. Kullanıcıya açıkça belirt: "Bu takım/maç için veritabanımda güncel veri bulunmuyor."
+2. Nedenini açıkla (belirtildiyse)
+3. Alternatif öner: "Desteklenen ligler: Premier League, La Liga, Serie A, Bundesliga, Ligue 1, Champions League"
+4. ASLA uydurma istatistik verme
+
+Eğer kısmi veri varsa (örn: standings var ama maç yok):
+1. Eldeki veriyle analiz yap
+2. Eksik veriyi belirt: "Form analizi için yeterli maç verisi yok, ancak lig sıralamasına göre..."
 
 ---
 
@@ -257,62 +274,122 @@ ${teamMention} güncel haber/transfer/sakatlık verisi bulunmuyor. Ancak şu kon
 Hangi takım veya maç hakkında **istatistiksel analiz** yapmamı istersiniz?`;
 }
 
-// Fetch match data from cached_matches table
-async function fetchMatchData(supabaseAdmin: any, teams: string[]): Promise<any | null> {
-  if (teams.length === 0) return null;
+// Data availability status interface
+interface DataAvailability {
+  hasData: boolean;
+  hasUpcoming: boolean;
+  hasRecent: boolean;
+  hasStandings: boolean;
+  hasLeagueContext: boolean;
+  limitedData: boolean;
+  reason: string;
+  searchedTeams: string[];
+}
+
+// Fetch match data from cached_matches table with extended date range
+async function fetchMatchData(supabaseAdmin: any, teams: string[]): Promise<{ upcoming: any[]; recent: any[]; leagueCode: string | null }> {
+  if (teams.length === 0) return { upcoming: [], recent: [], leagueCode: null };
   
   const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
   
-  const startDate = yesterday.toISOString().split('T')[0];
-  const endDate = tomorrow.toISOString().split('T')[0];
+  // Upcoming matches: today to 14 days ahead
+  const futureEnd = new Date(today);
+  futureEnd.setDate(futureEnd.getDate() + 14);
   
-  console.log(`Searching for matches with teams: ${teams.join(", ")} between ${startDate} and ${endDate}`);
+  // Recent matches: 7 days ago to today
+  const pastStart = new Date(today);
+  pastStart.setDate(pastStart.getDate() - 7);
   
-  // Build search query for team names
-  let query = supabaseAdmin
-    .from("cached_matches")
-    .select("*")
-    .gte("utc_date", startDate)
-    .lte("utc_date", endDate + "T23:59:59Z")
-    .order("utc_date", { ascending: true });
+  const todayStr = today.toISOString();
+  const futureStr = futureEnd.toISOString();
+  const pastStr = pastStart.toISOString();
   
-  const { data: matches, error } = await query;
+  console.log(`Searching for teams: ${teams.join(", ")} | Range: ${pastStr.split('T')[0]} to ${futureStr.split('T')[0]}`);
   
-  if (error) {
-    console.error("Error fetching cached matches:", error);
-    return null;
-  }
-  
-  if (!matches || matches.length === 0) {
-    console.log("No matches found in date range");
-    return null;
-  }
-  
-  // Find matches that include the mentioned teams
-  const relevantMatches = matches.filter((match: any) => {
-    const homeTeam = normalizeTeamName(match.home_team_name);
-    const awayTeam = normalizeTeamName(match.away_team_name);
+  try {
+    // Parallel fetch: upcoming and recent matches
+    const [upcomingResult, recentResult] = await Promise.all([
+      // Upcoming matches (TIMED, SCHEDULED)
+      supabaseAdmin
+        .from("cached_matches")
+        .select("*")
+        .gte("utc_date", todayStr)
+        .lte("utc_date", futureStr)
+        .in("status", ["TIMED", "SCHEDULED"])
+        .order("utc_date", { ascending: true }),
+      
+      // Recent finished matches
+      supabaseAdmin
+        .from("cached_matches")
+        .select("*")
+        .gte("utc_date", pastStr)
+        .lt("utc_date", todayStr)
+        .eq("status", "FINISHED")
+        .order("utc_date", { ascending: false })
+    ]);
     
-    return teams.some(team => {
-      const normalizedTeam = normalizeTeamName(team);
-      return homeTeam.includes(normalizedTeam) || 
-             awayTeam.includes(normalizedTeam) ||
-             normalizedTeam.includes(homeTeam) ||
-             normalizedTeam.includes(awayTeam);
+    const allUpcoming = upcomingResult.data || [];
+    const allRecent = recentResult.data || [];
+    
+    // Filter by team names
+    const filterByTeam = (matches: any[]) => matches.filter((m: any) => {
+      const homeTeam = normalizeTeamName(m.home_team_name);
+      const awayTeam = normalizeTeamName(m.away_team_name);
+      
+      return teams.some(team => {
+        const normalizedTeam = normalizeTeamName(team);
+        return homeTeam.includes(normalizedTeam) || 
+               awayTeam.includes(normalizedTeam) ||
+               normalizedTeam.includes(homeTeam) ||
+               normalizedTeam.includes(awayTeam);
+      });
     });
-  });
-  
-  console.log(`Found ${relevantMatches.length} relevant matches`);
-  
-  if (relevantMatches.length === 0) {
-    return null;
+    
+    const upcoming = filterByTeam(allUpcoming);
+    const recent = filterByTeam(allRecent);
+    
+    // Get league code from the first match found
+    const firstMatch = upcoming[0] || recent[0];
+    const leagueCode = firstMatch?.competition_code || null;
+    
+    console.log(`Found ${upcoming.length} upcoming, ${recent.length} recent matches for teams. League: ${leagueCode}`);
+    
+    return { upcoming, recent, leagueCode };
+  } catch (error) {
+    console.error("Error fetching match data:", error);
+    return { upcoming: [], recent: [], leagueCode: null };
   }
+}
+
+// Fetch league context (other matches in the same league)
+async function fetchLeagueContext(supabaseAdmin: any, leagueCode: string): Promise<any[]> {
+  if (!leagueCode) return [];
   
-  return relevantMatches;
+  const today = new Date();
+  const weekAhead = new Date(today);
+  weekAhead.setDate(weekAhead.getDate() + 7);
+  
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("cached_matches")
+      .select("home_team_name, away_team_name, utc_date, status, matchday")
+      .eq("competition_code", leagueCode)
+      .gte("utc_date", today.toISOString())
+      .lte("utc_date", weekAhead.toISOString())
+      .in("status", ["TIMED", "SCHEDULED"])
+      .order("utc_date", { ascending: true })
+      .limit(5);
+    
+    if (error) {
+      console.error("Error fetching league context:", error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error("Error in fetchLeagueContext:", error);
+    return [];
+  }
 }
 
 // Fetch standings data for teams
@@ -361,30 +438,72 @@ async function fetchTodaysMatches(supabaseAdmin: any): Promise<any[]> {
   return matches || [];
 }
 
-// Build context from database data
-function buildContextFromData(matches: any[], standings: any[]): any {
+// Build context from database data with data availability info
+function buildContextFromData(
+  upcoming: any[], 
+  recent: any[], 
+  standings: any[], 
+  leagueContext: any[],
+  searchedTeams: string[]
+): { context: any; dataAvailability: DataAvailability } {
+  
+  const dataAvailability: DataAvailability = {
+    hasData: false,
+    hasUpcoming: upcoming.length > 0,
+    hasRecent: recent.length > 0,
+    hasStandings: standings.length > 0,
+    hasLeagueContext: leagueContext.length > 0,
+    limitedData: false,
+    reason: "",
+    searchedTeams
+  };
+  
+  // Check if we have any useful data
+  if (!dataAvailability.hasUpcoming && !dataAvailability.hasRecent && !dataAvailability.hasStandings) {
+    dataAvailability.limitedData = true;
+    dataAvailability.reason = `"${searchedTeams.join(', ')}" için veritabanında maç veya sıralama verisi bulunamadı. Bu takım desteklenen liglerde (${SUPPORTED_LEAGUES.join(', ')}) olmayabilir veya yakın tarihli maç bulunmuyor olabilir.`;
+  } else if (!dataAvailability.hasUpcoming && !dataAvailability.hasRecent) {
+    dataAvailability.limitedData = true;
+    dataAvailability.reason = "Yaklaşan veya son oynanan maç verisi bulunamadı. Sadece lig sıralaması bilgisi mevcut.";
+    dataAvailability.hasData = true;
+  } else {
+    dataAvailability.hasData = true;
+  }
+  
   const context: any = {
     source: "database",
     fetchedAt: new Date().toISOString(),
   };
   
-  if (matches && matches.length > 0) {
-    context.matches = matches.map((m: any) => ({
+  // Add upcoming matches
+  if (upcoming.length > 0) {
+    context.upcomingMatches = upcoming.map((m: any) => ({
       homeTeam: m.home_team_name,
       awayTeam: m.away_team_name,
       date: m.utc_date,
       status: m.status,
       competition: m.competition_name || m.competition_code,
-      matchday: m.matchday,
-      score: m.status === "FINISHED" ? {
-        home: m.home_score,
-        away: m.away_score,
-        winner: m.winner
-      } : null
+      matchday: m.matchday
     }));
   }
   
-  if (standings && standings.length > 0) {
+  // Add recent matches (for form analysis)
+  if (recent.length > 0) {
+    context.recentMatches = recent.map((m: any) => ({
+      homeTeam: m.home_team_name,
+      awayTeam: m.away_team_name,
+      date: m.utc_date,
+      competition: m.competition_name || m.competition_code,
+      score: {
+        home: m.home_score,
+        away: m.away_score,
+        winner: m.winner
+      }
+    }));
+  }
+  
+  // Add standings
+  if (standings.length > 0) {
     context.standings = standings.map((s: any) => ({
       team: s.team_name,
       position: s.position,
@@ -401,7 +520,16 @@ function buildContextFromData(matches: any[], standings: any[]): any {
     }));
   }
   
-  return context;
+  // Add league context (other matches in same league)
+  if (leagueContext.length > 0) {
+    context.leagueFixtures = leagueContext.map((m: any) => ({
+      match: `${m.home_team_name} vs ${m.away_team_name}`,
+      date: m.utc_date,
+      matchday: m.matchday
+    }));
+  }
+  
+  return { context, dataAvailability };
 }
 
 serve(async (req) => {
@@ -526,8 +654,11 @@ serve(async (req) => {
     if (intent.isNewsRequest && !providedContext) {
       const redirectResponse = getNewsRedirectResponse(intent.teams);
       
-      // Increment usage and save to history
-      await supabaseAdmin.rpc("increment_chatbot_usage", { p_user_id: userId });
+      // Only increment usage for non-admin users
+      if (!isAdmin) {
+        await supabaseAdmin.rpc("increment_chatbot_usage", { p_user_id: userId });
+      }
+      
       await supabaseAdmin.from("chat_history").insert([
         { user_id: userId, role: "user", content: message, metadata: { intent: "news_redirect" } },
         { user_id: userId, role: "assistant", content: redirectResponse, metadata: { type: "redirect" } }
@@ -539,11 +670,12 @@ serve(async (req) => {
         JSON.stringify({
           message: redirectResponse,
           usage: {
-            current: currentUsage + 1,
-            limit: DAILY_LIMIT,
-            remaining: DAILY_LIMIT - currentUsage - 1
+            current: isAdmin ? 0 : currentUsage + 1,
+            limit: isAdmin ? "∞" : DAILY_LIMIT,
+            remaining: isAdmin ? "∞" : DAILY_LIMIT - currentUsage - 1
           },
           isPremium: true,
+          isAdmin,
           isRedirect: true
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -553,24 +685,45 @@ serve(async (req) => {
     // Build context from database if not provided
     let context = providedContext;
     let dataSource = "provided";
+    let dataAvailability: DataAvailability | null = null;
     
     if (!context && intent.type === "match_analysis") {
       console.log("No context provided, fetching from database...");
       
-      // Fetch match and standings data
-      const [matchData, standingsData] = await Promise.all([
-        intent.teams.length > 0 
-          ? fetchMatchData(supabaseAdmin, intent.teams)
-          : fetchTodaysMatches(supabaseAdmin),
-        fetchStandingsData(supabaseAdmin, intent.teams)
-      ]);
-      
-      if ((matchData && matchData.length > 0) || (standingsData && standingsData.length > 0)) {
-        context = buildContextFromData(matchData || [], standingsData);
+      if (intent.teams.length > 0) {
+        // Fetch match data with extended date range
+        const { upcoming, recent, leagueCode } = await fetchMatchData(supabaseAdmin, intent.teams);
+        
+        // Fetch standings and league context in parallel
+        const [standingsData, leagueContextData] = await Promise.all([
+          fetchStandingsData(supabaseAdmin, intent.teams),
+          leagueCode ? fetchLeagueContext(supabaseAdmin, leagueCode) : Promise.resolve([])
+        ]);
+        
+        const result = buildContextFromData(upcoming, recent, standingsData, leagueContextData, intent.teams);
+        context = result.context;
+        dataAvailability = result.dataAvailability;
         dataSource = "database";
-        console.log(`Built context from database: ${matchData?.length || 0} matches, ${standingsData?.length || 0} standings`);
+        
+        console.log(`Built context from database: ${upcoming.length} upcoming, ${recent.length} recent, ${standingsData.length} standings`);
       } else {
-        console.log("No relevant data found in database");
+        // No specific team, fetch today's matches
+        const todaysMatches = await fetchTodaysMatches(supabaseAdmin);
+        
+        if (todaysMatches.length > 0) {
+          context = {
+            source: "database",
+            fetchedAt: new Date().toISOString(),
+            todaysMatches: todaysMatches.map((m: any) => ({
+              homeTeam: m.home_team_name,
+              awayTeam: m.away_team_name,
+              date: m.utc_date,
+              competition: m.competition_name || m.competition_code,
+              status: m.status
+            }))
+          };
+          dataSource = "database";
+        }
       }
     }
 
@@ -596,8 +749,28 @@ serve(async (req) => {
 
     // Add context if available (from provided or database)
     if (context) {
-      const contextMessage = `\n\n[BAĞLAM VERİSİ - Yalnızca bu verilere dayanarak yanıt ver]\nKaynak: ${dataSource === "database" ? "Veritabanı (cached_matches, cached_standings)" : "Kullanıcı tarafından sağlandı"}\n${JSON.stringify(context, null, 2)}`;
+      let contextMessage = `\n\n[BAĞLAM VERİSİ - Yalnızca bu verilere dayanarak yanıt ver]\nKaynak: ${dataSource === "database" ? "Veritabanı (cached_matches, cached_standings)" : "Kullanıcı tarafından sağlandı"}\n${JSON.stringify(context, null, 2)}`;
+      
+      // Add data availability info if we fetched from database
+      if (dataAvailability) {
+        contextMessage += `\n\n[VERİ DURUMU]\n${JSON.stringify(dataAvailability, null, 2)}`;
+      }
+      
       messages[messages.length - 1].content += contextMessage;
+    } else if (intent.teams.length > 0) {
+      // No context found for requested teams - inform AI
+      const noDataInfo: DataAvailability = {
+        hasData: false,
+        hasUpcoming: false,
+        hasRecent: false,
+        hasStandings: false,
+        hasLeagueContext: false,
+        limitedData: true,
+        reason: `"${intent.teams.join(', ')}" için veritabanında hiçbir veri bulunamadı. Bu takım desteklenen liglerde (${SUPPORTED_LEAGUES.join(', ')}) olmayabilir.`,
+        searchedTeams: intent.teams
+      };
+      
+      messages[messages.length - 1].content += `\n\n[VERİ DURUMU - KRİTİK]\n${JSON.stringify(noDataInfo, null, 2)}\n\nBu takım için veri YOK. Lütfen kullanıcıya bunu açıkça belirt ve ASLA uydurma bilgi verme.`;
     }
 
     // Call Lovable AI Gateway
@@ -647,18 +820,21 @@ serve(async (req) => {
     // Apply policy filter
     assistantMessage = applyPolicyFilter(assistantMessage);
 
-    // Increment usage count
-    const { data: newUsageData } = await supabaseAdmin.rpc("increment_chatbot_usage", {
-      p_user_id: userId
-    });
-
-    const newUsageCount = newUsageData ?? currentUsage + 1;
-    console.log(`User ${userId} new usage: ${newUsageCount}/${DAILY_LIMIT}`);
+    // Increment usage count (skip for admin users)
+    let newUsageCount = currentUsage;
+    if (!isAdmin) {
+      const { data: newUsageData } = await supabaseAdmin.rpc("increment_chatbot_usage", {
+        p_user_id: userId
+      });
+      newUsageCount = newUsageData ?? currentUsage + 1;
+    }
+    
+    console.log(`User ${userId} new usage: ${isAdmin ? "∞ (admin)" : `${newUsageCount}/${DAILY_LIMIT}`}`);
 
     // Save messages to chat history
     await supabaseAdmin.from("chat_history").insert([
       { user_id: userId, role: "user", content: message, metadata: { intent: intent.type, teams: intent.teams, hasContext: !!context, dataSource } },
-      { user_id: userId, role: "assistant", content: assistantMessage, metadata: { tokens: aiData.usage } }
+      { user_id: userId, role: "assistant", content: assistantMessage, metadata: { tokens: aiData.usage, dataAvailability } }
     ]);
 
     // Return response
@@ -672,7 +848,8 @@ serve(async (req) => {
         },
         isPremium: true,
         isAdmin,
-        dataSource: context ? dataSource : null
+        dataSource: context ? dataSource : null,
+        dataAvailability
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
