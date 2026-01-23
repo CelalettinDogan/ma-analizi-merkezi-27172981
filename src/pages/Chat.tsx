@@ -243,7 +243,11 @@ const Chat: React.FC = () => {
         ) : (
           // Chat interface
           <>
-            <ChatContainer messages={messages} isLoading={chatLoading} />
+            <ChatContainer 
+              messages={messages} 
+              isLoading={chatLoading} 
+              onQuickPrompt={handleSendMessage}
+            />
             
             {/* Usage meter */}
             {usage && (
