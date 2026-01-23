@@ -4,12 +4,13 @@ import { ArrowLeft, Trash2, Bot, Info } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { usePremiumStatus } from '@/hooks/usePremiumStatus';
+import { usePlatformPremium } from '@/hooks/usePlatformPremium';
 import { useChatbot } from '@/hooks/useChatbot';
 import ChatContainer from '@/components/chat/ChatContainer';
 import ChatInput from '@/components/chat/ChatInput';
 import UsageMeter from '@/components/chat/UsageMeter';
 import PremiumGate from '@/components/chat/PremiumGate';
+import WebPremiumGate from '@/components/chat/WebPremiumGate';
 import BottomNav from '@/components/navigation/BottomNav';
 import { fadeInUp } from '@/lib/animations';
 import { MatchAnalysis } from '@/types/match';
@@ -43,7 +44,8 @@ const Chat: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isLoading: authLoading } = useAuth();
-  const { isPremium, isLoading: premiumLoading } = usePremiumStatus();
+  // Platform-aware premium - web users can NEVER access premium features
+  const { isPremium, isLoading: premiumLoading, isWebPlatform } = usePlatformPremium();
   const {
     messages,
     isLoading: chatLoading,
@@ -238,8 +240,11 @@ const Chat: React.FC = () => {
               <p className="text-sm text-muted-foreground">Yükleniyor...</p>
             </div>
           </div>
+        ) : isWebPlatform ? (
+          // Web users: Always show app download gate (premium only on mobile)
+          <WebPremiumGate onClose={() => navigate(-1)} variant="chatbot" />
         ) : !isPremium && !isAdmin ? (
-          // Premium gate - Free users cannot access chatbot
+          // Native non-premium users: Show premium upgrade gate
           <PremiumGate onClose={() => navigate(-1)} variant="chatbot" />
         ) : (
           // Chat interface
