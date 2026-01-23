@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Zap, MessageSquare, Target, TrendingUp, Check, Smartphone, Globe } from 'lucide-react';
+import { Crown, Brain, Globe, Zap, Ban, History, Check, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,10 +13,11 @@ interface PremiumUpgradeProps {
 }
 
 const features = [
-  { icon: MessageSquare, label: 'Sınırsız AI Sohbet', description: 'Günlük 50 mesaj limiti' },
-  { icon: Target, label: 'Gelişmiş Tahminler', description: 'Daha detaylı analiz ve öngörüler' },
-  { icon: TrendingUp, label: 'Trend Analizi', description: 'Form ve performans grafikleri' },
-  { icon: Zap, label: 'Öncelikli Destek', description: 'Hızlı yanıt ve özel destek' },
+  { icon: Brain, label: 'Derin Analiz', description: 'xG, momentum, taktik analizi ve 15+ istatistiksel metrik' },
+  { icon: Globe, label: 'Daha Fazla Lig', description: 'Tüm büyük Avrupa ligleri + 2. lig verileri' },
+  { icon: Zap, label: 'Öncelikli AI Yanıtları', description: 'Daha hızlı ve detaylı AI analiz cevapları' },
+  { icon: Ban, label: 'Reklamsız Deneyim', description: 'Kesintisiz, temiz arayüz' },
+  { icon: History, label: 'Analiz Geçmişi', description: 'Tüm geçmiş analizlerinize erişim' },
 ];
 
 const plans = [
@@ -47,7 +48,6 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
 
     try {
       if (isNative) {
-        // Native purchase flow (Android/iOS)
         const result = await purchaseService.purchaseSubscription(selectedPlan);
         
         if (result.success) {
@@ -57,10 +57,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
           toast.error(result.error || 'Satın alma başarısız');
         }
       } else {
-        // Web purchase flow - redirect to Stripe or show instructions
         toast.info('Web üzerinden ödeme için kart bilgilerinizi gireceksiniz.');
-        // Here you would integrate Stripe or another payment provider
-        // For now, just show a message
         toast.warning('Web ödeme entegrasyonu henüz aktif değil. Play Store\'dan satın alabilirsiniz.');
       }
     } catch (error) {
@@ -104,7 +101,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
           </div>
           <CardTitle className="text-2xl">Premium'a Yükselt</CardTitle>
           <p className="text-muted-foreground text-sm mt-2">
-            Tüm özelliklerin kilidini aç ve en iyi tahmin deneyimini yaşa
+            Tüm özelliklerin kilidini aç ve en iyi analiz deneyimini yaşa
           </p>
           
           {/* Platform indicator */}

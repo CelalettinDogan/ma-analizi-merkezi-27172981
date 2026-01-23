@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { BetSlipProvider } from "@/contexts/BetSlipContext";
+import { AnalysisSetProvider } from "@/contexts/AnalysisSetContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Live from "./pages/Live";
@@ -12,6 +12,7 @@ import Standings from "./pages/Standings";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
+import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
@@ -22,7 +23,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <BetSlipProvider>
+        <AnalysisSetProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -34,6 +35,7 @@ const App = () => (
                 <Route path="/live" element={<Live />} />
                 <Route path="/standings" element={<Standings />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/chat" element={<Chat />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
@@ -41,7 +43,7 @@ const App = () => (
               </Routes>
             </ErrorBoundary>
           </BrowserRouter>
-        </BetSlipProvider>
+        </AnalysisSetProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

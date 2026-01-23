@@ -1,4 +1,4 @@
-export interface BetSlipItem {
+export interface AnalysisSetItem {
   id: string;
   league: string;
   homeTeam: string;
@@ -7,10 +7,10 @@ export interface BetSlipItem {
   predictionType: string;
   predictionValue: string;
   confidence: 'düşük' | 'orta' | 'yüksek';
-  odds: number | null; // null when real odds not available
+  odds: number | null;
 }
 
-export interface BetSlip {
+export interface AnalysisSet {
   id: string;
   created_at: string;
   name: string | null;
@@ -19,10 +19,10 @@ export interface BetSlip {
   potential_win: number | null;
   status: 'pending' | 'won' | 'lost' | 'partial';
   is_verified: boolean;
-  items?: BetSlipItemRecord[];
+  items?: AnalysisSetItemRecord[];
 }
 
-export interface BetSlipItemRecord {
+export interface AnalysisSetItemRecord {
   id: string;
   slip_id: string;
   league: string;
@@ -38,3 +38,8 @@ export interface BetSlipItemRecord {
   away_score: number | null;
   created_at: string;
 }
+
+// Backward compatibility - export with old names
+export type BetSlipItem = AnalysisSetItem;
+export type BetSlip = AnalysisSet;
+export type BetSlipItemRecord = AnalysisSetItemRecord;

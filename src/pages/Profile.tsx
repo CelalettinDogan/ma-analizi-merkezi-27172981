@@ -1,378 +1,144 @@
-import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import React from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Heart, 
-  Trophy, 
-  Settings, 
-  LogOut, 
-  ChevronRight,
-  RefreshCw,
-  Mail,
-  Calendar,
-  Brain,
-  Target,
-  CheckCircle2,
-  Clock,
-  XCircle
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { User, Heart, Settings, LogOut, ChevronRight, Crown, Star, RefreshCw, Bot } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFavorites } from '@/hooks/useFavorites';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { usePremiumStatus } from '@/hooks/usePremiumStatus';
+import { useOnboarding } from '@/hooks/useOnboarding';
+import AppHeader from '@/components/layout/AppHeader';
+import AppFooter from '@/components/layout/AppFooter';
+import BottomNav from '@/components/navigation/BottomNav';
+import { PremiumUpgrade } from '@/components/premium/PremiumUpgrade';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { ProfileSkeleton } from '@/components/ui/skeletons';
-import AppHeader from '@/components/layout/AppHeader';
-import BottomNav from '@/components/navigation/BottomNav';
-import SavedSlipsList from '@/components/betslip/SavedSlipsList';
-import { PremiumUpgrade } from '@/components/premium';
-import { usePremiumStatus } from '@/hooks/usePremiumStatus';
-import { PredictionRecord } from '@/types/prediction';
 
-const Profile: React.FC = () => {
-  const { user, signOut, isLoading: authLoading } = useAuth();
-  const { favorites, isLoading: favoritesLoading, getFavoritesByType } = useFavorites();
-  const { isPremium, isLoading: premiumLoading } = usePremiumStatus();
-
-  // Fetch user prediction stats with detailed breakdown
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['user-stats-detailed', user?.id],
-    queryFn: async () => {
-      if (!user) return null;
-      
-      const { data: predictions, error } = await supabase
-        .from('predictions')
-        .select('is_correct, created_at, home_team, away_team, prediction_type, prediction_value, match_date')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      const total = predictions?.length || 0;
-      const verified = predictions?.filter(p => p.is_correct !== null) || [];
-      const correct = verified.filter(p => p.is_correct === true).length;
-      const pending = predictions?.filter(p => p.is_correct === null).length || 0;
-      const accuracy = verified.length > 0 ? Math.round((correct / verified.length) * 100) : 0;
-      const recentPredictions = predictions?.slice(0, 5) || [];
-      
-      return { 
-        total, 
-        correct, 
-        pending, 
-        accuracy, 
-        verifiedTotal: verified.length,
-        recentPredictions 
-      };
-    },
-    enabled: !!user,
-  });
-
-  // Fetch saved bet slips count
-  const { data: slipsCount } = useQuery({
-    queryKey: ['user-slips-count', user?.id],
-    queryFn: async () => {
-      if (!user) return 0;
-      
-      const { count, error } = await supabase
-        .from('bet_slips')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-      
-      if (error) throw error;
-      return count || 0;
-    },
-    enabled: !!user,
-  });
+const Profile = () => {
+  const navigate = useNavigate();
+  const { user, isLoading: authLoading, signOut } = useAuth();
+  const { favorites, getFavoritesByType } = useFavorites();
+  const { isPremium } = usePremiumStatus();
+  const { resetOnboarding } = useOnboarding();
 
   const handleResetOnboarding = () => {
-    localStorage.removeItem('golmetrik_onboarding_completed');
+    resetOnboarding();
     window.location.reload();
   };
 
   const handleSignOut = async () => {
     await signOut();
+    navigate('/');
   };
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen bg-background">
         <AppHeader />
-        <div className="container mx-auto px-4 py-8">
-          <ProfileSkeleton />
-        </div>
+        <main className="container mx-auto px-4 py-6 pb-24 lg:pb-6">
+          <div className="space-y-4"><Skeleton className="h-32 w-full" /><Skeleton className="h-48 w-full" /></div>
+        </main>
         <BottomNav />
       </div>
     );
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <AppHeader />
+        <main className="flex-1 container mx-auto px-4 py-6 pb-24 lg:pb-6 flex items-center justify-center">
+          <Card className="w-full max-w-md glass-card">
+            <CardContent className="pt-6 text-center">
+              <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h2 className="text-xl font-bold mb-2">Giriş Yapın</h2>
+              <p className="text-muted-foreground mb-6">Profilinizi görüntülemek için lütfen giriş yapın</p>
+              <Link to="/auth"><Button className="w-full">Giriş Yap</Button></Link>
+            </CardContent>
+          </Card>
+        </main>
+        <AppFooter />
+        <BottomNav />
+      </div>
+    );
   }
 
   const displayName = user.user_metadata?.display_name || user.email?.split('@')[0] || 'Kullanıcı';
   const initials = displayName.slice(0, 2).toUpperCase();
-  const memberSince = user.created_at ? format(new Date(user.created_at), 'd MMMM yyyy', { locale: tr }) : '';
-
-  const favoriteTeams = getFavoritesByType('team');
+  const memberSince = user.created_at ? format(new Date(user.created_at), 'MMMM yyyy', { locale: tr }) : null;
   const favoriteLeagues = getFavoritesByType('league');
-
-  // AI Learning percentage
-  const aiLearningPercent = stats?.verifiedTotal ? Math.min((stats.verifiedTotal / 100) * 100, 100) : 0;
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
-  };
-
-  const getStatusIcon = (isCorrect: boolean | null) => {
-    if (isCorrect === null) return <Clock className="w-3.5 h-3.5 text-secondary" />;
-    if (isCorrect) return <CheckCircle2 className="w-3.5 h-3.5 text-primary" />;
-    return <XCircle className="w-3.5 h-3.5 text-destructive" />;
-  };
+  const favoriteTeams = getFavoritesByType('team');
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background flex flex-col">
       <AppHeader />
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="space-y-6"
-        >
+      <main className="flex-1 container mx-auto px-4 py-6 pb-24 lg:pb-6">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-lg mx-auto">
           {/* Profile Header */}
-          <motion.div variants={itemVariants}>
-            <Card className="border-border/50 bg-gradient-to-br from-card to-card/80">
-              <CardContent className="pt-6">
+          <Card className="glass-card">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16 border-2 border-primary/30">
+                  <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">{initials}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-xl font-bold truncate">{displayName}</h1>
+                    {isPremium && <Crown className="h-5 w-5 text-amber-500 flex-shrink-0" />}
+                  </div>
+                  <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                  {memberSince && <p className="text-xs text-muted-foreground mt-1">Üye: {memberSince}</p>}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* AI Chat */}
+          <Link to="/chat">
+            <Card className="glass-card hover:border-primary/50 transition-colors cursor-pointer">
+              <CardContent className="py-4">
                 <div className="flex items-center gap-4">
-                  <Avatar className="h-20 w-20 border-2 border-primary/20">
-                    <AvatarFallback className="bg-primary/20 text-primary text-2xl font-bold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <h1 className="text-2xl font-display font-bold text-foreground">{displayName}</h1>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                      <Mail className="w-4 h-4" />
-                      <span>{user.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                      <Calendar className="w-3 h-3" />
-                      <span>Üyelik: {memberSince}</span>
-                    </div>
-                  </div>
+                  <div className="p-3 rounded-xl bg-primary/10"><Bot className="h-6 w-6 text-primary" /></div>
+                  <div className="flex-1"><p className="font-medium">AI Analiz Asistanı</p><p className="text-sm text-muted-foreground">Maç analizi için soru sor</p></div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </Link>
 
-          {/* Stats Grid - Compact */}
-          <motion.div variants={itemVariants}>
-            <div className="grid grid-cols-4 gap-2">
-              <Card className="border-border/50">
-                <CardContent className="p-3 text-center">
-                  <div className="text-xl font-bold text-primary">{stats?.total || 0}</div>
-                  <div className="text-[10px] text-muted-foreground">Toplam</div>
-                </CardContent>
-              </Card>
-              <Card className="border-border/50">
-                <CardContent className="p-3 text-center">
-                  <div className="text-xl font-bold text-emerald-500">{stats?.correct || 0}</div>
-                  <div className="text-[10px] text-muted-foreground">Doğru</div>
-                </CardContent>
-              </Card>
-              <Card className="border-border/50">
-                <CardContent className="p-3 text-center">
-                  <div className="text-xl font-bold text-amber-500">{stats?.accuracy || 0}%</div>
-                  <div className="text-[10px] text-muted-foreground">Başarı</div>
-                </CardContent>
-              </Card>
-              <Card className="border-border/50">
-                <CardContent className="p-3 text-center">
-                  <div className="text-xl font-bold text-blue-500">{slipsCount || 0}</div>
-                  <div className="text-[10px] text-muted-foreground">Kupon</div>
-                </CardContent>
-              </Card>
-            </div>
-          </motion.div>
-
-          {/* AI Learning Progress - Compact */}
-          <motion.div variants={itemVariants}>
-            <Card className="border-border/50 bg-gradient-to-r from-primary/5 to-secondary/5">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Brain className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium">AI Öğrenme Durumu</span>
-                      <span className="text-xs text-muted-foreground">
-                        {stats?.verifiedTotal || 0}/100 doğrulama
-                      </span>
-                    </div>
-                    <Progress value={aiLearningPercent} className="h-2" />
-                  </div>
+          {/* Favorites */}
+          <Card className="glass-card">
+            <CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-base"><Heart className="h-5 w-5 text-primary" />Favorilerim</CardTitle></CardHeader>
+            <CardContent>
+              {favorites.length === 0 ? <p className="text-sm text-muted-foreground text-center py-4">Henüz favori eklenmedi</p> : (
+                <div className="space-y-3">
+                  {favoriteLeagues.length > 0 && <div><p className="text-xs text-muted-foreground mb-2">Ligler</p><div className="flex flex-wrap gap-2">{favoriteLeagues.map((fav) => <Badge key={fav.id} variant="outline" className="gap-1"><Star className="h-3 w-3 text-primary" />{fav.favorite_name}</Badge>)}</div></div>}
+                  {favoriteTeams.length > 0 && <div><p className="text-xs text-muted-foreground mb-2">Takımlar</p><div className="flex flex-wrap gap-2">{favoriteTeams.map((fav) => <Badge key={fav.id} variant="outline" className="gap-1"><Star className="h-3 w-3 text-primary" />{fav.favorite_name}</Badge>)}</div></div>}
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+              )}
+            </CardContent>
+          </Card>
 
-          {/* Recent Predictions - Mini Feed */}
-          {stats?.recentPredictions && stats.recentPredictions.length > 0 && (
-            <motion.div variants={itemVariants}>
-              <Card className="border-border/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Target className="w-4 h-4 text-primary" />
-                    Son Tahminlerim
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {stats.recentPredictions.map((prediction: any, index: number) => (
-                    <div 
-                      key={index}
-                      className="flex items-center gap-2 py-2 border-b border-border/30 last:border-0"
-                    >
-                      {getStatusIcon(prediction.is_correct)}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm truncate">
-                          {prediction.home_team} - {prediction.away_team}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {prediction.prediction_value}
-                        </p>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {format(new Date(prediction.match_date), 'd MMM', { locale: tr })}
-                      </span>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
+          {/* Premium */}
+          {!isPremium && <PremiumUpgrade />}
 
-          {/* Favorites Section */}
-          <motion.div variants={itemVariants}>
-            <Card className="border-border/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Heart className="w-5 h-5 text-red-500" />
-                  Favorilerim
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {favoritesLoading ? (
-                  <div className="text-sm text-muted-foreground">Yükleniyor...</div>
-                ) : favorites.length === 0 ? (
-                  <div className="text-sm text-muted-foreground text-center py-4">
-                    Henüz favori eklenmemiş. Ligler ve takımlar sayfasından favorilerinizi ekleyebilirsiniz.
-                  </div>
-                ) : (
-                  <>
-                    {favoriteLeagues.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-medium text-muted-foreground mb-2">Ligler</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {favoriteLeagues.map((fav) => (
-                            <Badge key={fav.id} variant="secondary" className="gap-1">
-                              <Trophy className="w-3 h-3" />
-                              {fav.favorite_name || fav.favorite_id}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {favoriteTeams.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-medium text-muted-foreground mb-2">Takımlar</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {favoriteTeams.map((fav) => (
-                            <Badge key={fav.id} variant="outline" className="gap-1">
-                              {fav.favorite_name || fav.favorite_id}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
+          {/* Settings */}
+          <Card className="glass-card">
+            <CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-base"><Settings className="h-5 w-5 text-primary" />Ayarlar</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              <Button variant="ghost" className="w-full justify-start gap-3 h-11" onClick={handleResetOnboarding}><RefreshCw className="h-4 w-4 text-muted-foreground" /><span>Tanıtımı Tekrar Göster</span></Button>
+              <Button variant="ghost" className="w-full justify-start gap-3 h-11 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleSignOut}><LogOut className="h-4 w-4" /><span>Çıkış Yap</span></Button>
+            </CardContent>
+          </Card>
 
-          {/* Kuponlarım Section */}
-          <motion.div variants={itemVariants}>
-            <SavedSlipsList />
-          </motion.div>
-
-          {/* Premium Section */}
-          <motion.div variants={itemVariants}>
-            <PremiumUpgrade />
-          </motion.div>
-
-          {/* Quick Links */}
-          <motion.div variants={itemVariants}>
-            <Card className="border-border/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Settings className="w-5 h-5" />
-                  Hızlı Erişim
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-between rounded-none h-12 px-6"
-                  onClick={handleResetOnboarding}
-                >
-                  <div className="flex items-center gap-3">
-                    <RefreshCw className="w-5 h-5 text-blue-500" />
-                    <span>Tanıtımı Tekrar Göster</span>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                </Button>
-                <Separator />
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-between rounded-none h-12 px-6 text-destructive hover:text-destructive"
-                  onClick={handleSignOut}
-                >
-                  <div className="flex items-center gap-3">
-                    <LogOut className="w-5 h-5" />
-                    <span>Çıkış Yap</span>
-                  </div>
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Legal Notice */}
-          <motion.div variants={itemVariants}>
-            <p className="text-xs text-center text-muted-foreground px-4">
-              Bu platform yalnızca bilgilendirme amaçlıdır. Bahis tavsiyesi veya teşviki içermez.
-              Kullanıcılar 18 yaşından büyük olmalıdır.
-            </p>
-          </motion.div>
+          <p className="text-xs text-muted-foreground text-center px-4">📊 Tüm içerikler istatistiksel analiz amaçlıdır ve tavsiye niteliği taşımaz.</p>
         </motion.div>
-      </div>
+      </main>
+      <AppFooter />
       <BottomNav />
     </div>
   );
