@@ -962,6 +962,8 @@ export type Database = {
     Functions: {
       cleanup_old_bet_slips: { Args: never; Returns: undefined }
       cleanup_old_cached_matches: { Args: never; Returns: undefined }
+      cleanup_old_chat_history: { Args: never; Returns: undefined }
+      cleanup_old_chatbot_usage: { Args: never; Returns: undefined }
       cleanup_old_features: { Args: never; Returns: undefined }
       cleanup_old_predictions: { Args: never; Returns: undefined }
       get_daily_usage: { Args: { p_user_id: string }; Returns: number }

@@ -446,6 +446,20 @@ serve(async (req) => {
     const userId = user.id;
     console.log(`User ${userId} requesting chatbot`);
 
+    // Check if user is admin (bypass all limits)
+    const { data: adminRole } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    const isAdmin = !!adminRole;
+    
+    if (isAdmin) {
+      console.log(`Admin user ${userId} - bypassing all limits`);
+    }
+
     // Check premium status
     const { data: premiumData } = await supabaseAdmin
       .from("premium_subscriptions")
@@ -457,8 +471,9 @@ serve(async (req) => {
 
     const isPremium = premiumData && premiumData.length > 0;
 
-    if (!isPremium) {
-      console.log(`User ${userId} is not premium`);
+    // Admins bypass premium check
+    if (!isPremium && !isAdmin) {
+      console.log(`User ${userId} is not premium and not admin`);
       return new Response(
         JSON.stringify({ 
           error: "Bu özellik sadece Premium üyelere açıktır", 
@@ -469,7 +484,7 @@ serve(async (req) => {
       );
     }
 
-    // Check daily usage limit
+    // Check daily usage limit (admins bypass this)
     const { data: usageData } = await supabaseAdmin
       .from("chatbot_usage")
       .select("usage_count")
@@ -479,7 +494,8 @@ serve(async (req) => {
 
     const currentUsage = usageData?.usage_count ?? 0;
 
-    if (currentUsage >= DAILY_LIMIT) {
+    // Admins bypass daily limit
+    if (currentUsage >= DAILY_LIMIT && !isAdmin) {
       console.log(`User ${userId} exceeded daily limit: ${currentUsage}/${DAILY_LIMIT}`);
       return new Response(
         JSON.stringify({ 
@@ -650,11 +666,12 @@ serve(async (req) => {
       JSON.stringify({
         message: assistantMessage,
         usage: {
-          current: newUsageCount,
-          limit: DAILY_LIMIT,
-          remaining: DAILY_LIMIT - newUsageCount
+          current: isAdmin ? 0 : newUsageCount,
+          limit: isAdmin ? "∞" : DAILY_LIMIT,
+          remaining: isAdmin ? "∞" : DAILY_LIMIT - newUsageCount
         },
         isPremium: true,
+        isAdmin,
         dataSource: context ? dataSource : null
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
