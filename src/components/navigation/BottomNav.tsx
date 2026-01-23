@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Zap, Trophy, BarChart3, User } from 'lucide-react';
+import { Home, Zap, Bot, BarChart3, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -9,12 +9,13 @@ interface NavItem {
   label: string;
   path: string;
   isAction?: boolean;
+  badge?: 'premium' | 'live';
 }
 
 const navItems: NavItem[] = [
   { icon: Home, label: 'Ana Sayfa', path: '/' },
-  { icon: Zap, label: 'Canlı', path: '/live' },
-  { icon: Trophy, label: 'Sıralama', path: '/standings' },
+  { icon: Zap, label: 'Canlı', path: '/live', badge: 'live' },
+  { icon: Bot, label: 'AI Chat', path: '/chat', badge: 'premium' },
   { icon: BarChart3, label: 'Dashboard', path: '/dashboard' },
   { icon: User, label: 'Profil', path: '/profile' },
 ];
@@ -73,8 +74,13 @@ const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(({ onSearchClick
                       isActive ? "text-primary" : "text-muted-foreground"
                     )} 
                   />
-                  {item.path === '/live' && (
+                  {item.badge === 'live' && (
                     <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-destructive rounded-full animate-pulse" />
+                  )}
+                  {item.badge === 'premium' && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
+                      <span className="text-[6px] text-white font-bold">★</span>
+                    </span>
                   )}
                 </div>
                 <span className={cn(

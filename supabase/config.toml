@@ -8,3 +8,18 @@ verify_jwt = false
 
 [functions.auto-verify]
 verify_jwt = false
+
+[functions.sync-live-matches]
+verify_jwt = false
+
+[functions.sync-matches]
+verify_jwt = false
+
+[functions.sync-standings]
+verify_jwt = false
+
+[functions.admin-cron-status]
+verify_jwt = false
+
+[functions.ai-chatbot]
+verify_jwt = false
