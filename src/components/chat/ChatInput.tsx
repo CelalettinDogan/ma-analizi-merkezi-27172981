@@ -3,6 +3,7 @@ import { Send, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSmartPrompts } from '@/hooks/useSmartPrompts';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -10,13 +11,6 @@ interface ChatInputProps {
   disabled?: boolean;
   placeholder?: string;
 }
-
-const QUICK_PROMPTS = [
-  "Barcelona - Real Madrid maç analizi",
-  "Bu hafta 2.5 üst öneriler",
-  "Galatasaray son form durumu",
-  "Premier Lig puan durumu",
-];
 
 const ChatInput: React.FC<ChatInputProps> = ({ 
   onSend, 
@@ -27,6 +21,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const [message, setMessage] = useState('');
   const [showQuickPrompts, setShowQuickPrompts] = useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { prompts, isLoading: promptsLoading } = useSmartPrompts(4);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -50,39 +45,53 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  const handleQuickPrompt = (prompt: string) => {
-    onSend(prompt);
-    setShowQuickPrompts(false);
+  const handleQuickPrompt = (promptText: string) => {
+    if (!isLoading && !disabled) {
+      onSend(promptText);
+      setShowQuickPrompts(false);
+    }
   };
 
   return (
     <div className="border-t border-border bg-card/50 backdrop-blur-xl p-4 space-y-3">
-      {/* Quick Prompts */}
+      {/* Quick Prompts - Dinamik */}
       <AnimatePresence>
-        {showQuickPrompts && !disabled && (
+        {showQuickPrompts && !disabled && !promptsLoading && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             className="flex flex-wrap gap-2"
           >
-            {QUICK_PROMPTS.map((prompt, index) => (
+            {prompts.map((prompt, index) => (
               <motion.button
-                key={prompt}
+                key={prompt.text}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.05 }}
-                onClick={() => handleQuickPrompt(prompt)}
+                onClick={() => handleQuickPrompt(prompt.text)}
                 disabled={isLoading}
                 className="px-3 py-1.5 text-xs bg-muted hover:bg-muted/80 rounded-full transition-colors flex items-center gap-1.5"
               >
-                <Sparkles className="w-3 h-3 text-primary" />
-                {prompt}
+                <span>{prompt.icon}</span>
+                {prompt.text}
               </motion.button>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Loading state for prompts */}
+      {showQuickPrompts && promptsLoading && !disabled && (
+        <div className="flex flex-wrap gap-2">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="h-7 w-36 rounded-full bg-muted/40 animate-pulse"
+            />
+          ))}
+        </div>
+      )}
 
       {/* Input Area */}
       <div className="flex items-end gap-2">
@@ -92,6 +101,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
+            onFocus={() => setShowQuickPrompts(true)}
             placeholder={placeholder}
             disabled={disabled || isLoading}
             className="min-h-[44px] max-h-[150px] resize-none pr-12 rounded-2xl bg-background border-border/50 focus:border-primary/50"
