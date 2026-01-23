@@ -41,6 +41,27 @@ const NEWS_PATTERNS = [
   /kim\s*forma\s*giyecek/i,
 ];
 
+// Known team name mappings (common variations to standard names)
+const TEAM_ALIASES: Record<string, string[]> = {
+  "Manchester United": ["man utd", "man united", "manchester utd", "mu", "united"],
+  "Manchester City": ["man city", "manchester city", "city", "mc"],
+  "Liverpool": ["liverpool", "lfc"],
+  "Chelsea": ["chelsea", "cfc"],
+  "Arsenal": ["arsenal", "afc", "gunners"],
+  "Tottenham": ["tottenham", "spurs", "thfc"],
+  "Real Madrid": ["real madrid", "real", "madrid", "rm"],
+  "Barcelona": ["barcelona", "barca", "fcb"],
+  "Bayern Munich": ["bayern", "bayern munich", "bayern munchen", "fcb"],
+  "Borussia Dortmund": ["dortmund", "bvb", "borussia dortmund"],
+  "Paris Saint-Germain": ["psg", "paris", "paris saint germain"],
+  "Juventus": ["juventus", "juve"],
+  "Inter Milan": ["inter", "inter milan", "internazionale"],
+  "AC Milan": ["milan", "ac milan"],
+  "Napoli": ["napoli"],
+  "Roma": ["roma", "as roma"],
+  "Atletico Madrid": ["atletico", "atletico madrid", "atleti"],
+};
+
 // Responsible gambling warnings
 const GAMBLING_WARNINGS = [
   "⚠️ Hatırlatma: Bahis sorumlu oynanmalıdır.",
@@ -109,31 +130,92 @@ function isNewsRequest(message: string): boolean {
   return NEWS_PATTERNS.some(pattern => pattern.test(message));
 }
 
+// Normalize team name for searching
+function normalizeTeamName(name: string): string {
+  return name.toLowerCase().trim();
+}
+
+// Try to find team in aliases
+function findTeamByAlias(query: string): string | null {
+  const normalized = normalizeTeamName(query);
+  
+  for (const [teamName, aliases] of Object.entries(TEAM_ALIASES)) {
+    if (aliases.some(alias => normalized.includes(alias) || alias.includes(normalized))) {
+      return teamName;
+    }
+    if (normalizeTeamName(teamName).includes(normalized)) {
+      return teamName;
+    }
+  }
+  
+  return null;
+}
+
+// Extract team names from message with improved detection
+function extractTeamNames(message: string): string[] {
+  const teams: string[] = [];
+  const lowerMessage = message.toLowerCase();
+  
+  // Check for known team aliases first
+  for (const [teamName, aliases] of Object.entries(TEAM_ALIASES)) {
+    for (const alias of aliases) {
+      if (lowerMessage.includes(alias)) {
+        if (!teams.includes(teamName)) {
+          teams.push(teamName);
+        }
+        break;
+      }
+    }
+    if (lowerMessage.includes(normalizeTeamName(teamName))) {
+      if (!teams.includes(teamName)) {
+        teams.push(teamName);
+      }
+    }
+  }
+  
+  // Try to extract from vs patterns
+  const vsPatterns = [
+    /(\w+(?:\s+\w+)?)\s*(?:vs?\.?|[-–]|karşı|maçı)\s*(\w+(?:\s+\w+)?)/gi,
+  ];
+  
+  for (const pattern of vsPatterns) {
+    const matches = message.matchAll(pattern);
+    for (const match of matches) {
+      if (match[1] && !teams.some(t => normalizeTeamName(t) === normalizeTeamName(match[1]))) {
+        const foundTeam = findTeamByAlias(match[1]);
+        if (foundTeam && !teams.includes(foundTeam)) {
+          teams.push(foundTeam);
+        } else if (!foundTeam && match[1].length > 2) {
+          teams.push(match[1].trim());
+        }
+      }
+      if (match[2] && !teams.some(t => normalizeTeamName(t) === normalizeTeamName(match[2]))) {
+        const foundTeam = findTeamByAlias(match[2]);
+        if (foundTeam && !teams.includes(foundTeam)) {
+          teams.push(foundTeam);
+        } else if (!foundTeam && match[2].length > 2) {
+          teams.push(match[2].trim());
+        }
+      }
+    }
+  }
+  
+  return teams.slice(0, 2); // Max 2 teams
+}
+
 // Parse user intent to detect match analysis requests
 function parseUserIntent(message: string): { type: string; teams: string[]; isNewsRequest: boolean } {
-  const matchKeywords = ['maç', 'analiz', 'karşılaşma', 'oyun', 'tahmin', 'skor', 'form', 'istatistik'];
+  const matchKeywords = ['maç', 'analiz', 'karşılaşma', 'oyun', 'tahmin', 'skor', 'form', 'istatistik', 'bugün', 'yarın'];
   const hasMatchIntent = matchKeywords.some(k => message.toLowerCase().includes(k));
   
   // Check if this is a news/rumor request
   const isNews = isNewsRequest(message);
   
-  // Try to extract team names (basic extraction)
-  const vsPatterns = [
-    /(\w+)\s*(?:vs?|[-–]|karşı)\s*(\w+)/i,
-    /(\w+)\s+(\w+)\s+maç/i,
-  ];
-  
-  let teams: string[] = [];
-  for (const pattern of vsPatterns) {
-    const match = message.match(pattern);
-    if (match) {
-      teams = [match[1], match[2]];
-      break;
-    }
-  }
+  // Extract team names with improved detection
+  const teams = extractTeamNames(message);
   
   return {
-    type: hasMatchIntent ? 'match_analysis' : 'general',
+    type: hasMatchIntent || teams.length > 0 ? 'match_analysis' : 'general',
     teams,
     isNewsRequest: isNews,
   };
@@ -173,6 +255,153 @@ ${teamMention} güncel haber/transfer/sakatlık verisi bulunmuyor. Ancak şu kon
 • 📊 Lig sıralaması ve puan durumu
 
 Hangi takım veya maç hakkında **istatistiksel analiz** yapmamı istersiniz?`;
+}
+
+// Fetch match data from cached_matches table
+async function fetchMatchData(supabaseAdmin: any, teams: string[]): Promise<any | null> {
+  if (teams.length === 0) return null;
+  
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  const startDate = yesterday.toISOString().split('T')[0];
+  const endDate = tomorrow.toISOString().split('T')[0];
+  
+  console.log(`Searching for matches with teams: ${teams.join(", ")} between ${startDate} and ${endDate}`);
+  
+  // Build search query for team names
+  let query = supabaseAdmin
+    .from("cached_matches")
+    .select("*")
+    .gte("utc_date", startDate)
+    .lte("utc_date", endDate + "T23:59:59Z")
+    .order("utc_date", { ascending: true });
+  
+  const { data: matches, error } = await query;
+  
+  if (error) {
+    console.error("Error fetching cached matches:", error);
+    return null;
+  }
+  
+  if (!matches || matches.length === 0) {
+    console.log("No matches found in date range");
+    return null;
+  }
+  
+  // Find matches that include the mentioned teams
+  const relevantMatches = matches.filter((match: any) => {
+    const homeTeam = normalizeTeamName(match.home_team_name);
+    const awayTeam = normalizeTeamName(match.away_team_name);
+    
+    return teams.some(team => {
+      const normalizedTeam = normalizeTeamName(team);
+      return homeTeam.includes(normalizedTeam) || 
+             awayTeam.includes(normalizedTeam) ||
+             normalizedTeam.includes(homeTeam) ||
+             normalizedTeam.includes(awayTeam);
+    });
+  });
+  
+  console.log(`Found ${relevantMatches.length} relevant matches`);
+  
+  if (relevantMatches.length === 0) {
+    return null;
+  }
+  
+  return relevantMatches;
+}
+
+// Fetch standings data for teams
+async function fetchStandingsData(supabaseAdmin: any, teams: string[]): Promise<any[]> {
+  if (teams.length === 0) return [];
+  
+  const { data: standings, error } = await supabaseAdmin
+    .from("cached_standings")
+    .select("*")
+    .order("position", { ascending: true });
+  
+  if (error || !standings) {
+    console.error("Error fetching standings:", error);
+    return [];
+  }
+  
+  // Find standings for mentioned teams
+  const relevantStandings = standings.filter((s: any) => {
+    const teamName = normalizeTeamName(s.team_name);
+    return teams.some(team => {
+      const normalizedTeam = normalizeTeamName(team);
+      return teamName.includes(normalizedTeam) || normalizedTeam.includes(teamName);
+    });
+  });
+  
+  return relevantStandings;
+}
+
+// Fetch today's matches if no specific team mentioned
+async function fetchTodaysMatches(supabaseAdmin: any): Promise<any[]> {
+  const today = new Date().toISOString().split('T')[0];
+  
+  const { data: matches, error } = await supabaseAdmin
+    .from("cached_matches")
+    .select("*")
+    .gte("utc_date", today)
+    .lte("utc_date", today + "T23:59:59Z")
+    .order("utc_date", { ascending: true })
+    .limit(10);
+  
+  if (error) {
+    console.error("Error fetching today's matches:", error);
+    return [];
+  }
+  
+  return matches || [];
+}
+
+// Build context from database data
+function buildContextFromData(matches: any[], standings: any[]): any {
+  const context: any = {
+    source: "database",
+    fetchedAt: new Date().toISOString(),
+  };
+  
+  if (matches && matches.length > 0) {
+    context.matches = matches.map((m: any) => ({
+      homeTeam: m.home_team_name,
+      awayTeam: m.away_team_name,
+      date: m.utc_date,
+      status: m.status,
+      competition: m.competition_name || m.competition_code,
+      matchday: m.matchday,
+      score: m.status === "FINISHED" ? {
+        home: m.home_score,
+        away: m.away_score,
+        winner: m.winner
+      } : null
+    }));
+  }
+  
+  if (standings && standings.length > 0) {
+    context.standings = standings.map((s: any) => ({
+      team: s.team_name,
+      position: s.position,
+      points: s.points,
+      played: s.played_games,
+      won: s.won,
+      draw: s.draw,
+      lost: s.lost,
+      goalsFor: s.goals_for,
+      goalsAgainst: s.goals_against,
+      goalDifference: s.goal_difference,
+      form: s.form,
+      competition: s.competition_name || s.competition_code
+    }));
+  }
+  
+  return context;
 }
 
 serve(async (req) => {
@@ -264,7 +493,7 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { message, context } = await req.json();
+    const { message, context: providedContext } = await req.json();
 
     if (!message || typeof message !== "string" || message.trim().length === 0) {
       return new Response(
@@ -278,7 +507,7 @@ serve(async (req) => {
     console.log(`Intent: ${intent.type}, Teams: ${intent.teams.join(", ")}, IsNews: ${intent.isNewsRequest}`);
 
     // If user is asking for news/rumors WITHOUT match context, return redirect response
-    if (intent.isNewsRequest && !context) {
+    if (intent.isNewsRequest && !providedContext) {
       const redirectResponse = getNewsRedirectResponse(intent.teams);
       
       // Increment usage and save to history
@@ -305,6 +534,30 @@ serve(async (req) => {
       );
     }
 
+    // Build context from database if not provided
+    let context = providedContext;
+    let dataSource = "provided";
+    
+    if (!context && intent.type === "match_analysis") {
+      console.log("No context provided, fetching from database...");
+      
+      // Fetch match and standings data
+      const [matchData, standingsData] = await Promise.all([
+        intent.teams.length > 0 
+          ? fetchMatchData(supabaseAdmin, intent.teams)
+          : fetchTodaysMatches(supabaseAdmin),
+        fetchStandingsData(supabaseAdmin, intent.teams)
+      ]);
+      
+      if ((matchData && matchData.length > 0) || (standingsData && standingsData.length > 0)) {
+        context = buildContextFromData(matchData || [], standingsData);
+        dataSource = "database";
+        console.log(`Built context from database: ${matchData?.length || 0} matches, ${standingsData?.length || 0} standings`);
+      } else {
+        console.log("No relevant data found in database");
+      }
+    }
+
     // Get recent chat history for context (last 10 messages)
     const { data: historyData } = await supabaseAdmin
       .from("chat_history")
@@ -325,9 +578,9 @@ serve(async (req) => {
       { role: "user", content: message }
     ];
 
-    // Add context if provided (match data, stats, etc.)
+    // Add context if available (from provided or database)
     if (context) {
-      const contextMessage = `\n\n[BAĞLAM VERİSİ - Yalnızca bu verilere dayanarak yanıt ver]\n${JSON.stringify(context, null, 2)}`;
+      const contextMessage = `\n\n[BAĞLAM VERİSİ - Yalnızca bu verilere dayanarak yanıt ver]\nKaynak: ${dataSource === "database" ? "Veritabanı (cached_matches, cached_standings)" : "Kullanıcı tarafından sağlandı"}\n${JSON.stringify(context, null, 2)}`;
       messages[messages.length - 1].content += contextMessage;
     }
 
@@ -388,7 +641,7 @@ serve(async (req) => {
 
     // Save messages to chat history
     await supabaseAdmin.from("chat_history").insert([
-      { user_id: userId, role: "user", content: message, metadata: { intent: intent.type, hasContext: !!context } },
+      { user_id: userId, role: "user", content: message, metadata: { intent: intent.type, teams: intent.teams, hasContext: !!context, dataSource } },
       { user_id: userId, role: "assistant", content: assistantMessage, metadata: { tokens: aiData.usage } }
     ]);
 
@@ -401,7 +654,8 @@ serve(async (req) => {
           limit: DAILY_LIMIT,
           remaining: DAILY_LIMIT - newUsageCount
         },
-        isPremium: true
+        isPremium: true,
+        dataSource: context ? dataSource : null
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
