@@ -91,12 +91,12 @@ const Chat: React.FC = () => {
     }
   }, [location.state]);
 
-  // Load chat history on mount
+  // Load chat history on mount (for premium and admin users)
   useEffect(() => {
-    if (user && isPremium) {
+    if (user && (isPremium || isAdmin)) {
       loadHistory();
     }
-  }, [user, isPremium, loadHistory]);
+  }, [user, isPremium, isAdmin, loadHistory]);
 
   // Redirect to auth if not logged in
   useEffect(() => {
