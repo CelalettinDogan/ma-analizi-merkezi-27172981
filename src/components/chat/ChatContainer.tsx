@@ -189,42 +189,58 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const hasScrolledRef = useRef(false);
+  const prevMessageCountRef = useRef(0);
 
-  // Scroll to bottom function
+  // Scroll to bottom function - stable reference
   const scrollToBottom = useCallback((behavior: ScrollBehavior = 'auto') => {
+    // Use double requestAnimationFrame for more reliable timing
     requestAnimationFrame(() => {
-      if (containerRef.current) {
-        containerRef.current.scrollTo({
-          top: containerRef.current.scrollHeight,
-          behavior
-        });
-      }
+      requestAnimationFrame(() => {
+        if (containerRef.current) {
+          containerRef.current.scrollTo({
+            top: containerRef.current.scrollHeight,
+            behavior
+          });
+        }
+      });
     });
   }, []);
 
   // Initial scroll when messages load (from history)
   useEffect(() => {
-    if (messages.length > 0 && !hasScrolledRef.current) {
-      // Small delay to ensure DOM is fully rendered
-      const timer = setTimeout(() => {
-        scrollToBottom('auto');
-        hasScrolledRef.current = true;
-      }, 150);
-      return () => clearTimeout(timer);
+    if (messages.length > 0 && !hasScrolledRef.current && !isLoadingHistory) {
+      // Multiple attempts to ensure scroll works after DOM render
+      const timers = [50, 150, 300].map(delay => 
+        setTimeout(() => {
+          if (containerRef.current) {
+            containerRef.current.scrollTop = containerRef.current.scrollHeight;
+          }
+        }, delay)
+      );
+      
+      hasScrolledRef.current = true;
+      return () => timers.forEach(clearTimeout);
     }
-  }, [messages.length, scrollToBottom]);
+  }, [messages.length, isLoadingHistory]);
 
   // Scroll on new messages (after initial load)
   useEffect(() => {
-    if (hasScrolledRef.current && messages.length > 0) {
+    const currentCount = messages.length;
+    const prevCount = prevMessageCountRef.current;
+    
+    // Only scroll if new message was added (not on initial load)
+    if (hasScrolledRef.current && currentCount > prevCount && prevCount > 0) {
       scrollToBottom('smooth');
     }
+    
+    prevMessageCountRef.current = currentCount;
   }, [messages.length, scrollToBottom]);
 
   // Reset scroll flag when messages are cleared
   useEffect(() => {
     if (messages.length === 0) {
       hasScrolledRef.current = false;
+      prevMessageCountRef.current = 0;
     }
   }, [messages.length]);
 
