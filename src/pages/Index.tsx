@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import HeroSection from '@/components/HeroSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
-import BetSlipButton from '@/components/betslip/BetSlipButton';
+import { AnalysisSetButton } from '@/components/analysis-set';
 import AppHeader from '@/components/layout/AppHeader';
 import AppFooter from '@/components/layout/AppFooter';
 import LeagueGrid from '@/components/league/LeagueGrid';
@@ -425,8 +425,8 @@ const Index: React.FC = () => {
       {/* Footer */}
       <AppFooter />
 
-      {/* Bet Slip Floating Button */}
-      <BetSlipButton />
+      {/* Analysis Set Floating Button */}
+      <AnalysisSetButton />
 
       {/* Bottom Navigation */}
       <BottomNav onSearchClick={() => setCommandOpen(true)} />

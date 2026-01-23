@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Prediction, MatchInput, MatchAnalysis } from '@/types/match';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { useBetSlip } from '@/contexts/BetSlipContext';
+import { useAnalysisSet } from '@/contexts/AnalysisSetContext';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { cn } from '@/lib/utils';
 import ShareCard from '@/components/ShareCard';
@@ -41,7 +41,7 @@ const confidenceConfig = {
 
 const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions, matchInput, fullAnalysis }) => {
   const navigate = useNavigate();
-  const { addToSlip, items } = useBetSlip();
+  const { addToSet, items } = useAnalysisSet();
   const { isPremium } = usePremiumStatus();
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showFullReasoning, setShowFullReasoning] = useState(false);
@@ -61,15 +61,15 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
   const confidenceLevel = getConfidenceLevel(getHybridConfidence(mainPrediction));
   const { icon: ConfidenceIcon, label: confidenceLabel, color, bg } = confidenceConfig[confidenceLevel];
 
-  const isInSlip = items.some(
+  const isInSet = items.some(
     item => 
       item.homeTeam === matchInput.homeTeam &&
       item.awayTeam === matchInput.awayTeam &&
       item.predictionType === mainPrediction.type
   );
 
-  const handleAddToSlipClick = () => {
-    addToSlip({
+  const handleAddToSetClick = () => {
+    addToSet({
       homeTeam: matchInput.homeTeam,
       awayTeam: matchInput.awayTeam,
       league: matchInput.league,
@@ -180,24 +180,24 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
         {/* Action Buttons */}
         <div className="flex gap-2">
           <Button 
-            onClick={handleAddToSlipClick}
-            disabled={isInSlip}
+            onClick={handleAddToSetClick}
+            disabled={isInSet}
             className={cn(
               "flex-1 gap-2",
-              isInSlip 
+              isInSet 
                 ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30" 
                 : "bg-gradient-to-r from-primary to-emerald-500 hover:from-primary/90 hover:to-emerald-500/90"
             )}
           >
-            {isInSlip ? (
+            {isInSet ? (
               <>
                 <Star className="w-4 h-4" />
-                Kuponda
+                Sette
               </>
             ) : (
               <>
                 <Plus className="w-4 h-4" />
-                Kupona Ekle
+                Analize Ekle
               </>
             )}
           </Button>

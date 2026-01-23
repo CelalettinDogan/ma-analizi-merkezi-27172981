@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { getBetSlips, deleteBetSlip } from '@/services/betSlipService';
-import { BetSlip } from '@/types/betslip';
+import { getAnalysisSets, deleteAnalysisSet } from '@/services/analysisSetService';
+import { AnalysisSet } from '@/types/analysisSet';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
@@ -34,7 +34,7 @@ const confidenceColors: Record<string, string> = {
 };
 
 const SavedAnalysisList: React.FC<SavedAnalysisListProps> = ({ isLoading: externalLoading, onRefresh, compact = false }) => {
-  const [slips, setSlips] = useState<BetSlip[]>([]);
+  const [slips, setSlips] = useState<AnalysisSet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
@@ -43,8 +43,8 @@ const SavedAnalysisList: React.FC<SavedAnalysisListProps> = ({ isLoading: extern
   const loadSlips = async () => {
     setIsLoading(true);
     try {
-      const fetchedSlips = await getBetSlips(compact ? 5 : 20);
-      setSlips(fetchedSlips);
+      const fetchedSets = await getAnalysisSets(compact ? 5 : 20);
+      setSlips(fetchedSets);
     } catch (error) {
       console.error('Error loading analysis sets:', error);
     } finally {
@@ -92,7 +92,7 @@ const SavedAnalysisList: React.FC<SavedAnalysisListProps> = ({ isLoading: extern
   };
 
   const handleDelete = async (id: string) => {
-    const success = await deleteBetSlip(id);
+    const success = await deleteAnalysisSet(id);
     if (success) {
       toast({ title: 'Analiz seti silindi' });
       loadSlips();

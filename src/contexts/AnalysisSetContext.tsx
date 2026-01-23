@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { AnalysisSetItem } from '@/types/analysisSet';
-import { saveBetSlip } from '@/services/betSlipService';
-import { getLuckyPicks, luckyPickToBetSlipItem } from '@/services/luckyPicksService';
+import { saveAnalysisSet } from '@/services/analysisSetService';
+import { getSmartPicks, smartPickToAnalysisSetItem } from '@/services/smartPicksService';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -75,8 +75,8 @@ export function AnalysisSetProvider({ children }: { children: React.ReactNode })
       return false;
     }
 
-    // Map to betslip format for DB compatibility
-    const slipItems = items.map(item => ({
+    // Map items for DB save
+    const setItems = items.map(item => ({
       league: item.league,
       homeTeam: item.homeTeam,
       awayTeam: item.awayTeam,
@@ -87,7 +87,7 @@ export function AnalysisSetProvider({ children }: { children: React.ReactNode })
       odds: item.odds,
     }));
 
-    const slipId = await saveBetSlip(slipItems as any, user.id, name);
+    const slipId = await saveAnalysisSet(setItems, user.id, name);
     
     if (slipId) {
       toast({
@@ -127,9 +127,9 @@ export function AnalysisSetProvider({ children }: { children: React.ReactNode })
 
     setIsLoadingSmart(true);
     try {
-      const luckyPicks = await getLuckyPicks(3);
+      const smartPicks = await getSmartPicks(3);
       
-      if (luckyPicks.length === 0) {
+      if (smartPicks.length === 0) {
         toast({
           title: 'Analiz Bulunamadı',
           description: 'Şu an için yeterli analiz mevcut değil. Önce maç analizi yapın.',
@@ -141,18 +141,18 @@ export function AnalysisSetProvider({ children }: { children: React.ReactNode })
       let addedCount = 0;
       const newItems: AnalysisSetItem[] = [];
 
-      for (const pick of luckyPicks) {
+      for (const pick of smartPicks) {
         if (isInSet(pick.homeTeam, pick.awayTeam, pick.predictionType)) {
           continue;
         }
 
-        const slipItem = luckyPickToBetSlipItem(pick);
-        const id = `${slipItem.homeTeam}-${slipItem.awayTeam}-${slipItem.predictionType}-${Date.now()}-${addedCount}`;
-        newItems.push({ ...slipItem, id });
+        const setItem = smartPickToAnalysisSetItem(pick);
+        const id = `${setItem.homeTeam}-${setItem.awayTeam}-${setItem.predictionType}-${Date.now()}-${addedCount}`;
+        newItems.push({ ...setItem, id });
         addedCount++;
       }
 
-      const skippedCount = luckyPicks.length - newItems.length;
+      const skippedCount = smartPicks.length - newItems.length;
       
       if (newItems.length > 0) {
         setItems((prev) => [...prev, ...newItems]);
@@ -166,7 +166,7 @@ export function AnalysisSetProvider({ children }: { children: React.ReactNode })
       } else {
         toast({
           title: 'Analizler Zaten Sette',
-          description: `${luckyPicks.length} seçili analiz de zaten setinizde mevcut.`,
+          description: `${smartPicks.length} seçili analiz de zaten setinizde mevcut.`,
         });
       }
 

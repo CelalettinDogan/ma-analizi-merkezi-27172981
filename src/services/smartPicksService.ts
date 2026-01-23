@@ -1,8 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
-import { BetSlipItem } from '@/types/betslip';
+import { AnalysisSetItem } from '@/types/analysisSet';
 import { format, addDays } from 'date-fns';
 
-export interface LuckyPick {
+export interface SmartPick {
   homeTeam: string;
   awayTeam: string;
   league: string;
@@ -17,7 +17,7 @@ export interface LuckyPick {
  * Get the top N highest confidence predictions for upcoming matches
  * Only includes matches that haven't started yet (status = TIMED or SCHEDULED)
  */
-export async function getLuckyPicks(limit: number = 3): Promise<LuckyPick[]> {
+export async function getSmartPicks(limit: number = 3): Promise<SmartPick[]> {
   const now = new Date().toISOString();
 
   // First get upcoming matches from cache to know which ones are actually not played
@@ -31,7 +31,7 @@ export async function getLuckyPicks(limit: number = 3): Promise<LuckyPick[]> {
 
   if (matchError) {
     console.error('Error fetching upcoming matches:', matchError);
-    throw new Error('Şanslı tahminler yüklenemedi');
+    throw new Error('Akıllı seçimler yüklenemedi');
   }
 
   if (!upcomingMatches || upcomingMatches.length === 0) {
@@ -58,8 +58,8 @@ export async function getLuckyPicks(limit: number = 3): Promise<LuckyPick[]> {
     .limit(100);
 
   if (predictionsError) {
-    console.error('Error fetching predictions for lucky picks:', predictionsError);
-    throw new Error('Şanslı tahminler yüklenemedi');
+    console.error('Error fetching predictions for smart picks:', predictionsError);
+    throw new Error('Akıllı seçimler yüklenemedi');
   }
 
   // Filter predictions to only include upcoming matches
@@ -68,12 +68,11 @@ export async function getLuckyPicks(limit: number = 3): Promise<LuckyPick[]> {
   ) || [];
 
   if (validPredictions.length === 0) {
-    // Fallback: Get from cached matches and calculate simple confidence
-    return await getLuckyPicksFromCachedMatches(limit);
+    throw new Error('Henüz analiz edilmiş tahmin bulunmuyor. Önce maç analizi yapın.');
   }
 
   // Get unique matches with their highest confidence prediction
-  const matchMap = new Map<string, LuckyPick>();
+  const matchMap = new Map<string, SmartPick>();
   
   for (const pred of validPredictions) {
     const matchKey = `${pred.home_team}-${pred.away_team}`;
@@ -116,18 +115,9 @@ export async function getLuckyPicks(limit: number = 3): Promise<LuckyPick[]> {
 }
 
 /**
- * Fallback: Throw error when no predictions available
- * This ensures users only get analyzed matches with real confidence scores
+ * Convert SmartPick to AnalysisSetItem format
  */
-async function getLuckyPicksFromCachedMatches(_limit: number): Promise<LuckyPick[]> {
-  // Instead of generating fake predictions, inform the user to analyze matches first
-  throw new Error('Henüz analiz edilmiş tahmin bulunmuyor. Önce maç analizi yapın.');
-}
-
-/**
- * Convert LuckyPick to BetSlipItem format
- */
-export function luckyPickToBetSlipItem(pick: LuckyPick): Omit<BetSlipItem, 'id'> {
+export function smartPickToAnalysisSetItem(pick: SmartPick): Omit<AnalysisSetItem, 'id'> {
   return {
     homeTeam: pick.homeTeam,
     awayTeam: pick.awayTeam,
@@ -139,3 +129,7 @@ export function luckyPickToBetSlipItem(pick: LuckyPick): Omit<BetSlipItem, 'id'>
     odds: null,
   };
 }
+
+// Backward compatibility
+export const getLuckyPicks = getSmartPicks;
+export const luckyPickToBetSlipItem = smartPickToAnalysisSetItem;

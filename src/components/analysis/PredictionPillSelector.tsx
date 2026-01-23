@@ -4,7 +4,7 @@ import { Plus, Sparkles, Check, Star, AlertTriangle, Info } from 'lucide-react';
 import { Prediction, MatchInput } from '@/types/match';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { useBetSlip } from '@/contexts/BetSlipContext';
+import { useAnalysisSet } from '@/contexts/AnalysisSetContext';
 import { cn } from '@/lib/utils';
 import { CONFIDENCE_THRESHOLDS } from '@/constants/predictions';
 
@@ -51,14 +51,14 @@ const confidenceConfig = {
 
 const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predictions, matchInput }) => {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const { addToSlip, items } = useBetSlip();
+  const { addToSet, items } = useAnalysisSet();
 
   // Sort predictions by hybrid confidence (highest first)
   const sortedPredictions = useMemo(() => {
     return [...predictions].sort((a, b) => getHybridConfidence(b) - getHybridConfidence(a));
   }, [predictions]);
 
-  const isInSlip = (prediction: Prediction) => {
+  const isInSet = (prediction: Prediction) => {
     return items.some(
       item => 
         item.homeTeam === matchInput.homeTeam &&
@@ -67,8 +67,8 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
     );
   };
 
-  const handleAddToSlipClick = (prediction: Prediction) => {
-    addToSlip({
+  const handleAddToSetClick = (prediction: Prediction) => {
+    addToSet({
       homeTeam: matchInput.homeTeam,
       awayTeam: matchInput.awayTeam,
       league: matchInput.league,
@@ -96,7 +96,7 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
           <div className="flex gap-2 min-w-max">
           {sortedPredictions.map((prediction, index) => {
             const isSelected = selectedIndex === index;
-            const inSlip = isInSlip(prediction);
+            const inSet = isInSet(prediction);
             const hybridConfidence = getHybridConfidence(prediction);
             const confidenceLevel = getConfidenceLevel(hybridConfidence);
             const { icon: LevelIcon, pillClass, inSlipClass } = confidenceConfig[confidenceLevel];
@@ -110,7 +110,7 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
                   "active:scale-95",
                   isSelected 
                     ? "bg-primary/20 text-primary border-primary/50 shadow-lg shadow-primary/10" 
-                    : inSlip 
+                    : inSet 
                       ? inSlipClass
                       : pillClass
                 )}
@@ -119,7 +119,7 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
                   {/* Simplified: just type + confidence icon */}
                   <span>{prediction.type}</span>
                   <LevelIcon className="w-3.5 h-3.5" />
-                  {inSlip && <Check className="w-3.5 h-3.5" />}
+                  {inSet && <Check className="w-3.5 h-3.5" />}
                 </div>
               </button>
             );
@@ -144,7 +144,7 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
               const hybridConfidence = getHybridConfidence(selectedPrediction);
               const confidenceLevel = getConfidenceLevel(hybridConfidence);
               const { color } = confidenceConfig[confidenceLevel];
-              const inSlip = isInSlip(selectedPrediction);
+              const inSet = isInSet(selectedPrediction);
               
               return (
                 <div className="p-4 rounded-xl bg-card border border-border/50 space-y-4">
@@ -182,25 +182,25 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
                     </p>
                   )}
 
-                  {/* Add to Slip */}
+                  {/* Add to Set */}
                   <Button
                     size="sm"
-                    onClick={() => handleAddToSlipClick(selectedPrediction)}
-                    disabled={inSlip}
+                    onClick={() => handleAddToSetClick(selectedPrediction)}
+                    disabled={inSet}
                     className={cn(
                       "w-full gap-2",
-                      inSlip && "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+                      inSet && "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
                     )}
                   >
-                    {inSlip ? (
+                    {inSet ? (
                       <>
                         <Check className="w-4 h-4" />
-                        Kuponda
+                        Sette
                       </>
                     ) : (
                       <>
                         <Plus className="w-4 h-4" />
-                        Kupona Ekle
+                        Analize Ekle
                       </>
                     )}
                   </Button>
