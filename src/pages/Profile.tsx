@@ -2,7 +2,6 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  User, 
   Heart, 
   Trophy, 
   BarChart3, 
@@ -11,8 +10,7 @@ import {
   ChevronRight,
   RefreshCw,
   Mail,
-  Calendar,
-  Receipt
+  Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,10 +28,13 @@ import AppHeader from '@/components/layout/AppHeader';
 import BottomNav from '@/components/navigation/BottomNav';
 import { Link } from 'react-router-dom';
 import SavedSlipsList from '@/components/betslip/SavedSlipsList';
+import { PremiumUpgrade } from '@/components/premium';
+import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 
 const Profile: React.FC = () => {
   const { user, signOut, isLoading: authLoading } = useAuth();
   const { favorites, isLoading: favoritesLoading, getFavoritesByType } = useFavorites();
+  const { isPremium, isLoading: premiumLoading } = usePremiumStatus();
 
   // Fetch user prediction stats
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -241,24 +242,9 @@ const Profile: React.FC = () => {
             <SavedSlipsList />
           </motion.div>
 
-          {/* Premium CTA */}
+          {/* Premium Section */}
           <motion.div variants={itemVariants}>
-            <Card className="p-4 bg-gradient-to-r from-amber-500/10 via-primary/5 to-amber-500/10 border-amber-500/30">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-amber-500/20">
-                  <Trophy className="w-6 h-6 text-amber-500" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-foreground">Premium Üyelik</h4>
-                  <p className="text-xs text-muted-foreground">
-                    Daha yüksek doğruluk oranına sahip premium tahminlere erişin
-                  </p>
-                </div>
-                <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">
-                  Keşfet
-                </Button>
-              </div>
-            </Card>
+            <PremiumUpgrade />
           </motion.div>
 
           {/* Quick Links */}
