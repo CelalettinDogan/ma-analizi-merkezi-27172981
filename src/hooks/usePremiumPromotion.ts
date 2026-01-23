@@ -8,6 +8,9 @@ interface UsePremiumPromotionReturn {
   shouldShowPromotion: (type: PromotionType) => boolean;
   promotionVisible: boolean;
   promotionType: PromotionType | null;
+  showLimitBanner: boolean;
+  setShowLimitBanner: (show: boolean) => void;
+  triggerLimitFeedback: () => void;
 }
 
 const STORAGE_KEY = 'premium_promotion_dismissed';
@@ -16,6 +19,7 @@ const DISMISS_DURATION = 24 * 60 * 60 * 1000; // 24 hours in ms
 export const usePremiumPromotion = (): UsePremiumPromotionReturn => {
   const [promotionVisible, setPromotionVisible] = useState(false);
   const [promotionType, setPromotionType] = useState<PromotionType | null>(null);
+  const [showLimitBanner, setShowLimitBanner] = useState(false);
 
   const getDismissedPromotions = useCallback((): Record<string, number> => {
     try {
@@ -53,6 +57,17 @@ export const usePremiumPromotion = (): UsePremiumPromotionReturn => {
     setPromotionType(null);
   }, [promotionType, getDismissedPromotions]);
 
+  // Trigger limit feedback - shows banner and haptic feedback
+  const triggerLimitFeedback = useCallback(() => {
+    // Show the inline banner
+    setShowLimitBanner(true);
+    
+    // Haptic feedback on mobile
+    if (navigator.vibrate) {
+      navigator.vibrate([50, 30, 50]);
+    }
+  }, []);
+
   // Cleanup old entries on mount
   useEffect(() => {
     const dismissed = getDismissedPromotions();
@@ -77,5 +92,8 @@ export const usePremiumPromotion = (): UsePremiumPromotionReturn => {
     shouldShowPromotion,
     promotionVisible,
     promotionType,
+    showLimitBanner,
+    setShowLimitBanner,
+    triggerLimitFeedback,
   };
 };

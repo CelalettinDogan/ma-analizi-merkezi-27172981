@@ -15,6 +15,8 @@ import Onboarding from '@/components/Onboarding';
 import TodaysMatches from '@/components/TodaysMatches';
 import { MatchCardSkeleton } from '@/components/ui/skeletons';
 import PremiumPromotionModal from '@/components/premium/PremiumPromotionModal';
+import AnalysisLimitBanner from '@/components/premium/AnalysisLimitBanner';
+import AppDownloadBanner from '@/components/promotion/AppDownloadBanner';
 import {
   MatchHeroCard,
   AIRecommendationCard,
@@ -33,6 +35,7 @@ import { useHomeData } from '@/hooks/useHomeData';
 import { useAnalysisLimit } from '@/hooks/useAnalysisLimit';
 import { usePremiumPromotion } from '@/hooks/usePremiumPromotion';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
+import { usePlatformPromotion } from '@/hooks/usePlatformPromotion';
 import { Calendar, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -46,7 +49,21 @@ const Index: React.FC = () => {
   const { showOnboarding, completeOnboarding } = useOnboarding();
   const { isPremium, planType } = usePremiumStatus();
   const { canAnalyze, usageCount, dailyLimit, remaining, incrementUsage } = useAnalysisLimit();
-  const { showPromotion, dismissPromotion, promotionVisible, promotionType } = usePremiumPromotion();
+  const { 
+    showPromotion, 
+    dismissPromotion, 
+    promotionVisible, 
+    promotionType,
+    shouldShowPromotion,
+    showLimitBanner,
+    setShowLimitBanner,
+    triggerLimitFeedback 
+  } = usePremiumPromotion();
+  const { 
+    isDesktop, 
+    showAppDownload, 
+    dismissAppDownload 
+  } = usePlatformPromotion();
   
   // Refs for scroll behavior
   const upcomingMatchesRef = useRef<HTMLDivElement>(null);
@@ -98,12 +115,6 @@ const Index: React.FC = () => {
 
   const handleLeagueSelect = (code: CompetitionCode) => {
     setSelectedLeague(code);
-    
-    // Show toast notification
-    const leagueName = SUPPORTED_COMPETITIONS.find(c => c.code === code)?.name || code;
-    toast.info(`${leagueName} maçları yükleniyor...`, {
-      duration: 2000,
-    });
 
     // Clear previous timeout if exists
     if (leagueScrollTimeoutRef.current) {
@@ -170,7 +181,12 @@ const Index: React.FC = () => {
     // Check analysis limit for non-premium users
     if (user && !isPremium && planType === 'free') {
       if (!canAnalyze) {
-        showPromotion('limit');
+        // First time: show modal, subsequent times: show banner
+        if (shouldShowPromotion('limit')) {
+          showPromotion('limit');
+        } else {
+          triggerLimitFeedback();
+        }
         return;
       }
     }
@@ -209,18 +225,6 @@ const Index: React.FC = () => {
       // Increment usage for non-premium users after successful analysis
       if (user && !isPremium && planType === 'free') {
         await incrementUsage();
-        
-        // Show usage toast
-        const newUsage = usageCount + 1;
-        if (newUsage < dailyLimit) {
-          toast.info(`Bugün ${newUsage}/${dailyLimit} analiz hakkınızı kullandınız. Premium ile sınırsız analiz!`, {
-            duration: 4000,
-          });
-        } else {
-          toast.warning('Günlük analiz hakkınız doldu. Premium ile sınırsız analiz yapın!', {
-            duration: 5000,
-          });
-        }
       }
     } catch (error) {
       toast.error('Analiz yüklenirken hata oluştu');
@@ -484,6 +488,24 @@ const Index: React.FC = () => {
         type={promotionType}
         onClose={dismissPromotion}
       />
+
+      {/* Analysis Limit Banner - Shows when limit reached and modal was dismissed */}
+      <AnalysisLimitBanner
+        isVisible={showLimitBanner}
+        onClose={() => setShowLimitBanner(false)}
+        onUpgrade={() => {
+          setShowLimitBanner(false);
+          showPromotion('limit');
+        }}
+      />
+
+      {/* App Download Banner - Desktop only */}
+      {isDesktop && (
+        <AppDownloadBanner
+          isVisible={showAppDownload}
+          onClose={dismissAppDownload}
+        />
+      )}
     </div>
   );
 };
