@@ -338,14 +338,20 @@ const Index: React.FC = () => {
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-primary" />
-                <h2 className="font-semibold">
-                  Yaklaşan Maçlar
-                </h2>
+                <div className="w-1.5 h-5 rounded-full bg-primary" />
+                <h2 className="font-semibold">Yaklaşan Maçlar</h2>
                 <span className="text-sm text-muted-foreground">
                   {SUPPORTED_COMPETITIONS.find(c => c.code === selectedLeague)?.name}
                 </span>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedLeague('')}
+                className="text-xs text-muted-foreground"
+              >
+                Temizle
+              </Button>
             </div>
             
             {isLoadingMatches ? (

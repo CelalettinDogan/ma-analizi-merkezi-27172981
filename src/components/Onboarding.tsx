@@ -6,8 +6,6 @@ import {
   Sparkles, 
   Trophy, 
   BarChart3, 
-  Zap, 
-  TrendingUp,
   ChevronLeft,
   ChevronRight,
   X
@@ -24,36 +22,25 @@ interface OnboardingStep {
   description: string;
 }
 
+// Reduced to 3 essential steps for faster onboarding
 const steps: OnboardingStep[] = [
   {
     icon: Sparkles,
     iconColor: 'text-yellow-400',
     title: "Gol Metrik'e Hoş Geldin! ⚽",
-    description: "Yapay zeka destekli futbol analiz platformu. Profesyonel istatistikler ve akıllı tahminlerle maçları analiz edin."
+    description: "Yapay zeka destekli maç analizi. Sadece 3 adımda profesyonel tahminlere ulaşın."
   },
   {
     icon: Trophy,
     iconColor: 'text-primary',
-    title: "Liginizi Seçin",
-    description: "Premier Lig, La Liga, Bundesliga ve daha fazlası. Favori liginizi seçerek maçları görüntüleyin ve analiz edin."
+    title: "Lig Seç, Maça Tıkla",
+    description: "Premier Lig, La Liga, Serie A... İstediğiniz ligden bir maç seçin, AI anında analiz etsin."
   },
   {
     icon: BarChart3,
     iconColor: 'text-blue-400',
-    title: "Detaylı Analiz",
-    description: "Form durumu, gol istatistikleri, H2H verisi ve AI destekli tahminler. Bir maça tıklayarak analizi başlatın."
-  },
-  {
-    icon: Zap,
-    iconColor: 'text-red-400',
-    title: "Canlı Takip",
-    description: "Devam eden maçları anlık takip edin. Canlı skorlar ve hızlı analiz için 'Canlı' sekmesini kullanın."
-  },
-  {
-    icon: TrendingUp,
-    iconColor: 'text-emerald-400',
-    title: "İstatistikleriniz",
-    description: "Tahmin geçmişi, başarı oranları ve kupon oluşturma. Dashboard'dan tüm verilerinizi takip edin."
+    title: "Detaylı Analiz Al",
+    description: "Form, H2H, gol istatistikleri ve AI önerileri tek ekranda. Hemen deneyin!"
   }
 ];
 
