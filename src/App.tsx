@@ -12,7 +12,6 @@ import Standings from "./pages/Standings";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
-import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
@@ -35,7 +34,6 @@ const App = () => (
                 <Route path="/live" element={<Live />} />
                 <Route path="/standings" element={<Standings />} />
                 <Route path="/profile" element={<Profile />} />
-                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/chat" element={<Chat />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
