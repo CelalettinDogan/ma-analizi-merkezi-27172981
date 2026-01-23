@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Zap, LayoutDashboard, Trophy, User } from 'lucide-react';
+import { Home, Zap, Bot, Trophy, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -15,7 +15,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { icon: Home, label: 'Ana Sayfa', path: '/' },
   { icon: Zap, label: 'Canlı', path: '/live', badge: 'live' },
-  { icon: LayoutDashboard, label: 'Özet', path: '/dashboard' },
+  { icon: Bot, label: 'AI Asistan', path: '/chat', badge: 'premium' },
   { icon: Trophy, label: 'Sıralama', path: '/standings' },
   { icon: User, label: 'Profil', path: '/profile' },
 ];
