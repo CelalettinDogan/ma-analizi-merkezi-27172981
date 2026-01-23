@@ -7,7 +7,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { BetSlipProvider } from "@/contexts/BetSlipContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
 import Live from "./pages/Live";
 import Standings from "./pages/Standings";
 import Auth from "./pages/Auth";
@@ -32,7 +31,6 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/live" element={<Live />} />
                 <Route path="/standings" element={<Standings />} />
                 <Route path="/profile" element={<Profile />} />

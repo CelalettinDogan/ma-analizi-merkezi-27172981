@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Trophy, BarChart3 } from 'lucide-react';
+import { Trophy, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from '@/components/ThemeToggle';
 import UserMenu from '@/components/UserMenu';
@@ -24,9 +24,8 @@ const AppHeader: React.FC<AppHeaderProps> = ({
 
   const navItems = [
     { path: '/', label: 'Anasayfa' },
-    { path: '/live', label: 'Canlı', icon: <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" /> },
+    { path: '/live', label: 'Canlı', icon: <Zap className="w-4 h-4 text-amber-500" /> },
     { path: '/standings', label: 'Sıralama', icon: <Trophy className="w-4 h-4" /> },
-    { path: '/dashboard', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" /> },
   ];
 
   return (

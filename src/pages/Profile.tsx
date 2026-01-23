@@ -1,22 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Heart, 
   Trophy, 
-  BarChart3, 
   Settings, 
   LogOut, 
   ChevronRight,
   RefreshCw,
   Mail,
-  Calendar
+  Calendar,
+  Brain,
+  Target,
+  CheckCircle2,
+  Clock,
+  XCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useQuery } from '@tanstack/react-query';
@@ -26,36 +31,45 @@ import { tr } from 'date-fns/locale';
 import { ProfileSkeleton } from '@/components/ui/skeletons';
 import AppHeader from '@/components/layout/AppHeader';
 import BottomNav from '@/components/navigation/BottomNav';
-import { Link } from 'react-router-dom';
 import SavedSlipsList from '@/components/betslip/SavedSlipsList';
 import { PremiumUpgrade } from '@/components/premium';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
+import { PredictionRecord } from '@/types/prediction';
 
 const Profile: React.FC = () => {
   const { user, signOut, isLoading: authLoading } = useAuth();
   const { favorites, isLoading: favoritesLoading, getFavoritesByType } = useFavorites();
   const { isPremium, isLoading: premiumLoading } = usePremiumStatus();
 
-  // Fetch user prediction stats
+  // Fetch user prediction stats with detailed breakdown
   const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['user-stats', user?.id],
+    queryKey: ['user-stats-detailed', user?.id],
     queryFn: async () => {
       if (!user) return null;
       
       const { data: predictions, error } = await supabase
         .from('predictions')
-        .select('is_correct')
-        .eq('user_id', user.id);
+        .select('is_correct, created_at, home_team, away_team, prediction_type, prediction_value, match_date')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
       
       if (error) throw error;
       
       const total = predictions?.length || 0;
-      const correct = predictions?.filter(p => p.is_correct === true).length || 0;
+      const verified = predictions?.filter(p => p.is_correct !== null) || [];
+      const correct = verified.filter(p => p.is_correct === true).length;
       const pending = predictions?.filter(p => p.is_correct === null).length || 0;
-      const verified = total - pending;
-      const accuracy = verified > 0 ? Math.round((correct / verified) * 100) : 0;
+      const accuracy = verified.length > 0 ? Math.round((correct / verified.length) * 100) : 0;
+      const recentPredictions = predictions?.slice(0, 5) || [];
       
-      return { total, correct, pending, accuracy };
+      return { 
+        total, 
+        correct, 
+        pending, 
+        accuracy, 
+        verifiedTotal: verified.length,
+        recentPredictions 
+      };
     },
     enabled: !!user,
   });
@@ -109,6 +123,9 @@ const Profile: React.FC = () => {
   const favoriteTeams = getFavoritesByType('team');
   const favoriteLeagues = getFavoritesByType('league');
 
+  // AI Learning percentage
+  const aiLearningPercent = stats?.verifiedTotal ? Math.min((stats.verifiedTotal / 100) * 100, 100) : 0;
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -120,6 +137,12 @@ const Profile: React.FC = () => {
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
+  };
+
+  const getStatusIcon = (isCorrect: boolean | null) => {
+    if (isCorrect === null) return <Clock className="w-3.5 h-3.5 text-secondary" />;
+    if (isCorrect) return <CheckCircle2 className="w-3.5 h-3.5 text-primary" />;
+    return <XCircle className="w-3.5 h-3.5 text-destructive" />;
   };
 
   return (
@@ -158,35 +181,92 @@ const Profile: React.FC = () => {
             </Card>
           </motion.div>
 
-          {/* Stats Grid */}
+          {/* Stats Grid - Compact */}
           <motion.div variants={itemVariants}>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 gap-2">
               <Card className="border-border/50">
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-primary">{stats?.total || 0}</div>
-                  <div className="text-xs text-muted-foreground">Toplam Tahmin</div>
+                <CardContent className="p-3 text-center">
+                  <div className="text-xl font-bold text-primary">{stats?.total || 0}</div>
+                  <div className="text-[10px] text-muted-foreground">Toplam</div>
                 </CardContent>
               </Card>
               <Card className="border-border/50">
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-emerald-500">{stats?.correct || 0}</div>
-                  <div className="text-xs text-muted-foreground">Doğru</div>
+                <CardContent className="p-3 text-center">
+                  <div className="text-xl font-bold text-emerald-500">{stats?.correct || 0}</div>
+                  <div className="text-[10px] text-muted-foreground">Doğru</div>
                 </CardContent>
               </Card>
               <Card className="border-border/50">
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-amber-500">{stats?.accuracy || 0}%</div>
-                  <div className="text-xs text-muted-foreground">Başarı</div>
+                <CardContent className="p-3 text-center">
+                  <div className="text-xl font-bold text-amber-500">{stats?.accuracy || 0}%</div>
+                  <div className="text-[10px] text-muted-foreground">Başarı</div>
                 </CardContent>
               </Card>
               <Card className="border-border/50">
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-blue-500">{slipsCount || 0}</div>
-                  <div className="text-xs text-muted-foreground">Kupon</div>
+                <CardContent className="p-3 text-center">
+                  <div className="text-xl font-bold text-blue-500">{slipsCount || 0}</div>
+                  <div className="text-[10px] text-muted-foreground">Kupon</div>
                 </CardContent>
               </Card>
             </div>
           </motion.div>
+
+          {/* AI Learning Progress - Compact */}
+          <motion.div variants={itemVariants}>
+            <Card className="border-border/50 bg-gradient-to-r from-primary/5 to-secondary/5">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Brain className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium">AI Öğrenme Durumu</span>
+                      <span className="text-xs text-muted-foreground">
+                        {stats?.verifiedTotal || 0}/100 doğrulama
+                      </span>
+                    </div>
+                    <Progress value={aiLearningPercent} className="h-2" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Recent Predictions - Mini Feed */}
+          {stats?.recentPredictions && stats.recentPredictions.length > 0 && (
+            <motion.div variants={itemVariants}>
+              <Card className="border-border/50">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Target className="w-4 h-4 text-primary" />
+                    Son Tahminlerim
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {stats.recentPredictions.map((prediction: any, index: number) => (
+                    <div 
+                      key={index}
+                      className="flex items-center gap-2 py-2 border-b border-border/30 last:border-0"
+                    >
+                      {getStatusIcon(prediction.is_correct)}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm truncate">
+                          {prediction.home_team} - {prediction.away_team}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {prediction.prediction_value}
+                        </p>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {format(new Date(prediction.match_date), 'd MMM', { locale: tr })}
+                      </span>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
 
           {/* Favorites Section */}
           <motion.div variants={itemVariants}>
@@ -257,16 +337,6 @@ const Profile: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <Link to="/dashboard">
-                  <Button variant="ghost" className="w-full justify-between rounded-none h-12 px-6">
-                    <div className="flex items-center gap-3">
-                      <BarChart3 className="w-5 h-5 text-primary" />
-                      <span>İstatistiklerim</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                  </Button>
-                </Link>
-                <Separator />
                 <Button 
                   variant="ghost" 
                   className="w-full justify-between rounded-none h-12 px-6"

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Zap, Bot, BarChart3, User } from 'lucide-react';
+import { Home, Zap, Bot, Trophy, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -16,7 +16,7 @@ const navItems: NavItem[] = [
   { icon: Home, label: 'Ana Sayfa', path: '/' },
   { icon: Zap, label: 'Canlı', path: '/live', badge: 'live' },
   { icon: Bot, label: 'AI Chat', path: '/chat', badge: 'premium' },
-  { icon: BarChart3, label: 'Dashboard', path: '/dashboard' },
+  { icon: Trophy, label: 'Sıralama', path: '/standings' },
   { icon: User, label: 'Profil', path: '/profile' },
 ];
 
@@ -35,7 +35,7 @@ const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(({ onSearchClick
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
       {/* Gradient fade effect */}
       <div className="absolute inset-x-0 -top-8 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
       
