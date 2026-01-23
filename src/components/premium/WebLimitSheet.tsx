@@ -131,7 +131,7 @@ const WebLimitSheet: React.FC<WebLimitSheetProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        <DrawerFooter className="pt-2 pb-6 space-y-2">
+        <div className="pt-2 pb-6 px-4 space-y-2">
           {/* Primary CTA - Download App */}
           <Button
             onClick={handleDownloadApp}
@@ -178,7 +178,7 @@ const WebLimitSheet: React.FC<WebLimitSheetProps> = ({ isOpen, onClose }) => {
             <Clock className="w-4 h-4 mr-2" />
             Bekle ({timeUntilReset})
           </Button>
-        </DrawerFooter>
+        </div>
       </DrawerContent>
     </Drawer>
   );
