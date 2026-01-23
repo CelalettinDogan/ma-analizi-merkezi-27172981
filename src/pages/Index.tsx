@@ -16,6 +16,7 @@ import TodaysMatches from '@/components/TodaysMatches';
 import { MatchCardSkeleton } from '@/components/ui/skeletons';
 import PremiumPromotionModal from '@/components/premium/PremiumPromotionModal';
 import AnalysisLimitBanner from '@/components/premium/AnalysisLimitBanner';
+import AnalysisLimitSheet, { useAnalysisLimitSheet } from '@/components/premium/AnalysisLimitSheet';
 import AppDownloadBanner from '@/components/promotion/AppDownloadBanner';
 import {
   MatchHeroCard,
@@ -64,6 +65,9 @@ const Index: React.FC = () => {
     showAppDownload, 
     dismissAppDownload 
   } = usePlatformPromotion();
+  
+  // Bottom sheet for analysis limit
+  const analysisLimitSheet = useAnalysisLimitSheet();
   
   // Refs for scroll behavior
   const upcomingMatchesRef = useRef<HTMLDivElement>(null);
@@ -181,12 +185,8 @@ const Index: React.FC = () => {
     // Check analysis limit for non-premium users
     if (user && !isPremium && planType === 'free') {
       if (!canAnalyze) {
-        // First time: show modal, subsequent times: show banner
-        if (shouldShowPromotion('limit')) {
-          showPromotion('limit');
-        } else {
-          triggerLimitFeedback();
-        }
+        // Show bottom sheet instead of modal/toast
+        analysisLimitSheet.show();
         return;
       }
     }
@@ -506,6 +506,12 @@ const Index: React.FC = () => {
           onClose={dismissAppDownload}
         />
       )}
+
+      {/* Analysis Limit Bottom Sheet */}
+      <AnalysisLimitSheet
+        isOpen={analysisLimitSheet.isOpen}
+        onClose={analysisLimitSheet.close}
+      />
     </div>
   );
 };
