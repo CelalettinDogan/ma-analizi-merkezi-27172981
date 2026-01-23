@@ -12,6 +12,7 @@ import { Match, CompetitionCode, SUPPORTED_COMPETITIONS } from '@/types/football
 import { supabase } from '@/integrations/supabase/client';
 import { staggerContainer, staggerItem, fadeInUp } from '@/lib/animations';
 import { toast } from 'sonner';
+import { getTeamNextMatch } from '@/services/footballApiService';
 
 const REFRESH_INTERVAL = 15000; // 15 seconds - faster since we read from cache
 
@@ -198,6 +199,25 @@ const LivePage: React.FC = () => {
     navigate('/', { state: { selectedMatch: match } });
   };
 
+  const handleCommandTeamSelect = async (teamName: string, leagueCode: string) => {
+    setCommandOpen(false);
+    toast.info(`${teamName} için maç aranıyor...`);
+    
+    try {
+      const nextMatch = await getTeamNextMatch(teamName);
+      
+      if (nextMatch) {
+        navigate('/', { state: { selectedMatch: nextMatch } });
+      } else {
+        toast.warning(`${teamName} için yaklaşan maç bulunamadı.`);
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Team match search error:', error);
+      toast.error('Maç aranırken hata oluştu');
+    }
+  };
+
   const formatLastUpdated = () => {
     if (!lastUpdated) return '';
     return lastUpdated.toLocaleTimeString('tr-TR', { 
@@ -337,7 +357,11 @@ const LivePage: React.FC = () => {
       </main>
 
       <BottomNav onSearchClick={() => setCommandOpen(true)} />
-      <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+      <CommandPalette 
+        open={commandOpen} 
+        onOpenChange={setCommandOpen}
+        onTeamSelect={handleCommandTeamSelect}
+      />
     </div>
   );
 };
