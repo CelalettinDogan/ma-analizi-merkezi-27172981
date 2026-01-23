@@ -366,7 +366,8 @@ const Index: React.FC = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <AIRecommendationCard 
                   predictions={analysis.predictions} 
-                  matchInput={analysis.input} 
+                  matchInput={analysis.input}
+                  fullAnalysis={analysis}
                 />
                 <div className="space-y-4">
                   <div className="p-4 rounded-xl bg-card border border-border">
