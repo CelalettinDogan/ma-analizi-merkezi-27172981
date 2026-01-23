@@ -103,24 +103,27 @@ export const useChatbot = (): UseChatbotReturn => {
     loadUsage();
   }, [user, isAdmin]);
 
-  // Load chat history
+  // Load chat history - fetch LATEST 50 messages (descending) then reverse for UI
   const loadHistory = useCallback(async () => {
     if (!user) return;
 
     setIsLoadingHistory(true);
     try {
+      // Fetch newest 50 messages first (descending order)
       const { data, error: historyError } = await supabase
         .from('chat_history')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: true })
+        .order('created_at', { ascending: false })
         .limit(50);
 
       if (historyError) throw historyError;
 
       if (data && data.length > 0) {
+        // Reverse to get chronological order (oldest first for display)
         const loadedMessages: ChatMessage[] = data
           .filter(h => h.role !== 'system')
+          .reverse() // Newest-first → Oldest-first for UI
           .map(h => ({
             id: h.id,
             role: h.role as 'user' | 'assistant',

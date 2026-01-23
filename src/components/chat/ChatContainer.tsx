@@ -188,53 +188,54 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   onQuickPrompt 
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastMessageRef = useRef<HTMLDivElement>(null);
   const hasScrolledRef = useRef(false);
   const prevMessageCountRef = useRef(0);
 
-  // Scroll to bottom function - stable reference
-  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'auto') => {
-    // Use double requestAnimationFrame for more reliable timing
+  // Scroll to last message using scrollIntoView - more reliable than scrollTop
+  const scrollToLastMessage = useCallback((behavior: ScrollBehavior = 'auto') => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        if (containerRef.current) {
-          containerRef.current.scrollTo({
-            top: containerRef.current.scrollHeight,
-            behavior
+        if (lastMessageRef.current) {
+          lastMessageRef.current.scrollIntoView({ 
+            block: 'end', 
+            behavior 
           });
+        } else if (containerRef.current) {
+          // Fallback to scrollTop
+          containerRef.current.scrollTop = containerRef.current.scrollHeight;
         }
       });
     });
   }, []);
 
-  // Initial scroll when messages load (from history)
+  // Initial scroll when history finishes loading
   useEffect(() => {
-    if (messages.length > 0 && !hasScrolledRef.current && !isLoadingHistory) {
-      // Multiple attempts to ensure scroll works after DOM render
-      const timers = [50, 150, 300].map(delay => 
+    if (!isLoadingHistory && messages.length > 0 && !hasScrolledRef.current) {
+      // Multiple attempts to ensure scroll works after full DOM render
+      const timers = [0, 50, 150, 300, 500].map(delay => 
         setTimeout(() => {
-          if (containerRef.current) {
-            containerRef.current.scrollTop = containerRef.current.scrollHeight;
-          }
+          scrollToLastMessage('auto');
         }, delay)
       );
       
       hasScrolledRef.current = true;
       return () => timers.forEach(clearTimeout);
     }
-  }, [messages.length, isLoadingHistory]);
+  }, [isLoadingHistory, messages.length, scrollToLastMessage]);
 
   // Scroll on new messages (after initial load)
   useEffect(() => {
     const currentCount = messages.length;
     const prevCount = prevMessageCountRef.current;
     
-    // Only scroll if new message was added (not on initial load)
+    // Only smooth scroll if new message was added (not on initial load)
     if (hasScrolledRef.current && currentCount > prevCount && prevCount > 0) {
-      scrollToBottom('smooth');
+      scrollToLastMessage('smooth');
     }
     
     prevMessageCountRef.current = currentCount;
-  }, [messages.length, scrollToBottom]);
+  }, [messages.length, scrollToLastMessage]);
 
   // Reset scroll flag when messages are cleared
   useEffect(() => {
@@ -271,14 +272,18 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       className="flex-1 overflow-y-auto scroll-smooth"
     >
       <div className="py-4">
-        {messages.map((message) => (
-          <ChatMessage
-            key={message.id}
-            role={message.role}
-            content={message.content}
-            isLoading={message.isLoading}
-            timestamp={message.createdAt}
-          />
+        {messages.map((message, index) => (
+          <div 
+            key={message.id} 
+            ref={index === messages.length - 1 ? lastMessageRef : null}
+          >
+            <ChatMessage
+              role={message.role}
+              content={message.content}
+              isLoading={message.isLoading}
+              timestamp={message.createdAt}
+            />
+          </div>
         ))}
       </div>
     </div>
