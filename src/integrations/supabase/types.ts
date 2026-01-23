@@ -307,6 +307,57 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_history: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chatbot_usage: {
+        Row: {
+          id: string
+          last_used_at: string | null
+          usage_count: number
+          usage_date: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          last_used_at?: string | null
+          usage_count?: number
+          usage_date?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          last_used_at?: string | null
+          usage_count?: number
+          usage_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       league_averages: {
         Row: {
           avg_away_goals: number | null
@@ -753,6 +804,39 @@ export type Database = {
         }
         Relationships: []
       }
+      premium_subscriptions: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          is_active: boolean | null
+          plan_type: string
+          starts_at: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          is_active?: boolean | null
+          plan_type?: string
+          starts_at?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+          plan_type?: string
+          starts_at?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -859,6 +943,7 @@ export type Database = {
       cleanup_old_cached_matches: { Args: never; Returns: undefined }
       cleanup_old_features: { Args: never; Returns: undefined }
       cleanup_old_predictions: { Args: never; Returns: undefined }
+      get_daily_usage: { Args: { p_user_id: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -866,6 +951,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_chatbot_usage: { Args: { p_user_id: string }; Returns: number }
+      is_premium_user: { Args: { p_user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
