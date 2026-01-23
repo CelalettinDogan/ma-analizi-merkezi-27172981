@@ -18,6 +18,29 @@ const BANNED_PATTERNS = [
   /100%\s*(?:kesin|garantili)/gi,
 ];
 
+// News and rumor patterns to detect - chatbot should NOT answer these
+const NEWS_PATTERNS = [
+  /transfer/i,
+  /imza(?:ladı|layacak|lıyor)/i,
+  /ayrıl(?:dı|acak|ıyor)/i,
+  /teknik\s*direktör/i,
+  /hoca\s*değişikliği/i,
+  /yeni\s*hoca/i,
+  /sakatlık/i,
+  /sakatl(?:andı|ığı)/i,
+  /ilk\s*11/i,
+  /kadro(?:\s*açıkla)/i,
+  /söylenti/i,
+  /dedikodu/i,
+  /duyum/i,
+  /iddia(?:ya\s*göre)?/i,
+  /kulüp\s*açıkladı/i,
+  /resmi\s*açıklama/i,
+  /haberlere\s*göre/i,
+  /kim\s*oynayacak/i,
+  /kim\s*forma\s*giyecek/i,
+];
+
 // Responsible gambling warnings
 const GAMBLING_WARNINGS = [
   "⚠️ Hatırlatma: Bahis sorumlu oynanmalıdır.",
@@ -25,36 +48,74 @@ const GAMBLING_WARNINGS = [
   "⚠️ Kaybetmeyi göze alabileceğiniz miktarla oynamayı unutmayın.",
 ];
 
-// System prompt for the AI
-const SYSTEM_PROMPT = `Sen Gol Metrik'in yapay zeka futbol danışmanısın. Adın "Gol Asistan".
+// System prompt for the AI - DATA-ONLY ANALYSIS ASSISTANT
+const SYSTEM_PROMPT = `Sen Gol Metrik'in yapay zeka SPOR ANALİZ asistanısın. Adın "Gol Asistan".
 
-GÖREVLERIN:
-1. Futbol maçı analizi ve tahmin desteği sağla
-2. Takım istatistikleri hakkında bilgi ver
-3. Form, H2H ve lig durumu yorumla
-4. Kullanıcının bahis kararlarında yardımcı ol (teşvik etmeden)
+⚠️ KRİTİK KISITLAMALAR - ASLA YAPMA:
+Sen bir gazeteci, muhabir veya haber kaynağı DEĞİLSİN.
 
-KURALLAR:
+Şu konularda BİLGİ VERME, UYDURMA, TAHMİN ETME:
+❌ Transfer haberleri ve söylentileri
+❌ Teknik direktör değişiklikleri
+❌ Sakatlık bilgileri (veritabanında yoksa)
+❌ İlk 11 ve kadro söylentileri
+❌ Güncel haberler ve dedikodular
+❌ Kulüp içi gelişmeler
+❌ Oyuncu piyasa değerleri veya maaşları
+
+Bu tür sorulara yanıtın:
+"📊 Bu konuda güncel veri bulunmuyor. Ancak istatistiksel analiz, form durumu ve performans verilerine bakabiliriz."
+
+---
+
+✅ SADECE BU KONULARDA KONUŞ:
+1. Maç istatistikleri (gol, şut, korner, pas, topa sahip olma)
+2. Takım formu (son 5 maç performansı - veritabanından)
+3. H2H (kafa kafaya) geçmiş istatistikleri
+4. Lig sıralaması ve puan durumu
+5. Gol beklentisi (xG) ve ML tahmin metrikleri
+6. Maç sonucu olasılıkları (istatistiksel model çıktıları)
+7. Over/Under ve BTTS (her iki takım da gol atar) analizleri
+
+---
+
+📐 VERİ ODAKLI YAKLAŞIM:
+- YALNIZCA sana verilen [BAĞLAM VERİSİ] ile konuş
+- Veri yoksa açıkça belirt: "Bu maç/takım için veritabanımda veri bulunmuyor."
+- Tahminlerin istatistiksel modellere dayandığını vurgula
+- Hiçbir zaman "duyduğuma göre", "haberlere göre", "söylentilere göre" deme
+- "Bana verilen verilere göre..." şeklinde konuş
+
+---
+
+YANITLARIN KAYNAĞI:
+Veri (API / DB) → ML Modeli → Tahmin + Metrikler → Sen (sadece anlatırsın)
+
+Senin görevin bu verileri YORUMLAMAK, yeni veri UYDURMAK DEĞİL.
+
+---
+
+YANIT KURALLARI:
 - Her zaman Türkçe yanıt ver
-- İstatistikleri kullanarak açıklama yap
+- Kısa ve öz (maksimum 200 kelime)
+- İstatistik varsa sayılarla destekle
+- Emoji kullan: ⚽📊📈🎯
+- Güven seviyesi göster: 🟢 Yüksek | 🟡 Orta | 🔴 Düşük
 - Kesin sonuç garantisi ASLA verme
-- "Kesinlikle kazanır", "Garantili", "Risk yok" gibi ifadeler KULLANMA
-- Sorumlu oyun hatırlat
-- Bahis teşvik etme, sadece analiz sun
-- Kısa ve öz yanıtlar ver (maksimum 250 kelime)
+- "Kesinlikle kazanır", "Garantili", "Risk yok" gibi ifadeler KULLANMA`;
 
-YANIT FORMATI:
-- Kısa paragraflar kullan
-- Önemli noktaları vurgula
-- Emoji ile zenginleştir (⚽🥅📊)
-- Güven seviyesini belirt: 🟢 Yüksek | 🟡 Orta | 🔴 Düşük
-
-ÖNEMLİ: Kullanıcı sana maç verisi gönderirse, bu veriyi analiz et ve yorumla.`;
+// Check if user is asking for news/rumors
+function isNewsRequest(message: string): boolean {
+  return NEWS_PATTERNS.some(pattern => pattern.test(message));
+}
 
 // Parse user intent to detect match analysis requests
-function parseUserIntent(message: string): { type: string; teams: string[] } {
-  const matchKeywords = ['maç', 'analiz', 'karşılaşma', 'oyun', 'tahmin', 'skor'];
+function parseUserIntent(message: string): { type: string; teams: string[]; isNewsRequest: boolean } {
+  const matchKeywords = ['maç', 'analiz', 'karşılaşma', 'oyun', 'tahmin', 'skor', 'form', 'istatistik'];
   const hasMatchIntent = matchKeywords.some(k => message.toLowerCase().includes(k));
+  
+  // Check if this is a news/rumor request
+  const isNews = isNewsRequest(message);
   
   // Try to extract team names (basic extraction)
   const vsPatterns = [
@@ -74,6 +135,7 @@ function parseUserIntent(message: string): { type: string; teams: string[] } {
   return {
     type: hasMatchIntent ? 'match_analysis' : 'general',
     teams,
+    isNewsRequest: isNews,
   };
 }
 
@@ -93,6 +155,24 @@ function applyPolicyFilter(response: string): string {
   }
   
   return filtered;
+}
+
+// Generate redirect response for news requests
+function getNewsRedirectResponse(teams: string[]): string {
+  const teamMention = teams.length > 0 
+    ? `${teams[0]} için` 
+    : "bu konuda";
+  
+  return `📊 Ben bir spor analiz asistanıyım, haber kaynağı değilim.
+
+${teamMention} güncel haber/transfer/sakatlık verisi bulunmuyor. Ancak şu konularda yardımcı olabilirim:
+
+• 📈 Takım form analizi (son 5 maç)
+• ⚽ Maç istatistikleri ve H2H verileri  
+• 🎯 İstatistiksel tahmin ve olasılıklar
+• 📊 Lig sıralaması ve puan durumu
+
+Hangi takım veya maç hakkında **istatistiksel analiz** yapmamı istersiniz?`;
 }
 
 serve(async (req) => {
@@ -195,7 +275,35 @@ serve(async (req) => {
 
     // Parse user intent
     const intent = parseUserIntent(message);
-    console.log(`Intent: ${intent.type}, Teams: ${intent.teams.join(", ")}`);
+    console.log(`Intent: ${intent.type}, Teams: ${intent.teams.join(", ")}, IsNews: ${intent.isNewsRequest}`);
+
+    // If user is asking for news/rumors WITHOUT match context, return redirect response
+    if (intent.isNewsRequest && !context) {
+      const redirectResponse = getNewsRedirectResponse(intent.teams);
+      
+      // Increment usage and save to history
+      await supabaseAdmin.rpc("increment_chatbot_usage", { p_user_id: userId });
+      await supabaseAdmin.from("chat_history").insert([
+        { user_id: userId, role: "user", content: message, metadata: { intent: "news_redirect" } },
+        { user_id: userId, role: "assistant", content: redirectResponse, metadata: { type: "redirect" } }
+      ]);
+
+      console.log(`User ${userId} asked for news, redirecting to stats`);
+
+      return new Response(
+        JSON.stringify({
+          message: redirectResponse,
+          usage: {
+            current: currentUsage + 1,
+            limit: DAILY_LIMIT,
+            remaining: DAILY_LIMIT - currentUsage - 1
+          },
+          isPremium: true,
+          isRedirect: true
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Get recent chat history for context (last 10 messages)
     const { data: historyData } = await supabaseAdmin
@@ -219,7 +327,7 @@ serve(async (req) => {
 
     // Add context if provided (match data, stats, etc.)
     if (context) {
-      const contextMessage = `\n\n[BAĞLAM VERİSİ]\n${JSON.stringify(context, null, 2)}`;
+      const contextMessage = `\n\n[BAĞLAM VERİSİ - Yalnızca bu verilere dayanarak yanıt ver]\n${JSON.stringify(context, null, 2)}`;
       messages[messages.length - 1].content += contextMessage;
     }
 
@@ -239,8 +347,8 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages,
-        max_tokens: 1000,
-        temperature: 0.7,
+        max_tokens: 800,
+        temperature: 0.5, // Lower temperature for more factual responses
       }),
     });
 
@@ -280,7 +388,7 @@ serve(async (req) => {
 
     // Save messages to chat history
     await supabaseAdmin.from("chat_history").insert([
-      { user_id: userId, role: "user", content: message, metadata: { intent: intent.type } },
+      { user_id: userId, role: "user", content: message, metadata: { intent: intent.type, hasContext: !!context } },
       { user_id: userId, role: "assistant", content: assistantMessage, metadata: { tokens: aiData.usage } }
     ]);
 
