@@ -6,7 +6,6 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
@@ -108,7 +107,7 @@ const AnalysisLimitSheet: React.FC<AnalysisLimitSheetProps> = ({
           </div>
         </div>
 
-        <DrawerFooter className="pt-2 pb-6">
+        <div className="pt-2 pb-6 px-4 space-y-3">
           {/* Primary CTA - Premium */}
           <Button
             onClick={handleUpgrade}
@@ -127,7 +126,7 @@ const AnalysisLimitSheet: React.FC<AnalysisLimitSheetProps> = ({
             <Clock className="w-4 h-4 mr-2" />
             Bekle ({timeUntilReset})
           </Button>
-        </DrawerFooter>
+        </div>
       </DrawerContent>
     </Drawer>
   );

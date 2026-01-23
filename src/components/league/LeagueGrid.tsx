@@ -61,6 +61,19 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
   return (
     <TooltipProvider>
       <div className="relative">
+        {/* Section Header with clear instruction */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-5 rounded-full bg-primary" />
+            <h2 className="text-sm font-semibold text-foreground">Lig Seçin</h2>
+          </div>
+          {selectedLeague && (
+            <span className="text-xs text-primary font-medium">
+              ✓ {SUPPORTED_COMPETITIONS.find(c => c.code === selectedLeague)?.name}
+            </span>
+          )}
+        </div>
+        
         <div 
           id="leagues" 
           ref={scrollRef}
@@ -79,14 +92,14 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className={cn(
-                      "flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-full whitespace-nowrap transition-all",
-                      "border flex-shrink-0",
+                      "flex items-center gap-1.5 sm:gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl whitespace-nowrap transition-all",
+                      "border flex-shrink-0 min-h-[48px]", // Better touch target
                       isSelected
-                        ? "bg-primary text-primary-foreground border-primary shadow-md"
+                        ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25"
                         : "bg-card border-border hover:border-primary/50 hover:bg-primary/5"
                     )}
                   >
-                    <span className="text-base sm:text-lg">{league.flag}</span>
+                    <span className="text-lg sm:text-xl">{league.flag}</span>
                     <span className="text-xs sm:text-sm font-medium">{league.name}</span>
                     {hasLive && (
                       <Badge 
@@ -99,7 +112,7 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
                   </motion.button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">
-                  <p>{league.name}</p>
+                  <p>{league.name} maçlarını görüntüle</p>
                 </TooltipContent>
               </Tooltip>
             );
@@ -108,7 +121,7 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
 
         {/* Scroll hint indicator */}
         {(showScrollHint || canScrollRight) && (
-          <div className="absolute right-0 top-0 bottom-2 w-8 sm:w-12 bg-gradient-to-l from-background via-background/80 to-transparent pointer-events-none flex items-center justify-end pr-1">
+          <div className="absolute right-0 top-8 bottom-2 w-8 sm:w-12 bg-gradient-to-l from-background via-background/80 to-transparent pointer-events-none flex items-center justify-end pr-1">
             <motion.div
               animate={{ x: [0, 4, 0] }}
               transition={{ duration: 1.5, repeat: Infinity }}

@@ -174,18 +174,16 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
   }
 
   return (
-    <Card className="p-3 md:p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3 md:mb-4">
+    <Card className="p-3 md:p-6 border-primary/10">
+      {/* Header with visual hierarchy improvement */}
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+          <div className="w-1.5 h-5 rounded-full bg-primary" />
           <div>
             <h2 className="font-semibold text-sm md:text-base">{title}</h2>
-            {lastUpdated && (
-              <p className="text-[10px] text-muted-foreground">
-                {formatLastUpdated(lastUpdated)}
-              </p>
-            )}
+            <p className="text-[10px] text-muted-foreground">
+              Maça tıklayarak analiz alabilirsiniz
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -300,22 +298,23 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
             </div>
           </div>
 
-          {/* CTA */}
-          <div className="flex justify-center mt-3 md:mt-4">
+          {/* CTA - More prominent */}
+          <div className="flex justify-center mt-4">
             <Button 
-              size="sm" 
-              className="gap-2 group-hover:bg-primary/90 text-xs md:text-sm"
+              size="default" 
+              className="gap-2 group-hover:bg-primary/90 text-sm font-medium shadow-md"
               disabled={!!loadingMatchId}
             >
               {loadingMatchId === featuredMatch.id ? (
                 <>
-                  <Loader2 className="w-3 h-3 md:w-4 md:h-4 animate-spin" />
-                  Yükleniyor...
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Analiz Ediliyor...
                 </>
               ) : (
                 <>
-                  Analiz Et
-                  <ChevronRight className="w-3 h-3 md:w-4 md:h-4 transition-transform group-hover:translate-x-0.5" />
+                  <Sparkles className="w-4 h-4" />
+                  Bu Maçı Analiz Et
+                  <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                 </>
               )}
             </Button>
