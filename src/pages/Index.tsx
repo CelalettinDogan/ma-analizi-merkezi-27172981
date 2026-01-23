@@ -32,7 +32,7 @@ import { useHomeData } from '@/hooks/useHomeData';
 import { Calendar, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUpcomingMatches } from '@/services/footballApiService';
+import { getUpcomingMatches, getTeamNextMatch } from '@/services/footballApiService';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -206,6 +206,26 @@ const Index: React.FC = () => {
 
   const handleCommandLeagueSelect = (code: string) => {
     setSelectedLeague(code as CompetitionCode);
+  };
+
+  const handleCommandTeamSelect = async (teamName: string, leagueCode: string) => {
+    setCommandOpen(false);
+    toast.info(`${teamName} için maç aranıyor...`);
+    
+    try {
+      const nextMatch = await getTeamNextMatch(teamName);
+      
+      if (nextMatch) {
+        handleMatchSelect(nextMatch);
+      } else {
+        toast.warning(`${teamName} için yaklaşan maç bulunamadı.`);
+        // Fallback: Select the league and scroll to upcoming matches
+        setSelectedLeague(leagueCode as CompetitionCode);
+      }
+    } catch (error) {
+      console.error('Team match search error:', error);
+      toast.error('Maç aranırken hata oluştu');
+    }
   };
 
   const searchButton = (
@@ -415,6 +435,7 @@ const Index: React.FC = () => {
         open={commandOpen} 
         onOpenChange={setCommandOpen}
         onLeagueSelect={handleCommandLeagueSelect}
+        onTeamSelect={handleCommandTeamSelect}
       />
 
       {/* Onboarding */}

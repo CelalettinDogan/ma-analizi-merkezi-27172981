@@ -293,3 +293,59 @@ export function calculateTeamStats(standing: Standing) {
     avgGoalsConceded: standing.goalsAgainst / standing.playedGames,
   };
 }
+
+// Get team's next upcoming match from cached_matches
+export async function getTeamNextMatch(teamName: string): Promise<Match | null> {
+  try {
+    const now = new Date().toISOString();
+    
+    const { data, error } = await supabase
+      .from('cached_matches')
+      .select('*')
+      .in('status', ['SCHEDULED', 'TIMED'])
+      .gte('utc_date', now)
+      .or(`home_team_name.ilike.%${teamName}%,away_team_name.ilike.%${teamName}%`)
+      .order('utc_date', { ascending: true })
+      .limit(1);
+    
+    if (error) throw error;
+    if (!data || data.length === 0) return null;
+    
+    const m = data[0];
+    return {
+      id: m.match_id,
+      utcDate: m.utc_date,
+      status: m.status as Match['status'],
+      matchday: m.matchday ?? 0,
+      competition: {
+        id: 0,
+        code: m.competition_code as CompetitionCode,
+        name: m.competition_name || '',
+        emblem: '',
+        area: { id: 0, name: '', code: '', flag: '' },
+      },
+      homeTeam: {
+        id: m.home_team_id ?? 0,
+        name: m.home_team_name,
+        shortName: m.home_team_name,
+        tla: '',
+        crest: m.home_team_crest ?? '',
+      },
+      awayTeam: {
+        id: m.away_team_id ?? 0,
+        name: m.away_team_name,
+        shortName: m.away_team_name,
+        tla: '',
+        crest: m.away_team_crest ?? '',
+      },
+      score: {
+        winner: (m.winner as Match['score']['winner']) ?? null,
+        fullTime: { home: m.home_score ?? null, away: m.away_score ?? null },
+        halfTime: { home: null, away: null },
+      },
+    };
+  } catch (error) {
+    console.error('Failed to find team next match:', error);
+    return null;
+  }
+}
