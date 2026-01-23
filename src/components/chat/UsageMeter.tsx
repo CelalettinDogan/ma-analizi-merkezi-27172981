@@ -1,17 +1,54 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Clock } from 'lucide-react';
+import { Sparkles, Clock, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface UsageMeterProps {
-  current: number;
-  limit: number;
+  current: number | string;
+  limit: number | string;
+  isAdmin?: boolean;
   className?: string;
 }
 
-const UsageMeter: React.FC<UsageMeterProps> = ({ current, limit, className }) => {
-  const remaining = limit - current;
-  const percentage = (current / limit) * 100;
+const UsageMeter: React.FC<UsageMeterProps> = ({ current, limit, isAdmin, className }) => {
+  // Admin has unlimited access
+  if (isAdmin) {
+    return (
+      <div className={cn(
+        "flex items-center gap-3 px-4 py-2 bg-card/80 backdrop-blur-sm border-t border-border/50",
+        className
+      )}>
+        <div className="flex items-center gap-2 flex-1">
+          <div className="w-6 h-6 rounded-full flex items-center justify-center bg-amber-500/20">
+            <Crown className="w-3.5 h-3.5 text-amber-500" />
+          </div>
+          
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-amber-500 font-medium">
+                Admin - Sınırsız Erişim
+              </span>
+              <span className="text-xs font-medium text-amber-500">
+                ∞
+              </span>
+            </div>
+            
+            {/* Full progress bar for admin */}
+            <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1">
+              <div className="h-full w-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Regular user usage meter
+  const numericCurrent = typeof current === 'number' ? current : parseInt(current) || 0;
+  const numericLimit = typeof limit === 'number' ? limit : parseInt(limit) || 3;
+  
+  const remaining = numericLimit - numericCurrent;
+  const percentage = (numericCurrent / numericLimit) * 100;
   const isExhausted = remaining <= 0;
   const isLow = remaining === 1;
 
@@ -41,7 +78,7 @@ const UsageMeter: React.FC<UsageMeterProps> = ({ current, limit, className }) =>
               {isExhausted ? "Limit doldu" : `${remaining} hak kaldı`}
             </span>
             <span className="text-xs font-medium">
-              {current}/{limit}
+              {numericCurrent}/{numericLimit}
             </span>
           </div>
           

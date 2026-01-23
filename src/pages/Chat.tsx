@@ -48,6 +48,7 @@ const Chat: React.FC = () => {
     messages,
     isLoading: chatLoading,
     usage,
+    isAdmin,
     sendMessage,
     clearMessages,
     loadHistory,
@@ -104,9 +105,10 @@ const Chat: React.FC = () => {
     }
   }, [authLoading, user, navigate]);
 
-  // Auto-send context message when premium user has match context
+  // Auto-send context message when premium/admin user has match context
   useEffect(() => {
-    if (isPremium && matchContext && !contextSent && usage && usage.remaining > 0) {
+    const hasRemainingUsage = isAdmin || (usage && (typeof usage.remaining === 'number' ? usage.remaining > 0 : true));
+    if ((isPremium || isAdmin) && matchContext && !contextSent && hasRemainingUsage) {
       const contextMessage = `${matchContext.homeTeam} vs ${matchContext.awayTeam} maçını analiz et. Bu maç hakkında detaylı bilgi ver.`;
       
       // Build context object to send to AI
@@ -125,7 +127,7 @@ const Chat: React.FC = () => {
       sendMessage(contextMessage, aiContext);
       setContextSent(true);
     }
-  }, [isPremium, matchContext, contextSent, usage, sendMessage]);
+  }, [isPremium, isAdmin, matchContext, contextSent, usage, sendMessage]);
 
   const handleSendMessage = (message: string) => {
     // If we have match context, include it in subsequent messages too
@@ -151,7 +153,8 @@ const Chat: React.FC = () => {
   };
 
   const isPageLoading = authLoading || premiumLoading;
-  const canChat = isPremium && usage && usage.remaining > 0;
+  const hasRemainingUsage = isAdmin || (usage && (typeof usage.remaining === 'number' ? usage.remaining > 0 : true));
+  const canChat = (isPremium || isAdmin) && hasRemainingUsage;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -234,7 +237,7 @@ const Chat: React.FC = () => {
               <p className="text-sm text-muted-foreground">Yükleniyor...</p>
             </div>
           </div>
-        ) : !isPremium ? (
+        ) : !isPremium && !isAdmin ? (
           // Premium gate
           <PremiumGate onClose={() => navigate(-1)} />
         ) : (
@@ -244,7 +247,7 @@ const Chat: React.FC = () => {
             
             {/* Usage meter */}
             {usage && (
-              <UsageMeter current={usage.current} limit={usage.limit} />
+              <UsageMeter current={usage.current} limit={usage.limit} isAdmin={isAdmin} />
             )}
             
             {/* Chat input */}
@@ -253,7 +256,7 @@ const Chat: React.FC = () => {
               isLoading={chatLoading}
               disabled={!canChat}
               placeholder={
-                usage && usage.remaining <= 0
+                !isAdmin && usage && typeof usage.remaining === 'number' && usage.remaining <= 0
                   ? "Günlük limitiniz doldu"
                   : matchContext
                     ? `${matchContext.homeTeam} vs ${matchContext.awayTeam} hakkında sorun...`
