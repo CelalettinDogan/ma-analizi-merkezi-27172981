@@ -2,12 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-type AppRole = 'admin' | 'moderator' | 'user';
+type AppRole = 'admin' | 'moderator' | 'user' | 'vip';
 
 interface UseUserRoleReturn {
   roles: AppRole[];
   isAdmin: boolean;
+  isVip: boolean;
   isModerator: boolean;
+  hasVipOrAdmin: boolean;
   isLoading: boolean;
   hasRole: (role: AppRole) => boolean;
   refetch: () => void;
@@ -55,10 +57,15 @@ export const useUserRole = (): UseUserRoleReturn => {
     return roles.includes(role);
   }, [roles]);
 
+  const isAdmin = roles.includes('admin');
+  const isVip = roles.includes('vip');
+
   return {
     roles,
-    isAdmin: roles.includes('admin'),
-    isModerator: roles.includes('moderator') || roles.includes('admin'),
+    isAdmin,
+    isVip,
+    isModerator: roles.includes('moderator') || isAdmin,
+    hasVipOrAdmin: isAdmin || isVip,
     isLoading,
     hasRole,
     refetch: fetchRoles,
