@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Trash2, Bot, Info } from 'lucide-react';
+import { ArrowLeft, Trash2, Bot, Info, Lock, Crown, Sparkles } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import { usePlatformPremium } from '@/hooks/usePlatformPremium';
+import { usePlatform } from '@/hooks/usePlatform';
 import { useChatbot } from '@/hooks/useChatbot';
 import ChatContainer from '@/components/chat/ChatContainer';
 import ChatInput from '@/components/chat/ChatInput';
@@ -44,14 +46,15 @@ const Chat: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isLoading: authLoading } = useAuth();
-  // Platform-aware premium - web users can NEVER access premium features
-  const { isPremium, isLoading: premiumLoading, isWebPlatform } = usePlatformPremium();
+  const { isWeb } = usePlatform();
   const {
     messages,
     isLoading: chatLoading,
     isLoadingHistory,
     usage,
     isAdmin,
+    isVip,
+    hasAccess,
     sendMessage,
     clearMessages,
     loadHistory,
@@ -89,32 +92,23 @@ const Chat: React.FC = () => {
           bttsProbability: analysis.poissonData.bttsProbability,
         } : undefined,
       });
-      // Clear the state to prevent re-processing
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
 
-  // Load chat history on mount (for premium and admin users)
+  // Load chat history on mount (for VIP and Admin users)
   useEffect(() => {
-    if (user && (isPremium || isAdmin)) {
+    if (user && hasAccess) {
       loadHistory();
     }
-  }, [user, isPremium, isAdmin, loadHistory]);
+  }, [user, hasAccess, loadHistory]);
 
-  // Redirect to auth if not logged in
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth', { state: { from: '/chat' } });
-    }
-  }, [authLoading, user, navigate]);
-
-  // Auto-send context message when premium/admin user has match context
+  // Auto-send context message when VIP/Admin user has match context
   useEffect(() => {
     const hasRemainingUsage = isAdmin || (usage && (typeof usage.remaining === 'number' ? usage.remaining > 0 : true));
-    if ((isPremium || isAdmin) && matchContext && !contextSent && hasRemainingUsage && !isLoadingHistory) {
+    if (hasAccess && matchContext && !contextSent && hasRemainingUsage && !isLoadingHistory) {
       const contextMessage = `${matchContext.homeTeam} vs ${matchContext.awayTeam} maçını analiz et. Bu maç hakkında detaylı bilgi ver.`;
       
-      // Build context object to send to AI
       const aiContext = {
         match: {
           homeTeam: matchContext.homeTeam,
@@ -130,10 +124,9 @@ const Chat: React.FC = () => {
       sendMessage(contextMessage, aiContext);
       setContextSent(true);
     }
-  }, [isPremium, isAdmin, matchContext, contextSent, usage, sendMessage, isLoadingHistory]);
+  }, [hasAccess, matchContext, contextSent, usage, sendMessage, isLoadingHistory, isAdmin]);
 
   const handleSendMessage = (message: string) => {
-    // If we have match context, include it in subsequent messages too
     if (matchContext) {
       const aiContext = {
         match: {
@@ -155,10 +148,66 @@ const Chat: React.FC = () => {
     setContextSent(false);
   };
 
-  const isPageLoading = authLoading || premiumLoading;
   const hasRemainingUsage = isAdmin || (usage && (typeof usage.remaining === 'number' ? usage.remaining > 0 : true));
-  const canChat = (isPremium || isAdmin) && hasRemainingUsage;
+  const canChat = hasAccess && hasRemainingUsage;
 
+  // Loading state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          <p className="text-sm text-muted-foreground">Yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Web platform - AI asistan yok
+  if (isWeb) {
+    return <WebPremiumGate onClose={() => navigate(-1)} variant="chatbot" />;
+  }
+
+  // Not logged in - show login prompt
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md p-8 text-center space-y-6">
+          <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+            <Lock className="w-10 h-10 text-primary" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold">Giriş Yapın</h2>
+            <p className="text-muted-foreground">
+              AI Asistan'a erişmek için hesabınıza giriş yapmanız gerekiyor.
+            </p>
+          </div>
+          <Button 
+            onClick={() => navigate('/auth', { state: { from: '/chat' } })} 
+            className="w-full"
+            size="lg"
+          >
+            Giriş Yap
+          </Button>
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/')}
+            className="w-full"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Ana Sayfaya Dön
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  // Logged in but no VIP/Admin access - show premium gate
+  if (!hasAccess) {
+    return <PremiumGate onClose={() => navigate(-1)} variant="chatbot" />;
+  }
+
+  // Has access - show chat interface
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
@@ -181,7 +230,21 @@ const Chat: React.FC = () => {
                 <Bot className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h1 className="font-semibold text-sm">Gol Asistan</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="font-semibold text-sm">Gol Asistan</h1>
+                  {isAdmin && (
+                    <Badge variant="secondary" className="text-[10px] h-5 bg-amber-500/20 text-amber-600">
+                      <Crown className="w-3 h-3 mr-1" />
+                      Admin
+                    </Badge>
+                  )}
+                  {isVip && !isAdmin && (
+                    <Badge variant="secondary" className="text-[10px] h-5 bg-primary/20 text-primary">
+                      <Sparkles className="w-3 h-3 mr-1" />
+                      VIP
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-[10px] text-muted-foreground">AI Futbol Danışmanı</p>
               </div>
             </div>
@@ -232,50 +295,31 @@ const Chat: React.FC = () => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden pb-20 md:pb-0">
-        {isPageLoading ? (
-          // Loading state
-          <div className="flex-1 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-              <p className="text-sm text-muted-foreground">Yükleniyor...</p>
-            </div>
-          </div>
-        ) : isWebPlatform ? (
-          // Web users: Always show app download gate (premium only on mobile)
-          <WebPremiumGate onClose={() => navigate(-1)} variant="chatbot" />
-        ) : !isPremium && !isAdmin ? (
-          // Native non-premium users: Show premium upgrade gate
-          <PremiumGate onClose={() => navigate(-1)} variant="chatbot" />
-        ) : (
-          // Chat interface
-          <>
-            <ChatContainer 
-              messages={messages} 
-              isLoading={chatLoading}
-              isLoadingHistory={isLoadingHistory}
-              onQuickPrompt={handleSendMessage}
-            />
-            
-            {/* Usage meter */}
-            {usage && (
-              <UsageMeter current={usage.current} limit={usage.limit} isAdmin={isAdmin} />
-            )}
-            
-            {/* Chat input */}
-            <ChatInput
-              onSend={handleSendMessage}
-              isLoading={chatLoading}
-              disabled={!canChat}
-              placeholder={
-                !isAdmin && usage && typeof usage.remaining === 'number' && usage.remaining <= 0
-                  ? "Günlük limitiniz doldu"
-                  : matchContext
-                    ? `${matchContext.homeTeam} vs ${matchContext.awayTeam} hakkında sorun...`
-                    : "Futbol hakkında bir şeyler sorun..."
-              }
-            />
-          </>
+        <ChatContainer 
+          messages={messages} 
+          isLoading={chatLoading}
+          isLoadingHistory={isLoadingHistory}
+          onQuickPrompt={handleSendMessage}
+        />
+        
+        {/* Usage meter for VIP */}
+        {isVip && !isAdmin && usage && (
+          <UsageMeter current={usage.current} limit={usage.limit} isAdmin={false} />
         )}
+        
+        {/* Chat input */}
+        <ChatInput
+          onSend={handleSendMessage}
+          isLoading={chatLoading}
+          disabled={!canChat}
+          placeholder={
+            !isAdmin && usage && typeof usage.remaining === 'number' && usage.remaining <= 0
+              ? "Günlük limitiniz doldu"
+              : matchContext
+                ? `${matchContext.homeTeam} vs ${matchContext.awayTeam} hakkında sorun...`
+                : "Futbol hakkında bir şeyler sorun..."
+          }
+        />
       </main>
 
       <BottomNav />

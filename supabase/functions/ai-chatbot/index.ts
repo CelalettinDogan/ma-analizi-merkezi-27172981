@@ -813,33 +813,32 @@ serve(async (req) => {
 
     const isAdmin = !!adminRole;
     
+    // Check if user is VIP (3 daily messages)
+    const { data: vipRole } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "vip")
+      .maybeSingle();
+
+    const isVip = !!vipRole;
+    const VIP_DAILY_LIMIT = 3;
+    
     if (isAdmin) {
       console.log(`Admin user ${userId} - bypassing all limits`);
+    } else if (isVip) {
+      console.log(`VIP user ${userId} - 3 daily messages`);
     }
 
-    // Check premium status
-    const { data: premiumData } = await supabaseAdmin
-      .from("premium_subscriptions")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("is_active", true)
-      .gte("expires_at", new Date().toISOString())
-      .limit(1);
-
-    const subscription = premiumData && premiumData.length > 0 ? premiumData[0] : null;
-    const isPremium = !!subscription;
-    const planType = getPlanType(subscription);
-    const dailyLimit = PLAN_LIMITS[planType];
-
-    // Free users cannot access chatbot at all
-    if (!isPremium && !isAdmin) {
-      console.log(`User ${userId} is free user, no chatbot access`);
+    // Access check: Admin or VIP required
+    if (!isAdmin && !isVip) {
+      console.log(`User ${userId} has no access (not admin or vip)`);
       return new Response(
         JSON.stringify({ 
-          error: "AI Asistan sadece Premium üyelere açıktır. Premium'a yükselterek AI destekli maç analizlerine erişin!", 
-          code: "PREMIUM_REQUIRED",
-          isPremium: false,
-          planType: 'free'
+          error: "AI Asistan VIP üyelere özeldir. VIP üye olarak AI destekli maç analizlerine erişin!", 
+          code: "ACCESS_DENIED",
+          isAdmin: false,
+          isVip: false
         }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -855,16 +854,16 @@ serve(async (req) => {
 
     const currentUsage = usageData?.usage_count ?? 0;
 
-    // Check plan-based limit (admins and pro/ultra bypass)
-    if (!isAdmin && planType === 'basic' && currentUsage >= dailyLimit) {
-      console.log(`User ${userId} exceeded daily limit: ${currentUsage}/${dailyLimit}`);
+    // Check VIP daily limit (admins bypass)
+    if (isVip && !isAdmin && currentUsage >= VIP_DAILY_LIMIT) {
+      console.log(`VIP user ${userId} exceeded daily limit: ${currentUsage}/${VIP_DAILY_LIMIT}`);
       return new Response(
         JSON.stringify({ 
-          error: `Günlük ${dailyLimit} mesaj limitiniz doldu. Pro plana yükselterek sınırsız AI chat'e erişin!`, 
+          error: `Günlük ${VIP_DAILY_LIMIT} mesaj limitiniz doldu. Yarın tekrar deneyin!`, 
           code: "LIMIT_EXCEEDED",
-          usage: { current: currentUsage, limit: dailyLimit },
-          isPremium: true,
-          planType
+          usage: { current: currentUsage, limit: VIP_DAILY_LIMIT },
+          isVip: true,
+          isAdmin: false
         }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -905,8 +904,8 @@ serve(async (req) => {
           message: redirectResponse,
           usage: {
             current: isAdmin ? 0 : currentUsage + 1,
-            limit: isAdmin ? "∞" : dailyLimit,
-            remaining: isAdmin ? "∞" : dailyLimit - currentUsage - 1
+            limit: isAdmin ? "∞" : VIP_DAILY_LIMIT,
+            remaining: isAdmin ? "∞" : VIP_DAILY_LIMIT - currentUsage - 1
           },
           isPremium: true,
           isAdmin,
@@ -1124,7 +1123,7 @@ serve(async (req) => {
       newUsageCount = newUsageData ?? currentUsage + 1;
     }
     
-    console.log(`User ${userId} new usage: ${isAdmin ? "∞ (admin)" : `${newUsageCount}/${dailyLimit}`}`);
+    console.log(`User ${userId} new usage: ${isAdmin ? "∞ (admin)" : `${newUsageCount}/${VIP_DAILY_LIMIT}`}`);
 
     // Save messages to chat history
     await supabaseAdmin.from("chat_history").insert([
@@ -1138,10 +1137,10 @@ serve(async (req) => {
         message: assistantMessage,
         usage: {
           current: isAdmin ? 0 : newUsageCount,
-          limit: isAdmin ? "∞" : dailyLimit,
-          remaining: isAdmin ? "∞" : dailyLimit - newUsageCount
+          limit: isAdmin ? "∞" : VIP_DAILY_LIMIT,
+          remaining: isAdmin ? "∞" : VIP_DAILY_LIMIT - newUsageCount
         },
-        isPremium: true,
+        isVip,
         isAdmin,
         dataSource: context ? dataSource : null,
         dataAvailability
