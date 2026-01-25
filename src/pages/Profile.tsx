@@ -91,19 +91,33 @@ const Profile = () => {
     staleTime: 5 * 60 * 1000
   });
 
-  // Recent Analyses Query
+  // Recent Analyses Query - Last 7 days
   const { data: recentAnalyses, isLoading: analysesLoading } = useQuery({
     queryKey: ['recent-analyses-profile'],
     queryFn: async () => {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      
       const { data } = await supabase
         .from('predictions')
         .select('*')
+        .gte('created_at', oneWeekAgo.toISOString())
         .order('created_at', { ascending: false })
-        .limit(3);
+        .limit(10);
       return data || [];
     },
     staleTime: 5 * 60 * 1000
   });
+
+  const getResultBadge = (isCorrect: boolean | null, verifiedAt: string | null) => {
+    if (!verifiedAt) {
+      return { text: 'Bekliyor', className: 'bg-amber-500/20 text-amber-500 border-amber-500/30' };
+    }
+    if (isCorrect) {
+      return { text: 'Doğru', className: 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30' };
+    }
+    return { text: 'Yanlış', className: 'bg-red-500/20 text-red-500 border-red-500/30' };
+  };
 
   const handleResetOnboarding = () => {
     resetOnboarding();
@@ -312,29 +326,41 @@ const Profile = () => {
                   </div>
                 ) : recentAnalyses && recentAnalyses.length > 0 ? (
                   <div className="space-y-2">
-                    {recentAnalyses.map((analysis: any) => (
-                      <div 
-                        key={analysis.id} 
-                        className="p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">
-                              {analysis.home_team} vs {analysis.away_team}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {analysis.prediction_type}: {analysis.prediction_value}
-                            </p>
+                    {recentAnalyses.map((analysis: any) => {
+                      const resultBadge = getResultBadge(analysis.is_correct, analysis.verified_at);
+                      const hasScore = analysis.home_score !== null && analysis.away_score !== null;
+                      
+                      return (
+                        <div 
+                          key={analysis.id} 
+                          className="p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-medium truncate">
+                                  {analysis.home_team} vs {analysis.away_team}
+                                </p>
+                                {hasScore && (
+                                  <span className="text-xs text-muted-foreground flex-shrink-0">
+                                    ({analysis.home_score}-{analysis.away_score})
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {analysis.prediction_type}: {analysis.prediction_value}
+                              </p>
+                            </div>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs flex-shrink-0 ${resultBadge.className}`}
+                            >
+                              {resultBadge.text}
+                            </Badge>
                           </div>
-                          <Badge 
-                            variant="outline" 
-                            className={`text-xs flex-shrink-0 ${getConfidenceColor(analysis.confidence)}`}
-                          >
-                            {analysis.confidence}
-                          </Badge>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-6">
