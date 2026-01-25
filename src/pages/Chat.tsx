@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Trash2, Bot, Info, Lock, Crown, Sparkles } from 'lucide-react';
+import { ArrowLeft, Trash2, Bot, Info, Lock, Crown, Sparkles, Star } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlatform } from '@/hooks/usePlatform';
 import { useChatbot } from '@/hooks/useChatbot';
+import { useAccessLevel } from '@/hooks/useAccessLevel';
 import ChatContainer from '@/components/chat/ChatContainer';
 import ChatInput from '@/components/chat/ChatInput';
 import UsageMeter from '@/components/chat/UsageMeter';
@@ -47,13 +48,12 @@ const Chat: React.FC = () => {
   const location = useLocation();
   const { user, isLoading: authLoading } = useAuth();
   const { isWeb } = usePlatform();
+  const { planType, isAdmin, canUseAIChat, dailyChatLimit } = useAccessLevel();
   const {
     messages,
     isLoading: chatLoading,
     isLoadingHistory,
     usage,
-    isAdmin,
-    isVip,
     hasAccess,
     sendMessage,
     clearMessages,
@@ -62,6 +62,10 @@ const Chat: React.FC = () => {
 
   const [matchContext, setMatchContext] = useState<MatchContext | null>(null);
   const [contextSent, setContextSent] = useState(false);
+  
+  // Plan badge info
+  const isPro = planType === 'pro';
+  const isUltra = planType === 'ultra';
 
   // Handle match context from navigation state
   useEffect(() => {
@@ -238,10 +242,16 @@ const Chat: React.FC = () => {
                       Admin
                     </Badge>
                   )}
-                  {isVip && !isAdmin && (
+                  {isUltra && !isAdmin && (
+                    <Badge variant="secondary" className="text-[10px] h-5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600">
+                      <Star className="w-3 h-3 mr-1" />
+                      Ultra
+                    </Badge>
+                  )}
+                  {isPro && !isAdmin && (
                     <Badge variant="secondary" className="text-[10px] h-5 bg-primary/20 text-primary">
                       <Sparkles className="w-3 h-3 mr-1" />
-                      VIP
+                      Pro
                     </Badge>
                   )}
                 </div>
@@ -302,8 +312,8 @@ const Chat: React.FC = () => {
           onQuickPrompt={handleSendMessage}
         />
         
-        {/* Usage meter for VIP */}
-        {isVip && !isAdmin && usage && (
+        {/* Usage meter for Pro users (not unlimited) */}
+        {isPro && !isAdmin && usage && dailyChatLimit < 999 && (
           <UsageMeter current={usage.current} limit={usage.limit} isAdmin={false} />
         )}
         

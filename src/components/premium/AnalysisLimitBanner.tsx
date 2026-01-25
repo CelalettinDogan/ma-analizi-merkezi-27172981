@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Crown, Clock, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { PLAN_PRICES } from '@/constants/accessLevels';
 
 interface AnalysisLimitBannerProps {
   isVisible: boolean;
@@ -70,6 +71,7 @@ const AnalysisLimitBanner = ({ isVisible, onClose, onUpgrade }: AnalysisLimitBan
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Clock className="w-3 h-3" />
                       <span>Yenilenmesine: {timeUntilReset}</span>
+                      <span className="hidden sm:inline">• Premium: ₺{PLAN_PRICES.pro.monthly}/ay</span>
                     </div>
                   </div>
                 </div>

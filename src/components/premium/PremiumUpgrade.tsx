@@ -220,13 +220,19 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
             </Button>
           )}
 
-          {/* Terms */}
-          <p className="text-[10px] text-center text-muted-foreground">
-            Satın alarak{' '}
-            <Link to="/terms" className="underline">Kullanım Şartları</Link> ve{' '}
-            <Link to="/privacy" className="underline">Gizlilik Politikası</Link>'nı kabul etmiş olursunuz.
-            {isAndroid && ' Abonelik Google Play hesabınız üzerinden yönetilir.'}
-          </p>
+          {/* Legal Terms - Play Store compliant */}
+          <div className="space-y-2 text-center">
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Abonelik dönem sonunda otomatik olarak yenilenir. 
+              İstediğiniz zaman Google Play Store &gt; Abonelikler bölümünden iptal edebilirsiniz. 
+              İptal, mevcut dönem sonunda geçerli olur.
+            </p>
+            <p className="text-[10px] text-muted-foreground">
+              Satın alarak{' '}
+              <Link to="/terms" className="underline hover:text-foreground">Kullanım Şartları</Link> ve{' '}
+              <Link to="/privacy" className="underline hover:text-foreground">Gizlilik Politikası</Link>'nı kabul etmiş olursunuz.
+            </p>
+          </div>
         </CardContent>
       </Card>
     </motion.div>

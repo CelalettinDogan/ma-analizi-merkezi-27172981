@@ -2,8 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-
-const VIP_DAILY_LIMIT = 3;
+import { useAccessLevel } from './useAccessLevel';
+import { PLAN_ACCESS_LEVELS } from '@/constants/accessLevels';
 
 export interface ChatMessage {
   id: string;
@@ -25,6 +25,7 @@ interface UseChatbotReturn {
   isLoadingHistory: boolean;
   usage: ChatUsage | null;
   isAdmin: boolean;
+  /** @deprecated Use canUseAIChat from useAccessLevel instead */
   isVip: boolean;
   hasAccess: boolean;
   error: string | null;
@@ -35,72 +36,73 @@ interface UseChatbotReturn {
 
 export const useChatbot = (): UseChatbotReturn => {
   const { user, session } = useAuth();
+  const { canUseAIChat, isAdmin, dailyChatLimit, planType } = useAccessLevel();
+  
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [usage, setUsage] = useState<ChatUsage | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [isVip, setIsVip] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Check roles on mount (admin and vip)
+  // Load usage on mount for Pro/Ultra users
   useEffect(() => {
-    const checkRoles = async () => {
+    const loadUsage = async () => {
       if (!user) {
-        setIsAdmin(false);
-        setIsVip(false);
         setUsage(null);
         return;
       }
 
+      // Admin has unlimited
+      if (isAdmin) {
+        setUsage({ current: 0, limit: "∞", remaining: "∞" });
+        return;
+      }
+
+      // Only Pro and Ultra have chat access
+      if (!canUseAIChat) {
+        setUsage(null);
+        return;
+      }
+
+      // Get chat limit from plan
+      const limit = dailyChatLimit;
+      
+      // Ultra has unlimited
+      if (limit >= 999) {
+        setUsage({ current: 0, limit: "∞", remaining: "∞" });
+        return;
+      }
+
+      // Load usage for Pro users
       try {
-        const { data, error: rolesError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id);
+        const today = new Date().toISOString().split('T')[0];
+        const { data: usageData } = await supabase
+          .from('chatbot_usage')
+          .select('usage_count')
+          .eq('user_id', user.id)
+          .eq('usage_date', today)
+          .single();
 
-        if (rolesError) {
-          console.error('Error fetching roles:', rolesError);
-          return;
-        }
-
-        const roles = data?.map(r => r.role) || [];
-        const hasAdmin = roles.includes('admin');
-        const hasVip = roles.includes('vip');
-
-        setIsAdmin(hasAdmin);
-        setIsVip(hasVip);
-
-        // Set usage based on role
-        if (hasAdmin) {
-          setUsage({ current: 0, limit: "∞", remaining: "∞" });
-        } else if (hasVip) {
-          // Load VIP usage
-          const today = new Date().toISOString().split('T')[0];
-          const { data: usageData } = await supabase
-            .from('chatbot_usage')
-            .select('usage_count')
-            .eq('user_id', user.id)
-            .eq('usage_date', today)
-            .single();
-
-          const current = usageData?.usage_count ?? 0;
-          setUsage({
-            current,
-            limit: VIP_DAILY_LIMIT,
-            remaining: VIP_DAILY_LIMIT - current,
-          });
-        }
+        const current = usageData?.usage_count ?? 0;
+        setUsage({
+          current,
+          limit,
+          remaining: Math.max(0, limit - current),
+        });
       } catch (e) {
-        console.error('Error checking roles:', e);
+        console.error('Error loading chat usage:', e);
+        setUsage({ current: 0, limit, remaining: limit });
       }
     };
 
-    checkRoles();
-  }, [user]);
+    loadUsage();
+  }, [user, isAdmin, canUseAIChat, dailyChatLimit]);
 
-  // Computed access check
-  const hasAccess = isAdmin || isVip;
+  // Access check based on plan (Pro, Ultra, Admin)
+  const hasAccess = canUseAIChat;
+  
+  // For backward compatibility
+  const isVip = planType === 'pro' || planType === 'ultra';
 
   // Load chat history - fetch LATEST 50 messages (descending) then reverse for UI
   const loadHistory = useCallback(async () => {
@@ -146,11 +148,11 @@ export const useChatbot = (): UseChatbotReturn => {
 
     if (!message.trim()) return;
 
-    // Check VIP limit
-    if (isVip && !isAdmin && usage) {
+    // Check chat limit for Pro users (not unlimited)
+    if (dailyChatLimit < 999 && !isAdmin && usage) {
       const remaining = typeof usage.remaining === 'number' ? usage.remaining : 0;
       if (remaining <= 0) {
-        setError('Günlük VIP limitiniz doldu');
+        setError('Günlük AI Asistan limitiniz doldu');
         toast.warning('Günlük limitiniz doldu. Yarın tekrar deneyin!');
         return;
       }
@@ -232,18 +234,14 @@ export const useChatbot = (): UseChatbotReturn => {
         )
       );
 
-      // Update usage for VIP
-      if (data.usage && isVip && !isAdmin) {
+      // Update usage for Pro users (not unlimited)
+      if (data.usage && dailyChatLimit < 999 && !isAdmin) {
         setUsage({
           current: data.usage.current,
-          limit: VIP_DAILY_LIMIT,
-          remaining: Math.max(0, VIP_DAILY_LIMIT - data.usage.current)
+          limit: dailyChatLimit,
+          remaining: Math.max(0, dailyChatLimit - data.usage.current)
         });
       }
-
-      // Update roles from response
-      if (data.isAdmin !== undefined) setIsAdmin(data.isAdmin);
-      if (data.isVip !== undefined) setIsVip(data.isVip);
 
     } catch (e) {
       console.error('Chatbot error:', e);
@@ -253,7 +251,7 @@ export const useChatbot = (): UseChatbotReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, session, messages, isAdmin, isVip, usage]);
+  }, [user, session, messages, isAdmin, dailyChatLimit, usage]);
 
   // Clear messages
   const clearMessages = useCallback(async () => {
