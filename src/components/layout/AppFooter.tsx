@@ -67,8 +67,8 @@ const AppFooter: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Dashboard
+                <Link to="/profile" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Profil
                 </Link>
               </li>
             </ul>
@@ -79,19 +79,14 @@ const AppFooter: React.FC = () => {
             <h4 className="font-semibold text-foreground mb-4">Yasal</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Gizlilik Politikası
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Kullanım Şartları
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Sorumluluk Reddi
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
