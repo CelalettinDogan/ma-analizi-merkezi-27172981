@@ -4,7 +4,7 @@ const config: CapacitorConfig = {
   appId: 'app.golmetrik.android',
   appName: 'Gol Metrik',
   webDir: 'dist',
-  // NOTE: For development, uncomment the server block below
+  // NOTE: For development with hot reload, uncomment below:
   // server: {
   //   url: 'https://a043c351-80f7-4404-bfb0-4355af0b4d37.lovableproject.com?forceHideBadge=true',
   //   cleartext: true,
@@ -15,22 +15,30 @@ const config: CapacitorConfig = {
       backgroundColor: '#0f172a',
       androidScaleType: 'CENTER_CROP',
       showSpinner: true,
-      spinnerColor: '#22c55e',
+      spinnerColor: '#10b981',
       launchShowDuration: 2000,
     },
     StatusBar: {
       style: 'DARK',
       backgroundColor: '#0f172a',
     },
+    Keyboard: {
+      resize: 'body',
+      resizeOnFullScreen: true,
+    },
   },
   android: {
-    allowMixedContent: false, // PRODUCTION: Disable mixed content
+    allowMixedContent: false,
     captureInput: true,
-    webContentsDebuggingEnabled: false, // PRODUCTION: Disable debugging
+    webContentsDebuggingEnabled: false,
+    backgroundColor: '#0f172a',
+    initialFocus: false,
+    useLegacyBridge: false,
   },
   ios: {
     contentInset: 'automatic',
     preferredContentMode: 'mobile',
+    backgroundColor: '#0f172a',
   },
 };
 
