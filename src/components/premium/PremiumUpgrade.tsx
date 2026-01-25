@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Crown, Brain, Globe, Zap, Ban, History, Check, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -222,8 +223,8 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
           {/* Terms */}
           <p className="text-[10px] text-center text-muted-foreground">
             Satın alarak{' '}
-            <a href="/terms" className="underline">Kullanım Şartları</a> ve{' '}
-            <a href="/privacy" className="underline">Gizlilik Politikası</a>'nı kabul etmiş olursunuz.
+            <Link to="/terms" className="underline">Kullanım Şartları</Link> ve{' '}
+            <Link to="/privacy" className="underline">Gizlilik Politikası</Link>'nı kabul etmiş olursunuz.
             {isAndroid && ' Abonelik Google Play hesabınız üzerinden yönetilir.'}
           </p>
         </CardContent>
