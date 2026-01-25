@@ -1,10 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Sparkles, MessageCircle, Lock, BarChart3, Star, Zap, ArrowLeft, Check, Bot } from 'lucide-react';
+import { Crown, Sparkles, Lock, BarChart3, Star, Zap, ArrowLeft, Check, Bot, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
+import { PLAN_PRICES } from '@/constants/accessLevels';
 
 interface PremiumGateProps {
   onClose?: () => void;
@@ -13,29 +14,29 @@ interface PremiumGateProps {
 
 const variantContent = {
   chatbot: {
-    title: 'AI Asistan VIP Üyelere Özel',
-    subtitle: 'Yapay zeka destekli maç analizlerine erişmek için VIP üye olun',
+    title: 'AI Asistan Pro Üyelere Özel',
+    subtitle: 'Yapay zeka destekli maç analizlerine erişmek için Pro veya Ultra planına geçin',
     icon: Bot,
     gradient: 'from-primary via-primary/80 to-accent',
   },
   analysis: {
     title: 'Analiz Limitine Ulaştınız',
-    subtitle: 'Sınırsız analiz için VIP üye olun',
+    subtitle: 'Sınırsız analiz için Premium planına geçin',
     icon: BarChart3,
     gradient: 'from-orange-500 to-red-500',
   },
   general: {
-    title: 'VIP Özellik',
-    subtitle: 'Bu özellik VIP üyelere özel',
+    title: 'Premium Özellik',
+    subtitle: 'Bu özellik Premium üyelere özel',
     icon: Crown,
     gradient: 'from-amber-500 to-orange-500',
   },
 };
 
-const vipFeatures = [
+const proFeatures = [
   { icon: Bot, label: 'AI Asistan', description: 'Günde 3 sohbet hakkı' },
-  { icon: BarChart3, label: 'Gelişmiş Analizler', description: 'Detaylı maç istatistikleri' },
-  { icon: Sparkles, label: 'Özel Tahminler', description: 'AI destekli skor tahminleri' },
+  { icon: BarChart3, label: 'Sınırsız Analiz', description: 'Günlük limit yok' },
+  { icon: Sparkles, label: 'Gelişmiş İstatistikler', description: 'Tüm detaylı veriler' },
   { icon: Star, label: 'Öncelikli Destek', description: 'Hızlı yanıt garantisi' },
 ];
 
@@ -92,19 +93,22 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' 
             <div className="flex items-center justify-center gap-2">
               <Lock className="w-5 h-5 text-muted-foreground" />
               <Badge variant="secondary" className="bg-primary/10 text-primary">
-                VIP Özellik
+                Pro Özellik
               </Badge>
             </div>
             <h2 className="text-2xl font-bold">{content.title}</h2>
             <p className="text-muted-foreground">{content.subtitle}</p>
+            <p className="text-sm font-medium text-primary">
+              Pro: ₺{PLAN_PRICES.pro.monthly}/ay • Ultra: ₺{PLAN_PRICES.ultra.monthly}/ay
+            </p>
           </div>
 
           {/* Features */}
           <Card className="p-4 space-y-3">
             <p className="text-sm font-medium text-center text-muted-foreground">
-              VIP üyelik avantajları
+              Pro plan avantajları
             </p>
-            {vipFeatures.map((feature, index) => (
+            {proFeatures.map((feature, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, x: -20 }}
@@ -132,7 +136,7 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' 
               size="lg"
             >
               <Crown className="w-5 h-5 mr-2" />
-              VIP Üye Ol
+              Premium Planları Gör
             </Button>
             
             {onClose && (
@@ -144,6 +148,14 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' 
                 Daha Sonra
               </Button>
             )}
+          </div>
+
+          {/* Legal notice */}
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50">
+            <AlertCircle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+            <p className="text-[10px] text-muted-foreground leading-relaxed">
+              Abonelik otomatik yenilenir. Google Play &gt; Abonelikler'den iptal edebilirsiniz.
+            </p>
           </div>
 
           {/* Trust Badge */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Crown, X, Clock, Sparkles } from 'lucide-react';
+import { Crown, X, Clock, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   Drawer,
@@ -10,6 +10,7 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
+import { PLAN_PRICES } from '@/constants/accessLevels';
 
 interface AnalysisLimitSheetProps {
   isOpen: boolean;
@@ -18,6 +19,13 @@ interface AnalysisLimitSheetProps {
 
 const SPAM_COOLDOWN = 5000; // 5 seconds cooldown between shows
 const SPAM_STORAGE_KEY = 'analysis_limit_sheet_last_shown';
+
+const premiumBenefits = [
+  'Sınırsız maç analizi',
+  'AI destekli tahmin asistanı',
+  'Reklamsız deneyim',
+  'Tüm analiz geçmişi',
+];
 
 const AnalysisLimitSheet: React.FC<AnalysisLimitSheetProps> = ({
   isOpen,
@@ -78,7 +86,7 @@ const AnalysisLimitSheet: React.FC<AnalysisLimitSheetProps> = ({
           </div>
 
           <DrawerTitle className="text-xl font-bold text-center">
-            Ücretsiz Analiz Hakkın Doldu
+            Günlük Analiz Hakkın Doldu
           </DrawerTitle>
           
           <DrawerDescription className="text-center mt-2">
@@ -88,10 +96,10 @@ const AnalysisLimitSheet: React.FC<AnalysisLimitSheetProps> = ({
           </DrawerDescription>
         </DrawerHeader>
 
-        {/* Premium info card */}
+        {/* Premium benefits card */}
         <div className="px-4 py-3">
           <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-500/20 rounded-xl p-4">
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 mb-3">
               <div className="flex-shrink-0 p-2 rounded-lg bg-amber-500/20">
                 <Sparkles className="w-5 h-5 text-amber-500" />
               </div>
@@ -99,11 +107,33 @@ const AnalysisLimitSheet: React.FC<AnalysisLimitSheetProps> = ({
                 <p className="text-sm font-medium text-foreground">
                   Premium ile beklemeden sınırsız analiz yapabilirsin
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  AI asistan, derin istatistikler ve reklamsız deneyim
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  ₺{PLAN_PRICES.pro.monthly}/ay veya ₺{PLAN_PRICES.pro.yearly}/yıl
                 </p>
               </div>
             </div>
+            
+            {/* Benefits list */}
+            <div className="space-y-2 mt-3">
+              {premiumBenefits.map((benefit, index) => (
+                <div key={index} className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span className="text-foreground/80">{benefit}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Legal notice - Play Store compliant */}
+        <div className="px-4 py-2">
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50">
+            <AlertCircle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Abonelik otomatik yenilenir. İstediğiniz zaman Google Play Store 
+              &gt; Abonelikler bölümünden iptal edebilirsiniz. İptal edilmedikçe 
+              abonelik dönem sonunda yenilenir.
+            </p>
           </div>
         </div>
 
@@ -114,7 +144,7 @@ const AnalysisLimitSheet: React.FC<AnalysisLimitSheetProps> = ({
             className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-amber-500/25"
           >
             <Crown className="w-5 h-5 mr-2" />
-            Premium'a Geç
+            Premium Planları Gör
           </Button>
 
           {/* Secondary - Wait */}
@@ -124,7 +154,7 @@ const AnalysisLimitSheet: React.FC<AnalysisLimitSheetProps> = ({
             className="w-full h-11 rounded-xl"
           >
             <Clock className="w-4 h-4 mr-2" />
-            Bekle ({timeUntilReset})
+            Yarın Tekrar Dene ({timeUntilReset})
           </Button>
         </div>
       </DrawerContent>
