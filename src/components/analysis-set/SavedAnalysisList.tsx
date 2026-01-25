@@ -21,16 +21,14 @@ interface SavedAnalysisListProps {
   compact?: boolean;
 }
 
-const confidenceLabels: Record<string, string> = {
-  düşük: 'Düşük',
-  orta: 'Orta', 
-  yüksek: 'Yüksek',
-};
-
-const confidenceColors: Record<string, string> = {
-  düşük: 'text-loss',
-  orta: 'text-draw',
-  yüksek: 'text-win',
+const getResultBadge = (isCorrect: boolean | null) => {
+  if (isCorrect === null) {
+    return { text: 'Bekliyor', className: 'bg-amber-500/20 text-amber-500 border-amber-500/30' };
+  }
+  if (isCorrect) {
+    return { text: 'Doğru', className: 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30' };
+  }
+  return { text: 'Yanlış', className: 'bg-red-500/20 text-red-500 border-red-500/30' };
 };
 
 const SavedAnalysisList: React.FC<SavedAnalysisListProps> = ({ isLoading: externalLoading, onRefresh, compact = false }) => {
@@ -163,8 +161,11 @@ const SavedAnalysisList: React.FC<SavedAnalysisListProps> = ({ isLoading: extern
         ) : (
           <ScrollArea className={cn("pr-2 sm:pr-4", compact ? "max-h-[300px]" : "max-h-[400px]")}>
             <div className="space-y-3">
-              {slips.map((slip) => {
+          {slips.map((slip) => {
                 const totalItems = slip.items?.length || 0;
+                const verifiedItems = slip.items?.filter(i => i.is_correct !== null) || [];
+                const correctItems = verifiedItems.filter(i => i.is_correct === true);
+                const hasResults = verifiedItems.length > 0;
                 
                 return (
                   <div
@@ -182,10 +183,26 @@ const SavedAnalysisList: React.FC<SavedAnalysisListProps> = ({ isLoading: extern
                         </p>
                       </div>
                       <div className="flex items-center gap-1 flex-shrink-0">
-                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs px-1.5">
-                          <Clock className="h-3 w-3 mr-0.5" />
-                          Bekliyor
-                        </Badge>
+                        {hasResults ? (
+                          <Badge 
+                            variant="outline" 
+                            className={cn(
+                              "text-xs px-1.5",
+                              correctItems.length === verifiedItems.length 
+                                ? "bg-emerald-500/20 text-emerald-500 border-emerald-500/30"
+                                : correctItems.length > 0
+                                  ? "bg-amber-500/20 text-amber-500 border-amber-500/30"
+                                  : "bg-red-500/20 text-red-500 border-red-500/30"
+                            )}
+                          >
+                            {correctItems.length}/{verifiedItems.length} Doğru
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs px-1.5">
+                            <Clock className="h-3 w-3 mr-0.5" />
+                            Bekliyor
+                          </Badge>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
@@ -200,26 +217,36 @@ const SavedAnalysisList: React.FC<SavedAnalysisListProps> = ({ isLoading: extern
                     {/* Items preview */}
                     {slip.items && slip.items.length > 0 && (
                       <div className="space-y-1.5">
-                        {slip.items.slice(0, 2).map((item) => (
-                          <div key={item.id} className="flex items-center gap-2 text-xs">
-                            <TrendingUp className="h-3 w-3 text-primary flex-shrink-0" />
-                            <span className="truncate text-muted-foreground">
-                              {item.home_team} vs {item.away_team}
-                            </span>
-                            <Badge 
-                              variant="outline" 
-                              className={cn(
-                                "text-xs px-1 py-0 h-4 flex-shrink-0",
-                                confidenceColors[item.confidence]
-                              )}
-                            >
-                              {confidenceLabels[item.confidence]}
-                            </Badge>
-                          </div>
-                        ))}
-                        {slip.items.length > 2 && (
+                        {slip.items.slice(0, 3).map((item) => {
+                          const resultBadge = getResultBadge(item.is_correct);
+                          const hasScore = item.home_score !== null && item.away_score !== null;
+                          
+                          return (
+                            <div key={item.id} className="flex items-center gap-2 text-xs">
+                              <TrendingUp className="h-3 w-3 text-primary flex-shrink-0" />
+                              <span className="truncate text-muted-foreground flex-1">
+                                {item.home_team} vs {item.away_team}
+                                {hasScore && (
+                                  <span className="ml-1 text-foreground">
+                                    ({item.home_score}-{item.away_score})
+                                  </span>
+                                )}
+                              </span>
+                              <Badge 
+                                variant="outline" 
+                                className={cn(
+                                  "text-xs px-1 py-0 h-4 flex-shrink-0",
+                                  resultBadge.className
+                                )}
+                              >
+                                {resultBadge.text}
+                              </Badge>
+                            </div>
+                          );
+                        })}
+                        {slip.items.length > 3 && (
                           <p className="text-xs text-muted-foreground pl-5">
-                            +{slip.items.length - 2} daha fazla
+                            +{slip.items.length - 3} daha fazla
                           </p>
                         )}
                       </div>
