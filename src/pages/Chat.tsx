@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Trash2, Bot, Info, Crown, Sparkles, Star } from 'lucide-react';
+import { ArrowLeft, Trash2, Bot, Info, Crown, Sparkles, Star, MoreVertical } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChatbot } from '@/hooks/useChatbot';
 import { useAccessLevel } from '@/hooks/useAccessLevel';
@@ -16,6 +22,7 @@ import ChatLimitSheet from '@/components/chat/ChatLimitSheet';
 import BottomNav from '@/components/navigation/BottomNav';
 import { fadeInUp } from '@/lib/animations';
 import { MatchAnalysis } from '@/types/match';
+import { cn } from '@/lib/utils';
 
 interface MatchContext {
   homeTeam: string;
@@ -53,7 +60,6 @@ const Chat: React.FC = () => {
     dailyChatLimit,
     isGuest,
     isPremium,
-    planDisplayName,
   } = useAccessLevel();
   const {
     messages,
@@ -220,52 +226,87 @@ const Chat: React.FC = () => {
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                <Bot className="w-4 h-4 text-white" />
+            
+            {/* Bot Avatar with Online Status */}
+            <div className="flex items-center gap-2.5">
+              <div className="relative">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                  <Bot className="w-4.5 h-4.5 text-white" />
+                </div>
+                {/* Online indicator */}
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-background">
+                  <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-75" />
+                </span>
               </div>
+              
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="font-semibold text-sm">Gol Asistan</h1>
                   {isAdmin && (
-                    <Badge variant="secondary" className="text-[10px] h-5 bg-amber-500/20 text-amber-600">
+                    <Badge variant="secondary" className="text-[10px] h-5 bg-amber-500/20 text-amber-600 border-0">
                       <Crown className="w-3 h-3 mr-1" />
                       Admin
                     </Badge>
                   )}
                   {isPremiumPro && !isAdmin && (
-                    <Badge variant="secondary" className="text-[10px] h-5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600">
+                    <Badge variant="secondary" className="text-[10px] h-5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600 border-0">
                       <Star className="w-3 h-3 mr-1" />
                       Pro
                     </Badge>
                   )}
                   {isPremiumPlus && !isAdmin && (
-                    <Badge variant="secondary" className="text-[10px] h-5 bg-primary/20 text-primary">
+                    <Badge variant="secondary" className="text-[10px] h-5 bg-primary/20 text-primary border-0">
                       <Sparkles className="w-3 h-3 mr-1" />
                       Plus
                     </Badge>
                   )}
                   {isPremiumBasic && !isAdmin && (
-                    <Badge variant="secondary" className="text-[10px] h-5 bg-emerald-500/20 text-emerald-600">
+                    <Badge variant="secondary" className="text-[10px] h-5 bg-emerald-500/20 text-emerald-600 border-0">
                       Basic
                     </Badge>
                   )}
                 </div>
-                <p className="text-[10px] text-muted-foreground">AI Futbol Danışmanı</p>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <p className="text-[10px] text-muted-foreground">
+                    {chatLoading ? (
+                      <motion.span
+                        animate={{ opacity: [1, 0.5, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      >
+                        Yazıyor...
+                      </motion.span>
+                    ) : (
+                      "Çevrimiçi"
+                    )}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          {messages.length > 0 && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleClearMessages}
-              className="rounded-full text-muted-foreground hover:text-destructive"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          )}
+          {/* Actions */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
+              >
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem 
+                onClick={handleClearMessages}
+                disabled={messages.length === 0}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Sohbeti Temizle
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Match Context Banner */}
@@ -318,13 +359,13 @@ const Chat: React.FC = () => {
           onSend={handleSendMessage}
           isLoading={chatLoading}
           disabled={!canChat}
+          disabledReason={isLimitReached ? "Günlük limitiniz doldu" : undefined}
           placeholder={
-            isLimitReached
-              ? "Günlük limitiniz doldu"
-              : matchContext
-                ? `${matchContext.homeTeam} vs ${matchContext.awayTeam} hakkında sorun...`
-                : "Futbol hakkında bir şeyler sorun..."
+            matchContext
+              ? `${matchContext.homeTeam} vs ${matchContext.awayTeam} hakkında sorun...`
+              : "Futbol hakkında bir şeyler sorun..."
           }
+          maxLength={500}
         />
       </main>
 
