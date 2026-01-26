@@ -150,14 +150,33 @@ async function acknowledgeSubscription(
   }
 }
 
-// Map product ID to plan type
+/**
+ * Product ID'den plan tipini çıkar
+ * 
+ * Yeni format:
+ * - premium_basic_monthly -> premium_basic
+ * - premium_plus_yearly -> premium_plus
+ * - premium_pro_monthly -> premium_pro
+ * 
+ * Legacy fallback:
+ * - pro, ultra -> premium_pro
+ * - plus -> premium_plus
+ * - default -> premium_basic
+ */
 function getPlanType(productId: string): string {
-  const planMap: Record<string, string> = {
-    premium_monthly: "monthly",
-    premium_yearly: "yearly",
-    premium_weekly: "weekly",
-  };
-  return planMap[productId] || "monthly";
+  const lowerProductId = productId.toLowerCase();
+  
+  // Yeni plan format kontrolü
+  if (lowerProductId.includes('premium_pro')) return 'premium_pro';
+  if (lowerProductId.includes('premium_plus')) return 'premium_plus';
+  if (lowerProductId.includes('premium_basic')) return 'premium_basic';
+  
+  // Legacy format fallback
+  if (lowerProductId.includes('pro') || lowerProductId.includes('ultra')) return 'premium_pro';
+  if (lowerProductId.includes('plus')) return 'premium_plus';
+  
+  // Default to basic for any premium purchase
+  return 'premium_basic';
 }
 
 Deno.serve(async (req) => {
@@ -259,9 +278,11 @@ Deno.serve(async (req) => {
       await acknowledgeSubscription(packageName, productId, purchaseToken, accessToken);
     }
     
-    // Calculate subscription period
+    // Calculate subscription period and plan type
     const startTime = new Date(parseInt(subscription.startTimeMillis));
     const planType = getPlanType(productId);
+    
+    console.log("Resolved plan type:", { productId, planType });
     
     // Upsert subscription record
     const { data: subscriptionData, error: upsertError } = await supabaseAdmin
@@ -297,7 +318,7 @@ Deno.serve(async (req) => {
       );
     }
     
-    console.log("Subscription saved successfully:", subscriptionData.id);
+    console.log("Subscription saved successfully:", { id: subscriptionData.id, planType });
     
     return new Response(
       JSON.stringify({

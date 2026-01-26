@@ -1,5 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
+import { PLAN_PRICES, type PlanType } from '@/constants/accessLevels';
 
 export interface PurchaseResult {
   success: boolean;
@@ -19,12 +20,43 @@ export interface ProductInfo {
   price: string;
   priceAmount: number;
   currency: string;
+  planType: PlanType;
+  period: 'monthly' | 'yearly';
 }
 
-// Product IDs - these should match your Play Store/App Store products
+// Product IDs - Play Store'da oluşturulacak ürünlerle eşleşmeli
 export const PRODUCTS = {
-  PREMIUM_MONTHLY: 'premium_monthly',
-  PREMIUM_YEARLY: 'premium_yearly',
+  // Basic Plan
+  PREMIUM_BASIC_MONTHLY: 'premium_basic_monthly',
+  PREMIUM_BASIC_YEARLY: 'premium_basic_yearly',
+  // Plus Plan
+  PREMIUM_PLUS_MONTHLY: 'premium_plus_monthly',
+  PREMIUM_PLUS_YEARLY: 'premium_plus_yearly',
+  // Pro Plan
+  PREMIUM_PRO_MONTHLY: 'premium_pro_monthly',
+  PREMIUM_PRO_YEARLY: 'premium_pro_yearly',
+} as const;
+
+// Plan bilgileri - merkezi yönetim
+export const PLAN_PRODUCTS = {
+  premium_basic: {
+    monthly: PRODUCTS.PREMIUM_BASIC_MONTHLY,
+    yearly: PRODUCTS.PREMIUM_BASIC_YEARLY,
+    name: 'Premium Basic',
+    chatLimit: 3,
+  },
+  premium_plus: {
+    monthly: PRODUCTS.PREMIUM_PLUS_MONTHLY,
+    yearly: PRODUCTS.PREMIUM_PLUS_YEARLY,
+    name: 'Premium Plus',
+    chatLimit: 5,
+  },
+  premium_pro: {
+    monthly: PRODUCTS.PREMIUM_PRO_MONTHLY,
+    yearly: PRODUCTS.PREMIUM_PRO_YEARLY,
+    name: 'Premium Pro',
+    chatLimit: 10,
+  },
 } as const;
 
 class PurchaseService {
@@ -50,34 +82,99 @@ class PurchaseService {
   }
 
   /**
-   * Get available products
+   * Get available products with plan-specific info
    */
   async getProducts(): Promise<ProductInfo[]> {
     if (!this.isNative) {
-      // Return web pricing info
-      return [
-        {
-          productId: PRODUCTS.PREMIUM_MONTHLY,
-          title: 'Premium Aylık',
-          description: 'Tüm premium özelliklere erişim',
-          price: '₺99/ay',
-          priceAmount: 99,
-          currency: 'TRY',
-        },
-        {
-          productId: PRODUCTS.PREMIUM_YEARLY,
-          title: 'Premium Yıllık',
-          description: 'Tüm premium özellikler - 2 ay bedava',
-          price: '₺799/yıl',
-          priceAmount: 799,
-          currency: 'TRY',
-        },
-      ];
+      // Return web pricing info (for display purposes only)
+      return this.getWebProducts();
     }
 
     // For native, query products from the store
     // This requires native plugin implementation
-    return [];
+    // Fallback to web products for now
+    return this.getWebProducts();
+  }
+
+  /**
+   * Get products with prices from accessLevels
+   */
+  private getWebProducts(): ProductInfo[] {
+    return [
+      // Basic Plan
+      {
+        productId: PRODUCTS.PREMIUM_BASIC_MONTHLY,
+        title: 'Premium Basic Aylık',
+        description: 'Sınırsız analiz + 3 AI mesajı/gün',
+        price: `₺${PLAN_PRICES.premium_basic.monthly}/ay`,
+        priceAmount: PLAN_PRICES.premium_basic.monthly,
+        currency: 'TRY',
+        planType: 'premium_basic',
+        period: 'monthly',
+      },
+      {
+        productId: PRODUCTS.PREMIUM_BASIC_YEARLY,
+        title: 'Premium Basic Yıllık',
+        description: 'Sınırsız analiz + 3 AI mesajı/gün (2 ay bedava)',
+        price: `₺${PLAN_PRICES.premium_basic.yearly}/yıl`,
+        priceAmount: PLAN_PRICES.premium_basic.yearly,
+        currency: 'TRY',
+        planType: 'premium_basic',
+        period: 'yearly',
+      },
+      // Plus Plan
+      {
+        productId: PRODUCTS.PREMIUM_PLUS_MONTHLY,
+        title: 'Premium Plus Aylık',
+        description: 'Sınırsız analiz + 5 AI mesajı/gün',
+        price: `₺${PLAN_PRICES.premium_plus.monthly}/ay`,
+        priceAmount: PLAN_PRICES.premium_plus.monthly,
+        currency: 'TRY',
+        planType: 'premium_plus',
+        period: 'monthly',
+      },
+      {
+        productId: PRODUCTS.PREMIUM_PLUS_YEARLY,
+        title: 'Premium Plus Yıllık',
+        description: 'Sınırsız analiz + 5 AI mesajı/gün (2 ay bedava)',
+        price: `₺${PLAN_PRICES.premium_plus.yearly}/yıl`,
+        priceAmount: PLAN_PRICES.premium_plus.yearly,
+        currency: 'TRY',
+        planType: 'premium_plus',
+        period: 'yearly',
+      },
+      // Pro Plan
+      {
+        productId: PRODUCTS.PREMIUM_PRO_MONTHLY,
+        title: 'Premium Pro Aylık',
+        description: 'Sınırsız analiz + 10 AI mesajı/gün',
+        price: `₺${PLAN_PRICES.premium_pro.monthly}/ay`,
+        priceAmount: PLAN_PRICES.premium_pro.monthly,
+        currency: 'TRY',
+        planType: 'premium_pro',
+        period: 'monthly',
+      },
+      {
+        productId: PRODUCTS.PREMIUM_PRO_YEARLY,
+        title: 'Premium Pro Yıllık',
+        description: 'Sınırsız analiz + 10 AI mesajı/gün (2 ay bedava)',
+        price: `₺${PLAN_PRICES.premium_pro.yearly}/yıl`,
+        priceAmount: PLAN_PRICES.premium_pro.yearly,
+        currency: 'TRY',
+        planType: 'premium_pro',
+        period: 'yearly',
+      },
+    ];
+  }
+
+  /**
+   * Get plan name from product ID
+   */
+  getPlanNameFromProductId(productId: string): string {
+    if (productId.includes('premium_pro')) return 'Premium Pro';
+    if (productId.includes('premium_plus')) return 'Premium Plus';
+    if (productId.includes('premium_basic')) return 'Premium Basic';
+    return 'Premium';
   }
 
   /**
@@ -89,7 +186,7 @@ class PurchaseService {
       console.log('Web purchase requested for:', productId);
       return {
         success: false,
-        error: 'Web purchases are handled separately',
+        error: 'Web üzerinden satın alma desteklenmiyor. Mobil uygulamayı kullanın.',
       };
     }
 
@@ -110,13 +207,13 @@ class PurchaseService {
       
       return {
         success: false,
-        error: 'Native purchase plugin not installed. Install @capawesome/capacitor-purchases',
+        error: 'Native satın alma eklentisi kurulu değil. @capawesome/capacitor-purchases kurun.',
       };
     } catch (error) {
       console.error('Purchase error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Purchase failed',
+        error: error instanceof Error ? error.message : 'Satın alma başarısız',
       };
     }
   }
@@ -145,7 +242,7 @@ class PurchaseService {
         console.error('Verification error:', error);
         return {
           success: false,
-          error: error.message || 'Verification failed',
+          error: error.message || 'Doğrulama başarısız',
         };
       }
 
@@ -158,7 +255,7 @@ class PurchaseService {
       console.error('Verification error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Verification failed',
+        error: error instanceof Error ? error.message : 'Doğrulama başarısız',
       };
     }
   }
@@ -170,7 +267,7 @@ class PurchaseService {
     if (!this.isNative) {
       return {
         success: false,
-        error: 'Restore not available on web',
+        error: 'Web üzerinden geri yükleme yapılamaz',
       };
     }
 
@@ -181,13 +278,13 @@ class PurchaseService {
       
       return {
         success: false,
-        error: 'Native restore not implemented',
+        error: 'Native geri yükleme henüz uygulanmadı',
       };
     } catch (error) {
       console.error('Restore error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Restore failed',
+        error: error instanceof Error ? error.message : 'Geri yükleme başarısız',
       };
     }
   }

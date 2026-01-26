@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 interface PurchaseButtonProps {
   productId: string;
   price: string;
+  planName?: string;
   variant?: 'default' | 'outline' | 'ghost';
   size?: 'default' | 'sm' | 'lg';
   className?: string;
@@ -19,6 +20,7 @@ interface PurchaseButtonProps {
 export const PurchaseButton: React.FC<PurchaseButtonProps> = ({
   productId,
   price,
+  planName,
   variant = 'default',
   size = 'default',
   className,
@@ -27,6 +29,9 @@ export const PurchaseButton: React.FC<PurchaseButtonProps> = ({
 }) => {
   const [isLoading, setIsLoading] = React.useState(false);
 
+  // Get plan name from product ID if not provided
+  const displayPlanName = planName || purchaseService.getPlanNameFromProductId(productId);
+
   const handlePurchase = async () => {
     setIsLoading(true);
 
@@ -34,7 +39,7 @@ export const PurchaseButton: React.FC<PurchaseButtonProps> = ({
       const result = await purchaseService.purchaseSubscription(productId);
 
       if (result.success) {
-        toast.success('Premium üyelik aktif!');
+        toast.success(`${displayPlanName} üyeliğin aktif!`);
         onSuccess?.();
       } else {
         const error = result.error || 'Satın alma başarısız';
@@ -67,7 +72,7 @@ export const PurchaseButton: React.FC<PurchaseButtonProps> = ({
         ) : (
           <>
             <Crown className="h-4 w-4" />
-            Google Play - {price}
+            {displayPlanName} - {price}
           </>
         )}
       </Button>
