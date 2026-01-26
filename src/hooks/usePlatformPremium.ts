@@ -101,10 +101,11 @@ export const usePlatformPremium = (): UsePlatformPremiumReturn => {
   };
 };
 
-// Store links
+// Store links - iOS not yet available, both redirect to Play Store
 export const STORE_LINKS = {
   playStore: 'https://play.google.com/store/apps/details?id=app.golmetrik.android',
-  appStore: 'https://apps.apple.com/app/gol-metrik/id123456789', // Update with real ID
+  // iOS app not yet available - use Play Store as fallback
+  appStore: 'https://play.google.com/store/apps/details?id=app.golmetrik.android',
 } as const;
 
 // Helper to get appropriate store link based on user device

@@ -331,11 +331,11 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
                     <span className="ml-auto text-xs text-muted-foreground">⚡ Canlı</span>
                   </button>
                   <button
-                    onClick={() => runCommand(() => navigate('/dashboard'))}
+                    onClick={() => runCommand(() => navigate('/analysis-history'))}
                     className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
                   >
                     <BarChart3 className="mr-2 h-4 w-4" />
-                    <span>Dashboard</span>
+                    <span>Analiz Geçmişi</span>
                   </button>
                   <button
                     onClick={() => runCommand(() => navigate('/profile'))}

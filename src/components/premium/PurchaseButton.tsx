@@ -45,10 +45,9 @@ export const PurchaseButton: React.FC<PurchaseButtonProps> = ({
           onError?.(error);
         }
       } else {
-        // Web flow - show info or redirect
-        toast.info('Web ödeme sayfasına yönlendiriliyorsunuz...');
-        // Implement Stripe integration here
-        onError?.('Web ödeme henüz aktif değil');
+        // Web platform - redirect to app download
+        toast.info('Premium özellikler sadece mobil uygulamada kullanılabilir. Lütfen uygulamayı indirin.');
+        window.open('https://play.google.com/store/apps/details?id=app.golmetrik.android', '_blank');
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Bir hata oluştu';

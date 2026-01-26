@@ -275,7 +275,7 @@ const Profile = () => {
                     {upcomingMatches.map((match: any) => (
                       <div 
                         key={match.id} 
-                        className="flex items-center justify-between p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                        className="flex items-center justify-between p-2 rounded-lg bg-muted/30"
                       >
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">
@@ -312,7 +312,7 @@ const Profile = () => {
                     <TrendingUp className="w-5 h-5 text-primary" />
                     Son Analizler
                   </CardTitle>
-                  <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-xs h-7 px-2">
+                  <Button variant="ghost" size="sm" onClick={() => navigate('/analysis-history')} className="text-xs h-7 px-2">
                     Tümü <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                 </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Twitter, Github, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const AppFooter: React.FC = () => {
@@ -23,20 +23,6 @@ const AppFooter: React.FC = () => {
               makine öğrenimi tahminleri ve kapsamlı maç analizleri.
             </p>
             <div className="flex items-center gap-3">
-              <a 
-                href="#" 
-                className="w-9 h-9 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 flex items-center justify-center transition-colors"
-                aria-label="Twitter"
-              >
-                <Twitter className="w-4 h-4 text-muted-foreground" />
-              </a>
-              <a 
-                href="#" 
-                className="w-9 h-9 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 flex items-center justify-center transition-colors"
-                aria-label="GitHub"
-              >
-                <Github className="w-4 h-4 text-muted-foreground" />
-              </a>
               <a 
                 href="mailto:info@golmetrik.com" 
                 className="w-9 h-9 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 flex items-center justify-center transition-colors"

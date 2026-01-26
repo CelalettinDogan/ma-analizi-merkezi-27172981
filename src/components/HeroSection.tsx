@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Zap, TrendingUp, Shield, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -148,8 +149,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({
               transition={{ delay: 0.6 }}
               className="mt-6"
             >
-              <a 
-                href="/live"
+              <Link 
+                to="/live"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-destructive/10 border border-destructive/20 hover:bg-destructive/15 transition-colors"
               >
                 <span className="relative flex h-2 w-2">
@@ -160,7 +161,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                   {stats.liveCount} Canlı Maç
                 </span>
                 <ArrowRight className="w-3.5 h-3.5 text-destructive" />
-              </a>
+              </Link>
             </motion.div>
           )}
         </motion.div>

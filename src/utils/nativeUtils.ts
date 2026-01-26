@@ -29,11 +29,11 @@ export const openPlayStore = async (): Promise<void> => {
 
 /**
  * Opens the App Store page for the app (future iOS support)
+ * Note: iOS app is not yet available, this will redirect to Play Store
  */
 export const openAppStore = async (): Promise<void> => {
-  // Placeholder for future iOS App Store URL
-  const appStoreUrl = 'https://apps.apple.com/app/gol-metrik/id000000000';
-  await openExternalLink(appStoreUrl);
+  // iOS app not yet available - redirect to Play Store instead
+  await openPlayStore();
 };
 
 /**
