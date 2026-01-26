@@ -1,11 +1,14 @@
 import React, { memo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Plus, Check, Share2, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnalysisSet } from '@/contexts/AnalysisSetContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Prediction, MatchInput } from '@/types/match';
 import { cn } from '@/lib/utils';
 import { CONFIDENCE_THRESHOLDS } from '@/constants/predictions';
+import { toast } from 'sonner';
 
 interface StickyAnalysisCTAProps {
   prediction: Prediction;
@@ -38,6 +41,8 @@ const StickyAnalysisCTA: React.FC<StickyAnalysisCTAProps> = ({
   matchInput,
   onShare,
 }) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const { addToSet, items } = useAnalysisSet();
   
   const hybridConfidence = getHybridConfidence(prediction);
@@ -51,6 +56,12 @@ const StickyAnalysisCTA: React.FC<StickyAnalysisCTAProps> = ({
   );
 
   const handleAddToSet = () => {
+    if (!user) {
+      toast.info('Analiz kaydetmek için giriş yapmalısınız');
+      navigate('/auth');
+      return;
+    }
+    
     addToSet({
       homeTeam: matchInput.homeTeam,
       awayTeam: matchInput.awayTeam,
