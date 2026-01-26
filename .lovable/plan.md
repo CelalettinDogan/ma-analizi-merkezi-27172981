@@ -1,362 +1,281 @@
 
-# Rol ve Paket Bazlı Erişim Sistemi Planı
+# Premium Satın Alma Akışı Güncelleme Planı
 
-## Mevcut Durum Analizi
+## Tespit Edilen Sorunlar
 
-**Mevcut Plan Tipleri:**
-- `free` → Günlük 2 analiz, AI Chat: YOK
-- `basic` → Günlük 10 analiz, AI Chat: YOK
-- `pro` → Sınırsız analiz, AI Chat: 3/gün
-- `ultra` → Sınırsız analiz, AI Chat: Sınırsız
-
-**Mevcut Roller (user_roles tablosu):**
-- `admin`, `moderator`, `user`, `vip`
-
-**Sorunlar:**
-1. Paket isimleri yeni gereksinimlerle uyuşmuyor (basic/pro/ultra → Premium Basic/Plus/Pro)
-2. Free kullanıcı için AI Asistan erişimi net değil
-3. Guest (giriş yapmamış) kullanıcı için ayrı akış yok
-4. Chat limiti dolan Premium için BottomSheet yok
-5. Admin için satın alma CTA'ları hala görünüyor olabilir
+| Dosya | Sorun | Öncelik |
+|-------|-------|---------|
+| `purchaseService.ts` | Product ID'ler yeni plan tiplerine uygun değil | Yüksek |
+| `verify-purchase/index.ts` | Plan mapping sadece monthly/yearly döndürüyor | Yüksek |
+| `PremiumUpgrade.tsx` | Sadece 2 plan gösteriyor, web kontrolleri var | Orta |
+| `PurchaseButton.tsx` | Plan tipi bilgisi eksik, toast mesajları generic | Düşük |
 
 ---
 
-## Yeni Erişim Matrisi
+## Yapılacak Değişiklikler
 
-| Kullanıcı | Maç Analizi | AI Asistan | Satın Al CTA | Store Butonları |
-|-----------|-------------|------------|--------------|-----------------|
-| Admin | ∞ | ∞ | HAYIR | HAYIR |
-| Premium Pro | ∞ | 10/gün | HAYIR | HAYIR |
-| Premium Plus | ∞ | 5/gün | HAYIR | HAYIR |
-| Premium Basic | ∞ | 3/gün | HAYIR | HAYIR |
-| Free | 2/gün | KAPALI | EVET | HAYIR |
-| Guest | KAPALI | KAPALI | EVET | EVET |
+### 1. `src/services/purchaseService.ts` - Product ID'leri Güncelle
 
----
-
-## Dosya Değişiklikleri
-
-### 1. `src/constants/accessLevels.ts` - Yeniden Yapılandır
-
-**Değişiklikler:**
-- Plan tiplerini güncelle: `free` | `premium_basic` | `premium_plus` | `premium_pro`
-- Yeni chatbot limitleri: 3, 5, 10
-- Tüm premium planlar için sınırsız analiz
-- Helper fonksiyonlar ekle: `isGuestUser()`, `shouldShowPurchaseCTA()`
-
+**Mevcut:**
 ```typescript
-export type PlanType = 'free' | 'premium_basic' | 'premium_plus' | 'premium_pro';
+export const PRODUCTS = {
+  PREMIUM_MONTHLY: 'premium_monthly',
+  PREMIUM_YEARLY: 'premium_yearly',
+} as const;
+```
 
-export const PLAN_ACCESS_LEVELS: Record<PlanType, AccessLevel> = {
-  free: {
-    dailyAnalysis: 2,
-    aiChat: 0,  // Erişim yok
-    historyDays: 7,
-    advancedStats: 'partial',
-    showAds: true,
-    prioritySupport: false,
-  },
+**Yeni:**
+```typescript
+export const PRODUCTS = {
+  // Basic Plan
+  PREMIUM_BASIC_MONTHLY: 'premium_basic_monthly',
+  PREMIUM_BASIC_YEARLY: 'premium_basic_yearly',
+  // Plus Plan
+  PREMIUM_PLUS_MONTHLY: 'premium_plus_monthly',
+  PREMIUM_PLUS_YEARLY: 'premium_plus_yearly',
+  // Pro Plan
+  PREMIUM_PRO_MONTHLY: 'premium_pro_monthly',
+  PREMIUM_PRO_YEARLY: 'premium_pro_yearly',
+} as const;
+
+// Plan bilgileri - accessLevels'tan fiyatlar alınacak
+export const PLAN_PRODUCTS = {
   premium_basic: {
-    dailyAnalysis: 999, // Sınırsız
-    aiChat: 3,
-    historyDays: 30,
-    advancedStats: 'full',
-    showAds: false,
-    prioritySupport: false,
+    monthly: PRODUCTS.PREMIUM_BASIC_MONTHLY,
+    yearly: PRODUCTS.PREMIUM_BASIC_YEARLY,
+    name: 'Premium Basic',
+    chatLimit: 3,
   },
   premium_plus: {
-    dailyAnalysis: 999,
-    aiChat: 5,
-    historyDays: 999,
-    advancedStats: 'full',
-    showAds: false,
-    prioritySupport: true,
+    monthly: PRODUCTS.PREMIUM_PLUS_MONTHLY,
+    yearly: PRODUCTS.PREMIUM_PLUS_YEARLY,
+    name: 'Premium Plus',
+    chatLimit: 5,
   },
   premium_pro: {
-    dailyAnalysis: 999,
-    aiChat: 10,
-    historyDays: 999,
-    advancedStats: 'full',
-    showAds: false,
-    prioritySupport: true,
+    monthly: PRODUCTS.PREMIUM_PRO_MONTHLY,
+    yearly: PRODUCTS.PREMIUM_PRO_YEARLY,
+    name: 'Premium Pro',
+    chatLimit: 10,
   },
-};
-
-// Yeni helper fonksiyonlar
-export const shouldShowPurchaseCTA = (planType: PlanType, isAdmin: boolean): boolean => {
-  if (isAdmin) return false;
-  return planType === 'free';
-};
-
-export const shouldShowUpgradeCTA = (planType: PlanType, isAdmin: boolean): boolean => {
-  if (isAdmin) return false;
-  // Sadece limit dolan premium kullanıcılar için
-  return planType !== 'premium_pro';
-};
+} as const;
 ```
 
-### 2. `src/hooks/usePremiumStatus.ts` - Plan Mapping Güncelle
-
-**Değişiklikler:**
-- `getPlanTypeFromSubscription` fonksiyonunu güncelle
-- Yeni plan isimlerini map et
-
+**`getProducts()` Güncelleme:**
 ```typescript
-const getPlanTypeFromSubscription = (subscription: PremiumSubscription | null): PlanType => {
-  if (!subscription) return 'free';
+async getProducts(): Promise<ProductInfo[]> {
+  // accessLevels'tan fiyatları al
+  return [
+    // Basic
+    {
+      productId: PRODUCTS.PREMIUM_BASIC_MONTHLY,
+      title: 'Premium Basic Aylık',
+      description: 'Sınırsız analiz + 3 AI mesajı/gün',
+      price: `₺${PLAN_PRICES.premium_basic.monthly}/ay`,
+      priceAmount: PLAN_PRICES.premium_basic.monthly,
+      currency: 'TRY',
+      planType: 'premium_basic',
+      period: 'monthly',
+    },
+    {
+      productId: PRODUCTS.PREMIUM_BASIC_YEARLY,
+      title: 'Premium Basic Yıllık',
+      description: 'Sınırsız analiz + 3 AI mesajı/gün (2 ay bedava)',
+      price: `₺${PLAN_PRICES.premium_basic.yearly}/yıl`,
+      priceAmount: PLAN_PRICES.premium_basic.yearly,
+      currency: 'TRY',
+      planType: 'premium_basic',
+      period: 'yearly',
+    },
+    // Plus & Pro için aynı yapı...
+  ];
+}
+```
+
+---
+
+### 2. `supabase/functions/verify-purchase/index.ts` - Plan Mapping Düzelt
+
+**Mevcut:**
+```typescript
+function getPlanType(productId: string): string {
+  const planMap: Record<string, string> = {
+    premium_monthly: "monthly",
+    premium_yearly: "yearly",
+  };
+  return planMap[productId] || "monthly";
+}
+```
+
+**Yeni:**
+```typescript
+function getPlanType(productId: string): string {
+  // Product ID'den plan tipini çıkar
+  // premium_basic_monthly -> premium_basic
+  // premium_plus_yearly -> premium_plus
+  // premium_pro_monthly -> premium_pro
   
-  const planType = subscription.plan_type?.toLowerCase() || '';
-  
-  // Yeni plan mapping
-  if (planType.includes('pro') || planType.includes('premium_pro')) return 'premium_pro';
-  if (planType.includes('plus') || planType.includes('premium_plus')) return 'premium_plus';
-  if (planType.includes('basic') || planType.includes('temel') || planType.includes('premium_basic')) return 'premium_basic';
+  if (productId.includes('premium_pro')) return 'premium_pro';
+  if (productId.includes('premium_plus')) return 'premium_plus';
+  if (productId.includes('premium_basic')) return 'premium_basic';
   
   // Legacy fallback
-  if (planType.includes('ultra')) return 'premium_pro';
+  if (productId.includes('pro') || productId.includes('ultra')) return 'premium_pro';
+  if (productId.includes('plus')) return 'premium_plus';
   
-  return 'premium_basic'; // Default premium
-};
-```
-
-### 3. `src/hooks/useAccessLevel.ts` - Yeni Özellikler Ekle
-
-**Değişiklikler:**
-- `isGuest` durumu ekle (giriş yapmamış)
-- `shouldShowPurchaseCTA` ekle
-- `shouldShowUpgradeCTA` ekle
-- `canAccessAnalysis` ekle
-
-```typescript
-interface UseAccessLevelReturn {
-  // Mevcut alanlar...
-  isGuest: boolean;
-  shouldShowPurchaseCTA: boolean;
-  shouldShowUpgradeCTA: boolean;
-  canAccessAnalysis: boolean;
+  return 'premium_basic'; // Default
 }
-
-export const useAccessLevel = (): UseAccessLevelReturn => {
-  const { user } = useAuth();
-  const { planType, isPremium, isLoading: premiumLoading } = usePlatformPremium();
-  const { isAdmin, isLoading: roleLoading } = useUserRole();
-
-  const isGuest = !user;
-  
-  const shouldShowPurchaseCTA = useMemo(() => {
-    if (isGuest) return true; // Guest için store butonları göster
-    if (isAdmin) return false;
-    return !isPremium;
-  }, [isGuest, isAdmin, isPremium]);
-
-  const shouldShowUpgradeCTA = useMemo(() => {
-    if (isAdmin) return false;
-    if (isGuest) return false;
-    return planType !== 'premium_pro';
-  }, [isAdmin, isGuest, planType]);
-
-  const canAccessAnalysis = useMemo(() => {
-    if (isGuest) return false;
-    return true; // Giriş yapmış herkes analiz yapabilir
-  }, [isGuest]);
-
-  // ...
-};
-```
-
-### 4. Yeni Bileşen: `src/components/chat/ChatLimitSheet.tsx`
-
-**Amaç:** Premium kullanıcının chatbot limiti dolduğunda gösterilecek BottomSheet
-
-```typescript
-// Yeni bileşen içeriği:
-// - Başlık: "Günlük AI Asistan Hakkın Doldu"
-// - Alt metin: "Limit yarın yenilenecek veya paketini yükseltebilirsin"
-// - Geri sayım: Gece yarısına kadar kalan süre
-// - CTA: "Paketi Yükselt" → Profil sayfasına yönlendir
-// - İkincil CTA: "Yarın Tekrar Dene"
-```
-
-### 5. Yeni Bileşen: `src/components/chat/GuestGate.tsx`
-
-**Amaç:** Guest (giriş yapmamış) kullanıcı için bilgilendirme ekranı
-
-```typescript
-// İçerik:
-// - Başlık: "AI Asistan Mobil Uygulamada"
-// - Alt metin: "Giriş yaparak AI Asistan'a erişebilirsin"
-// - CTA 1: "Giriş Yap" → /auth
-// - CTA 2: "Kayıt Ol" → /auth (signup mode)
-// - STORE BUTONLARI GÖSTER (sadece guest için)
-```
-
-### 6. `src/pages/Chat.tsx` - Akış Güncellemesi
-
-**Yeni Akış:**
-```
-1. authLoading → Loading spinner
-2. !user (Guest) → GuestGate bileşeni
-3. user + !hasAccess (Free) → PremiumGate bileşeni
-4. user + hasAccess + !hasRemainingUsage → ChatLimitSheet (Premium limit dolu)
-5. user + hasAccess + hasRemainingUsage → Chat arayüzü
-```
-
-**Değişiklikler:**
-- `GuestGate` import et ve Guest kontrolü ekle
-- `ChatLimitSheet` import et ve limit dolu kontrolü ekle
-- Admin için hiçbir CTA gösterme
-- Premium badge'leri güncelle (Basic/Plus/Pro)
-
-### 7. `src/components/chat/PremiumGate.tsx` - İçerik Güncellemesi
-
-**Değişiklikler:**
-- Başlık: "AI Asistan Premium Kullanıcılara Özel"
-- Paket karşılaştırma tablosu ekle
-- Fiyatları güncelle
-- "Uygulamayı İndir" CTA'sını KALDIR (mobil uygulama içindeyiz)
-
-### 8. `src/components/premium/AnalysisLimitSheet.tsx` - Free Kullanıcı İçin
-
-**Değişiklikler:**
-- Premium avantajlarını vurgula
-- Paket karşılaştırması göster
-- Play Store uyumlu metinler koru
-
-### 9. `src/components/navigation/BottomNav.tsx` - Badge Güncellemesi
-
-**Değişiklikler:**
-- Premium kullanıcı için AI Asistan badge'ini kaldır
-- Sadece Free kullanıcı için premium badge göster
-- Admin için hiç badge gösterme
-
-```typescript
-// Dinamik badge kontrolü
-const showPremiumBadge = useMemo(() => {
-  if (isAdmin) return false;
-  if (isPremium) return false;
-  return true; // Sadece Free için
-}, [isAdmin, isPremium]);
-```
-
-### 10. Edge Function: `supabase/functions/ai-chatbot/index.ts`
-
-**Değişiklikler:**
-- Plan bazlı limit kontrolü güncelle
-- VIP_DAILY_LIMIT yerine plan bazlı limitleri kullan
-- Yeni hata mesajları
-
----
-
-## Kullanıcı Akışları
-
-### Admin Kullanıcı
-```
-AI Asistan'a tıkla → Direkt Chat açılır
-- Hiç limit göstergesi yok
-- Hiç satın alma CTA'sı yok
-- Admin badge göster
-```
-
-### Premium Kullanıcı (Limit Dolu Değil)
-```
-AI Asistan'a tıkla → Chat açılır
-- UsageMeter göster (3/3, 5/5, 10/10)
-- Plan badge göster (Basic/Plus/Pro)
-- Satın alma CTA'sı YOK
-```
-
-### Premium Kullanıcı (Limit Dolu)
-```
-AI Asistan'a tıkla → ChatLimitSheet açılır
-- "Günlük AI Asistan Hakkın Doldu"
-- Geri sayım göster
-- "Paketi Yükselt" CTA
-```
-
-### Free Kullanıcı
-```
-AI Asistan'a tıkla → PremiumGate gösterilir
-- "AI Asistan Premium Kullanıcılara Özel"
-- Paket karşılaştırması
-- "Premium'a Geç" CTA
-```
-
-### Guest (Giriş Yapmamış)
-```
-AI Asistan'a tıkla → GuestGate gösterilir
-- "Giriş Yap veya Kayıt Ol"
-- Play Store butonu (opsiyonel)
 ```
 
 ---
 
-## Dosya Listesi
+### 3. `src/components/premium/PremiumUpgrade.tsx` - Yeniden Tasarla
+
+**Değişiklikler:**
+- 3 Premium plan göster (Basic, Plus, Pro)
+- Her plan için aylık/yıllık seçim
+- Web kontrollerini kaldır (Android-only)
+- `accessLevels.ts`'den fiyatları kullan
+
+**Yeni Yapı:**
+```typescript
+// Plans
+const plans = [
+  {
+    id: 'premium_basic',
+    name: 'Basic',
+    monthlyId: PRODUCTS.PREMIUM_BASIC_MONTHLY,
+    yearlyId: PRODUCTS.PREMIUM_BASIC_YEARLY,
+    monthlyPrice: PLAN_PRICES.premium_basic.monthly,
+    yearlyPrice: PLAN_PRICES.premium_basic.yearly,
+    chatLimit: 3,
+    popular: false,
+  },
+  {
+    id: 'premium_plus',
+    name: 'Plus',
+    monthlyId: PRODUCTS.PREMIUM_PLUS_MONTHLY,
+    yearlyId: PRODUCTS.PREMIUM_PLUS_YEARLY,
+    monthlyPrice: PLAN_PRICES.premium_plus.monthly,
+    yearlyPrice: PLAN_PRICES.premium_plus.yearly,
+    chatLimit: 5,
+    popular: true, // En çok tercih edilen
+  },
+  {
+    id: 'premium_pro',
+    name: 'Pro',
+    monthlyId: PRODUCTS.PREMIUM_PRO_MONTHLY,
+    yearlyId: PRODUCTS.PREMIUM_PRO_YEARLY,
+    monthlyPrice: PLAN_PRICES.premium_pro.monthly,
+    yearlyPrice: PLAN_PRICES.premium_pro.yearly,
+    chatLimit: 10,
+    popular: false,
+  },
+];
+
+// State
+const [selectedPlan, setSelectedPlan] = useState('premium_plus');
+const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('yearly');
+```
+
+**UI Güncellemeleri:**
+- Toggle: Aylık / Yıllık (2 ay bedava etiketi)
+- Plan kartları: Basic, Plus (Popüler badge), Pro
+- Her kart: Fiyat, AI mesaj limiti, özellikler
+- CTA: "Satın Al" (sadece native)
+- Web platform badge'ini kaldır
+
+---
+
+### 4. `src/components/premium/PurchaseButton.tsx` - Plan Bilgisi Ekle
+
+**Yeni Props:**
+```typescript
+interface PurchaseButtonProps {
+  productId: string;
+  price: string;
+  planName?: string; // "Premium Basic", "Premium Plus", "Premium Pro"
+  variant?: 'default' | 'outline' | 'ghost';
+  size?: 'default' | 'sm' | 'lg';
+  className?: string;
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
+}
+```
+
+**Toast Mesajları:**
+```typescript
+// Başarılı
+toast.success(`${planName || 'Premium'} üyeliğin aktif!`);
+
+// Buton metni (web kontrolü kaldır)
+<Crown className="h-4 w-4" />
+{planName || 'Premium'} - {price}
+```
+
+---
+
+## Dosya Değişiklikleri Özeti
 
 | Dosya | İşlem |
 |-------|-------|
-| `src/constants/accessLevels.ts` | Güncelle |
-| `src/hooks/usePremiumStatus.ts` | Güncelle |
-| `src/hooks/useAccessLevel.ts` | Güncelle |
-| `src/components/chat/ChatLimitSheet.tsx` | **Yeni** |
-| `src/components/chat/GuestGate.tsx` | **Yeni** |
-| `src/pages/Chat.tsx` | Güncelle |
-| `src/components/chat/PremiumGate.tsx` | Güncelle |
-| `src/components/navigation/BottomNav.tsx` | Güncelle |
-| `supabase/functions/ai-chatbot/index.ts` | Güncelle |
+| `src/services/purchaseService.ts` | Product ID'leri ve plan bilgilerini güncelle |
+| `supabase/functions/verify-purchase/index.ts` | Plan mapping fonksiyonunu düzelt |
+| `src/components/premium/PremiumUpgrade.tsx` | 3 plan göster, web kontrollerini kaldır |
+| `src/components/premium/PurchaseButton.tsx` | Plan ismi prop'u ekle |
+
+---
+
+## Yeni Satın Alma Akışı
+
+```text
+1. Kullanıcı Premium'a Yükselt sayfasını açar
+2. 3 plan görür: Basic (₺49), Plus (₺79), Pro (₺99)
+3. Aylık/Yıllık toggle ile periyot seçer
+4. Plan kartına tıklar
+5. "Satın Al" butonuna basar
+6. Google Play satın alma akışı başlar
+7. Başarılı ise verify-purchase çağrılır
+8. Backend planı kaydeder (premium_basic/plus/pro)
+9. Kullanıcı Premium statüsüne geçer
+```
 
 ---
 
 ## Teknik Detaylar
 
-### Plan Tipi Mapping (Database → Frontend)
+### Play Store Product ID Mapping
 
-```
-Database plan_type         → Frontend PlanType
-─────────────────────────────────────────────
-"basic", "temel"           → "premium_basic"
-"plus", "orta"             → "premium_plus"  
-"pro", "premium"           → "premium_pro"
-(null veya yok)            → "free"
+```text
+Play Store Console'da Oluşturulacak Ürünler:
+- premium_basic_monthly (₺49)
+- premium_basic_yearly (₺399)
+- premium_plus_monthly (₺79)
+- premium_plus_yearly (₺649)
+- premium_pro_monthly (₺99)
+- premium_pro_yearly (₺799)
 ```
 
-### Chatbot Limit Kontrolü (Edge Function)
+### Database'e Kaydedilecek Plan Tipleri
+
+```text
+premium_subscriptions.plan_type:
+- "premium_basic"
+- "premium_plus"
+- "premium_pro"
+```
+
+### ProductInfo Interface Güncellemesi
 
 ```typescript
-const PLAN_CHAT_LIMITS = {
-  premium_basic: 3,
-  premium_plus: 5,
-  premium_pro: 10,
-  free: 0, // Erişim yok
-};
-
-// Admin her zaman sınırsız
-if (isAdmin) {
-  // Limit kontrolü yapma
+export interface ProductInfo {
+  productId: string;
+  title: string;
+  description: string;
+  price: string;
+  priceAmount: number;
+  currency: string;
+  planType: PlanType; // Yeni
+  period: 'monthly' | 'yearly'; // Yeni
 }
-
-// Free kullanıcı erişemez
-if (planType === 'free') {
-  return error('ACCESS_DENIED');
-}
-
-// Premium limit kontrolü
-if (currentUsage >= PLAN_CHAT_LIMITS[planType]) {
-  return error('LIMIT_EXCEEDED');
-}
-```
-
-### CTA Görünürlük Kuralları
-
-```typescript
-// Satın alma CTA (Premium'a Geç)
-showPurchaseCTA = !isAdmin && !isPremium;
-
-// Yükseltme CTA (Paketi Yükselt)
-showUpgradeCTA = !isAdmin && isPremium && planType !== 'premium_pro';
-
-// Store butonları
-showStoreButtons = isGuest; // Sadece guest için
-
-// "Uygulamayı İndir"
-showAppDownload = false; // ASLA (mobil uygulamadayız)
 ```
