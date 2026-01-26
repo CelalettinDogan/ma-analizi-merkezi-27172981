@@ -1,12 +1,11 @@
 /**
  * Merkezi Erişim Seviyeleri Tanımları
  * 
- * Platform ve plan bazlı tüm erişim kuralları burada tanımlanır.
- * Bu dosya sayesinde erişim kontrolü tutarlı ve merkezi olur.
+ * Plan bazlı tüm erişim kuralları burada tanımlanır.
+ * Bu uygulama SADECE Android platformunda çalışır.
  */
 
 export type PlanType = 'free' | 'basic' | 'pro' | 'ultra';
-export type PlatformType = 'web' | 'android' | 'ios';
 
 export interface AccessLevel {
   /** Günlük analiz limiti (999 = sınırsız) */
@@ -24,7 +23,7 @@ export interface AccessLevel {
 }
 
 /**
- * Plan bazlı erişim seviyeleri (Android/iOS için)
+ * Plan bazlı erişim seviyeleri (Android)
  */
 export const PLAN_ACCESS_LEVELS: Record<PlanType, AccessLevel> = {
   free: {
@@ -62,19 +61,6 @@ export const PLAN_ACCESS_LEVELS: Record<PlanType, AccessLevel> = {
 } as const;
 
 /**
- * Web platformu için özel erişim seviyesi
- * Web'de Premium satışı yapılmaz, sadece uygulama indirme önerilir
- */
-export const WEB_ACCESS_LEVEL: AccessLevel = {
-  dailyAnalysis: 3,
-  aiChat: 0,
-  historyDays: 7,
-  advancedStats: 'partial',
-  showAds: true,
-  prioritySupport: false,
-} as const;
-
-/**
  * Admin kullanıcılar için özel erişim seviyesi
  */
 export const ADMIN_ACCESS_LEVEL: AccessLevel = {
@@ -87,19 +73,14 @@ export const ADMIN_ACCESS_LEVEL: AccessLevel = {
 } as const;
 
 /**
- * Erişim seviyesini plan ve platforma göre döndürür
+ * Erişim seviyesini plan tipine göre döndürür
  */
 export const getAccessLevel = (
   planType: PlanType,
-  isWebPlatform: boolean,
   isAdmin: boolean = false
 ): AccessLevel => {
   if (isAdmin) {
     return ADMIN_ACCESS_LEVEL;
-  }
-  
-  if (isWebPlatform) {
-    return WEB_ACCESS_LEVEL;
   }
   
   return PLAN_ACCESS_LEVELS[planType];
@@ -111,11 +92,9 @@ export const getAccessLevel = (
  */
 export const canAccessAIChat = (
   planType: PlanType,
-  isWebPlatform: boolean,
   isAdmin: boolean = false
 ): boolean => {
   if (isAdmin) return true;
-  if (isWebPlatform) return false;
   return planType === 'pro' || planType === 'ultra';
 };
 
@@ -131,11 +110,9 @@ export const isPremiumPlan = (planType: PlanType): boolean => {
  */
 export const hasUnlimitedAnalysis = (
   planType: PlanType,
-  isWebPlatform: boolean,
   isAdmin: boolean = false
 ): boolean => {
   if (isAdmin) return true;
-  if (isWebPlatform) return false;
   return planType === 'pro' || planType === 'ultra';
 };
 

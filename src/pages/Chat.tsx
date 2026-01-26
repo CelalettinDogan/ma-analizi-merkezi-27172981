@@ -6,14 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import { usePlatform } from '@/hooks/usePlatform';
 import { useChatbot } from '@/hooks/useChatbot';
 import { useAccessLevel } from '@/hooks/useAccessLevel';
 import ChatContainer from '@/components/chat/ChatContainer';
 import ChatInput from '@/components/chat/ChatInput';
 import UsageMeter from '@/components/chat/UsageMeter';
 import PremiumGate from '@/components/chat/PremiumGate';
-import WebPremiumGate from '@/components/chat/WebPremiumGate';
 import BottomNav from '@/components/navigation/BottomNav';
 import { fadeInUp } from '@/lib/animations';
 import { MatchAnalysis } from '@/types/match';
@@ -47,7 +45,6 @@ const Chat: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isLoading: authLoading } = useAuth();
-  const { isWeb } = usePlatform();
   const { planType, isAdmin, canUseAIChat, dailyChatLimit } = useAccessLevel();
   const {
     messages,
@@ -165,11 +162,6 @@ const Chat: React.FC = () => {
         </div>
       </div>
     );
-  }
-
-  // Web platform - AI asistan yok
-  if (isWeb) {
-    return <WebPremiumGate onClose={() => navigate(-1)} variant="chatbot" />;
   }
 
   // Not logged in - show login prompt

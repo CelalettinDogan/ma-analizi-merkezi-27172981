@@ -18,8 +18,6 @@ interface UseAccessLevelReturn {
   planType: PlanType;
   /** Plan görüntüleme adı */
   planDisplayName: string;
-  /** Web platformunda mı */
-  isWebPlatform: boolean;
   /** Admin mi */
   isAdmin: boolean;
   /** Premium plan mı (Basic+) */
@@ -44,7 +42,7 @@ interface UseAccessLevelReturn {
  * Merkezi erişim seviyesi hook'u
  * 
  * Tüm erişim kontrollerini tek bir yerden yönetir.
- * Platform, plan ve rol bilgilerini birleştirerek tutarlı erişim sağlar.
+ * Plan ve rol bilgilerini birleştirerek tutarlı erişim sağlar.
  * 
  * @example
  * ```tsx
@@ -59,29 +57,27 @@ export const useAccessLevel = (): UseAccessLevelReturn => {
   const { 
     planType, 
     isPremium, 
-    isWebPlatform, 
     isLoading: premiumLoading 
   } = usePlatformPremium();
   
   const { isAdmin, isLoading: roleLoading } = useUserRole();
 
   const accessLevel = useMemo(() => {
-    return getAccessLevel(planType, isWebPlatform, isAdmin);
-  }, [planType, isWebPlatform, isAdmin]);
+    return getAccessLevel(planType, isAdmin);
+  }, [planType, isAdmin]);
 
   const canUseAIChat = useMemo(() => {
-    return canAccessAIChat(planType, isWebPlatform, isAdmin);
-  }, [planType, isWebPlatform, isAdmin]);
+    return canAccessAIChat(planType, isAdmin);
+  }, [planType, isAdmin]);
 
   const hasUnlimitedAnalyses = useMemo(() => {
-    return hasUnlimitedAnalysis(planType, isWebPlatform, isAdmin);
-  }, [planType, isWebPlatform, isAdmin]);
+    return hasUnlimitedAnalysis(planType, isAdmin);
+  }, [planType, isAdmin]);
 
   return {
     accessLevel,
     planType,
     planDisplayName: PLAN_DISPLAY_NAMES[planType],
-    isWebPlatform,
     isAdmin,
     isPremium: isPremiumPlan(planType),
     canUseAIChat,
