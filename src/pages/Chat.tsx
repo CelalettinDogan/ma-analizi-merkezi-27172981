@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Trash2, Bot, Info, Lock, Crown, Sparkles, Star } from 'lucide-react';
+import { ArrowLeft, Trash2, Bot, Info, Crown, Sparkles, Star } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChatbot } from '@/hooks/useChatbot';
 import { useAccessLevel } from '@/hooks/useAccessLevel';
@@ -12,6 +11,8 @@ import ChatContainer from '@/components/chat/ChatContainer';
 import ChatInput from '@/components/chat/ChatInput';
 import UsageMeter from '@/components/chat/UsageMeter';
 import PremiumGate from '@/components/chat/PremiumGate';
+import GuestGate from '@/components/chat/GuestGate';
+import ChatLimitSheet from '@/components/chat/ChatLimitSheet';
 import BottomNav from '@/components/navigation/BottomNav';
 import { fadeInUp } from '@/lib/animations';
 import { MatchAnalysis } from '@/types/match';
@@ -45,7 +46,15 @@ const Chat: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isLoading: authLoading } = useAuth();
-  const { planType, isAdmin, canUseAIChat, dailyChatLimit } = useAccessLevel();
+  const { 
+    planType, 
+    isAdmin, 
+    canUseAIChat, 
+    dailyChatLimit,
+    isGuest,
+    isPremium,
+    planDisplayName,
+  } = useAccessLevel();
   const {
     messages,
     isLoading: chatLoading,
@@ -59,10 +68,12 @@ const Chat: React.FC = () => {
 
   const [matchContext, setMatchContext] = useState<MatchContext | null>(null);
   const [contextSent, setContextSent] = useState(false);
+  const [showLimitSheet, setShowLimitSheet] = useState(false);
   
   // Plan badge info
-  const isPro = planType === 'pro';
-  const isUltra = planType === 'ultra';
+  const isPremiumBasic = planType === 'premium_basic';
+  const isPremiumPlus = planType === 'premium_plus';
+  const isPremiumPro = planType === 'premium_pro';
 
   // Handle match context from navigation state
   useEffect(() => {
@@ -97,14 +108,14 @@ const Chat: React.FC = () => {
     }
   }, [location.state]);
 
-  // Load chat history on mount (for VIP and Admin users)
+  // Load chat history on mount (for premium users)
   useEffect(() => {
     if (user && hasAccess) {
       loadHistory();
     }
   }, [user, hasAccess, loadHistory]);
 
-  // Auto-send context message when VIP/Admin user has match context
+  // Auto-send context message when premium user has match context
   useEffect(() => {
     const hasRemainingUsage = isAdmin || (usage && (typeof usage.remaining === 'number' ? usage.remaining > 0 : true));
     if (hasAccess && matchContext && !contextSent && hasRemainingUsage && !isLoadingHistory) {
@@ -149,8 +160,17 @@ const Chat: React.FC = () => {
     setContextSent(false);
   };
 
+  // Usage check
   const hasRemainingUsage = isAdmin || (usage && (typeof usage.remaining === 'number' ? usage.remaining > 0 : true));
   const canChat = hasAccess && hasRemainingUsage;
+  const isLimitReached = isPremium && !isAdmin && usage && typeof usage.remaining === 'number' && usage.remaining <= 0;
+
+  // Show limit sheet when limit is reached
+  useEffect(() => {
+    if (isLimitReached && !showLimitSheet) {
+      setShowLimitSheet(true);
+    }
+  }, [isLimitReached, showLimitSheet]);
 
   // Loading state
   if (authLoading) {
@@ -164,48 +184,27 @@ const Chat: React.FC = () => {
     );
   }
 
-  // Not logged in - show login prompt
-  if (!user) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md p-8 text-center space-y-6">
-          <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-            <Lock className="w-10 h-10 text-primary" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold">Giriş Yapın</h2>
-            <p className="text-muted-foreground">
-              AI Asistan'a erişmek için hesabınıza giriş yapmanız gerekiyor.
-            </p>
-          </div>
-          <Button 
-            onClick={() => navigate('/auth', { state: { from: '/chat' } })} 
-            className="w-full"
-            size="lg"
-          >
-            Giriş Yap
-          </Button>
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/')}
-            className="w-full"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Ana Sayfaya Dön
-          </Button>
-        </Card>
-      </div>
-    );
+  // GUEST: Not logged in - show guest gate
+  if (isGuest) {
+    return <GuestGate onClose={() => navigate(-1)} />;
   }
 
-  // Logged in but no VIP/Admin access - show premium gate
-  if (!hasAccess) {
+  // FREE USER: Logged in but no premium - show premium gate
+  if (!canUseAIChat) {
     return <PremiumGate onClose={() => navigate(-1)} variant="chatbot" />;
   }
 
-  // Has access - show chat interface
+  // PREMIUM USER: Has access - show chat interface
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Chat Limit Sheet for Premium users */}
+      <ChatLimitSheet
+        isOpen={showLimitSheet}
+        onClose={() => setShowLimitSheet(false)}
+        currentPlan={planType}
+        dailyLimit={dailyChatLimit}
+      />
+
       {/* Header */}
       <motion.header
         {...fadeInUp}
@@ -234,16 +233,21 @@ const Chat: React.FC = () => {
                       Admin
                     </Badge>
                   )}
-                  {isUltra && !isAdmin && (
+                  {isPremiumPro && !isAdmin && (
                     <Badge variant="secondary" className="text-[10px] h-5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600">
                       <Star className="w-3 h-3 mr-1" />
-                      Ultra
+                      Pro
                     </Badge>
                   )}
-                  {isPro && !isAdmin && (
+                  {isPremiumPlus && !isAdmin && (
                     <Badge variant="secondary" className="text-[10px] h-5 bg-primary/20 text-primary">
                       <Sparkles className="w-3 h-3 mr-1" />
-                      Pro
+                      Plus
+                    </Badge>
+                  )}
+                  {isPremiumBasic && !isAdmin && (
+                    <Badge variant="secondary" className="text-[10px] h-5 bg-emerald-500/20 text-emerald-600">
+                      Basic
                     </Badge>
                   )}
                 </div>
@@ -304,8 +308,8 @@ const Chat: React.FC = () => {
           onQuickPrompt={handleSendMessage}
         />
         
-        {/* Usage meter for Pro users (not unlimited) */}
-        {isPro && !isAdmin && usage && dailyChatLimit < 999 && (
+        {/* Usage meter for Premium users (not admin) */}
+        {!isAdmin && usage && dailyChatLimit < 999 && (
           <UsageMeter current={usage.current} limit={usage.limit} isAdmin={false} />
         )}
         
@@ -315,7 +319,7 @@ const Chat: React.FC = () => {
           isLoading={chatLoading}
           disabled={!canChat}
           placeholder={
-            !isAdmin && usage && typeof usage.remaining === 'number' && usage.remaining <= 0
+            isLimitReached
               ? "Günlük limitiniz doldu"
               : matchContext
                 ? `${matchContext.homeTeam} vs ${matchContext.awayTeam} hakkında sorun...`

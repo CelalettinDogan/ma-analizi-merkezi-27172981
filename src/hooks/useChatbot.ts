@@ -101,8 +101,8 @@ export const useChatbot = (): UseChatbotReturn => {
   // Access check based on plan (Pro, Ultra, Admin)
   const hasAccess = canUseAIChat;
   
-  // For backward compatibility
-  const isVip = planType === 'pro' || planType === 'ultra';
+  // For backward compatibility - check if any premium plan
+  const isVip = planType === 'premium_basic' || planType === 'premium_plus' || planType === 'premium_pro';
 
   // Load chat history - fetch LATEST 50 messages (descending) then reverse for UI
   const loadHistory = useCallback(async () => {

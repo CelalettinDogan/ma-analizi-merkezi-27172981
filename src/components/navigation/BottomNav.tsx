@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Zap, Bot, Trophy, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useAccessLevel } from '@/hooks/useAccessLevel';
 
 interface NavItem {
   icon: React.ElementType;
@@ -12,10 +13,10 @@ interface NavItem {
   badge?: 'premium' | 'live';
 }
 
-const navItems: NavItem[] = [
+const baseNavItems: Omit<NavItem, 'badge'>[] = [
   { icon: Home, label: 'Ana Sayfa', path: '/' },
-  { icon: Zap, label: 'Canlı', path: '/live', badge: 'live' },
-  { icon: Bot, label: 'AI Asistan', path: '/chat', badge: 'premium' },
+  { icon: Zap, label: 'Canlı', path: '/live' },
+  { icon: Bot, label: 'AI Asistan', path: '/chat' },
   { icon: Trophy, label: 'Sıralama', path: '/standings' },
   { icon: User, label: 'Profil', path: '/profile' },
 ];
@@ -24,8 +25,40 @@ interface BottomNavProps {
   onSearchClick?: () => void;
 }
 
+/**
+ * Bottom Navigation Bar
+ * 
+ * Badge Logic:
+ * - Admin: Hiç badge gösterme
+ * - Premium: AI Asistan badge gösterme (zaten erişimi var)
+ * - Free: AI Asistan'da premium badge göster
+ * - Live: Her zaman live badge göster
+ */
 const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(({ onSearchClick }, ref) => {
   const location = useLocation();
+  const { isAdmin, isPremium } = useAccessLevel();
+
+  // Dynamic nav items with badges based on user role
+  const navItems = useMemo((): NavItem[] => {
+    return baseNavItems.map(item => {
+      // Live badge - her zaman göster
+      if (item.path === '/live') {
+        return { ...item, badge: 'live' as const };
+      }
+      
+      // AI Asistan badge logic
+      if (item.path === '/chat') {
+        // Admin: badge yok
+        if (isAdmin) return item;
+        // Premium: badge yok (zaten erişimi var)
+        if (isPremium) return item;
+        // Free: premium badge göster
+        return { ...item, badge: 'premium' as const };
+      }
+      
+      return item;
+    });
+  }, [isAdmin, isPremium]);
 
   const handleClick = (item: NavItem, e: React.MouseEvent) => {
     if (item.isAction && onSearchClick) {
