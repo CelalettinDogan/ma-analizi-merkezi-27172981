@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
-import { usePremiumStatus, PlanType } from './usePremiumStatus';
+import { usePremiumStatus } from './usePremiumStatus';
 import { useAuth } from '@/contexts/AuthContext';
+import { PlanType } from '@/constants/accessLevels';
 
 /**
  * Play Store linki - tek merkezi kaynak
@@ -64,4 +65,4 @@ export const usePlatformPremium = (): UsePlatformPremiumReturn => {
 };
 
 // Re-export PlanType for convenience
-export type { PlanType } from './usePremiumStatus';
+export type { PlanType } from '@/constants/accessLevels';

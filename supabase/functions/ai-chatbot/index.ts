@@ -7,24 +7,40 @@ const corsHeaders = {
 };
 
 // Plan-based daily limits for AI chat
+// Free: 0 (no access)
+// Premium Basic: 3 messages/day
+// Premium Plus: 5 messages/day  
+// Premium Pro: 10 messages/day
 const PLAN_LIMITS = {
-  free: 0,      // No access for free users
-  basic: 5,     // 5 messages per day
-  pro: 999,     // Practically unlimited
-  ultra: 999,   // Practically unlimited
+  free: 0,
+  premium_basic: 3,
+  premium_plus: 5,
+  premium_pro: 10,
 };
 
 // Determine plan type from subscription
-function getPlanType(subscription: any): 'free' | 'basic' | 'pro' | 'ultra' {
+function getPlanType(subscription: any): 'free' | 'premium_basic' | 'premium_plus' | 'premium_pro' {
   if (!subscription) return 'free';
   
   const planType = (subscription.plan_type || '').toLowerCase();
-  if (planType.includes('ultra')) return 'ultra';
-  if (planType.includes('pro')) return 'pro';
-  if (planType.includes('basic') || planType.includes('temel')) return 'basic';
   
-  // Default premium is pro level
-  return 'pro';
+  // Premium Pro (highest tier)
+  if (planType.includes('pro') || planType.includes('premium_pro') || planType.includes('ultra')) {
+    return 'premium_pro';
+  }
+  
+  // Premium Plus (mid tier)
+  if (planType.includes('plus') || planType.includes('premium_plus') || planType.includes('orta')) {
+    return 'premium_plus';
+  }
+  
+  // Premium Basic (entry tier)
+  if (planType.includes('basic') || planType.includes('temel') || planType.includes('premium_basic')) {
+    return 'premium_basic';
+  }
+  
+  // Default premium = Basic
+  return 'premium_basic';
 }
 
 // Supported leagues for context info
@@ -813,32 +829,37 @@ serve(async (req) => {
 
     const isAdmin = !!adminRole;
     
-    // Check if user is VIP (3 daily messages)
-    const { data: vipRole } = await supabaseAdmin
-      .from("user_roles")
-      .select("role")
+    // Fetch user's premium subscription
+    const { data: subscription } = await supabaseAdmin
+      .from("premium_subscriptions")
+      .select("*")
       .eq("user_id", userId)
-      .eq("role", "vip")
+      .eq("is_active", true)
+      .gte("expires_at", new Date().toISOString())
+      .order("expires_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
-    const isVip = !!vipRole;
-    const VIP_DAILY_LIMIT = 3;
+    // Determine plan type
+    const planType = getPlanType(subscription);
+    const dailyLimit = PLAN_LIMITS[planType];
     
+    console.log(`User ${userId} - Plan: ${planType}, Daily Limit: ${dailyLimit}, IsAdmin: ${isAdmin}`);
+
+    // Admin bypass all limits
     if (isAdmin) {
       console.log(`Admin user ${userId} - bypassing all limits`);
-    } else if (isVip) {
-      console.log(`VIP user ${userId} - 3 daily messages`);
     }
 
-    // Access check: Admin or VIP required
-    if (!isAdmin && !isVip) {
-      console.log(`User ${userId} has no access (not admin or vip)`);
+    // Access check: Admin or Premium required (Free users cannot access)
+    if (!isAdmin && planType === 'free') {
+      console.log(`User ${userId} has no access (free user)`);
       return new Response(
         JSON.stringify({ 
-          error: "AI Asistan VIP üyelere özeldir. VIP üye olarak AI destekli maç analizlerine erişin!", 
+          error: "AI Asistan Premium kullanıcılara özeldir. Premium planına geçerek yapay zeka destekli analizlere erişin!", 
           code: "ACCESS_DENIED",
-          isAdmin: false,
-          isVip: false
+          planType: 'free',
+          isAdmin: false
         }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -854,15 +875,15 @@ serve(async (req) => {
 
     const currentUsage = usageData?.usage_count ?? 0;
 
-    // Check VIP daily limit (admins bypass)
-    if (isVip && !isAdmin && currentUsage >= VIP_DAILY_LIMIT) {
-      console.log(`VIP user ${userId} exceeded daily limit: ${currentUsage}/${VIP_DAILY_LIMIT}`);
+    // Check plan-based daily limit (admins bypass)
+    if (!isAdmin && currentUsage >= dailyLimit) {
+      console.log(`User ${userId} exceeded daily limit: ${currentUsage}/${dailyLimit}`);
       return new Response(
         JSON.stringify({ 
-          error: `Günlük ${VIP_DAILY_LIMIT} mesaj limitiniz doldu. Yarın tekrar deneyin!`, 
+          error: `Günlük ${dailyLimit} mesaj limitiniz doldu. Paketinizi yükselterek daha fazla mesaj hakkı alabilirsiniz!`, 
           code: "LIMIT_EXCEEDED",
-          usage: { current: currentUsage, limit: VIP_DAILY_LIMIT },
-          isVip: true,
+          usage: { current: currentUsage, limit: dailyLimit },
+          planType,
           isAdmin: false
         }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -904,10 +925,10 @@ serve(async (req) => {
           message: redirectResponse,
           usage: {
             current: isAdmin ? 0 : currentUsage + 1,
-            limit: isAdmin ? "∞" : VIP_DAILY_LIMIT,
-            remaining: isAdmin ? "∞" : VIP_DAILY_LIMIT - currentUsage - 1
+            limit: isAdmin ? "∞" : dailyLimit,
+            remaining: isAdmin ? "∞" : dailyLimit - currentUsage - 1
           },
-          isPremium: true,
+          isPremium: planType !== 'free',
           isAdmin,
           isRedirect: true
         }),
@@ -1123,7 +1144,7 @@ serve(async (req) => {
       newUsageCount = newUsageData ?? currentUsage + 1;
     }
     
-    console.log(`User ${userId} new usage: ${isAdmin ? "∞ (admin)" : `${newUsageCount}/${VIP_DAILY_LIMIT}`}`);
+    console.log(`User ${userId} new usage: ${isAdmin ? "∞ (admin)" : `${newUsageCount}/${dailyLimit}`}`);
 
     // Save messages to chat history
     await supabaseAdmin.from("chat_history").insert([
@@ -1137,10 +1158,10 @@ serve(async (req) => {
         message: assistantMessage,
         usage: {
           current: isAdmin ? 0 : newUsageCount,
-          limit: isAdmin ? "∞" : VIP_DAILY_LIMIT,
-          remaining: isAdmin ? "∞" : VIP_DAILY_LIMIT - newUsageCount
+          limit: isAdmin ? "∞" : dailyLimit,
+          remaining: isAdmin ? "∞" : dailyLimit - newUsageCount
         },
-        isVip,
+        planType,
         isAdmin,
         dataSource: context ? dataSource : null,
         dataAvailability

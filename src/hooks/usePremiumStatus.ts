@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { PlanType } from '@/constants/accessLevels';
 
 interface PremiumSubscription {
   id: string;
@@ -9,8 +10,6 @@ interface PremiumSubscription {
   expires_at: string;
   is_active: boolean;
 }
-
-export type PlanType = 'free' | 'basic' | 'pro' | 'ultra';
 
 interface UsePremiumStatusReturn {
   isPremium: boolean;
@@ -21,17 +20,37 @@ interface UsePremiumStatusReturn {
   refetch: () => void;
 }
 
-// Determine plan type from subscription
+/**
+ * Database plan_type'ı frontend PlanType'a çevirir
+ * 
+ * Mapping:
+ * - "basic", "temel", "premium_basic" → "premium_basic"
+ * - "plus", "orta", "premium_plus" → "premium_plus"
+ * - "pro", "premium", "premium_pro" → "premium_pro"
+ * - null veya subscription yok → "free"
+ */
 const getPlanTypeFromSubscription = (subscription: PremiumSubscription | null): PlanType => {
   if (!subscription) return 'free';
   
   const planType = subscription.plan_type?.toLowerCase() || '';
-  if (planType.includes('ultra')) return 'ultra';
-  if (planType.includes('pro')) return 'pro';
-  if (planType.includes('basic') || planType.includes('temel')) return 'basic';
   
-  // Default premium is pro level
-  return 'pro';
+  // Premium Pro (en yüksek)
+  if (planType.includes('pro') || planType.includes('premium_pro') || planType.includes('ultra')) {
+    return 'premium_pro';
+  }
+  
+  // Premium Plus (orta)
+  if (planType.includes('plus') || planType.includes('premium_plus') || planType.includes('orta')) {
+    return 'premium_plus';
+  }
+  
+  // Premium Basic (temel)
+  if (planType.includes('basic') || planType.includes('temel') || planType.includes('premium_basic')) {
+    return 'premium_basic';
+  }
+  
+  // Default premium = Basic
+  return 'premium_basic';
 };
 
 export const usePremiumStatus = (): UsePremiumStatusReturn => {
