@@ -17,8 +17,6 @@ import { MatchCardSkeleton } from '@/components/ui/skeletons';
 import PremiumPromotionModal from '@/components/premium/PremiumPromotionModal';
 import AnalysisLimitBanner from '@/components/premium/AnalysisLimitBanner';
 import AnalysisLimitSheet, { useAnalysisLimitSheet } from '@/components/premium/AnalysisLimitSheet';
-import WebLimitSheet, { useWebLimitSheet } from '@/components/premium/WebLimitSheet';
-import AppDownloadBanner from '@/components/promotion/AppDownloadBanner';
 import {
   MatchHeroCard,
   AIRecommendationCard,
@@ -37,7 +35,6 @@ import { useHomeData } from '@/hooks/useHomeData';
 import { useAnalysisLimit } from '@/hooks/useAnalysisLimit';
 import { usePremiumPromotion } from '@/hooks/usePremiumPromotion';
 import { usePlatformPremium } from '@/hooks/usePlatformPremium';
-import { usePlatformPromotion } from '@/hooks/usePlatformPromotion';
 import { Calendar, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -50,9 +47,9 @@ const Index: React.FC = () => {
   const { user } = useAuth();
   const { showOnboarding, completeOnboarding } = useOnboarding();
   
-  // Platform-aware premium (web users can NEVER be premium)
-  const { isPremium, planType, isWebPlatform, isNativePlatform } = usePlatformPremium();
-  const { canAnalyze, usageCount, dailyLimit, remaining, incrementUsage, isWebPlatform: isWebFromLimit } = useAnalysisLimit();
+  // Premium status (Android-only)
+  const { isPremium, planType } = usePlatformPremium();
+  const { canAnalyze, usageCount, dailyLimit, remaining, incrementUsage } = useAnalysisLimit();
   
   const { 
     showPromotion, 
@@ -64,15 +61,9 @@ const Index: React.FC = () => {
     setShowLimitBanner,
     triggerLimitFeedback 
   } = usePremiumPromotion();
-  const { 
-    isDesktop, 
-    showAppDownload, 
-    dismissAppDownload 
-  } = usePlatformPromotion();
   
-  // Bottom sheets for analysis limit - platform specific
-  const analysisLimitSheet = useAnalysisLimitSheet(); // For native/mobile premium upgrade
-  const webLimitSheet = useWebLimitSheet(); // For web - app download prompt
+  // Bottom sheet for analysis limit
+  const analysisLimitSheet = useAnalysisLimitSheet();
   
   // Refs for scroll behavior
   const upcomingMatchesRef = useRef<HTMLDivElement>(null);
@@ -187,15 +178,9 @@ const Index: React.FC = () => {
   }, [analysis, analysisLoading]);
 
   const handleMatchSelect = async (match: ApiMatch) => {
-    // Check analysis limit - platform-aware logic
+    // Check analysis limit
     if (user && !canAnalyze) {
-      // Web platform: NEVER premium, show app download prompt
-      if (isWebPlatform) {
-        webLimitSheet.show();
-        return;
-      }
-      
-      // Native platform: Show premium upgrade sheet (for free users)
+      // Show premium upgrade sheet (for free users)
       if (!isPremium) {
         analysisLimitSheet.show();
         return;
@@ -233,10 +218,8 @@ const Index: React.FC = () => {
     try {
       await analyzeMatch(matchInput);
       
-      // Increment usage for users who have limits
-      // Web: always increment (no premium on web)
-      // Native: only increment for non-premium users
-      if (user && (isWebPlatform || !isPremium)) {
+      // Increment usage for non-premium users
+      if (user && !isPremium) {
         await incrementUsage();
       }
     } catch (error) {
@@ -508,41 +491,21 @@ const Index: React.FC = () => {
         onClose={dismissPromotion}
       />
 
-      {/* Analysis Limit Banner - Shows when limit reached and modal was dismissed (native only) */}
-      {!isWebPlatform && (
-        <AnalysisLimitBanner
-          isVisible={showLimitBanner}
-          onClose={() => setShowLimitBanner(false)}
-          onUpgrade={() => {
-            setShowLimitBanner(false);
-            showPromotion('limit');
-          }}
-        />
-      )}
+      {/* Analysis Limit Banner - Shows when limit reached and modal was dismissed */}
+      <AnalysisLimitBanner
+        isVisible={showLimitBanner}
+        onClose={() => setShowLimitBanner(false)}
+        onUpgrade={() => {
+          setShowLimitBanner(false);
+          showPromotion('limit');
+        }}
+      />
 
-      {/* App Download Banner - Desktop only */}
-      {isDesktop && (
-        <AppDownloadBanner
-          isVisible={showAppDownload}
-          onClose={dismissAppDownload}
-        />
-      )}
-
-      {/* Analysis Limit Bottom Sheet - Native premium upgrade */}
-      {!isWebPlatform && (
-        <AnalysisLimitSheet
-          isOpen={analysisLimitSheet.isOpen}
-          onClose={analysisLimitSheet.close}
-        />
-      )}
-
-      {/* Web Limit Bottom Sheet - App download prompt */}
-      {isWebPlatform && (
-        <WebLimitSheet
-          isOpen={webLimitSheet.isOpen}
-          onClose={webLimitSheet.close}
-        />
-      )}
+      {/* Analysis Limit Bottom Sheet - Premium upgrade */}
+      <AnalysisLimitSheet
+        isOpen={analysisLimitSheet.isOpen}
+        onClose={analysisLimitSheet.close}
+      />
     </div>
   );
 };

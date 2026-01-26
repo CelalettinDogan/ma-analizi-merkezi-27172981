@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePlatformPremium } from './usePlatformPremium';
 import { 
   PLAN_ACCESS_LEVELS, 
-  WEB_ACCESS_LEVEL,
   hasUnlimitedAnalysis 
 } from '@/constants/accessLevels';
 
@@ -17,16 +16,12 @@ interface UseAnalysisLimitReturn {
   incrementUsage: () => Promise<boolean>;
   checkLimit: () => Promise<boolean>;
   refetch: () => void;
-  // Platform-specific info
-  isWebPlatform: boolean;
-  showAppDownloadPrompt: boolean;
 }
 
 export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
   const { user } = useAuth();
   const { 
     planType, 
-    isWebPlatform, 
     isLoading: premiumLoading 
   } = usePlatformPremium();
   
@@ -34,15 +29,10 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Get daily limit from centralized access levels
-  const dailyLimit = isWebPlatform 
-    ? WEB_ACCESS_LEVEL.dailyAnalysis 
-    : PLAN_ACCESS_LEVELS[planType].dailyAnalysis;
+  const dailyLimit = PLAN_ACCESS_LEVELS[planType].dailyAnalysis;
   
   const remaining = Math.max(0, dailyLimit - usageCount);
-  const canAnalyze = remaining > 0 || hasUnlimitedAnalysis(planType, isWebPlatform);
-  
-  // Show app download prompt when web user hits limit
-  const showAppDownloadPrompt = isWebPlatform && !canAnalyze;
+  const canAnalyze = remaining > 0 || hasUnlimitedAnalysis(planType);
 
   const fetchUsage = useCallback(async () => {
     if (!user) {
@@ -80,7 +70,7 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
     if (!user) return false;
 
     // Users with unlimited analysis don't need to track usage
-    if (hasUnlimitedAnalysis(planType, isWebPlatform)) {
+    if (hasUnlimitedAnalysis(planType)) {
       return true;
     }
 
@@ -100,17 +90,17 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
       console.error('Error incrementing analysis usage:', e);
       return false;
     }
-  }, [user, planType, usageCount, isWebPlatform]);
+  }, [user, planType, usageCount]);
 
   const checkLimit = useCallback(async (): Promise<boolean> => {
     // Users with unlimited analysis always can analyze
-    if (hasUnlimitedAnalysis(planType, isWebPlatform)) {
+    if (hasUnlimitedAnalysis(planType)) {
       return true;
     }
 
     await fetchUsage();
     return usageCount < dailyLimit;
-  }, [planType, isWebPlatform, fetchUsage, usageCount, dailyLimit]);
+  }, [planType, fetchUsage, usageCount, dailyLimit]);
 
   return {
     canAnalyze,
@@ -121,8 +111,5 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
     incrementUsage,
     checkLimit,
     refetch: fetchUsage,
-    // Platform info
-    isWebPlatform,
-    showAppDownloadPrompt,
   };
 };

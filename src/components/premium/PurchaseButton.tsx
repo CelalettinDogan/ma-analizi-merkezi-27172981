@@ -2,7 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Crown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { usePlatform } from '@/hooks/usePlatform';
 import { purchaseService } from '@/services/purchaseService';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -26,28 +25,21 @@ export const PurchaseButton: React.FC<PurchaseButtonProps> = ({
   onSuccess,
   onError,
 }) => {
-  const { isNative, isAndroid, isIOS } = usePlatform();
   const [isLoading, setIsLoading] = React.useState(false);
 
   const handlePurchase = async () => {
     setIsLoading(true);
 
     try {
-      if (isNative) {
-        const result = await purchaseService.purchaseSubscription(productId);
+      const result = await purchaseService.purchaseSubscription(productId);
 
-        if (result.success) {
-          toast.success('Premium üyelik aktif!');
-          onSuccess?.();
-        } else {
-          const error = result.error || 'Satın alma başarısız';
-          toast.error(error);
-          onError?.(error);
-        }
+      if (result.success) {
+        toast.success('Premium üyelik aktif!');
+        onSuccess?.();
       } else {
-        // Web platform - redirect to app download
-        toast.info('Premium özellikler sadece mobil uygulamada kullanılabilir. Lütfen uygulamayı indirin.');
-        window.open('https://play.google.com/store/apps/details?id=app.golmetrik.android', '_blank');
+        const error = result.error || 'Satın alma başarısız';
+        toast.error(error);
+        onError?.(error);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Bir hata oluştu';
@@ -56,14 +48,6 @@ export const PurchaseButton: React.FC<PurchaseButtonProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const getButtonText = () => {
-    if (isLoading) return null;
-    
-    if (isAndroid) return `Google Play - ${price}`;
-    if (isIOS) return `App Store - ${price}`;
-    return `${price} - Satın Al`;
   };
 
   return (
@@ -83,7 +67,7 @@ export const PurchaseButton: React.FC<PurchaseButtonProps> = ({
         ) : (
           <>
             <Crown className="h-4 w-4" />
-            {getButtonText()}
+            Google Play - {price}
           </>
         )}
       </Button>

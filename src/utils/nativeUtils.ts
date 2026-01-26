@@ -1,9 +1,16 @@
 import { Capacitor } from "@capacitor/core";
 import { Browser } from "@capacitor/browser";
+import { App } from "@capacitor/app";
+import { STORE_LINKS } from '@/hooks/usePlatformPremium';
+
+/**
+ * Bu uygulama SADECE Android platformunda çalışır.
+ * Tüm native işlemler Android'e özeldir.
+ */
 
 /**
  * Opens an external URL using the native browser on mobile
- * or window.open on web
+ * or window.open on web (dev mode)
  */
 export const openExternalLink = async (url: string): Promise<void> => {
   if (Capacitor.isNativePlatform()) {
@@ -15,6 +22,7 @@ export const openExternalLink = async (url: string): Promise<void> => {
       window.open(url, '_blank');
     }
   } else {
+    // Development mode - open in new tab
     window.open(url, '_blank');
   }
 };
@@ -23,17 +31,7 @@ export const openExternalLink = async (url: string): Promise<void> => {
  * Opens the Play Store page for the app
  */
 export const openPlayStore = async (): Promise<void> => {
-  const playStoreUrl = 'https://play.google.com/store/apps/details?id=app.golmetrik.android';
-  await openExternalLink(playStoreUrl);
-};
-
-/**
- * Opens the App Store page for the app (future iOS support)
- * Note: iOS app is not yet available, this will redirect to Play Store
- */
-export const openAppStore = async (): Promise<void> => {
-  // iOS app not yet available - redirect to Play Store instead
-  await openPlayStore();
+  await openExternalLink(STORE_LINKS.playStore);
 };
 
 /**
@@ -44,8 +42,39 @@ export const isNative = (): boolean => {
 };
 
 /**
- * Gets the current platform
+ * Gets the current platform (always returns 'android' for this app)
  */
-export const getPlatform = (): 'android' | 'ios' | 'web' => {
-  return Capacitor.getPlatform() as 'android' | 'ios' | 'web';
+export const getPlatform = (): 'android' => {
+  return 'android';
+};
+
+/**
+ * Uygulamadan çıkış yapar (Android geri tuşu için)
+ */
+export const exitApp = (): void => {
+  if (Capacitor.isNativePlatform()) {
+    App.exitApp();
+  }
+};
+
+/**
+ * Android geri tuşu handler'ı
+ */
+export const setupBackButtonHandler = (
+  onBackPress: () => boolean
+): (() => void) => {
+  if (!Capacitor.isNativePlatform()) {
+    return () => {};
+  }
+
+  const handler = App.addListener('backButton', ({ canGoBack }) => {
+    const handled = onBackPress();
+    if (!handled && !canGoBack) {
+      App.exitApp();
+    }
+  });
+
+  return () => {
+    handler.then(h => h.remove());
+  };
 };
