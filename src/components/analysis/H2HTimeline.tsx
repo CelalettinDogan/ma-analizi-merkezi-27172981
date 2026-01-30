@@ -242,7 +242,7 @@ const MatchBubble: React.FC<{
       
       {/* Score bubble */}
       <div className={cn(
-        "w-10 h-10 xs:w-12 xs:h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-[10px] xs:text-xs md:text-sm font-bold border-2 bg-card/80 backdrop-blur-sm z-10 shadow-lg transition-all group-hover:scale-105 group-hover:shadow-xl",
+        "w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-xs md:text-sm font-bold border-2 bg-card/80 backdrop-blur-sm z-10 shadow-lg transition-all group-hover:scale-105 group-hover:shadow-xl",
         result === 'home' && "border-emerald-500/50 text-emerald-500",
         result === 'away' && "border-rose-500/50 text-rose-500",
         result === 'draw' && "border-amber-500/50 text-amber-500"
@@ -251,16 +251,16 @@ const MatchBubble: React.FC<{
       </div>
       
       {/* Date */}
-      <span className="text-[9px] xs:text-[10px] text-muted-foreground mt-1 xs:mt-1.5 whitespace-nowrap">
+      <span className="text-[10px] text-muted-foreground mt-1.5 whitespace-nowrap">
         {formatDate(match.date)}
       </span>
       
-      {/* Home/Away indicator - hidden on xs */}
+      {/* Home/Away indicator */}
       <span className={cn(
-        "text-[9px] mt-0.5 px-1.5 py-0.5 rounded-full hidden xs:block",
+        "text-[9px] mt-0.5 px-1.5 py-0.5 rounded-full",
         wasHome ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary"
       )}>
-        {wasHome ? 'Ev' : 'Dep'}
+        {wasHome ? 'Ev' : 'Deplasman'}
       </span>
     </motion.div>
   );
@@ -410,7 +410,7 @@ const H2HTimeline: React.FC<H2HTimelineProps> = ({ h2h, homeTeam, awayTeam }) =>
           <div className="absolute top-[calc(50%+10px)] left-4 right-4 h-0.5 bg-gradient-to-r from-primary/30 via-muted to-secondary/30" />
           
           {/* Match Bubbles */}
-          <div className="relative flex justify-between gap-0.5 xs:gap-1 px-0 xs:px-1 overflow-x-auto pb-1 scrollbar-none">
+          <div className="relative flex justify-between gap-1 px-1">
             {lastMatches.slice(0, 5).map((match, index) => (
               <MatchBubble
                 key={index}

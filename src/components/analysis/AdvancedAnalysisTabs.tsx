@@ -86,23 +86,23 @@ const AdvancedAnalysisTabs: React.FC<AdvancedAnalysisTabsProps> = ({ analysis })
       <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue={defaultTab}>
         {/* Tab List - Horizontal Scroll on Mobile */}
         <div className="border-b border-border/50 overflow-x-auto scrollbar-none">
-          <TabsList className="inline-flex w-auto min-w-full h-auto xs:h-12 bg-transparent p-0 gap-0">
+          <TabsList className="inline-flex w-auto min-w-full h-12 bg-transparent p-0 gap-0">
             {tabs.filter(t => !t.disabled).map((tab) => (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
                 disabled={tab.disabled}
                 className={cn(
-                  "flex-1 min-w-max px-2 xs:px-4 py-2 xs:py-3 rounded-none border-b-2 border-transparent",
+                  "flex-1 min-w-max px-4 py-3 rounded-none border-b-2 border-transparent",
                   "data-[state=active]:border-primary data-[state=active]:bg-transparent",
                   "data-[state=active]:text-primary",
-                  "transition-all gap-1 xs:gap-2 flex-col xs:flex-row"
+                  "transition-all gap-2"
                 )}
               >
                 {tab.icon}
-                <span className="text-[10px] xs:text-xs sm:text-sm truncate max-w-[45px] xs:max-w-none">{tab.label}</span>
+                <span className="text-sm">{tab.label}</span>
                 {tab.badge && (
-                  <span className="px-1 xs:px-1.5 py-0.5 text-[8px] xs:text-[10px] rounded-full bg-muted text-muted-foreground hidden xs:inline">
+                  <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-muted text-muted-foreground">
                     {tab.badge}
                   </span>
                 )}

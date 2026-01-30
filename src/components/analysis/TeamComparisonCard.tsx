@@ -28,7 +28,7 @@ const FormBadge = memo<FormBadgeProps>(({ result }) => {
   
   return (
     <span className={cn(
-      "w-5 h-5 xs:w-6 xs:h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-[9px] xs:text-[10px] md:text-xs font-bold border shrink-0",
+      "w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-[10px] md:text-xs font-bold border",
       c.bg, c.text, c.border
     )}>
       {c.label}
@@ -165,7 +165,7 @@ const TeamComparisonCard: React.FC<TeamComparisonCardProps> = ({
       <div className="grid grid-cols-2 gap-4 mb-5">
         <div>
           <p className="text-xs text-muted-foreground mb-2">Son 5 Maç</p>
-          <div className="flex gap-1 flex-wrap">
+          <div className="flex gap-1">
             {homeForm.length > 0 ? (
               homeForm.slice(0, 5).map((result, i) => (
                 <FormBadge key={i} result={result} />
@@ -177,7 +177,7 @@ const TeamComparisonCard: React.FC<TeamComparisonCardProps> = ({
         </div>
         <div className="flex flex-col items-end">
           <p className="text-xs text-muted-foreground mb-2">Son 5 Maç</p>
-          <div className="flex gap-1 flex-wrap">
+          <div className="flex gap-1">
             {awayForm.length > 0 ? (
               awayForm.slice(0, 5).map((result, i) => (
                 <FormBadge key={i} result={result} />

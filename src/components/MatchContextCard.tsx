@@ -121,23 +121,23 @@ const MatchContextCard: React.FC<MatchContextCardProps> = ({ context, homeTeam, 
 
       {/* Rest Days */}
       {(context.homeRestDays !== undefined || context.awayRestDays !== undefined) && (
-        <div className="grid grid-cols-2 gap-2 xs:gap-3">
-          <div className="p-2 xs:p-3 bg-muted/30 rounded-lg min-w-0">
-            <div className="flex items-center gap-1 xs:gap-1.5 mb-1 min-w-0">
-              <Clock className="w-3 xs:w-3.5 h-3 xs:h-3.5 text-muted-foreground shrink-0" />
-              <span className="text-[10px] xs:text-xs text-muted-foreground truncate">{homeTeam}</span>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-3 bg-muted/30 rounded-lg">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground truncate">{homeTeam}</span>
             </div>
-            <div className="text-base xs:text-lg font-bold text-foreground">
-              {context.homeRestDays ?? '-'} <span className="text-xs xs:text-sm font-normal text-muted-foreground">gün</span>
+            <div className="text-lg font-bold text-foreground">
+              {context.homeRestDays ?? '-'} <span className="text-sm font-normal text-muted-foreground">gün</span>
             </div>
           </div>
-          <div className="p-2 xs:p-3 bg-muted/30 rounded-lg min-w-0">
-            <div className="flex items-center gap-1 xs:gap-1.5 mb-1 min-w-0">
-              <Clock className="w-3 xs:w-3.5 h-3 xs:h-3.5 text-muted-foreground shrink-0" />
-              <span className="text-[10px] xs:text-xs text-muted-foreground truncate">{awayTeam}</span>
+          <div className="p-3 bg-muted/30 rounded-lg">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground truncate">{awayTeam}</span>
             </div>
-            <div className="text-base xs:text-lg font-bold text-foreground">
-              {context.awayRestDays ?? '-'} <span className="text-xs xs:text-sm font-normal text-muted-foreground">gün</span>
+            <div className="text-lg font-bold text-foreground">
+              {context.awayRestDays ?? '-'} <span className="text-sm font-normal text-muted-foreground">gün</span>
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Prediction } from '@/types/match';
 import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { Target, TrendingUp, CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -84,16 +84,14 @@ const ConfidenceVisualizer: React.FC<ConfidenceVisualizerProps> = ({ predictions
           </span>
         </div>
         <div className="relative h-4 bg-muted rounded-full overflow-hidden">
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: `${avgConfidence}%` }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+          <div 
             className={cn(
-              "h-full rounded-full",
+              "h-full transition-all duration-500 rounded-full",
               avgConfidence >= 70 ? "bg-gradient-to-r from-win/50 to-win" : 
               avgConfidence >= 40 ? "bg-gradient-to-r from-draw/50 to-draw" : 
               "bg-gradient-to-r from-loss/50 to-loss"
             )}
+            style={{ width: `${avgConfidence}%` }}
           />
           {/* Markers */}
           <div className="absolute inset-0 flex items-center">
@@ -110,18 +108,18 @@ const ConfidenceVisualizer: React.FC<ConfidenceVisualizerProps> = ({ predictions
       </div>
 
       {/* Confidence Distribution */}
-      <div className="grid grid-cols-3 gap-2 xs:gap-4 mb-6">
-        <div className="text-center p-2 xs:p-3 rounded-lg bg-win/10 border border-win/20">
-          <p className="text-xl xs:text-2xl font-bold text-win">{confidenceCounts['yüksek'] || 0}</p>
-          <p className="text-[10px] xs:text-xs text-muted-foreground">Yüksek</p>
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="text-center p-3 rounded-lg bg-win/10 border border-win/20">
+          <p className="text-2xl font-bold text-win">{confidenceCounts['yüksek'] || 0}</p>
+          <p className="text-xs text-muted-foreground">Yüksek</p>
         </div>
-        <div className="text-center p-2 xs:p-3 rounded-lg bg-draw/10 border border-draw/20">
-          <p className="text-xl xs:text-2xl font-bold text-draw">{confidenceCounts['orta'] || 0}</p>
-          <p className="text-[10px] xs:text-xs text-muted-foreground">Orta</p>
+        <div className="text-center p-3 rounded-lg bg-draw/10 border border-draw/20">
+          <p className="text-2xl font-bold text-draw">{confidenceCounts['orta'] || 0}</p>
+          <p className="text-xs text-muted-foreground">Orta</p>
         </div>
-        <div className="text-center p-2 xs:p-3 rounded-lg bg-loss/10 border border-loss/20">
-          <p className="text-xl xs:text-2xl font-bold text-loss">{confidenceCounts['düşük'] || 0}</p>
-          <p className="text-[10px] xs:text-xs text-muted-foreground">Düşük</p>
+        <div className="text-center p-3 rounded-lg bg-loss/10 border border-loss/20">
+          <p className="text-2xl font-bold text-loss">{confidenceCounts['düşük'] || 0}</p>
+          <p className="text-xs text-muted-foreground">Düşük</p>
         </div>
       </div>
 
@@ -130,26 +128,24 @@ const ConfidenceVisualizer: React.FC<ConfidenceVisualizerProps> = ({ predictions
         <h4 className="text-sm font-medium text-muted-foreground mb-3">Tahmin Detayları</h4>
         {predictions.map((prediction, index) => (
           <div key={index} className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 xs:gap-2 min-w-0 flex-1">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
                 {getConfidenceIcon(prediction.confidence)}
-                <span className="text-xs xs:text-sm font-medium truncate max-w-[80px] xs:max-w-[120px] sm:max-w-[180px]">
+                <span className="text-sm font-medium truncate max-w-[150px]">
                   {prediction.type}
                 </span>
               </div>
-              <span className={cn("text-xs xs:text-sm font-bold whitespace-nowrap shrink-0", getConfidenceTextColor(prediction.confidence))}>
+              <span className={cn("text-sm font-bold", getConfidenceTextColor(prediction.confidence))}>
                 {prediction.prediction}
               </span>
             </div>
             <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${getConfidenceValue(prediction.confidence)}%` }}
-                transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
+              <div
                 className={cn(
-                  "h-full rounded-full",
+                  "h-full transition-all duration-500 rounded-full",
                   getConfidenceColor(prediction.confidence)
                 )}
+                style={{ width: `${getConfidenceValue(prediction.confidence)}%` }}
               />
             </div>
           </div>
