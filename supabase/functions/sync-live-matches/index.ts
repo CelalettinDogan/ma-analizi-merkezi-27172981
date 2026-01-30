@@ -107,15 +107,66 @@ serve(async (req) => {
       const errorText = await response.text();
       console.error('API error:', response.status, errorText);
       
-      // On 429, return cached data if available
-      if (response.status === 429 && cachedResponse) {
-        console.log('429 received, returning cached data');
+      // On 429, return success with existing database cache
+      if (response.status === 429) {
+        console.log('429 received, checking database cache...');
+        
+        // Try to get existing data from database cache
+        const { data: existingCache, error: cacheError } = await supabase
+          .from('cached_live_matches')
+          .select('*')
+          .order('updated_at', { ascending: false })
+          .limit(50);
+        
+        if (!cacheError && existingCache) {
+          console.log(`Returning ${existingCache.length} matches from database cache`);
+          return new Response(
+            JSON.stringify({ 
+              success: true, 
+              synced: existingCache.length,
+              cached: true,
+              rateLimitHit: true,
+              source: 'database',
+              timestamp: new Date().toISOString()
+            }),
+            { 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 200 
+            }
+          );
+        }
+        
+        // No database cache, return empty success
+        console.log('No database cache available, returning empty success');
         return new Response(
           JSON.stringify({ 
             success: true, 
-            synced: cachedResponse.matches.length,
+            synced: 0,
             cached: true,
             rateLimitHit: true,
+            timestamp: new Date().toISOString()
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 
+          }
+        );
+      }
+      
+      // For other errors, still try database cache before failing
+      const { data: fallbackCache } = await supabase
+        .from('cached_live_matches')
+        .select('*')
+        .limit(50);
+      
+      if (fallbackCache && fallbackCache.length > 0) {
+        console.log(`API error ${response.status}, using database fallback with ${fallbackCache.length} matches`);
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            synced: fallbackCache.length,
+            cached: true,
+            apiError: response.status,
             timestamp: new Date().toISOString()
           }),
           { 
