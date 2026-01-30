@@ -112,7 +112,7 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
           {/* Home Team Form */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground truncate max-w-[150px]">{homeTeam}</span>
+              <span className="text-sm font-medium text-foreground truncate max-w-[100px] xs:max-w-[120px] sm:max-w-[150px]">{homeTeam}</span>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-emerald-400" />
                 <span className="text-sm font-semibold">{homeAvgScored.toFixed(1)}</span>
@@ -120,7 +120,7 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
                 <span className="text-sm font-semibold">{homeAvgConceded.toFixed(1)}</span>
               </div>
             </div>
-            <div className="flex gap-1">
+            <div className="flex gap-1 flex-wrap">
               {homeForm.length > 0 ? (
                 homeForm.map((result, i) => (
                   <FormBadge key={i} result={result} />
@@ -136,7 +136,7 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
           {/* Away Team Form */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground truncate max-w-[150px]">{awayTeam}</span>
+              <span className="text-sm font-medium text-foreground truncate max-w-[100px] xs:max-w-[120px] sm:max-w-[150px]">{awayTeam}</span>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-emerald-400" />
                 <span className="text-sm font-semibold">{awayAvgScored.toFixed(1)}</span>
@@ -144,7 +144,7 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
                 <span className="text-sm font-semibold">{awayAvgConceded.toFixed(1)}</span>
               </div>
             </div>
-            <div className="flex gap-1">
+            <div className="flex gap-1 flex-wrap">
               {awayForm.length > 0 ? (
                 awayForm.map((result, i) => (
                   <FormBadge key={i} result={result} />
