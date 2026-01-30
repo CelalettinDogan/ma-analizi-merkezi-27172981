@@ -9,8 +9,8 @@ const corsHeaders = {
 const FOOTBALL_DATA_BASE_URL = 'https://api.football-data.org/v4';
 const SUPPORTED_LEAGUES = ['PL', 'BL1', 'PD', 'SA', 'FL1', 'CL'];
 
-// Rate limit: wait between requests to respect API limits
-const DELAY_BETWEEN_REQUESTS = 7000; // 7 seconds (safe for 10 req/min)
+// Rate limit: 7 seconds between requests (safe for 10 req/min)
+const DELAY_BETWEEN_REQUESTS = 7000;
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -32,44 +32,30 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // === STEP 1: Clean up old matches (older than 100 days) BEFORE syncing ===
-    const now = new Date();
-    const cleanupDate = new Date(now);
-    cleanupDate.setDate(cleanupDate.getDate() - 100);
-    const cleanupDateStr = cleanupDate.toISOString().split('T')[0];
-    
-    console.log(`[sync-matches] Cleaning up matches older than ${cleanupDateStr}...`);
-    const { error: cleanupError, count: cleanupCount } = await supabase
-      .from('cached_matches')
-      .delete()
-      .lt('utc_date', cleanupDateStr);
-    
-    if (cleanupError) {
-      console.warn('[sync-matches] Cleanup warning:', cleanupError);
-    } else {
-      console.log(`[sync-matches] Cleaned up ${cleanupCount || 0} old matches`);
-    }
-
-    // === STEP 2: Get date range (today + 3 days) ===
+    // Calculate date range: 90 days ago to yesterday
     const today = new Date();
-    const threeDaysLater = new Date(today);
-    threeDaysLater.setDate(threeDaysLater.getDate() + 3);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
     
-    const dateFrom = today.toISOString().split('T')[0];
-    const dateTo = threeDaysLater.toISOString().split('T')[0];
+    const ninetyDaysAgo = new Date(today);
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+    
+    const dateFrom = ninetyDaysAgo.toISOString().split('T')[0];
+    const dateTo = yesterday.toISOString().split('T')[0];
 
-    console.log(`[sync-matches] Starting sync for ${dateFrom} to ${dateTo}`);
+    console.log(`[sync-match-history] Starting sync for ${dateFrom} to ${dateTo}`);
 
     const allMatches: any[] = [];
     const errors: string[] = [];
 
-    // === STEP 3: Fetch matches for each league with rate limiting ===
+    // Fetch finished matches for each league with rate limiting
     for (let i = 0; i < SUPPORTED_LEAGUES.length; i++) {
       const league = SUPPORTED_LEAGUES[i];
       
       try {
-        const url = `${FOOTBALL_DATA_BASE_URL}/competitions/${league}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
-        console.log(`[sync-matches] Fetching ${league}...`);
+        // Only fetch FINISHED matches
+        const url = `${FOOTBALL_DATA_BASE_URL}/competitions/${league}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}&status=FINISHED`;
+        console.log(`[sync-match-history] Fetching ${league} history...`);
         
         const response = await fetch(url, {
           headers: { 'X-Auth-Token': apiKey },
@@ -77,7 +63,7 @@ serve(async (req) => {
 
         if (response.status === 429) {
           const retryAfter = response.headers.get('X-RequestCounter-Reset') || '60';
-          console.warn(`[sync-matches] Rate limited on ${league}, retry after ${retryAfter}s`);
+          console.warn(`[sync-match-history] Rate limited on ${league}, retry after ${retryAfter}s`);
           errors.push(`${league}: Rate limited`);
           continue;
         }
@@ -85,29 +71,29 @@ serve(async (req) => {
         if (response.ok) {
           const data = await response.json();
           const matches = data.matches || [];
-          console.log(`[sync-matches] ${league}: ${matches.length} matches found`);
+          console.log(`[sync-match-history] ${league}: ${matches.length} finished matches found`);
           allMatches.push(...matches);
         } else {
           const errorText = await response.text();
-          console.error(`[sync-matches] ${league} error: ${response.status} - ${errorText}`);
+          console.error(`[sync-match-history] ${league} error: ${response.status} - ${errorText}`);
           errors.push(`${league}: ${response.status}`);
         }
 
         // Wait before next request (except for last one)
         if (i < SUPPORTED_LEAGUES.length - 1) {
-          console.log(`[sync-matches] Waiting ${DELAY_BETWEEN_REQUESTS}ms before next request...`);
+          console.log(`[sync-match-history] Waiting ${DELAY_BETWEEN_REQUESTS}ms...`);
           await new Promise(r => setTimeout(r, DELAY_BETWEEN_REQUESTS));
         }
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : 'Unknown error';
-        console.error(`[sync-matches] Error fetching ${league}:`, e);
+        console.error(`[sync-match-history] Error fetching ${league}:`, e);
         errors.push(`${league}: ${errorMessage}`);
       }
     }
 
-    console.log(`[sync-matches] Total matches fetched: ${allMatches.length}`);
+    console.log(`[sync-match-history] Total finished matches fetched: ${allMatches.length}`);
 
-    // === STEP 4: Upsert matches to database ===
+    // Upsert matches to database
     let upsertedCount = 0;
     let upsertErrors = 0;
 
@@ -134,13 +120,13 @@ serve(async (req) => {
         }, { onConflict: 'match_id' });
 
         if (error) {
-          console.error(`[sync-matches] Upsert error for match ${match.id}:`, error);
+          console.error(`[sync-match-history] Upsert error for match ${match.id}:`, error);
           upsertErrors++;
         } else {
           upsertedCount++;
         }
       } catch (e) {
-        console.error(`[sync-matches] Exception upserting match ${match.id}:`, e);
+        console.error(`[sync-match-history] Exception upserting match ${match.id}:`, e);
         upsertErrors++;
       }
     }
@@ -151,12 +137,11 @@ serve(async (req) => {
       total_fetched: allMatches.length,
       upsert_errors: upsertErrors,
       fetch_errors: errors,
-      cleaned_up: cleanupCount || 0,
       timestamp: new Date().toISOString(),
       date_range: { from: dateFrom, to: dateTo },
     };
 
-    console.log(`[sync-matches] Sync complete:`, result);
+    console.log(`[sync-match-history] Sync complete:`, result);
 
     return new Response(
       JSON.stringify(result),
@@ -164,7 +149,7 @@ serve(async (req) => {
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[sync-matches] Fatal error:', error);
+    console.error('[sync-match-history] Fatal error:', error);
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
