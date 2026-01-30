@@ -1,58 +1,56 @@
 
-# Kayıt Sözleşme Onayı ve Hakkında Bölümü Planı
+# Gizlilik Politikası ve Kullanım Şartları Modal Planı
 
 ## Özet
-Kullanıcı kayıt formuna zorunlu Gizlilik Politikası ve Kullanım Şartları onay checkbox'ı eklenecek, Profil sayfasındaki Ayarlar bölümüne "Hakkında" alt bölümü eklenerek bu yasal sayfalara erişim sağlanacak.
+Kayıt sayfasındaki Gizlilik Politikası ve Kullanım Şartları linklerini ayrı sayfalara yönlendirmek yerine, mobil uygulamaya uygun şekilde alttan açılan Sheet (drawer) olarak göstereceğiz. Bu sayede kullanıcı kayıt sayfasından ayrılmadan yasal metinleri okuyabilecek.
 
 ---
 
-## Yapılacak Değişiklikler
+## Değişiklik Planı
 
-### 1. Auth.tsx - Kayıt Formuna Zorunlu Onay Checkbox'ı
+### Auth.tsx Güncellemeleri
 
-**Eklenecekler:**
-- `termsAccepted` state'i (boolean, default: false)
-- Checkbox bileşeni - tıklanabilir Gizlilik Politikası ve Kullanım Şartları linkleriyle
-- Checkbox işaretlenmeden "Kayıt Ol" butonu disabled olacak
-- Hata mesajı gösterimi (checkbox işaretlenmeden form gönderilmeye çalışılırsa)
+**Eklenecek State'ler:**
+- `showPrivacySheet` - Gizlilik Politikası sheet kontrolü
+- `showTermsSheet` - Kullanım Şartları sheet kontrolü
 
-**UI Tasarımı:**
-```text
-[ ] Gizlilik Politikası ve Kullanım Şartları'nı okudum ve kabul ediyorum.
-     ^tıklanabilir linkler
-```
+**Değiştirilecek Bileşenler:**
+- Mevcut `<Link to="/privacy">` → `<button onClick={() => setShowPrivacySheet(true)}>`
+- Mevcut `<Link to="/terms">` → `<button onClick={() => setShowTermsSheet(true)}>`
 
-**Validasyon:**
-- `handleRegister` fonksiyonunda checkbox kontrolü
-- Checkbox false ise toast ile uyarı ve form gönderimi engelleme
+**Eklenecek Sheet Bileşenleri:**
+1. **Gizlilik Politikası Sheet** - Privacy.tsx içeriğini ScrollArea içinde gösterir
+2. **Kullanım Şartları Sheet** - Terms.tsx içeriğini ScrollArea içinde gösterir
 
 ---
 
-### 2. Profile.tsx - Hakkında Bölümü Ekleme
+## UI Tasarımı
 
-**Eklenecekler:**
-- Ayarlar kartının altına yeni "Hakkında" kartı
-- İçerik:
-  - Uygulama versiyonu (1.0.0)
-  - Gizlilik Politikası linki (→ /privacy)
-  - Kullanım Şartları linki (→ /terms)
-  - Bilgilendirme disclaimer'ı
-
-**UI Yapısı:**
 ```text
-┌─────────────────────────────────┐
-│ ℹ️ Hakkında                      │
-├─────────────────────────────────┤
-│ Gol Metrik v1.0.0               │
-│ AI destekli futbol analizi      │
-│                                 │
-│ 📄 Gizlilik Politikası     →    │
-│ 📋 Kullanım Şartları       →    │
-│                                 │
-│ ⚠️ Sunulan analizler            │
-│ bilgilendirme amaçlıdır,        │
-│ kesin kazanç garantisi vermez.  │
-└─────────────────────────────────┘
+┌────────────────────────────────────┐
+│ Kayıt Formu                        │
+│ ...                                │
+│ [✓] Gizlilik Politikası ve         │
+│     Kullanım Şartları'nı okudum    │
+│     ^tıklanınca sheet açılır       │
+└────────────────────────────────────┘
+
+      ↓ Gizlilik Politikası tıklandığında
+
+┌────────────────────────────────────┐
+│ ━━━━━━━━ (sheet handle)            │
+│                                    │
+│ Gizlilik Politikası                │
+│ ─────────────────────              │
+│ Son güncelleme: 25 Ocak 2026       │
+│                                    │
+│ 1. Veri Toplama                    │
+│ Gol Metrik olarak...               │
+│ ...                                │
+│ (scroll edilebilir içerik)         │
+│                                    │
+│ [Kapat] butonu                     │
+└────────────────────────────────────┘
 ```
 
 ---
@@ -61,138 +59,83 @@ Kullanıcı kayıt formuna zorunlu Gizlilik Politikası ve Kullanım Şartları 
 
 | Dosya | Değişiklik |
 |-------|------------|
-| `src/pages/Auth.tsx` | termsAccepted state, Checkbox import, kayıt formuna checkbox ekleme, validasyon |
-| `src/pages/Profile.tsx` | Info ve FileText icon import, Hakkında kartı ekleme |
+| `src/pages/Auth.tsx` | Sheet import, state'ler, sheet bileşenleri, linklerin button'a dönüştürülmesi |
 
 ---
 
 ## Teknik Detaylar
 
-### Auth.tsx Değişiklikleri
-
-1. **Import eklemeleri:**
-   - `Checkbox` from `@/components/ui/checkbox`
-   - `Link` zaten mevcut
-
-2. **State ekleme:**
+### 1. Import Eklemeleri
 ```typescript
-const [termsAccepted, setTermsAccepted] = useState(false);
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
 ```
 
-3. **Validasyon güncelleme:**
+### 2. State Eklemeleri
 ```typescript
-const handleRegister = async (e: React.FormEvent) => {
-  e.preventDefault();
-  
-  if (!termsAccepted) {
-    toast({
-      title: 'Onay Gerekli',
-      description: 'Devam etmek için Gizlilik Politikası ve Kullanım Şartları\'nı kabul etmelisiniz.',
-      variant: 'destructive',
-    });
-    return;
-  }
-  // ... mevcut kod
-};
+const [showPrivacySheet, setShowPrivacySheet] = useState(false);
+const [showTermsSheet, setShowTermsSheet] = useState(false);
 ```
 
-4. **Checkbox UI (şifre alanından sonra):**
+### 3. Checkbox Label Güncelleme
+Mevcut Link bileşenleri, onClick handler'lı button'lara dönüştürülecek:
 ```tsx
-<div className="flex items-start gap-3 pt-2">
-  <Checkbox 
-    id="terms" 
-    checked={termsAccepted} 
-    onCheckedChange={(checked) => setTermsAccepted(checked === true)}
-    className="mt-0.5"
-  />
-  <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight">
-    <Link to="/privacy" className="text-primary hover:underline">Gizlilik Politikası</Link>
-    {' '}ve{' '}
-    <Link to="/terms" className="text-primary hover:underline">Kullanım Şartları</Link>
-    'nı okudum ve kabul ediyorum.
-  </label>
-</div>
+<label htmlFor="terms" className="text-sm text-muted-foreground leading-tight">
+  <button 
+    type="button"
+    onClick={() => setShowPrivacySheet(true)} 
+    className="text-primary hover:underline"
+  >
+    Gizlilik Politikası
+  </button>
+  {' '}ve{' '}
+  <button 
+    type="button"
+    onClick={() => setShowTermsSheet(true)} 
+    className="text-primary hover:underline"
+  >
+    Kullanım Şartları
+  </button>
+  'nı okudum ve kabul ediyorum.
+</label>
 ```
 
-5. **Buton disabled durumu:**
-```tsx
-<Button 
-  type="submit" 
-  disabled={isLoading || !termsAccepted}
->
-```
+### 4. Sheet Bileşenleri
+Privacy.tsx ve Terms.tsx içeriklerini inline olarak gösterecek iki Sheet:
 
-### Profile.tsx Değişiklikleri
+**Gizlilik Politikası Sheet:**
+- SheetContent side="bottom" (alttan açılır)
+- 85vh yükseklik (ekranın %85'i)
+- ScrollArea ile kaydırılabilir içerik
+- Privacy.tsx'deki tüm bölümler
 
-1. **Import eklemeleri:**
-   - `Info, FileText` from `lucide-react`
+**Kullanım Şartları Sheet:**
+- Aynı yapıda
+- Terms.tsx'deki tüm bölümler
 
-2. **Hakkında kartı (Ayarlar kartından sonra):**
-```tsx
-<motion.div variants={itemVariants}>
-  <Card className="glass-card">
-    <CardHeader className="pb-3">
-      <CardTitle className="flex items-center gap-2 text-base">
-        <Info className="h-5 w-5 text-primary" />
-        Hakkında
-      </CardTitle>
-    </CardHeader>
-    <CardContent className="space-y-3">
-      <div className="text-center pb-2">
-        <p className="font-semibold">Gol Metrik</p>
-        <p className="text-xs text-muted-foreground">Versiyon 1.0.0</p>
-        <p className="text-xs text-muted-foreground mt-1">
-          AI destekli futbol analiz platformu
-        </p>
-      </div>
-      
-      <div className="space-y-2">
-        <Button 
-          variant="ghost" 
-          className="w-full justify-between h-11" 
-          onClick={() => navigate('/privacy')}
-        >
-          <span className="flex items-center gap-3">
-            <Shield className="h-4 w-4 text-muted-foreground" />
-            Gizlilik Politikası
-          </span>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          className="w-full justify-between h-11" 
-          onClick={() => navigate('/terms')}
-        >
-          <span className="flex items-center gap-3">
-            <FileText className="h-4 w-4 text-muted-foreground" />
-            Kullanım Şartları
-          </span>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </Button>
-      </div>
-      
-      <div className="pt-2 border-t border-border">
-        <p className="text-xs text-muted-foreground text-center">
-          ⚠️ Sunulan analizler bilgilendirme amaçlıdır ve kesin kazanç garantisi vermez.
-        </p>
-      </div>
-    </CardContent>
-  </Card>
-</motion.div>
-```
+---
+
+## Avantajları
+
+1. **Mobil UX** - Kullanıcı kayıt sayfasından ayrılmaz
+2. **Hızlı Erişim** - Sayfa yüklemesi yok, anında açılır
+3. **Google Play Uyumlu** - Yasal metinler uygulama içinde gösteriliyor
+4. **Native Hissi** - Sheet/drawer mobil uygulamalarda standart pattern
 
 ---
 
 ## Uygulama Sırası
 
-1. `src/pages/Auth.tsx` - Checkbox ve validasyon ekleme
-2. `src/pages/Profile.tsx` - Hakkında bölümü ekleme
+1. Auth.tsx'e Sheet importları ekleme
+2. State'leri ekleme
+3. Link'leri button'lara dönüştürme
+4. İki Sheet bileşenini ekleme (Privacy ve Terms içerikleriyle)
 
 ---
 
 ## Test Senaryoları
 
-- Kayıt formunda checkbox işaretlemeden kayıt denemesi → hata mesajı
-- Checkbox işaretleyip kayıt → başarılı
-- Profil > Hakkında > Gizlilik Politikası tıklama → /privacy sayfası açılır
-- Profil > Hakkında > Kullanım Şartları tıklama → /terms sayfası açılır
+- Kayıt formunda "Gizlilik Politikası" tıklama → Sheet açılır, içerik kaydırılabilir
+- Sheet'i kapatıp "Kullanım Şartları" tıklama → İkinci sheet açılır
+- Sheet açıkken dışarı tıklama → Sheet kapanır
+- Checkbox durumu sheet açılıp kapansa bile korunur
