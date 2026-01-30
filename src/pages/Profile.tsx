@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   User, Heart, Settings, LogOut, ChevronRight, Crown, Star, RefreshCw, 
-  Brain, Calendar, TrendingUp, Clock, Sparkles 
+  Brain, Calendar, TrendingUp, Clock, Sparkles, Info, FileText, Shield
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -453,6 +453,58 @@ const Profile = () => {
                   <LogOut className="h-4 w-4" />
                   <span>Çıkış Yap</span>
                 </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* About Section */}
+          <motion.div variants={itemVariants}>
+            <Card className="glass-card">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Info className="h-5 w-5 text-primary" />
+                  Hakkında
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="text-center pb-2">
+                  <p className="font-semibold">Gol Metrik</p>
+                  <p className="text-xs text-muted-foreground">Versiyon 1.0.0</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    AI destekli futbol analiz platformu
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-between h-11" 
+                    onClick={() => navigate('/privacy')}
+                  >
+                    <span className="flex items-center gap-3">
+                      <Shield className="h-4 w-4 text-muted-foreground" />
+                      Gizlilik Politikası
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-between h-11" 
+                    onClick={() => navigate('/terms')}
+                  >
+                    <span className="flex items-center gap-3">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      Kullanım Şartları
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </div>
+                
+                <div className="pt-2 border-t border-border">
+                  <p className="text-xs text-muted-foreground text-center">
+                    ⚠️ Sunulan analizler bilgilendirme amaçlıdır ve kesin kazanç garantisi vermez.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
