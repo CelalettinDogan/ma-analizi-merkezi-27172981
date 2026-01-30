@@ -2,39 +2,35 @@ import React, { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-
-type Theme = 'dark' | 'light';
+import { useTheme } from 'next-themes';
 
 const ThemeToggle: React.FC = () => {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Check localStorage or system preference on mount
-    const stored = localStorage.getItem('golmetrik-theme') as Theme | null;
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    const initialTheme = stored || (systemPrefersDark ? 'dark' : 'light');
-    setTheme(initialTheme);
-    applyTheme(initialTheme);
+    setMounted(true);
   }, []);
 
-  const applyTheme = (newTheme: Theme) => {
-    const root = document.documentElement;
-    
-    if (newTheme === 'light') {
-      root.classList.add('light');
-      root.classList.remove('dark');
-    } else {
-      root.classList.add('dark');
-      root.classList.remove('light');
-    }
-  };
+  // Prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="relative overflow-hidden"
+        aria-label="Tema değiştir"
+        disabled
+      >
+        <div className="w-5 h-5" />
+      </Button>
+    );
+  }
+
+  const isDark = resolvedTheme === 'dark';
 
   const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    localStorage.setItem('golmetrik-theme', newTheme);
-    applyTheme(newTheme);
+    setTheme(isDark ? 'light' : 'dark');
   };
 
   return (
@@ -43,10 +39,10 @@ const ThemeToggle: React.FC = () => {
       size="icon"
       onClick={toggleTheme}
       className="relative overflow-hidden"
-      aria-label={theme === 'dark' ? 'Açık temaya geç' : 'Koyu temaya geç'}
+      aria-label={isDark ? 'Açık temaya geç' : 'Koyu temaya geç'}
     >
       <AnimatePresence mode="wait">
-        {theme === 'dark' ? (
+        {isDark ? (
           <motion.div
             key="moon"
             initial={{ rotate: -90, opacity: 0 }}

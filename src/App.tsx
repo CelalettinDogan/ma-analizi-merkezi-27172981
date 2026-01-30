@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AnalysisSetProvider } from "@/contexts/AnalysisSetContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -67,15 +68,17 @@ const AppContent = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <AnalysisSetProvider>
-          <Toaster />
-          <Sonner />
-          <AppContent />
-        </AnalysisSetProvider>
-      </AuthProvider>
-    </TooltipProvider>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <TooltipProvider>
+        <AuthProvider>
+          <AnalysisSetProvider>
+            <Toaster />
+            <Sonner />
+            <AppContent />
+          </AnalysisSetProvider>
+        </AuthProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

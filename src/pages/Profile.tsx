@@ -77,12 +77,33 @@ const Profile = () => {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   
-  // Notification Settings (UI only for now)
-  const [notificationSettings, setNotificationSettings] = useState({
-    matchReminders: true,
-    resultNotifications: true,
-    premiumOffers: false,
+  // Notification Settings with localStorage persistence
+  const [notificationSettings, setNotificationSettings] = useState(() => {
+    const saved = localStorage.getItem('golmetrik-notification-settings');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return {
+          matchReminders: true,
+          resultNotifications: true,
+          premiumOffers: false,
+        };
+      }
+    }
+    return {
+      matchReminders: true,
+      resultNotifications: true,
+      premiumOffers: false,
+    };
   });
+
+  // Update notification settings helper
+  const updateNotificationSetting = (key: string, value: boolean) => {
+    const newSettings = { ...notificationSettings, [key]: value };
+    setNotificationSettings(newSettings);
+    localStorage.setItem('golmetrik-notification-settings', JSON.stringify(newSettings));
+  };
 
   // Upcoming Matches Query
   const { data: upcomingMatches, isLoading: matchesLoading } = useQuery({
@@ -335,7 +356,11 @@ const Profile = () => {
                   {shouldShowPurchaseCTA && (
                     <Button 
                       className="w-full gap-2"
-                      onClick={() => navigate('/profile')}
+                      onClick={() => {
+                        document.getElementById('premium-section')?.scrollIntoView({ 
+                          behavior: 'smooth' 
+                        });
+                      }}
                     >
                       <Crown className="w-4 h-4" />
                       Premium'a Geç
@@ -545,7 +570,7 @@ const Profile = () => {
 
           {/* Premium - Only for non-premium users */}
           {shouldShowPurchaseCTA && (
-            <motion.div variants={itemVariants}>
+            <motion.div id="premium-section" variants={itemVariants}>
               <PremiumUpgrade />
             </motion.div>
           )}
@@ -726,9 +751,7 @@ const Profile = () => {
               </div>
               <Switch 
                 checked={notificationSettings.matchReminders}
-                onCheckedChange={(checked) => 
-                  setNotificationSettings(prev => ({ ...prev, matchReminders: checked }))
-                }
+                onCheckedChange={(checked) => updateNotificationSetting('matchReminders', checked)}
               />
             </div>
             
@@ -739,9 +762,7 @@ const Profile = () => {
               </div>
               <Switch 
                 checked={notificationSettings.resultNotifications}
-                onCheckedChange={(checked) => 
-                  setNotificationSettings(prev => ({ ...prev, resultNotifications: checked }))
-                }
+                onCheckedChange={(checked) => updateNotificationSetting('resultNotifications', checked)}
               />
             </div>
             
@@ -752,9 +773,7 @@ const Profile = () => {
               </div>
               <Switch 
                 checked={notificationSettings.premiumOffers}
-                onCheckedChange={(checked) => 
-                  setNotificationSettings(prev => ({ ...prev, premiumOffers: checked }))
-                }
+                onCheckedChange={(checked) => updateNotificationSetting('premiumOffers', checked)}
               />
             </div>
 
