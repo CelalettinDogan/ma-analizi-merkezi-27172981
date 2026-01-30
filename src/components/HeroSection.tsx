@@ -95,7 +95,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground mb-3 leading-tight">
             Maç Seç,{' '}
             <span className="text-primary relative">
-              AI Analiz Al
+              AI ile Analiz Yap
               <motion.span 
                 className="absolute -right-5 -top-1 text-xl"
                 animate={{ rotate: [0, 10, -10, 0] }}
