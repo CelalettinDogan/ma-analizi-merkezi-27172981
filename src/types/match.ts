@@ -3,6 +3,7 @@ export interface MatchInput {
   homeTeam: string;
   awayTeam: string;
   matchDate: string;
+  matchId?: number; // Optional match ID for real H2H API calls
   homeTeamCrest?: string;
   awayTeamCrest?: string;
 }

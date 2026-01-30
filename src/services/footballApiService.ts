@@ -248,10 +248,69 @@ export async function getFinishedMatches(
   }
 }
 
-// H2H data still needs API call (not cached)
-export async function getHeadToHead(matchId: number) {
+// H2H response type
+export interface H2HResponse {
+  aggregates?: {
+    numberOfMatches: number;
+    totalGoals: number;
+    homeTeam: {
+      id: number;
+      name: string;
+      wins: number;
+      draws: number;
+      losses: number;
+    };
+    awayTeam: {
+      id: number;
+      name: string;
+      wins: number;
+      draws: number;
+      losses: number;
+    };
+  };
+  matches: Array<{
+    id: number;
+    utcDate: string;
+    status: string;
+    matchday?: number;
+    homeTeam: {
+      id: number;
+      name: string;
+      shortName?: string;
+      tla?: string;
+      crest?: string;
+    };
+    awayTeam: {
+      id: number;
+      name: string;
+      shortName?: string;
+      tla?: string;
+      crest?: string;
+    };
+    score: {
+      winner?: string | null;
+      fullTime: { home: number | null; away: number | null };
+      halfTime?: { home: number | null; away: number | null };
+    };
+    competition?: {
+      id: number;
+      code: string;
+      name: string;
+      emblem?: string;
+    };
+    area?: {
+      id: number;
+      name: string;
+      code: string;
+      flag: string;
+    };
+  }>;
+}
+
+// H2H data from API
+export async function getHeadToHead(matchId: number): Promise<H2HResponse | null> {
   try {
-    const response = await footballApiRequest<unknown>({
+    const response = await footballApiRequest<H2HResponse>({
       action: 'head2head',
       matchId,
     });

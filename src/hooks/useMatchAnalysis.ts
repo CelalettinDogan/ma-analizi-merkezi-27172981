@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { MatchInput, MatchAnalysis, Prediction, MatchInsights, MatchContext, TeamPower, PoissonData, GoalLineProbabilities } from '@/types/match';
 import { CompetitionCode, Standing, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
-import { getStandings, getFinishedMatches } from '@/services/footballApiService';
+import { getStandings, getFinishedMatches, getHeadToHead } from '@/services/footballApiService';
 import { generatePrediction, generateMockPrediction } from '@/utils/predictionEngine';
 import { savePredictions } from '@/services/predictionService';
 import { useToast } from '@/hooks/use-toast';
@@ -79,11 +79,10 @@ export function useMatchAnalysis() {
 
       const competitionCode = competition.code as CompetitionCode;
 
-      // Paralel olarak verileri çek - Extended range for H2H (365 days)
-      const [standings, recentMatches, h2hMatches] = await Promise.all([
+      // Paralel olarak verileri çek
+      const [standings, recentMatches] = await Promise.all([
         getStandings(competitionCode),
-        getFinishedMatches(competitionCode, 60), // Son 60 günün maçları for form
-        getFinishedMatches(competitionCode, 365), // Son 1 yılın maçları for H2H
+        getFinishedMatches(competitionCode, 90), // Son 90 günün maçları for form + H2H
       ]);
 
       // Takımları bul
@@ -114,11 +113,69 @@ export function useMatchAnalysis() {
         return mockAnalysis;
       }
 
-      // H2H maçlarını filtrele - using extended range data
-      const h2hFilteredMatches = h2hMatches.filter(match => {
-        const teams = [match.homeTeam.id, match.awayTeam.id];
-        return teams.includes(homeStanding.team.id) && teams.includes(awayStanding.team.id);
-      });
+      // Try to get real H2H data from API if matchId is available
+      let h2hFilteredMatches: typeof recentMatches = [];
+      
+      if (data.matchId) {
+        try {
+          console.log(`[useMatchAnalysis] Fetching real H2H for matchId: ${data.matchId}`);
+          const h2hResponse = await getHeadToHead(data.matchId);
+          
+          if (h2hResponse?.matches && Array.isArray(h2hResponse.matches)) {
+            // Convert API H2H matches to our format
+            h2hFilteredMatches = h2hResponse.matches.map((m: any) => ({
+              id: m.id,
+              utcDate: m.utcDate,
+              status: m.status,
+              matchday: m.matchday || 0,
+              homeTeam: {
+                id: m.homeTeam?.id || 0,
+                name: m.homeTeam?.name || 'Unknown',
+                shortName: m.homeTeam?.shortName || m.homeTeam?.name || 'Unknown',
+                tla: m.homeTeam?.tla || '',
+                crest: m.homeTeam?.crest || '',
+              },
+              awayTeam: {
+                id: m.awayTeam?.id || 0,
+                name: m.awayTeam?.name || 'Unknown',
+                shortName: m.awayTeam?.shortName || m.awayTeam?.name || 'Unknown',
+                tla: m.awayTeam?.tla || '',
+                crest: m.awayTeam?.crest || '',
+              },
+              score: {
+                winner: m.score?.winner || null,
+                fullTime: { 
+                  home: m.score?.fullTime?.home ?? null, 
+                  away: m.score?.fullTime?.away ?? null 
+                },
+                halfTime: { 
+                  home: m.score?.halfTime?.home ?? null, 
+                  away: m.score?.halfTime?.away ?? null 
+                },
+              },
+              competition: {
+                id: m.competition?.id || 0,
+                code: m.competition?.code || competitionCode,
+                name: m.competition?.name || '',
+                emblem: m.competition?.emblem || '',
+                area: m.area || { id: 0, name: '', code: '', flag: '' },
+              },
+            }));
+            console.log(`[useMatchAnalysis] Got ${h2hFilteredMatches.length} H2H matches from API`);
+          }
+        } catch (h2hError) {
+          console.warn('[useMatchAnalysis] H2H API call failed, falling back to cached data:', h2hError);
+        }
+      }
+      
+      // Fallback: Filter H2H from cached finished matches if API didn't return data
+      if (h2hFilteredMatches.length === 0) {
+        h2hFilteredMatches = recentMatches.filter(match => {
+          const teams = [match.homeTeam.id, match.awayTeam.id];
+          return teams.includes(homeStanding.team.id) && teams.includes(awayStanding.team.id);
+        });
+        console.log(`[useMatchAnalysis] Using ${h2hFilteredMatches.length} H2H matches from cache`);
+      }
 
       // Son maçları filtrele - using recent data
       const homeRecentMatches = recentMatches
