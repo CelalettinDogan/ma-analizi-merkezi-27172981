@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles, RefreshCw } from 'lucide-react';
+import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles, RefreshCw, Swords } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,8 @@ import { Match } from '@/types/footballApi';
 import { format, isToday, isTomorrow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import H2HSummaryBadge from '@/components/match/H2HSummaryBadge';
+import { useH2HPreview } from '@/hooks/useH2HPreview';
 
 interface TodaysMatchesProps {
   matches: Match[];
@@ -80,6 +82,68 @@ const listItemVariants = {
     x: 0,
     transition: { delay: i * 0.05, duration: 0.3 }
   })
+};
+
+// Featured Match H2H Component
+const FeaturedMatchH2H: React.FC<{ match: Match }> = ({ match }) => {
+  const { data, isLoading } = useH2HPreview(
+    match.id,
+    match.homeTeam.name,
+    match.awayTeam.name
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-muted/30">
+        <Swords className="w-3 h-3 text-muted-foreground animate-pulse" />
+        <div className="flex gap-0.5">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="w-2 h-2 rounded-full bg-muted animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!data || data.lastMatches.length === 0) {
+    return null;
+  }
+
+  return (
+    <H2HSummaryBadge
+      homeTeam={match.homeTeam.name}
+      awayTeam={match.awayTeam.name}
+      lastMatches={data.lastMatches}
+      homeWins={data.homeWins}
+      awayWins={data.awayWins}
+      draws={data.draws}
+    />
+  );
+};
+
+// Compact H2H for list items
+const CompactH2H: React.FC<{ match: Match }> = ({ match }) => {
+  const { data } = useH2HPreview(
+    match.id,
+    match.homeTeam.name,
+    match.awayTeam.name
+  );
+
+  if (!data || data.lastMatches.length === 0) {
+    return null;
+  }
+
+  return (
+    <H2HSummaryBadge
+      homeTeam={match.homeTeam.name}
+      awayTeam={match.awayTeam.name}
+      lastMatches={data.lastMatches}
+      homeWins={data.homeWins}
+      awayWins={data.awayWins}
+      draws={data.draws}
+      compact
+    />
+  );
 };
 
 const TodaysMatches: React.FC<TodaysMatchesProps> = ({ 
@@ -230,23 +294,27 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
             </motion.div>
           )}
 
-          {/* Featured Label with reason */}
-          <div className="absolute top-2 left-2 flex items-center gap-2">
-            <Badge className="bg-secondary text-secondary-foreground text-[10px]">
-              {featuredReason === 'Büyük Maç' ? (
-                <Sparkles className="w-3 h-3 mr-1" />
-              ) : featuredReason === 'En Yakın' ? (
-                <Clock className="w-3 h-3 mr-1" />
-              ) : (
-                <Star className="w-3 h-3 mr-1 fill-current" />
-              )}
-              {featuredReason}
-            </Badge>
-            {!hasMatchesToday && (
-              <Badge variant="outline" className="text-[10px]">
-                {getDateLabel(featuredMatch.utcDate)}
+          {/* Featured Label with reason and H2H */}
+          <div className="absolute top-2 left-2 right-2 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Badge className="bg-secondary text-secondary-foreground text-[10px]">
+                {featuredReason === 'Büyük Maç' ? (
+                  <Sparkles className="w-3 h-3 mr-1" />
+                ) : featuredReason === 'En Yakın' ? (
+                  <Clock className="w-3 h-3 mr-1" />
+                ) : (
+                  <Star className="w-3 h-3 mr-1 fill-current" />
+                )}
+                {featuredReason}
               </Badge>
-            )}
+              {!hasMatchesToday && (
+                <Badge variant="outline" className="text-[10px]">
+                  {getDateLabel(featuredMatch.utcDate)}
+                </Badge>
+              )}
+            </div>
+            {/* H2H Summary for Featured Match */}
+            <FeaturedMatchH2H match={featuredMatch} />
           </div>
 
           {/* Match Content */}
@@ -403,6 +471,9 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                       )}
                     </div>
                   </div>
+
+                  {/* H2H Compact */}
+                  <CompactH2H match={match} />
 
                   {/* League */}
                   <span className="text-[10px] md:text-xs text-muted-foreground shrink-0 hidden sm:block">
