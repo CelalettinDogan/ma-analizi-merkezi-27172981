@@ -449,10 +449,6 @@ const Profile = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="ghost" className="w-full justify-start gap-3 h-11" onClick={handleResetOnboarding}>
-                  <RefreshCw className="h-4 w-4 text-muted-foreground" />
-                  <span>Tanıtımı Tekrar Göster</span>
-                </Button>
                 <Button variant="ghost" className="w-full justify-start gap-3 h-11 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4" />
                   <span>Çıkış Yap</span>
