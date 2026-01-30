@@ -79,21 +79,21 @@ const StickyAnalysisCTA: React.FC<StickyAnalysisCTAProps> = ({
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 100, opacity: 0 }}
-      className="fixed bottom-20 md:bottom-4 left-0 right-0 z-40 px-4"
+      className="fixed bottom-[4.5rem] xs:bottom-20 md:bottom-4 left-0 right-0 z-40 px-3 xs:px-4"
     >
       <div className="max-w-lg mx-auto">
-        <div className="bg-card/95 backdrop-blur-lg border border-border rounded-2xl shadow-xl p-3">
-          <div className="flex items-center gap-3">
+        <div className="bg-card/95 backdrop-blur-lg border border-border rounded-2xl shadow-xl p-2.5 xs:p-3">
+          <div className="flex items-center gap-2 xs:gap-3">
             {/* Prediction Info */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <Star className={cn("w-4 h-4", confidenceColors[confidenceLevel])} />
-                <span className="text-sm font-semibold text-foreground truncate">
+              <div className="flex items-center gap-1.5 xs:gap-2">
+                <Star className={cn("w-3.5 h-3.5 xs:w-4 xs:h-4 shrink-0", confidenceColors[confidenceLevel])} />
+                <span className="text-xs xs:text-sm font-semibold text-foreground truncate max-w-[100px] xs:max-w-[140px]">
                   {prediction.prediction}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>{prediction.type}</span>
+              <div className="flex items-center gap-1.5 xs:gap-2 text-[10px] xs:text-xs text-muted-foreground">
+                <span className="truncate max-w-[60px] xs:max-w-[80px]">{prediction.type}</span>
                 <span>•</span>
                 <span className={confidenceColors[confidenceLevel]}>
                   %{Math.round(hybridConfidence)}
@@ -102,23 +102,24 @@ const StickyAnalysisCTA: React.FC<StickyAnalysisCTAProps> = ({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 xs:gap-2 shrink-0">
               {onShare && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-10 w-10"
+                  className="h-8 w-8 xs:h-10 xs:w-10"
                   onClick={onShare}
                 >
-                  <Share2 className="w-4 h-4" />
+                  <Share2 className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
                 </Button>
               )}
               
               <Button
                 onClick={handleAddToSet}
                 disabled={isInSet}
+                size="sm"
                 className={cn(
-                  "gap-2 min-w-[120px]",
+                  "gap-1.5 xs:gap-2 min-w-[90px] xs:min-w-[110px] text-xs xs:text-sm h-8 xs:h-10 px-2.5 xs:px-4",
                   isInSet 
                     ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30" 
                     : "bg-gradient-to-r from-primary to-emerald-500 hover:opacity-90"
@@ -126,13 +127,15 @@ const StickyAnalysisCTA: React.FC<StickyAnalysisCTAProps> = ({
               >
                 {isInSet ? (
                   <>
-                    <Check className="w-4 h-4" />
-                    Sette
+                    <Check className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
+                    <span className="hidden xs:inline">Sette</span>
+                    <span className="xs:hidden">✓</span>
                   </>
                 ) : (
                   <>
-                    <Plus className="w-4 h-4" />
-                    Analize Ekle
+                    <Plus className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
+                    <span className="hidden xs:inline">Analize Ekle</span>
+                    <span className="xs:hidden">Ekle</span>
                   </>
                 )}
               </Button>

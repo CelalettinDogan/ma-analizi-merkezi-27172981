@@ -178,12 +178,12 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
         </AnimatePresence>
 
         {/* Action Buttons */}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button 
             onClick={handleAddToSetClick}
             disabled={isInSet}
             className={cn(
-              "flex-1 gap-2",
+              "flex-1 min-w-[120px] xs:min-w-[140px] gap-2",
               isInSet 
                 ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30" 
                 : "bg-gradient-to-r from-primary to-emerald-500 hover:from-primary/90 hover:to-emerald-500/90"
@@ -208,7 +208,7 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
               variant="outline"
               onClick={() => navigate('/chat', { state: { matchAnalysis: fullAnalysis } })}
               className={cn(
-                "gap-2 border-primary/30 hover:bg-primary/10",
+                "gap-2 border-primary/30 hover:bg-primary/10 shrink-0",
                 !isPremium && "opacity-50"
               )}
               title={isPremium ? "AI ile bu maçı analiz et" : "Premium özellik"}
@@ -218,14 +218,16 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
             </Button>
           )}
 
-          <ShareCard
-            homeTeam={matchInput.homeTeam}
-            awayTeam={matchInput.awayTeam}
-            prediction={mainPrediction.prediction}
-            confidence={mainPrediction.confidence}
-            league={matchInput.league}
-            matchDate={formatMatchDate(matchInput.matchDate)}
-          />
+          <div className="shrink-0">
+            <ShareCard
+              homeTeam={matchInput.homeTeam}
+              awayTeam={matchInput.awayTeam}
+              prediction={mainPrediction.prediction}
+              confidence={mainPrediction.confidence}
+              league={matchInput.league}
+              matchDate={formatMatchDate(matchInput.matchDate)}
+            />
+          </div>
         </div>
       </div>
     </motion.div>

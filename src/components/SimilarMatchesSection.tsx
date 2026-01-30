@@ -93,22 +93,22 @@ const SimilarMatchesSection: React.FC<SimilarMatchesSectionProps> = ({ matches, 
           </div>
 
           {/* Additional Stats */}
-          <div className="grid grid-cols-4 gap-2 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
             <div className="p-2 bg-muted/30 rounded-lg">
-              <div className="text-lg font-bold text-foreground">{stats.avgHomeGoals.toFixed(1)}</div>
-              <div className="text-xs text-muted-foreground">Ev Golü</div>
+              <div className="text-base sm:text-lg font-bold text-foreground">{stats.avgHomeGoals.toFixed(1)}</div>
+              <div className="text-[10px] xs:text-xs text-muted-foreground">Ev Golü</div>
             </div>
             <div className="p-2 bg-muted/30 rounded-lg">
-              <div className="text-lg font-bold text-foreground">{stats.avgAwayGoals.toFixed(1)}</div>
-              <div className="text-xs text-muted-foreground">Dep Golü</div>
+              <div className="text-base sm:text-lg font-bold text-foreground">{stats.avgAwayGoals.toFixed(1)}</div>
+              <div className="text-[10px] xs:text-xs text-muted-foreground">Dep Golü</div>
             </div>
             <div className="p-2 bg-muted/30 rounded-lg">
-              <div className="text-lg font-bold text-primary">{stats.bttsRate.toFixed(0)}%</div>
-              <div className="text-xs text-muted-foreground">KG Var</div>
+              <div className="text-base sm:text-lg font-bold text-primary">{stats.bttsRate.toFixed(0)}%</div>
+              <div className="text-[10px] xs:text-xs text-muted-foreground">KG Var</div>
             </div>
             <div className="p-2 bg-muted/30 rounded-lg">
-              <div className="text-lg font-bold text-secondary">{stats.over25Rate.toFixed(0)}%</div>
-              <div className="text-xs text-muted-foreground">Üst 2.5</div>
+              <div className="text-base sm:text-lg font-bold text-secondary">{stats.over25Rate.toFixed(0)}%</div>
+              <div className="text-[10px] xs:text-xs text-muted-foreground">Üst 2.5</div>
             </div>
           </div>
         </div>
@@ -144,12 +144,12 @@ const SimilarMatchesSection: React.FC<SimilarMatchesSectionProps> = ({ matches, 
 
               {/* Match Info */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-foreground truncate">{match.homeTeam}</span>
-                  <span className="text-xs text-muted-foreground">vs</span>
-                  <span className="text-sm font-medium text-foreground truncate">{match.awayTeam}</span>
+                <div className="flex flex-col xs:flex-row xs:items-center gap-0.5 xs:gap-2">
+                  <span className="text-sm font-medium text-foreground truncate max-w-[90px] xs:max-w-[110px]">{match.homeTeam}</span>
+                  <span className="text-xs text-muted-foreground hidden xs:block">vs</span>
+                  <span className="text-sm font-medium text-foreground truncate max-w-[90px] xs:max-w-[110px]">{match.awayTeam}</span>
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-[10px] xs:text-xs text-muted-foreground mt-0.5">
                   {match.league} • {new Date(match.date).toLocaleDateString('tr-TR')}
                 </div>
               </div>
