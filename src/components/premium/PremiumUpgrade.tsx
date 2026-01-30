@@ -96,7 +96,9 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
           toast.error(result.error || 'Satın alma başarısız');
         }
       } else {
-        toast.error('Web üzerinden satın alma yapılamaz. Mobil uygulamayı kullanın.');
+        // Development/preview ortamında sessizce geç
+        console.log('Purchase simulation - native platform required for real purchases');
+        toast.info('Satın alma testi: Gerçek satın alma için mobil uygulama gerekli');
       }
     } catch (error) {
       console.error('Purchase error:', error);
