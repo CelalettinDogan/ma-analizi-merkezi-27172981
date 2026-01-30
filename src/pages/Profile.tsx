@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  User, Heart, Settings, LogOut, ChevronRight, Crown, Star, RefreshCw, 
-  Brain, Calendar, TrendingUp, Clock, Sparkles, Info, FileText, Shield
+  User, Heart, Settings, LogOut, ChevronRight, Crown, Star, 
+  Brain, Calendar, TrendingUp, Clock, Sparkles, Info, FileText, Shield,
+  Bell, Palette, HelpCircle, Trash2, AlertTriangle, Zap, MessageCircle
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -13,18 +14,24 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Progress } from '@/components/ui/progress';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFavorites } from '@/hooks/useFavorites';
-import { usePremiumStatus } from '@/hooks/usePremiumStatus';
-import { useOnboarding } from '@/hooks/useOnboarding';
+import { useAccessLevel } from '@/hooks/useAccessLevel';
+import { useAnalysisLimit } from '@/hooks/useAnalysisLimit';
+import { useChatbot } from '@/hooks/useChatbot';
+import { useTheme } from 'next-themes';
 import AppHeader from '@/components/layout/AppHeader';
 import AppFooter from '@/components/layout/AppFooter';
 import BottomNav from '@/components/navigation/BottomNav';
 import { PremiumUpgrade } from '@/components/premium/PremiumUpgrade';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -43,39 +50,38 @@ const Profile = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading, signOut } = useAuth();
   const { favorites, getFavoritesByType } = useFavorites();
-  const { isPremium } = usePremiumStatus();
-  const { resetOnboarding } = useOnboarding();
+  const { theme, setTheme } = useTheme();
+  
+  // Access Level & Limits
+  const {
+    isPremium,
+    planDisplayName,
+    dailyAnalysisLimit,
+    dailyChatLimit,
+    hasUnlimitedAnalyses,
+    canUseAIChat,
+    shouldShowPurchaseCTA,
+    isAdmin
+  } = useAccessLevel();
+  
+  const { remaining: analysisRemaining, usageCount: analysisUsed } = useAnalysisLimit();
+  const { usage: chatUsage } = useChatbot();
+  
+  // Sheet States
   const [showPrivacySheet, setShowPrivacySheet] = useState(false);
   const [showTermsSheet, setShowTermsSheet] = useState(false);
-
-  // AI Learning Status Query
-  const { data: aiStatus, isLoading: aiStatusLoading } = useQuery({
-    queryKey: ['ai-learning-status'],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('predictions')
-        .select('is_correct')
-        .not('is_correct', 'is', null);
-      
-      const total = data?.length || 0;
-      const correct = data?.filter(p => p.is_correct).length || 0;
-      
-      let level = 'düşük';
-      let progress = 25;
-      if (total >= 100) {
-        level = 'yüksek';
-        progress = 100;
-      } else if (total >= 50) {
-        level = 'orta';
-        progress = 65;
-      } else if (total >= 20) {
-        level = 'gelişiyor';
-        progress = 45;
-      }
-      
-      return { total, correct, level, progress };
-    },
-    staleTime: 5 * 60 * 1000
+  const [showNotificationSheet, setShowNotificationSheet] = useState(false);
+  const [showThemeSheet, setShowThemeSheet] = useState(false);
+  const [showAIInfoSheet, setShowAIInfoSheet] = useState(false);
+  const [showDeleteAccountSheet, setShowDeleteAccountSheet] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Notification Settings (UI only for now)
+  const [notificationSettings, setNotificationSettings] = useState({
+    matchReminders: true,
+    resultNotifications: true,
+    premiumOffers: false,
   });
 
   // Upcoming Matches Query
@@ -123,14 +129,43 @@ const Profile = () => {
     return { text: 'Yanlış', className: 'bg-red-500/20 text-red-500 border-red-500/30' };
   };
 
-  const handleResetOnboarding = () => {
-    resetOnboarding();
-    window.location.reload();
-  };
-
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'SİL' || !user) return;
+    
+    setIsDeleting(true);
+    try {
+      // Call edge function to delete account
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Hesap silinemedi');
+      }
+
+      toast.success('Hesabınız başarıyla silindi');
+      await signOut();
+      navigate('/');
+    } catch (error: any) {
+      console.error('Delete account error:', error);
+      toast.error(error.message || 'Hesap silinirken bir hata oluştu');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const getConfidenceColor = (confidence: string) => {
@@ -141,12 +176,14 @@ const Profile = () => {
     }
   };
 
-  const getAIStatusColor = (level: string) => {
-    switch (level) {
-      case 'yüksek': return 'text-emerald-500';
-      case 'orta': return 'text-amber-500';
-      case 'gelişiyor': return 'text-blue-500';
-      default: return 'text-muted-foreground';
+  // Get plan badge styling
+  const getPlanBadgeStyle = () => {
+    if (isAdmin) return 'bg-amber-500/20 text-amber-600 border-amber-500/30';
+    switch (planDisplayName) {
+      case 'Premium Pro': return 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600 border-purple-500/30';
+      case 'Premium Plus': return 'bg-primary/20 text-primary border-primary/30';
+      case 'Premium Basic': return 'bg-emerald-500/20 text-emerald-600 border-emerald-500/30';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -192,6 +229,11 @@ const Profile = () => {
   const favoriteLeagues = getFavoritesByType('league');
   const favoriteTeams = getFavoritesByType('team');
 
+  // Chat remaining calculation
+  const chatRemaining = chatUsage 
+    ? (typeof chatUsage.remaining === 'number' ? chatUsage.remaining : '∞')
+    : (canUseAIChat ? dailyChatLimit : 0);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <AppHeader />
@@ -213,7 +255,7 @@ const Profile = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h1 className="text-xl font-bold truncate">{displayName}</h1>
-                      {isPremium && <Crown className="h-5 w-5 text-amber-500 flex-shrink-0" />}
+                      {(isPremium || isAdmin) && <Crown className="h-5 w-5 text-amber-500 flex-shrink-0" />}
                     </div>
                     <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                     {memberSince && <p className="text-xs text-muted-foreground mt-1">Üye: {memberSince}</p>}
@@ -223,32 +265,101 @@ const Profile = () => {
             </Card>
           </motion.div>
 
-          {/* AI Learning Status */}
+          {/* User Status Card - NEW */}
+          <motion.div variants={itemVariants}>
+            <Card className="glass-card border-primary/20">
+              <CardContent className="pt-5 pb-5">
+                <div className="space-y-4">
+                  {/* Plan Badge */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {isAdmin ? (
+                        <Badge variant="outline" className={getPlanBadgeStyle()}>
+                          <Crown className="w-3.5 h-3.5 mr-1" />
+                          Admin
+                        </Badge>
+                      ) : isPremium ? (
+                        <Badge variant="outline" className={getPlanBadgeStyle()}>
+                          <Crown className="w-3.5 h-3.5 mr-1" />
+                          {planDisplayName}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className={getPlanBadgeStyle()}>
+                          <User className="w-3.5 h-3.5 mr-1" />
+                          Ücretsiz Kullanıcı
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Usage Stats */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Analysis Stats */}
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Zap className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Günlük Analiz</p>
+                        <p className="font-semibold">
+                          {hasUnlimitedAnalyses ? (
+                            <span className="text-emerald-500">Sınırsız</span>
+                          ) : (
+                            <span>{analysisRemaining}/{dailyAnalysisLimit}</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Chat Stats */}
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <MessageCircle className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">AI Asistan</p>
+                        <p className="font-semibold">
+                          {!canUseAIChat ? (
+                            <span className="text-muted-foreground">Kapalı</span>
+                          ) : dailyChatLimit >= 999 ? (
+                            <span className="text-emerald-500">Sınırsız</span>
+                          ) : (
+                            <span>{chatRemaining}/{dailyChatLimit}</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Premium CTA for Free Users */}
+                  {shouldShowPurchaseCTA && (
+                    <Button 
+                      className="w-full gap-2"
+                      onClick={() => navigate('/profile')}
+                    >
+                      <Crown className="w-4 h-4" />
+                      Premium'a Geç
+                      <ChevronRight className="w-4 h-4 ml-auto" />
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Analysis Engine Info - Safe Text */}
           <motion.div variants={itemVariants}>
             <Card className="glass-card border-primary/20">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Brain className="w-5 h-5 text-primary" />
-                  AI Öğrenme Durumu
+                  Analiz Motoru
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {aiStatusLoading ? (
-                  <Skeleton className="h-12 w-full" />
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Veri yeterliliği</span>
-                      <span className={`font-medium capitalize ${getAIStatusColor(aiStatus?.level || 'düşük')}`}>
-                        {aiStatus?.level || 'Düşük'}
-                      </span>
-                    </div>
-                    <Progress value={aiStatus?.progress || 25} className="h-2" />
-                    <p className="text-xs text-muted-foreground">
-                      AI, istatistiksel analizleri daha doğru yapabilmek için maç verilerinden öğrenmeye devam ediyor.
-                    </p>
-                  </div>
-                )}
+                <p className="text-sm text-muted-foreground">
+                  Analiz motoru, en güncel maç verileriyle düzenli olarak iyileştirilmektedir.
+                </p>
               </CardContent>
             </Card>
           </motion.div>
@@ -432,14 +543,14 @@ const Profile = () => {
             </Card>
           </motion.div>
 
-          {/* Premium */}
-          {!isPremium && (
+          {/* Premium - Only for non-premium users */}
+          {shouldShowPurchaseCTA && (
             <motion.div variants={itemVariants}>
               <PremiumUpgrade />
             </motion.div>
           )}
 
-          {/* Settings */}
+          {/* Settings - Enhanced */}
           <motion.div variants={itemVariants}>
             <Card className="glass-card">
               <CardHeader className="pb-3">
@@ -448,8 +559,85 @@ const Profile = () => {
                   Ayarlar
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="ghost" className="w-full justify-start gap-3 h-11 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleSignOut}>
+              <CardContent className="space-y-1">
+                {/* Notification Settings */}
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-between h-11" 
+                  onClick={() => setShowNotificationSheet(true)}
+                >
+                  <span className="flex items-center gap-3">
+                    <Bell className="h-4 w-4 text-muted-foreground" />
+                    Bildirim Ayarları
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Button>
+
+                {/* Theme Settings */}
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-between h-11" 
+                  onClick={() => setShowThemeSheet(true)}
+                >
+                  <span className="flex items-center gap-3">
+                    <Palette className="h-4 w-4 text-muted-foreground" />
+                    Tema
+                  </span>
+                  <span className="text-sm text-muted-foreground capitalize">
+                    {theme === 'dark' ? 'Koyu' : theme === 'light' ? 'Açık' : 'Sistem'}
+                  </span>
+                </Button>
+
+                {/* AI Info */}
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-between h-11" 
+                  onClick={() => setShowAIInfoSheet(true)}
+                >
+                  <span className="flex items-center gap-3">
+                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                    AI Nasıl Çalışır?
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Button>
+
+                {/* Premium Packages - Only for non-premium */}
+                {shouldShowPurchaseCTA && (
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-between h-11" 
+                    onClick={() => {
+                      const premiumSection = document.getElementById('premium-section');
+                      premiumSection?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  >
+                    <span className="flex items-center gap-3">
+                      <Crown className="h-4 w-4 text-amber-500" />
+                      Premium Paketleri Gör
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                )}
+
+                {/* Delete Account */}
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-between h-11 text-destructive hover:text-destructive hover:bg-destructive/10" 
+                  onClick={() => setShowDeleteAccountSheet(true)}
+                >
+                  <span className="flex items-center gap-3">
+                    <Trash2 className="h-4 w-4" />
+                    Hesabı Sil
+                  </span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+
+                {/* Sign Out */}
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-3 h-11 text-destructive hover:text-destructive hover:bg-destructive/10" 
+                  onClick={handleSignOut}
+                >
                   <LogOut className="h-4 w-4" />
                   <span>Çıkış Yap</span>
                 </Button>
@@ -471,7 +659,7 @@ const Profile = () => {
                   <p className="font-semibold">Gol Metrik</p>
                   <p className="text-xs text-muted-foreground">Versiyon 1.0.0</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    AI destekli futbol analiz platformu
+                    İstatistik destekli futbol analiz platformu
                   </p>
                 </div>
                 
@@ -516,6 +704,243 @@ const Profile = () => {
       </main>
       <AppFooter />
       <BottomNav />
+
+      {/* Notification Settings Sheet */}
+      <Sheet open={showNotificationSheet} onOpenChange={setShowNotificationSheet}>
+        <SheetContent side="bottom" className="h-auto max-h-[80vh]">
+          <SheetHeader className="pb-4">
+            <SheetTitle className="flex items-center gap-2">
+              <Bell className="w-5 h-5" />
+              Bildirim Ayarları
+            </SheetTitle>
+            <SheetDescription>
+              Hangi bildirimleri almak istediğinizi seçin
+            </SheetDescription>
+          </SheetHeader>
+          
+          <div className="space-y-4 pb-6">
+            <div className="flex items-center justify-between py-3 border-b border-border">
+              <div>
+                <p className="font-medium">Maç Hatırlatıcıları</p>
+                <p className="text-sm text-muted-foreground">Takip ettiğiniz maçlar başlamadan önce</p>
+              </div>
+              <Switch 
+                checked={notificationSettings.matchReminders}
+                onCheckedChange={(checked) => 
+                  setNotificationSettings(prev => ({ ...prev, matchReminders: checked }))
+                }
+              />
+            </div>
+            
+            <div className="flex items-center justify-between py-3 border-b border-border">
+              <div>
+                <p className="font-medium">Sonuç Bildirimleri</p>
+                <p className="text-sm text-muted-foreground">Analiz sonuçları doğrulandığında</p>
+              </div>
+              <Switch 
+                checked={notificationSettings.resultNotifications}
+                onCheckedChange={(checked) => 
+                  setNotificationSettings(prev => ({ ...prev, resultNotifications: checked }))
+                }
+              />
+            </div>
+            
+            <div className="flex items-center justify-between py-3">
+              <div>
+                <p className="font-medium">Premium Teklifleri</p>
+                <p className="text-sm text-muted-foreground">Özel kampanya ve indirimler</p>
+              </div>
+              <Switch 
+                checked={notificationSettings.premiumOffers}
+                onCheckedChange={(checked) => 
+                  setNotificationSettings(prev => ({ ...prev, premiumOffers: checked }))
+                }
+              />
+            </div>
+
+            <p className="text-xs text-muted-foreground pt-2">
+              📱 Bildirim ayarları cihaz ayarlarınızdan da yönetilebilir.
+            </p>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Theme Settings Sheet */}
+      <Sheet open={showThemeSheet} onOpenChange={setShowThemeSheet}>
+        <SheetContent side="bottom" className="h-auto max-h-[60vh]">
+          <SheetHeader className="pb-4">
+            <SheetTitle className="flex items-center gap-2">
+              <Palette className="w-5 h-5" />
+              Tema Seçimi
+            </SheetTitle>
+            <SheetDescription>
+              Uygulama görünümünü kişiselleştirin
+            </SheetDescription>
+          </SheetHeader>
+          
+          <RadioGroup value={theme} onValueChange={setTheme} className="space-y-3 pb-6">
+            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+              <RadioGroupItem value="light" id="light" />
+              <Label htmlFor="light" className="flex-1 cursor-pointer">
+                <span className="font-medium">☀️ Açık Tema</span>
+                <p className="text-sm text-muted-foreground">Gündüz kullanımı için ideal</p>
+              </Label>
+            </div>
+            
+            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+              <RadioGroupItem value="dark" id="dark" />
+              <Label htmlFor="dark" className="flex-1 cursor-pointer">
+                <span className="font-medium">🌙 Koyu Tema</span>
+                <p className="text-sm text-muted-foreground">Göz yorgunluğunu azaltır</p>
+              </Label>
+            </div>
+            
+            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+              <RadioGroupItem value="system" id="system" />
+              <Label htmlFor="system" className="flex-1 cursor-pointer">
+                <span className="font-medium">📱 Sistem</span>
+                <p className="text-sm text-muted-foreground">Cihaz ayarlarını takip eder</p>
+              </Label>
+            </div>
+          </RadioGroup>
+        </SheetContent>
+      </Sheet>
+
+      {/* AI Info Sheet */}
+      <Sheet open={showAIInfoSheet} onOpenChange={setShowAIInfoSheet}>
+        <SheetContent side="bottom" className="h-auto max-h-[85vh]">
+          <SheetHeader className="pb-4">
+            <SheetTitle className="flex items-center gap-2">
+              <Brain className="w-5 h-5 text-primary" />
+              Analiz Motoru Hakkında
+            </SheetTitle>
+          </SheetHeader>
+          
+          <ScrollArea className="h-full max-h-[60vh]">
+            <div className="space-y-4 pb-6">
+              <p className="text-sm text-muted-foreground">
+                Gol Metrik, maç analizleri için istatistiksel modeller kullanmaktadır:
+              </p>
+              
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+                  <TrendingUp className="w-5 h-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium">Takım Performans Verileri</p>
+                    <p className="text-sm text-muted-foreground">Son maç formları ve istatistikleri</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+                  <Heart className="w-5 h-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium">H2H İstatistikleri</p>
+                    <p className="text-sm text-muted-foreground">Kafa kafaya geçmiş karşılaşmalar</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+                  <Calendar className="w-5 h-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium">Lig Sıralama Bilgileri</p>
+                    <p className="text-sm text-muted-foreground">Güncel puan durumu ve konumlar</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+                  <Sparkles className="w-5 h-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="font-medium">Form Analizleri</p>
+                    <p className="text-sm text-muted-foreground">Ev/deplasman performans farkları</p>
+                  </div>
+                </div>
+              </div>
+              
+              <p className="text-sm text-muted-foreground">
+                Analiz motoru, en güncel maç verileriyle düzenli olarak iyileştirilmektedir.
+              </p>
+              
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5" />
+                <p className="text-sm text-amber-600 dark:text-amber-400">
+                  <strong>Önemli:</strong> Sunulan analizler bilgilendirme amaçlıdır ve kesin kazanç garantisi vermez.
+                </p>
+              </div>
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
+
+      {/* Delete Account Sheet - GDPR Compliant */}
+      <Sheet open={showDeleteAccountSheet} onOpenChange={setShowDeleteAccountSheet}>
+        <SheetContent side="bottom" className="h-auto max-h-[80vh]">
+          <SheetHeader className="pb-4">
+            <SheetTitle className="flex items-center gap-2 text-destructive">
+              <Trash2 className="w-5 h-5" />
+              Hesabı Sil
+            </SheetTitle>
+            <SheetDescription>
+              Bu işlem geri alınamaz
+            </SheetDescription>
+          </SheetHeader>
+          
+          <div className="space-y-4 pb-6">
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+              <AlertTriangle className="w-5 h-5 text-destructive mt-0.5" />
+              <div>
+                <p className="font-medium text-destructive">Dikkat!</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Hesabınızı sildiğinizde aşağıdaki veriler kalıcı olarak silinecektir:
+                </p>
+                <ul className="text-sm text-muted-foreground mt-2 space-y-1 list-disc list-inside">
+                  <li>Tüm analiz geçmişiniz</li>
+                  <li>Favorileriniz</li>
+                  <li>AI Asistan sohbet geçmişiniz</li>
+                  <li>Premium abonelik bilgileriniz</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="delete-confirm">
+                Onaylamak için <strong className="text-destructive">SİL</strong> yazın:
+              </Label>
+              <Input
+                id="delete-confirm"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
+                placeholder="SİL"
+                className="uppercase"
+              />
+            </div>
+            
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => {
+                  setShowDeleteAccountSheet(false);
+                  setDeleteConfirmText('');
+                }}
+              >
+                Vazgeç
+              </Button>
+              <Button 
+                variant="destructive" 
+                className="flex-1"
+                disabled={deleteConfirmText !== 'SİL' || isDeleting}
+                onClick={handleDeleteAccount}
+              >
+                {isDeleting ? 'Siliniyor...' : 'Hesabı Sil'}
+              </Button>
+            </div>
+
+            <p className="text-xs text-muted-foreground text-center">
+              KVKK/GDPR kapsamında verileriniz kalıcı olarak silinecektir.
+            </p>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Privacy Policy Sheet */}
       <Sheet open={showPrivacySheet} onOpenChange={setShowPrivacySheet}>
@@ -602,7 +1027,7 @@ const Profile = () => {
                 <section>
                   <h3 className="font-semibold mb-2">1. Hizmet Tanımı</h3>
                   <p className="text-sm text-muted-foreground">
-                    Gol Metrik, yapay zeka destekli futbol analiz platformudur. Sunulan tüm analizler istatistiksel değerlendirmeler olup, kesin sonuç garantisi vermez.
+                    Gol Metrik, istatistik destekli futbol analiz platformudur. Sunulan tüm analizler istatistiksel değerlendirmeler olup, kesin sonuç garantisi vermez.
                   </p>
                 </section>
                 
