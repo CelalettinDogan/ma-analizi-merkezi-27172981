@@ -8,6 +8,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -30,6 +32,8 @@ const Auth: React.FC = () => {
   const [registerPassword, setRegisterPassword] = useState('');
   const [registerName, setRegisterName] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showPrivacySheet, setShowPrivacySheet] = useState(false);
+  const [showTermsSheet, setShowTermsSheet] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -313,9 +317,21 @@ const Auth: React.FC = () => {
                       className="mt-0.5"
                     />
                     <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight">
-                      <Link to="/privacy" className="text-primary hover:underline" target="_blank">Gizlilik Politikası</Link>
+                      <button 
+                        type="button"
+                        onClick={() => setShowPrivacySheet(true)} 
+                        className="text-primary hover:underline"
+                      >
+                        Gizlilik Politikası
+                      </button>
                       {' '}ve{' '}
-                      <Link to="/terms" className="text-primary hover:underline" target="_blank">Kullanım Şartları</Link>
+                      <button 
+                        type="button"
+                        onClick={() => setShowTermsSheet(true)} 
+                        className="text-primary hover:underline"
+                      >
+                        Kullanım Şartları
+                      </button>
                       'nı okudum ve kabul ediyorum.
                     </label>
                   </div>
@@ -399,6 +415,163 @@ const Auth: React.FC = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Privacy Policy Sheet */}
+      <Sheet open={showPrivacySheet} onOpenChange={setShowPrivacySheet}>
+        <SheetContent side="bottom" className="h-[85vh] p-0">
+          <SheetHeader className="px-6 py-4 border-b border-border">
+            <SheetTitle>Gizlilik Politikası</SheetTitle>
+          </SheetHeader>
+          <ScrollArea className="h-[calc(85vh-80px)] px-6 py-4">
+            <div className="prose prose-sm dark:prose-invert max-w-none pb-8">
+              <p className="text-muted-foreground text-sm mb-6">
+                Son güncelleme: 25 Ocak 2026
+              </p>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">1. Veri Toplama</h2>
+              <p className="text-muted-foreground">
+                Gol Metrik olarak, kullanıcı deneyimini iyileştirmek için aşağıdaki verileri topluyoruz:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-2">
+                <li><strong>Hesap Bilgileri:</strong> E-posta adresi ve şifre (şifrelenmiş olarak saklanır)</li>
+                <li><strong>Kullanım Verileri:</strong> Uygulama kullanım istatistikleri, analiz geçmişi</li>
+                <li><strong>Cihaz Bilgileri:</strong> Cihaz türü, işletim sistemi versiyonu</li>
+                <li><strong>Ödeme Bilgileri:</strong> Google Play üzerinden işlenir, biz saklamayız</li>
+              </ul>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">2. Veri Kullanımı</h2>
+              <p className="text-muted-foreground">
+                Topladığımız verileri aşağıdaki amaçlarla kullanıyoruz:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-2">
+                <li>Hesap yönetimi ve kimlik doğrulama</li>
+                <li>Kişiselleştirilmiş analiz önerileri sunma</li>
+                <li>Uygulama performansını iyileştirme</li>
+                <li>Teknik sorunları tespit etme ve çözme</li>
+              </ul>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">3. Veri Güvenliği</h2>
+              <p className="text-muted-foreground">
+                Verilerinizi korumak için endüstri standardı güvenlik önlemleri kullanıyoruz:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-2">
+                <li>SSL/TLS şifreleme ile güvenli veri iletimi</li>
+                <li>Şifrelerin güvenli hash algoritmaları ile saklanması</li>
+                <li>Düzenli güvenlik denetimleri</li>
+                <li>Erişim kontrolü ve yetkilendirme</li>
+              </ul>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">4. Veri Paylaşımı</h2>
+              <p className="text-muted-foreground">
+                Kişisel verilerinizi üçüncü taraflarla paylaşmıyoruz, ancak aşağıdaki durumlar hariç:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-2">
+                <li>Yasal zorunluluklar (mahkeme kararı, resmi talep)</li>
+                <li>Hizmet sağlayıcılar (altyapı, analitik - anonim veriler)</li>
+                <li>Kullanıcının açık onayı</li>
+              </ul>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">5. Kullanıcı Hakları (KVKK)</h2>
+              <p className="text-muted-foreground">
+                6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında aşağıdaki haklara sahipsiniz:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-2">
+                <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
+                <li>Kişisel verilerinize erişim talep etme</li>
+                <li>Yanlış verilerin düzeltilmesini isteme</li>
+                <li>Verilerinizin silinmesini talep etme</li>
+                <li>Verilerinizin üçüncü kişilere aktarımına itiraz etme</li>
+              </ul>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">6. Çerezler</h2>
+              <p className="text-muted-foreground">
+                Uygulamamız oturum yönetimi için gerekli çerezleri kullanır. Bu çerezler, 
+                uygulamanın düzgün çalışması için zorunludur.
+              </p>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">7. Çocukların Gizliliği</h2>
+              <p className="text-muted-foreground">
+                Uygulamamız 13 yaşın altındaki çocuklara yönelik değildir. Bilerek 13 yaşın altındaki 
+                kişilerden kişisel veri toplamıyoruz.
+              </p>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">8. Değişiklikler</h2>
+              <p className="text-muted-foreground">
+                Bu gizlilik politikasını zaman zaman güncelleyebiliriz. Önemli değişiklikleri 
+                uygulama içi bildirimlerle duyuracağız.
+              </p>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">9. İletişim</h2>
+              <p className="text-muted-foreground">
+                Gizlilik ile ilgili sorularınız için info@golmetrik.com adresinden bize ulaşabilirsiniz.
+              </p>
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
+
+      {/* Terms of Service Sheet */}
+      <Sheet open={showTermsSheet} onOpenChange={setShowTermsSheet}>
+        <SheetContent side="bottom" className="h-[85vh] p-0">
+          <SheetHeader className="px-6 py-4 border-b border-border">
+            <SheetTitle>Kullanım Şartları</SheetTitle>
+          </SheetHeader>
+          <ScrollArea className="h-[calc(85vh-80px)] px-6 py-4">
+            <div className="prose prose-sm dark:prose-invert max-w-none pb-8">
+              <p className="text-muted-foreground text-sm mb-6">
+                Son güncelleme: 25 Ocak 2026
+              </p>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">1. Hizmet Tanımı</h2>
+              <p className="text-muted-foreground">
+                Gol Metrik, futbol maçları için istatistiksel analizler ve tahminler sunan bir bilgilendirme platformudur. 
+                Uygulamamız, yapay zeka ve makine öğrenimi teknolojilerini kullanarak maç istatistiklerini analiz eder.
+              </p>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">2. Kullanım Koşulları</h2>
+              <p className="text-muted-foreground">
+                Bu uygulamayı kullanarak aşağıdaki koşulları kabul etmiş olursunuz:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-2">
+                <li>Uygulamayı yalnızca yasal amaçlarla kullanacaksınız.</li>
+                <li>Sunulan analizler bilgilendirme amaçlıdır ve yatırım tavsiyesi değildir.</li>
+                <li>Hesabınızın güvenliğinden siz sorumlusunuz.</li>
+                <li>Uygulamayı kötüye kullanmayacak veya tersine mühendislik yapmayacaksınız.</li>
+              </ul>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">3. Sorumluluk Reddi</h2>
+              <p className="text-muted-foreground">
+                Gol Metrik, sunulan analizlerin doğruluğunu garanti etmez. Tüm tahminler istatistiksel modellere 
+                dayanmaktadır ve gerçek sonuçlar farklılık gösterebilir. Kullanıcılar, kendi kararlarından 
+                tamamen kendileri sorumludur.
+              </p>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">4. Premium Üyelik</h2>
+              <p className="text-muted-foreground">
+                Premium üyelik satın alarak ek özelliklere erişim sağlarsınız. Abonelikler otomatik olarak 
+                yenilenir ve iptal işlemleri Google Play hesabınız üzerinden yapılmalıdır.
+              </p>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">5. Fikri Mülkiyet</h2>
+              <p className="text-muted-foreground">
+                Uygulama içeriği, tasarımı ve tüm materyaller Gol Metrik'e aittir. İzinsiz kopyalama, 
+                dağıtım veya değiştirme yasaktır.
+              </p>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">6. Değişiklikler</h2>
+              <p className="text-muted-foreground">
+                Bu kullanım şartlarını herhangi bir zamanda değiştirme hakkımızı saklı tutarız. 
+                Önemli değişiklikler uygulama içi bildirimlerle duyurulacaktır.
+              </p>
+
+              <h2 className="text-lg font-semibold mt-6 mb-3">7. İletişim</h2>
+              <p className="text-muted-foreground">
+                Sorularınız için info@golmetrik.com adresinden bize ulaşabilirsiniz.
+              </p>
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
