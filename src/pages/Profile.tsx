@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -14,6 +14,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFavorites } from '@/hooks/useFavorites';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
@@ -43,6 +45,8 @@ const Profile = () => {
   const { favorites, getFavoritesByType } = useFavorites();
   const { isPremium } = usePremiumStatus();
   const { resetOnboarding } = useOnboarding();
+  const [showPrivacySheet, setShowPrivacySheet] = useState(false);
+  const [showTermsSheet, setShowTermsSheet] = useState(false);
 
   // AI Learning Status Query
   const { data: aiStatus, isLoading: aiStatusLoading } = useQuery({
@@ -479,7 +483,7 @@ const Profile = () => {
                   <Button 
                     variant="ghost" 
                     className="w-full justify-between h-11" 
-                    onClick={() => navigate('/privacy')}
+                    onClick={() => setShowPrivacySheet(true)}
                   >
                     <span className="flex items-center gap-3">
                       <Shield className="h-4 w-4 text-muted-foreground" />
@@ -490,7 +494,7 @@ const Profile = () => {
                   <Button 
                     variant="ghost" 
                     className="w-full justify-between h-11" 
-                    onClick={() => navigate('/terms')}
+                    onClick={() => setShowTermsSheet(true)}
                   >
                     <span className="flex items-center gap-3">
                       <FileText className="h-4 w-4 text-muted-foreground" />
@@ -516,6 +520,149 @@ const Profile = () => {
       </main>
       <AppFooter />
       <BottomNav />
+
+      {/* Privacy Policy Sheet */}
+      <Sheet open={showPrivacySheet} onOpenChange={setShowPrivacySheet}>
+        <SheetContent side="bottom" className="h-[85vh] p-0">
+          <ScrollArea className="h-full px-6 py-6">
+            <div className="space-y-6 pb-8">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold">Gizlilik Politikası</h2>
+                <Button variant="ghost" size="sm" onClick={() => setShowPrivacySheet(false)}>
+                  Kapat
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">Son güncelleme: 25 Ocak 2026</p>
+              
+              <div className="space-y-4">
+                <section>
+                  <h3 className="font-semibold mb-2">1. Veri Toplama</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Gol Metrik olarak, hizmetlerimizi sunabilmek için belirli kişisel verilerinizi topluyoruz. Bu veriler arasında e-posta adresiniz, kullanıcı tercihleri ve uygulama kullanım istatistikleri yer almaktadır.
+                  </p>
+                </section>
+                
+                <section>
+                  <h3 className="font-semibold mb-2">2. Veri Kullanımı</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Topladığımız veriler, size kişiselleştirilmiş futbol analizi sunmak, uygulama deneyimini iyileştirmek ve teknik destek sağlamak amacıyla kullanılmaktadır.
+                  </p>
+                </section>
+                
+                <section>
+                  <h3 className="font-semibold mb-2">3. Veri Güvenliği</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Verileriniz endüstri standardı güvenlik protokolleri ile korunmaktadır. SSL şifreleme ve güvenli sunucu altyapısı kullanıyoruz.
+                  </p>
+                </section>
+                
+                <section>
+                  <h3 className="font-semibold mb-2">4. Üçüncü Taraf Paylaşımı</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Kişisel verileriniz, yasal zorunluluklar dışında üçüncü taraflarla paylaşılmaz. Analiz hizmetleri için anonim ve toplu veriler kullanılabilir.
+                  </p>
+                </section>
+                
+                <section>
+                  <h3 className="font-semibold mb-2">5. Çerezler</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Uygulamamız, oturum yönetimi ve kullanıcı tercihlerini saklamak için gerekli çerezleri kullanmaktadır.
+                  </p>
+                </section>
+                
+                <section>
+                  <h3 className="font-semibold mb-2">6. Kullanıcı Hakları</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Verilerinize erişim, düzeltme veya silme talep etme hakkına sahipsiniz. Bu talepler için destek ekibimizle iletişime geçebilirsiniz.
+                  </p>
+                </section>
+                
+                <section>
+                  <h3 className="font-semibold mb-2">7. İletişim</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Gizlilik politikamız hakkında sorularınız için: destek@golmetrik.com
+                  </p>
+                </section>
+              </div>
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
+
+      {/* Terms of Use Sheet */}
+      <Sheet open={showTermsSheet} onOpenChange={setShowTermsSheet}>
+        <SheetContent side="bottom" className="h-[85vh] p-0">
+          <ScrollArea className="h-full px-6 py-6">
+            <div className="space-y-6 pb-8">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold">Kullanım Şartları</h2>
+                <Button variant="ghost" size="sm" onClick={() => setShowTermsSheet(false)}>
+                  Kapat
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">Son güncelleme: 25 Ocak 2026</p>
+              
+              <div className="space-y-4">
+                <section>
+                  <h3 className="font-semibold mb-2">1. Hizmet Tanımı</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Gol Metrik, yapay zeka destekli futbol analiz platformudur. Sunulan tüm analizler istatistiksel değerlendirmeler olup, kesin sonuç garantisi vermez.
+                  </p>
+                </section>
+                
+                <section>
+                  <h3 className="font-semibold mb-2">2. Kullanım Koşulları</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Uygulamayı kullanarak bu şartları kabul etmiş olursunuz. Platform 18 yaş üstü kullanıcılar içindir. Yasal olmayan amaçlarla kullanım yasaktır.
+                  </p>
+                </section>
+                
+                <section>
+                  <h3 className="font-semibold mb-2">3. Sorumluluk Reddi</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Sunulan analizler bilgilendirme amaçlıdır. Bahis veya finansal kararlar için tavsiye niteliği taşımaz. Kullanıcılar kendi kararlarından sorumludur.
+                  </p>
+                </section>
+                
+                <section>
+                  <h3 className="font-semibold mb-2">4. Fikri Mülkiyet</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Uygulama içeriği, algoritmaları ve tasarımı Gol Metrik'e aittir. İzinsiz kopyalama veya dağıtım yasaktır.
+                  </p>
+                </section>
+                
+                <section>
+                  <h3 className="font-semibold mb-2">5. Hesap Güvenliği</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Kullanıcılar hesap bilgilerini güvende tutmakla yükümlüdür. Şüpheli aktivite durumunda derhal bildirim yapılmalıdır.
+                  </p>
+                </section>
+                
+                <section>
+                  <h3 className="font-semibold mb-2">6. Premium Üyelik</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Premium özellikler ücretli abonelik gerektirir. İptal ve iade koşulları uygulama mağazası politikalarına tabidir.
+                  </p>
+                </section>
+                
+                <section>
+                  <h3 className="font-semibold mb-2">7. Değişiklikler</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Bu şartlar önceden bildirimle güncellenebilir. Güncel versiyonu uygulama içinden takip edebilirsiniz.
+                  </p>
+                </section>
+                
+                <section>
+                  <h3 className="font-semibold mb-2">8. İletişim</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Sorularınız için: destek@golmetrik.com
+                  </p>
+                </section>
+              </div>
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
