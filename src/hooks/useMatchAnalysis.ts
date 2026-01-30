@@ -12,7 +12,8 @@ import {
   aiConfidenceToString, 
   convertAIResultToDisplay, 
   convertGoalsPrediction, 
-  convertBTTSPrediction 
+  convertBTTSPrediction,
+  savePredictionFeatures
 } from '@/services/mlPredictionService';
 import { calculatePoissonExpectedGoals, generateScoreProbabilities, calculateMatchResultProbabilities, calculateGoalLineProbabilities as calcGoalLines, calculateBTTSProbability, calculatePowerIndexes } from '@/utils/poissonCalculator';
 import { calculateMatchImportance, calculateMomentum, calculateCleanSheetRatio } from '@/utils/contextAnalyzer';
@@ -421,9 +422,9 @@ export function useMatchAnalysis() {
 
       setAnalysis(result);
       
-      // Tahminleri veritabanına kaydet
+      // Tahminleri veritabanına kaydet ve feature'ları logla
       try {
-        await savePredictions(
+        const predictionId = await savePredictions(
           data.league,
           result.input.homeTeam,
           result.input.awayTeam,
@@ -431,6 +432,21 @@ export function useMatchAnalysis() {
           result.predictions,
           user?.id
         );
+        
+        // ML öğrenme döngüsü için feature'ları kaydet
+        if (predictionId) {
+          const aiConf = result.predictions[0]?.aiConfidence || 0.5;
+          const mathConf = result.predictions[0]?.mathConfidence || 0.5;
+          const featureRecord = createFeatureRecord(
+            features,
+            aiConf,
+            result.predictions[0]?.reasoning || '',
+            mathConf
+          );
+          
+          await savePredictionFeatures(predictionId, featureRecord);
+          console.log('[ML] Prediction features saved for learning loop');
+        }
       } catch (saveError) {
         console.error('Error saving predictions:', saveError);
       }
