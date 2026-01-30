@@ -50,7 +50,7 @@ export async function savePredictions(
   matchDate: string,
   predictions: Prediction[],
   userId?: string
-): Promise<void> {
+): Promise<string | null> {
   // Normalize league code for consistent storage
   const normalizedLeague = normalizeLeagueCode(league);
   
@@ -122,16 +122,20 @@ export async function savePredictions(
       console.error('Error updating prediction:', error);
       throw error;
     }
+    return existing.id;
   } else {
     // Insert new primary prediction
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('predictions')
-      .insert(record);
+      .insert(record)
+      .select('id')
+      .single();
 
     if (error) {
       console.error('Error saving prediction:', error);
       throw error;
     }
+    return data?.id || null;
   }
 }
 
