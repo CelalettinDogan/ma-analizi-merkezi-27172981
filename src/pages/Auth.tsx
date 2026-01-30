@@ -4,6 +4,7 @@ import { Eye, EyeOff, Mail, Lock, User, Loader2, Chrome } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -28,6 +29,7 @@ const Auth: React.FC = () => {
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
   const [registerName, setRegisterName] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +58,16 @@ const Auth: React.FC = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!termsAccepted) {
+      toast({
+        title: 'Onay Gerekli',
+        description: 'Devam etmek için Gizlilik Politikası ve Kullanım Şartları\'nı kabul etmelisiniz.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setIsLoading(true);
 
     if (registerPassword.length < 6) {
@@ -292,7 +304,23 @@ const Auth: React.FC = () => {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
+                  {/* Terms Checkbox */}
+                  <div className="flex items-start gap-3 pt-2">
+                    <Checkbox 
+                      id="terms" 
+                      checked={termsAccepted} 
+                      onCheckedChange={(checked) => setTermsAccepted(checked === true)}
+                      className="mt-0.5"
+                    />
+                    <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight">
+                      <Link to="/privacy" className="text-primary hover:underline" target="_blank">Gizlilik Politikası</Link>
+                      {' '}ve{' '}
+                      <Link to="/terms" className="text-primary hover:underline" target="_blank">Kullanım Şartları</Link>
+                      'nı okudum ve kabul ediyorum.
+                    </label>
+                  </div>
+
+                  <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading || !termsAccepted}>
                     {isLoading ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
