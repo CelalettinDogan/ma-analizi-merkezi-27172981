@@ -10,6 +10,7 @@ import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import H2HSummaryBadge from '@/components/match/H2HSummaryBadge';
 import { useH2HPreview } from '@/hooks/useH2HPreview';
+import { getCachedH2H } from '@/hooks/useH2HPreview';
 
 interface TodaysMatchesProps {
   matches: Match[];
@@ -84,7 +85,7 @@ const listItemVariants = {
   })
 };
 
-// Featured Match H2H Component
+// Featured Match H2H Component - Only loads for featured match (1 API call max)
 const FeaturedMatchH2H: React.FC<{ match: Match }> = ({ match }) => {
   const { data, isLoading } = useH2HPreview(
     match.id,
@@ -121,30 +122,8 @@ const FeaturedMatchH2H: React.FC<{ match: Match }> = ({ match }) => {
   );
 };
 
-// Compact H2H for list items
-const CompactH2H: React.FC<{ match: Match }> = ({ match }) => {
-  const { data } = useH2HPreview(
-    match.id,
-    match.homeTeam.name,
-    match.awayTeam.name
-  );
-
-  if (!data || data.lastMatches.length === 0) {
-    return null;
-  }
-
-  return (
-    <H2HSummaryBadge
-      homeTeam={match.homeTeam.name}
-      awayTeam={match.awayTeam.name}
-      lastMatches={data.lastMatches}
-      homeWins={data.homeWins}
-      awayWins={data.awayWins}
-      draws={data.draws}
-      compact
-    />
-  );
-};
+// CompactH2H removed - was causing too many API calls (N calls per N matches)
+// H2H data is now only loaded for the featured match to prevent rate limiting
 
 const TodaysMatches: React.FC<TodaysMatchesProps> = ({ 
   matches, 
@@ -472,10 +451,10 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                     </div>
                   </div>
 
-                  {/* H2H Compact */}
-                  <CompactH2H match={match} />
-
-                  {/* League */}
+                  {/* League badge shown for all items */}
+                  <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 shrink-0">
+                    {match.competition.code}
+                  </Badge>
                   <span className="text-[10px] md:text-xs text-muted-foreground shrink-0 hidden sm:block">
                     {match.competition.code}
                   </span>
