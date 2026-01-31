@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radio, RefreshCw, Loader2, WifiOff, Trophy, Clock } from 'lucide-react';
+import { Radio, Loader2, WifiOff, Trophy, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AppHeader from '@/components/layout/AppHeader';
 import LiveMatchCard2 from '@/components/live/LiveMatchCard2';
@@ -225,11 +225,6 @@ const LivePage: React.FC = () => {
     });
   };
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await syncLiveMatches();
-  };
-
   const headerRightContent = lastUpdated ? (
     <span className="text-xs text-muted-foreground hidden sm:block">
       {formatLastUpdated()}
@@ -269,7 +264,7 @@ const LivePage: React.FC = () => {
           <div className="text-center py-16">
             <WifiOff className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
             <p className="text-muted-foreground mb-4">{error}</p>
-            <Button variant="outline" onClick={handleRefresh}>
+            <Button variant="outline" onClick={syncLiveMatches} disabled={isSyncing}>
               Tekrar Dene
             </Button>
           </div>
@@ -292,27 +287,15 @@ const LivePage: React.FC = () => {
                   Desteklenen liglerde şu anda oynanmakta olan maç bulunmuyor. Sayfa her 15 saniyede otomatik güncellenir.
                 </p>
 
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
-                  <Button 
-                    variant="default" 
-                    onClick={() => navigate('/')}
-                    className="gap-2 w-full sm:w-auto"
-                    size="sm"
-                  >
-                    <Trophy className="w-4 h-4" />
-                    Yaklaşan Maçlara Git
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={handleRefresh}
-                    disabled={isSyncing}
-                    className="gap-2 w-full sm:w-auto"
-                    size="sm"
-                  >
-                    <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                    Yenile
-                  </Button>
-                </div>
+                <Button 
+                  variant="default" 
+                  onClick={() => navigate('/')}
+                  className="gap-2"
+                  size="sm"
+                >
+                  <Trophy className="w-4 h-4" />
+                  Yaklaşan Maçlara Git
+                </Button>
               </div>
             </div>
 

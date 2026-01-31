@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles, RefreshCw, Swords } from 'lucide-react';
+import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles, Swords } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +18,6 @@ interface TodaysMatchesProps {
   loadingMatchId?: number | null;
   onMatchSelect: (match: Match) => void;
   lastUpdated?: Date | null;
-  onRefresh?: () => void;
 }
 
 // Big teams for featured match selection
@@ -130,20 +129,9 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
   isLoading = false, 
   loadingMatchId, 
   onMatchSelect,
-  lastUpdated,
-  onRefresh 
+  lastUpdated
 }) => {
   const [showAll, setShowAll] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Handle manual refresh
-  const handleRefresh = async () => {
-    if (!onRefresh || isRefreshing) return;
-    setIsRefreshing(true);
-    onRefresh();
-    // Reset after a short delay
-    setTimeout(() => setIsRefreshing(false), 1000);
-  };
 
   // Find featured match (first big match or soonest upcoming match)
   const { featuredMatch, otherMatches, featuredReason, hasMatchesToday, title } = useMemo(() => {
@@ -190,22 +178,9 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
   if (matches.length === 0) {
     return (
       <Card className="p-4 md:p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary" />
-            <h2 className="font-semibold text-sm md:text-base">Bugünün Maçları</h2>
-          </div>
-          {onRefresh && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="h-8 w-8"
-            >
-              <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin")} />
-            </Button>
-          )}
+        <div className="flex items-center gap-2 mb-4">
+          <Calendar className="w-5 h-5 text-primary" />
+          <h2 className="font-semibold text-sm md:text-base">Bugünün Maçları</h2>
         </div>
         <div className="text-center py-8 md:py-12">
           <Calendar className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 text-muted-foreground/50" />
@@ -229,21 +204,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-xs">{matches.length} maç</Badge>
-          {onRefresh && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="h-7 w-7"
-              title="Yenile"
-            >
-              <RefreshCw className={cn("w-3.5 h-3.5", isRefreshing && "animate-spin")} />
-            </Button>
-          )}
-        </div>
+        <Badge variant="secondary" className="text-xs">{matches.length} maç</Badge>
       </div>
 
       {/* Featured Match - Large Card */}
