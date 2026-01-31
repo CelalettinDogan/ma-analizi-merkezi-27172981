@@ -22,7 +22,7 @@ const cache = new Map<string, CacheEntry>();
 const CACHE_DURATIONS = {
   live: 2 * 60 * 1000,      // 2 minutes for live matches
   matches: 5 * 60 * 1000,   // 5 minutes for scheduled matches
-  standings: 60 * 60 * 1000, // 1 hour for standings
+  standings: 6 * 60 * 60 * 1000, // 6 hours for standings
   teams: 24 * 60 * 60 * 1000, // 24 hours for teams
   head2head: 60 * 60 * 1000,  // 1 hour for h2h
   default: 10 * 60 * 1000,    // 10 minutes default

@@ -159,7 +159,7 @@ const GAMBLING_WARNINGS = [
 ];
 
 // System prompt for the AI - DATA-ONLY ANALYSIS ASSISTANT
-const SYSTEM_PROMPT = `Sen Gol Metrik'in yapay zeka SPOR ANALİZ asistanısın. Adın "Gol Asistan".
+const SYSTEM_PROMPT = `Sen GolMetrik'in yapay zeka SPOR ANALİZ asistanısın. Adın "Gol Asistan".
 
 ⚠️ KRİTİK KISITLAMALAR - ASLA YAPMA:
 Sen bir gazeteci, muhabir veya haber kaynağı DEĞİLSİN.

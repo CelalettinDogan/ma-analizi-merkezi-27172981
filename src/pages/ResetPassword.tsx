@@ -22,7 +22,7 @@ const ResetPassword = () => {
 
   useEffect(() => {
     // Set page title
-    document.title = 'Şifre Sıfırla | Gol Metrik';
+    document.title = 'Şifre Sıfırla | GolMetrik';
 
     // Check if user has a valid recovery session
     const checkSession = async () => {

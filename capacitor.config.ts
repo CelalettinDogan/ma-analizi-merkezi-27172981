@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'app.golmetrik.android',
-  appName: 'Gol Metrik',
+  appName: 'GolMetrik',
   webDir: 'dist',
   // NOTE: For development with hot reload, uncomment below:
   // server: {

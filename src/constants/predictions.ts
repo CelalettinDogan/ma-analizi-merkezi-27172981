@@ -72,7 +72,7 @@ export const SEASON_PHASES = {
 // API cache durations (in milliseconds)
 export const CACHE_DURATIONS = {
   LIVE_MATCHES: 2 * 60 * 1000, // 2 minutes
-  STANDINGS: 60 * 60 * 1000, // 1 hour
+  STANDINGS: 6 * 60 * 60 * 1000, // 6 hours
   STANDARD: 30 * 60 * 1000, // 30 minutes
 } as const;
 

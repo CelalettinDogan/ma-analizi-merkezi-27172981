@@ -36,7 +36,7 @@ const Terms: React.FC = () => {
 
             <h2 className="text-lg font-semibold mt-6 mb-3">1. Hizmet Tanımı</h2>
             <p className="text-muted-foreground">
-              Gol Metrik, futbol maçları için istatistiksel analizler ve tahminler sunan bir bilgilendirme platformudur. 
+              GolMetrik, futbol maçları için istatistiksel analizler ve tahminler sunan bir bilgilendirme platformudur. 
               Uygulamamız, yapay zeka ve makine öğrenimi teknolojilerini kullanarak maç istatistiklerini analiz eder.
             </p>
 
@@ -53,7 +53,7 @@ const Terms: React.FC = () => {
 
             <h2 className="text-lg font-semibold mt-6 mb-3">3. Sorumluluk Reddi</h2>
             <p className="text-muted-foreground">
-              Gol Metrik, sunulan analizlerin doğruluğunu garanti etmez. Tüm tahminler istatistiksel modellere 
+              GolMetrik, sunulan analizlerin doğruluğunu garanti etmez. Tüm tahminler istatistiksel modellere 
               dayanmaktadır ve gerçek sonuçlar farklılık gösterebilir. Kullanıcılar, kendi kararlarından 
               tamamen kendileri sorumludur.
             </p>
@@ -66,7 +66,7 @@ const Terms: React.FC = () => {
 
             <h2 className="text-lg font-semibold mt-6 mb-3">5. Fikri Mülkiyet</h2>
             <p className="text-muted-foreground">
-              Uygulama içeriği, tasarımı ve tüm materyaller Gol Metrik'e aittir. İzinsiz kopyalama, 
+              Uygulama içeriği, tasarımı ve tüm materyaller GolMetrik'e aittir. İzinsiz kopyalama, 
               dağıtım veya değiştirme yasaktır.
             </p>
 
