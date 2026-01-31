@@ -309,7 +309,6 @@ const Index: React.FC = () => {
             loadingMatchId={loadingMatchId}
             onMatchSelect={handleMatchSelect}
             lastUpdated={lastUpdated}
-            onRefresh={refetch}
           />
         </motion.section>
 

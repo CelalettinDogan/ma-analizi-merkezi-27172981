@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Radio, RefreshCw, Loader2, WifiOff } from 'lucide-react';
+import { Radio, Loader2, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import LiveMatchCard from './LiveMatchCard';
@@ -24,14 +24,10 @@ const LiveMatchesSection: React.FC<LiveMatchesSectionProps> = ({ onSelectMatch }
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [selectedLeague, setSelectedLeague] = useState<CompetitionCode | 'ALL'>('ALL');
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch from cached_live_matches table (no API rate limits!)
-  const fetchLiveMatches = useCallback(async (showRefreshIndicator = false) => {
-    if (showRefreshIndicator) {
-      setIsRefreshing(true);
-    }
+  const fetchLiveMatches = useCallback(async () => {
     setError(null);
 
     try {
@@ -89,7 +85,6 @@ const LiveMatchesSection: React.FC<LiveMatchesSectionProps> = ({ onSelectMatch }
       setError('Canlı maçlar yüklenirken hata oluştu');
     } finally {
       setIsLoading(false);
-      setIsRefreshing(false);
     }
   }, [selectedLeague]);
 
@@ -109,7 +104,8 @@ const LiveMatchesSection: React.FC<LiveMatchesSectionProps> = ({ onSelectMatch }
   }, [fetchLiveMatches]);
 
   const handleRefresh = () => {
-    fetchLiveMatches(true);
+    setIsLoading(true);
+    fetchLiveMatches();
   };
 
   const formatLastUpdated = () => {
@@ -159,17 +155,8 @@ const LiveMatchesSection: React.FC<LiveMatchesSectionProps> = ({ onSelectMatch }
                   {comp.flag} {comp.name}
                 </SelectItem>
               ))}
-            </SelectContent>
+          </SelectContent>
           </Select>
-
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          </Button>
         </div>
       </div>
 
