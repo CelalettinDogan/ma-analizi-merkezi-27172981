@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radio, RefreshCw, Loader2, WifiOff, Trophy } from 'lucide-react';
+import { Radio, RefreshCw, Loader2, WifiOff, Trophy, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AppHeader from '@/components/layout/AppHeader';
 import LiveMatchCard2 from '@/components/live/LiveMatchCard2';
@@ -248,6 +248,15 @@ const LivePage: React.FC = () => {
             selectedLeague={selectedLeague} 
             onLeagueSelect={(code) => setSelectedLeague(code === selectedLeague ? '' : code)}
           />
+        </motion.div>
+
+        {/* Delay Warning Banner */}
+        <motion.div 
+          {...fadeInUp}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400"
+        >
+          <Clock className="w-4 h-4 shrink-0" />
+          <span className="text-xs sm:text-sm">Veriler 15 dakikaya kadar gecikmeli olabilir</span>
         </motion.div>
 
         {/* Content */}
