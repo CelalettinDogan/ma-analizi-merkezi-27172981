@@ -2,29 +2,31 @@
 
 # Sıralama Cron Job Optimizasyonu ve Marka İsmi Düzeltme Planı
 
-## Genel Bakış
-Bu plan iki ana değişikliği kapsar:
-1. **Cron Job Optimizasyonu**: `sync-standings` job'unun saatlik çalışmasını 6 saatlik periyoda düşürme
-2. **Marka Tutarlılığı**: Tüm "Gol Metrik" ifadelerini "GolMetrik" olarak birleştirme
+## ✅ Tamamlandı
+
+### Marka Tutarlılığı
+Tüm "Gol Metrik" ifadeleri "GolMetrik" olarak güncellendi:
+- index.html (title, meta tags)
+- capacitor.config.ts (appName)
+- AppHeader.tsx, AppFooter.tsx
+- ShareCard.tsx, Onboarding.tsx
+- Terms.tsx, Privacy.tsx, Auth.tsx, Profile.tsx, ResetPassword.tsx
+- ai-chatbot/index.ts, admin-cron-status/index.ts
+
+### Cache Süreleri
+- STANDINGS cache: 1 saat → 6 saat
+
+### Admin Panel Metadata
+- Job adı: sync-standings-hourly → sync-standings-every-6-hours
+- Schedule: "Her saat başı" → "Her 6 saatte bir"
 
 ---
 
-## Bölüm 1: Cron Job Güncelleme
+## ⚠️ Kullanıcı Tarafından Yapılacak İşlem
 
-### Mevcut Durum
-- **Job Adı**: `sync-standings-hourly`
-- **Mevcut Schedule**: `0 * * * *` (Her saat başı)
-- **Aylık Çağrı**: ~720
+Cron job güncellemesi için **Cloud View → Run SQL** bölümünde şu SQL'i çalıştırın:
 
-### Hedef
-- **Yeni Schedule**: `0 */6 * * *` (Her 6 saatte bir: 00:00, 06:00, 12:00, 18:00 UTC)
-- **Aylık Çağrı**: ~120
-- **Tasarruf**: %83 azalma
-
-### Kullanıcı Tarafından Çalıştırılacak SQL
-Cloud View → Run SQL bölümünde çalıştırılacak:
-
-```text
+```sql
 SELECT cron.unschedule('sync-standings-hourly');
 
 SELECT cron.schedule(
@@ -42,69 +44,10 @@ SELECT cron.schedule(
 
 ---
 
-## Bölüm 2: Marka İsmi Düzeltmeleri
-
-"Gol Metrik" → "GolMetrik" değişiklikleri yapılacak dosyalar:
-
-### Ana Uygulama Dosyaları
-| Dosya | Satır | Değişiklik |
-|-------|-------|------------|
-| `index.html` | 12, 14, 16, 18, 25 | Title, meta author, og:title, twitter:title |
-| `capacitor.config.ts` | 5 | appName |
-| `src/components/layout/AppHeader.tsx` | 38, 41 | Alt text, brand text |
-| `src/components/layout/AppFooter.tsx` | 19, 84 | Brand text |
-
-### Bileşenler
-| Dosya | Satır | Değişiklik |
-|-------|-------|------------|
-| `src/components/ShareCard.tsx` | 177 | Watermark |
-| `src/components/Onboarding.tsx` | 30 | Hoşgeldin başlığı |
-
-### Sayfalar
-| Dosya | Satır | Değişiklik |
-|-------|-------|------------|
-| `src/pages/Terms.tsx` | 39, 56, 69 | Yasal metinler |
-| `src/pages/Privacy.tsx` | 39 | Gizlilik metni |
-| `src/pages/Auth.tsx` | 433, 506, 544, 557 | Gizlilik modal içeriği |
-| `src/pages/Profile.tsx` | 981, 1023, 1070 | Profil içi yasal metinler |
-| `src/pages/ResetPassword.tsx` | 25 | Sayfa başlığı |
-
-### Backend
-| Dosya | Satır | Değişiklik |
-|-------|-------|------------|
-| `supabase/functions/ai-chatbot/index.ts` | 162 | AI sistem prompt'u |
-| `supabase/functions/admin-cron-status/index.ts` | 93-96 | Job metadata (isim ve açıklama) |
-
-### Cache Ayarları (Opsiyonel)
-| Dosya | Satır | Değişiklik |
-|-------|-------|------------|
-| `src/constants/predictions.ts` | 75 | STANDINGS cache'i 1 saat → 6 saat |
-| `src/services/apiRequestManager.ts` | 25 | standings cache'i 1 saat → 6 saat |
-
----
-
-## Uygulama Adımları
-
-### Adım 1: Marka Tutarlılığı (Kod Değişiklikleri)
-Tüm dosyalarda "Gol Metrik" → "GolMetrik" değişiklikleri yapılacak.
-
-### Adım 2: Cache Süreleri Güncelleme
-Frontend cache süreleri 6 saate yükseltilecek (cron job ile uyumlu).
-
-### Adım 3: Admin Panel Metadata
-`admin-cron-status` edge function'ındaki job bilgileri güncellenecek.
-
-### Adım 4: Kullanıcı SQL İşlemi
-Cloud View'da cron job güncellemesi için SQL çalıştırılacak (kullanıcı tarafından).
-
----
-
 ## Özet
 
 | Metrik | Önce | Sonra |
 |--------|------|-------|
 | Standings sync sıklığı | 1 saat | 6 saat |
 | Aylık Edge Function çağrısı | ~720 | ~120 |
-| Marka tutarlılığı | "Gol Metrik" (boşluklu) | "GolMetrik" (bitişik) |
-| Güncellenen dosya sayısı | - | 13 dosya |
-
+| Marka tutarlılığı | "Gol Metrik" | "GolMetrik" |

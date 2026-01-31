@@ -36,7 +36,7 @@ const Privacy: React.FC = () => {
 
             <h2 className="text-lg font-semibold mt-6 mb-3">1. Veri Toplama</h2>
             <p className="text-muted-foreground">
-              Gol Metrik olarak, kullanıcı deneyimini iyileştirmek için aşağıdaki verileri topluyoruz:
+              GolMetrik olarak, kullanıcı deneyimini iyileştirmek için aşağıdaki verileri topluyoruz:
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-2">
               <li><strong>Hesap Bilgileri:</strong> E-posta adresi ve şifre (şifrelenmiş olarak saklanır)</li>

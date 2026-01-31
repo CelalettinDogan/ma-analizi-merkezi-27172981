@@ -174,7 +174,7 @@ const ShareCard: React.FC<ShareCardProps> = ({
 
           {/* Watermark */}
           <div className="relative mt-6 pt-4 border-t border-border/30 flex items-center justify-center gap-2">
-            <span className="text-xs font-bold gradient-text">⚽ Gol Metrik</span>
+            <span className="text-xs font-bold gradient-text">⚽ GolMetrik</span>
           </div>
         </div>
 

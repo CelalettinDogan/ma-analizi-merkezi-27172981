@@ -978,7 +978,7 @@ const Profile = () => {
                 <section>
                   <h3 className="font-semibold mb-2">1. Veri Toplama</h3>
                   <p className="text-sm text-muted-foreground">
-                    Gol Metrik olarak, hizmetlerimizi sunabilmek için belirli kişisel verilerinizi topluyoruz. Bu veriler arasında e-posta adresiniz, kullanıcı tercihleri ve uygulama kullanım istatistikleri yer almaktadır.
+                    GolMetrik olarak, hizmetlerimizi sunabilmek için belirli kişisel verilerinizi topluyoruz. Bu veriler arasında e-posta adresiniz, kullanıcı tercihleri ve uygulama kullanım istatistikleri yer almaktadır.
                   </p>
                 </section>
                 
@@ -1046,7 +1046,7 @@ const Profile = () => {
                 <section>
                   <h3 className="font-semibold mb-2">1. Hizmet Tanımı</h3>
                   <p className="text-sm text-muted-foreground">
-                    Gol Metrik, istatistik destekli futbol analiz platformudur. Sunulan tüm analizler istatistiksel değerlendirmeler olup, kesin sonuç garantisi vermez.
+                    GolMetrik, istatistik destekli futbol analiz platformudur. Sunulan tüm analizler istatistiksel değerlendirmeler olup, kesin sonuç garantisi vermez.
                   </p>
                 </section>
                 
@@ -1067,7 +1067,7 @@ const Profile = () => {
                 <section>
                   <h3 className="font-semibold mb-2">4. Fikri Mülkiyet</h3>
                   <p className="text-sm text-muted-foreground">
-                    Uygulama içeriği, algoritmaları ve tasarımı Gol Metrik'e aittir. İzinsiz kopyalama veya dağıtım yasaktır.
+                    Uygulama içeriği, algoritmaları ve tasarımı GolMetrik'e aittir. İzinsiz kopyalama veya dağıtım yasaktır.
                   </p>
                 </section>
                 

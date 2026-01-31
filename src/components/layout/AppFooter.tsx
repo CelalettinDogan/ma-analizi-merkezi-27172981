@@ -16,7 +16,7 @@ const AppFooter: React.FC = () => {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center shadow-lg shadow-primary/20">
                 <span className="text-primary-foreground font-bold">GM</span>
               </div>
-              <span className="font-display font-bold text-xl text-foreground">Gol Metrik</span>
+              <span className="font-display font-bold text-xl text-foreground">GolMetrik</span>
             </div>
             <p className="text-sm text-muted-foreground max-w-md mb-4">
               AI destekli futbol analiz platformu. Veri odaklı istatistikler, 
@@ -81,7 +81,7 @@ const AppFooter: React.FC = () => {
         {/* Copyright */}
         <div className="pt-8 border-t border-border/30 text-center">
           <p className="text-sm text-muted-foreground mb-2">
-            © {new Date().getFullYear()} Gol Metrik. Tüm hakları saklıdır.
+            © {new Date().getFullYear()} GolMetrik. Tüm hakları saklıdır.
           </p>
           <p className="text-xs text-muted-foreground">
             Tüm içerikler bilgilendirme amaçlıdır ve tavsiye niteliği taşımaz.
