@@ -1,67 +1,55 @@
 
-# Cron Job Optimizasyonu ve Gecikme Uyarısı Planı
+# Manuel Yenileme Butonlarını Kaldırma Planı
 
-## Mevcut Durum Analizi
+## Genel Bakış
+Arka plan senkronizasyonu (15 dk / 30 dk cron job'lar) aktif olduğundan, kullanıcıya sunulan manuel yenileme butonları gereksiz hale geldi. Bu plan, kullanıcı arayüzündeki gereksiz yenileme butonlarını kaldırarak daha temiz bir deneyim sunmayı hedefliyor.
 
-### Aktif Cron Jobs (Cloud Balance Tüketen)
-| Job | Mevcut Sıklık | Aylık Çağrı |
-|-----|--------------|-------------|
-| `sync-live-matches-every-minute` | Her 1 dakika | ~43,200 |
-| `sync-matches-every-5-min` | Her 5 dakika | ~8,640 |
-| **Toplam Edge Function Çağrısı** | | **~51,840/ay** |
+## Kaldırılacak Butonlar
 
-### Optimizasyon Sonrası
-| Job | Yeni Sıklık | Aylık Çağrı | Tasarruf |
-|-----|-------------|-------------|----------|
-| `sync-live-matches` | Her 15 dakika | ~2,880 | %93 |
-| `sync-matches` | Her 30 dakika | ~1,440 | %83 |
-| **Toplam** | | **~4,320/ay** | **%92** |
+### 1. TodaysMatches.tsx (Ana Sayfa - Bugünün Maçları)
+- Başlıktaki RefreshCw ikon butonu
+- Alt kısımdaki küçük RefreshCw butonu
+- İlgili `handleRefresh` fonksiyonu ve `isRefreshing` state'i
 
----
+### 2. Live.tsx (Canlı Maçlar Sayfası)
+- Boş durum kartındaki "Yenile" butonu (maç yokken gösterilen)
+- İlgili `handleRefresh` fonksiyonu
+
+### 3. LiveMatchesSection.tsx (Canlı Maçlar Bileşeni)
+- Başlıktaki RefreshCw ikon butonu
+- İlgili `handleRefresh` fonksiyonu ve `isRefreshing` state'i
+
+## Korunacak Butonlar
+
+| Buton | Dosya | Neden Korunuyor |
+|-------|-------|-----------------|
+| "Tekrar Dene" (Hata durumu) | Live.tsx | Ağ hatası durumunda tek çıkış yolu |
+| "Tekrar Dene" (Hata durumu) | LiveMatchesSection.tsx | Hata durumunda gerekli |
+| "Tekrar Dene" | ErrorBoundary.tsx | Uygulama hatasından kurtarma |
+| Admin yenileme | Admin.tsx | Yönetici işlevselliği |
+| "Otomatik Doğrula" | AutoVerifyButton.tsx | Farklı işlev (doğrulama) |
+| "Güncelle" | AnalysisHistory.tsx | Kullanıcı verileri için gerekli |
 
 ## Yapılacak Değişiklikler
 
-### 1. Cron Job Sıklıklarını Güncelleme (Veritabanı)
-Mevcut cron job'ları güncellemek için SQL komutları çalıştırılacak:
+### TodaysMatches.tsx
+- `isRefreshing` state kaldırılacak
+- `handleRefresh` fonksiyonu kaldırılacak
+- `onRefresh` prop kullanımları kaldırılacak (iki adet buton)
+- RefreshCw import'u kaldırılacak (kullanılmıyorsa)
 
-- `sync-live-matches-every-minute`: `* * * * *` → `*/15 * * * *` (15 dakikada bir)
-- `sync-matches-every-5-min`: `*/5 * * * *` → `*/30 * * * *` (30 dakikada bir)
+### Live.tsx
+- Boş durum kartındaki "Yenile" butonu kaldırılacak
+- `handleRefresh` fonksiyonu kaldırılacak
+- `RefreshCw` import'u kaldırılacak (kullanılmıyorsa)
 
-### 2. Live.tsx Sayfasına Gecikme Uyarısı Ekleme
-Canlı maçlar sayfasının üst kısmına küçük bir bilgilendirme banner'ı eklenecek:
+### LiveMatchesSection.tsx
+- `isRefreshing` state kaldırılacak
+- `handleRefresh` fonksiyonu kaldırılacak
+- Başlıktaki yenile butonu kaldırılacak
+- RefreshCw import'u kaldırılacak
 
-```
-⏱️ Veriler 15 dakikaya kadar gecikmeli olabilir
-```
-
-**Tasarım Özellikleri:**
-- Sarı/amber tonlarında ince bir banner
-- Saat ikonu ile birlikte
-- Sadece canlı maçlar listelendiğinde gösterilecek
-- Responsive tasarım (mobil ve masaüstü uyumlu)
-
----
-
-## Teknik Detaylar
-
-### Veritabanı Değişiklikleri
-İki adet cron job schedule güncellemesi yapılacak:
-1. Job ID 4 (`sync-live-matches-every-minute`): Schedule `*/15 * * * *` olarak değiştirilecek
-2. Job ID 2 (`sync-matches-every-5-min`): Schedule `*/30 * * * *` olarak değiştirilecek
-
-### UI Değişiklikleri
-`src/pages/Live.tsx` dosyasına ekleme:
-- Yeni bir `DelayWarningBanner` bileşeni
-- League filter'ın altında, içerik alanının üstünde konumlanacak
-- Clock ikonu ve Türkçe uyarı metni içerecek
-
----
-
-## Beklenen Sonuçlar
-
-| Metrik | Önce | Sonra |
-|--------|------|-------|
-| Edge Function çağrısı/ay | ~52,000 | ~4,300 |
-| Cloud kullanımı | Yüksek | %92 azalma |
-| Veri güncelliği | 1 dk | 15 dk |
-| Kullanıcı deneyimi | Anlık | Gecikme uyarısı ile |
+## Sonuç
+- Daha temiz, daha basit kullanıcı arayüzü
+- Arka plan senkronizasyonu ile tutarlı deneyim
+- Hata durumlarında kullanıcı hâlâ "Tekrar Dene" ile müdahale edebilir
