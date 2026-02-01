@@ -60,7 +60,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   };
 
   return (
-    <section className="relative py-10 md:py-16 overflow-hidden">
+    <section className="relative pt-6 pb-10 md:py-16 overflow-hidden">
       {/* Gradient background with subtle animation */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-background to-emerald-500/5" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
