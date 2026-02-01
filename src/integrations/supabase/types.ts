@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_activity_logs: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
+      ai_prompts: {
+        Row: {
+          id: string
+          is_active: boolean | null
+          name: string
+          prompt: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          is_active?: boolean | null
+          name: string
+          prompt: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          prompt?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       analysis_usage: {
         Row: {
           id: string
@@ -601,6 +658,30 @@ export type Database = {
         }
         Relationships: []
       }
+      match_tags: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          match_id: number
+          tag: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          match_id: number
+          tag: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          match_id?: number
+          tag?: string
+        }
+        Relationships: []
+      }
       ml_model_stats: {
         Row: {
           accuracy_percentage: number | null
@@ -892,26 +973,104 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          ban_reason: string | null
+          banned_at: string | null
           created_at: string
           display_name: string | null
           id: string
+          is_banned: boolean | null
           updated_at: string
           user_id: string
         }
         Insert: {
           avatar_url?: string | null
+          ban_reason?: string | null
+          banned_at?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          is_banned?: boolean | null
           updated_at?: string
           user_id: string
         }
         Update: {
           avatar_url?: string | null
+          ban_reason?: string | null
+          banned_at?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          is_banned?: boolean | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      push_notifications: {
+        Row: {
+          body: string
+          created_at: string | null
+          data: Json | null
+          delivered_count: number | null
+          id: string
+          opened_count: number | null
+          scheduled_at: string | null
+          sent_at: string | null
+          sent_by: string | null
+          target_audience: string | null
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string | null
+          data?: Json | null
+          delivered_count?: number | null
+          id?: string
+          opened_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          target_audience?: string | null
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string | null
+          data?: Json | null
+          delivered_count?: number | null
+          id?: string
+          opened_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          target_audience?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      push_tokens: {
+        Row: {
+          created_at: string | null
+          id: string
+          platform: string | null
+          token: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          platform?: string | null
+          token: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          platform?: string | null
+          token?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
