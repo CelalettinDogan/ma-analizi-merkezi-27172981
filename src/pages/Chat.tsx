@@ -181,7 +181,7 @@ const Chat: React.FC = () => {
   // Loading state
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-background pt-safe">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
           <p className="text-sm text-muted-foreground">Yükleniyor...</p>
@@ -214,7 +214,7 @@ const Chat: React.FC = () => {
       {/* Header */}
       <motion.header
         {...fadeInUp}
-        className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50"
+        className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 pt-safe"
       >
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">

@@ -29,7 +29,7 @@ const GuestGate: React.FC<GuestGateProps> = ({ onClose }) => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50 pt-safe">
         <div className="container max-w-4xl mx-auto px-4 py-3">
           <div className="flex items-center gap-3">
             <Button

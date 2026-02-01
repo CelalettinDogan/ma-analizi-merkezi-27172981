@@ -190,7 +190,7 @@ const AdminPage: React.FC = () => {
   // Loading state
   if (isCheckingAuth) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center pt-safe">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );

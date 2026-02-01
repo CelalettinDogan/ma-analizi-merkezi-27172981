@@ -104,10 +104,10 @@ const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComple
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
       </div>
 
-      {/* Close button */}
+      {/* Close button - safe area aware */}
       <button
         onClick={handleSkip}
-        className="absolute top-4 right-4 p-2 rounded-full hover:bg-muted transition-colors z-10"
+        className="absolute top-4 right-4 p-2 rounded-full hover:bg-muted transition-colors z-10 mt-safe"
         aria-label="Kapat"
       >
         <X className="w-5 h-5 text-muted-foreground" />

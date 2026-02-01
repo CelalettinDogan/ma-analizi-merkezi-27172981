@@ -288,6 +288,19 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .mt-safe {
+    margin-top: env(safe-area-inset-top);
+  }
+
+  /* Android Status Bar safe area - Combined padding */
+  .pt-status-bar {
+    padding-top: max(env(safe-area-inset-top), 0px);
+  }
+
   /* Text shadow for better readability on gradients */
   .text-shadow {
     text-shadow: 0 2px 10px hsl(var(--background) / 0.3);
