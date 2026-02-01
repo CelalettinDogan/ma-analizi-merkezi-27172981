@@ -1,338 +1,185 @@
 
+# Google Play Billing Entegrasyonu ve Backend Premium Yetkilendirme Planı
 
-# GolMetrik - Web Tabanlı Admin Panel Planı
+## Mevcut Durum Analizi
 
-## Genel Bakış
-Mevcut Android uygulaması için kapsamlı bir web tabanlı admin panel oluşturulacak. Panel, mobil uygulama ile aynı Supabase backend'ini kullanarak kullanıcı, premium, içerik ve bildirim yönetimini sağlayacak.
+### ✅ Zaten Mevcut Olanlar
+| Bileşen | Durum | Açıklama |
+|---------|-------|----------|
+| `premium_subscriptions` tablosu | ✅ Mevcut | Google Play alanları (purchase_token, order_id, product_id, auto_renewing, purchase_state, acknowledged) mevcut |
+| `verify-purchase` Edge Function | ✅ Mevcut | Google Play Developer API ile token doğrulama, acknowledge, DB kayıt |
+| `play-store-webhook` Edge Function | ✅ Mevcut | RTDN (Real-Time Developer Notifications) desteği |
+| Erişim seviyeleri | ✅ Mevcut | `accessLevels.ts` - Free: 2 analiz, 0 chat / Basic: 3 chat / Plus: 5 chat / Pro: 10 chat |
+| UI Bileşenleri | ✅ Mevcut | PremiumUpgrade, PremiumGate, ChatLimitSheet, AnalysisLimitSheet |
+| Limit takibi | ✅ Mevcut | `chatbot_usage`, `analysis_usage` tabloları ve RPC fonksiyonları |
 
----
+### ⚠️ Düzeltilmesi Gereken Noktalar
 
-## Mevcut Altyapı Analizi
-
-### Mevcut Durum
-| Bileşen | Durum |
-|---------|-------|
-| Admin sayfası | Sadece Cron Job izleme (basit) |
-| Rol sistemi | `user_roles` tablosu mevcut (admin, moderator, user, vip) |
-| Premium sistemi | `premium_subscriptions` tablosu mevcut |
-| AI Chatbot | Edge function mevcut, sistem promptu düzenlenebilir |
-| Push bildirimi | Altyapı YOK (oluşturulacak) |
-
-### Kullanılacak Tablolar
-- `auth.users` (salt okunur referans)
-- `profiles` (kullanıcı bilgileri)
-- `user_roles` (rol yönetimi)
-- `premium_subscriptions` (abonelik yönetimi)
-- `chatbot_usage` (AI kullanım)
-- `analysis_usage` (analiz kullanım)
-- `predictions` (tahminler)
-- `cached_matches` (maç verileri)
-
----
-
-## Admin Panel Modülleri
-
-### 1. Dashboard (Ana Sayfa)
-- Günlük aktif kullanıcı (DAU)
-- Toplam kullanıcı sayısı
-- Premium kullanıcı sayısı / oranı
-- Günlük analiz sayısı
-- Günlük chat mesajı sayısı
-- AI tahmin başarı oranı
-- Canlı maç sayısı
-
-### 2. Kullanıcı Yönetimi
-**Liste Görünümü:**
-- Email, kayıt tarihi, son giriş
-- Plan durumu (Free/Basic/Plus/Pro)
-- Günlük chat/analiz kullanımı
-- Roller (admin, moderator, vip)
-
-**Kullanıcı İşlemleri:**
-- Premium paketi manuel atama
-- Rol ekleme/kaldırma (admin, moderator, vip)
-- Kullanıcı askıya alma (is_banned flag)
-- Kullanıcı detayları görüntüleme
-
-### 3. Premium Yönetimi
-**Paket Listesi:**
-- Mevcut paketler (Basic, Plus, Pro)
-- Fiyatlar ve limitler
-- Aktif abone sayısı per paket
-
-**Manuel Premium Atama:**
-- Kullanıcı seçimi
-- Paket tipi seçimi
-- Süre belirleme (1 ay, 3 ay, 6 ay, 1 yıl)
-
-### 4. AI & Analiz Kontrolü
-**İstatistikler:**
-- Toplam tahmin sayısı
-- Doğrulama oranı per kategori
-- Günlük analiz kullanımı grafiği
-
-**Prompt Yönetimi:**
-- AI sistem promptunu görüntüleme
-- Prompt düzenleme (veritabanında saklanacak)
-- Banned patterns yönetimi
-
-**Tahmin İnceleme:**
-- Tahmin listesi
-- Hatalı tahminleri işaretleme
-- Doğrulama geçmişi
-
-### 5. Maç & İçerik Yönetimi
-**Maç Listesi:**
-- Önümüzdeki maçlar
-- Canlı maçlar
-- Bitmiş maçlar
-
-**İşlemler:**
-- "Büyük Maç" olarak işaretleme
-- Lig bazlı aç/kapat
-- Öne çıkan maçları belirleme
-
-### 6. Push Bildirim Yönetimi (Yeni Altyapı)
-**Gerekli Yeni Tablolar:**
-- `push_tokens` (FCM token'ları)
-- `push_notifications` (bildirim geçmişi)
-
-**Özellikler:**
-- Toplu bildirim gönderme
-- Hedef kitle seçimi (tüm/free/premium)
-- Zamanlı bildirim
-- Bildirim şablonları
-- Tıklama istatistikleri
-
-### 7. İstatistik & Raporlama
-**Grafikler:**
-- DAU/WAU/MAU trendi
-- Premium dönüşüm oranı
-- Analiz kullanım trendi
-- Chat kullanım trendi
-
-**Raporlar:**
-- Haftalık özet
-- Premium gelir tahmini
-- Churn oranı
-
-### 8. Güvenlik & Loglar
-**Admin Aktivite Logu:**
-- Kim, ne zaman, ne yaptı
-- İşlem detayları
-
-**Rate Limiting:**
-- API çağrı limitleri izleme
-- Şüpheli aktivite uyarıları
-
----
-
-## Teknik Uygulama Planı
-
-### Yeni Veritabanı Tabloları
-
-```text
--- 1. Kullanıcı askıya alma desteği
-ALTER TABLE profiles ADD COLUMN is_banned BOOLEAN DEFAULT false;
-ALTER TABLE profiles ADD COLUMN banned_at TIMESTAMPTZ;
-ALTER TABLE profiles ADD COLUMN ban_reason TEXT;
-
--- 2. Push bildirim tokenları
-CREATE TABLE push_tokens (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  token TEXT NOT NULL,
-  platform TEXT DEFAULT 'android',
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(user_id, token)
-);
-
--- 3. Bildirim geçmişi
-CREATE TABLE push_notifications (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title TEXT NOT NULL,
-  body TEXT NOT NULL,
-  data JSONB DEFAULT '{}',
-  target_audience TEXT DEFAULT 'all', -- all, free, premium
-  sent_by UUID REFERENCES auth.users(id),
-  scheduled_at TIMESTAMPTZ,
-  sent_at TIMESTAMPTZ,
-  delivered_count INTEGER DEFAULT 0,
-  opened_count INTEGER DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- 4. Admin aktivite logu
-CREATE TABLE admin_activity_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  admin_id UUID NOT NULL,
-  action TEXT NOT NULL,
-  target_type TEXT, -- user, subscription, notification
-  target_id TEXT,
-  details JSONB,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- 5. AI prompt yönetimi
-CREATE TABLE ai_prompts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL UNIQUE,
-  prompt TEXT NOT NULL,
-  is_active BOOLEAN DEFAULT true,
-  updated_by UUID,
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- 6. Maç etiketleri
-CREATE TABLE match_tags (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  match_id INTEGER NOT NULL,
-  tag TEXT NOT NULL, -- 'featured', 'big_match', 'derby'
-  created_by UUID,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(match_id, tag)
-);
-```
-
-### Yeni Edge Functions
-
-| Function | Amaç |
-|----------|------|
-| `admin-users` | Kullanıcı CRUD işlemleri |
-| `admin-subscriptions` | Premium yönetimi |
-| `admin-stats` | İstatistik API'leri |
-| `admin-notifications` | Bildirim gönderme |
-| `admin-prompts` | AI prompt yönetimi |
-| `register-push-token` | FCM token kaydetme (mobil) |
-
-### Frontend Yapısı (Admin Panel)
-
-```text
-src/
-├── pages/
-│   └── Admin.tsx (mevcut - genişletilecek)
-│
-├── components/
-│   └── admin/
-│       ├── AdminLayout.tsx
-│       ├── AdminSidebar.tsx
-│       ├── DashboardStats.tsx
-│       ├── UserManagement/
-│       │   ├── UserTable.tsx
-│       │   ├── UserDetailModal.tsx
-│       │   └── AssignPremiumModal.tsx
-│       ├── PremiumManagement/
-│       │   ├── SubscriptionTable.tsx
-│       │   └── ManualSubscriptionForm.tsx
-│       ├── AIManagement/
-│       │   ├── PredictionStats.tsx
-│       │   ├── PromptEditor.tsx
-│       │   └── PredictionReview.tsx
-│       ├── MatchManagement/
-│       │   ├── MatchTable.tsx
-│       │   └── TagManager.tsx
-│       ├── Notifications/
-│       │   ├── NotificationForm.tsx
-│       │   ├── NotificationHistory.tsx
-│       │   └── AudienceSelector.tsx
-│       ├── Statistics/
-│       │   ├── UsageCharts.tsx
-│       │   ├── ConversionStats.tsx
-│       │   └── AIAccuracyChart.tsx
-│       └── ActivityLog/
-│           └── AdminLogTable.tsx
-│
-└── hooks/
-    └── admin/
-        ├── useAdminUsers.ts
-        ├── useAdminStats.ts
-        ├── useAdminSubscriptions.ts
-        └── useAdminNotifications.ts
-```
-
----
-
-## Push Bildirim Altyapısı
-
-### Android Tarafı (Capacitor)
-1. Firebase Cloud Messaging (FCM) entegrasyonu
-2. `@capacitor/push-notifications` paketi
-3. Token kaydetme (login sonrası)
-4. Deep link desteği
-
-### Backend Tarafı
-1. FCM Admin SDK ile bildirim gönderme
-2. Toplu gönderim desteği
-3. Zamanlı gönderim (scheduled)
-4. Teslim/açılma takibi
-
----
-
-## Güvenlik Önlemleri
-
-| Önlem | Uygulama |
+| Sorun | Açıklama |
 |-------|----------|
-| Rol kontrolü | Tüm admin edge functions `admin` rolü gerektirir |
-| RLS politikaları | Admin tabloları için özel politikalar |
-| Aktivite logu | Her admin işlemi kaydedilir |
-| Rate limiting | API çağrıları sınırlandırılır |
-| JWT doğrulama | Tüm isteklerde auth kontrolü |
+| Paket ID uyumsuzluğu | Mevcut: `premium_basic_monthly`, `premium_plus_monthly`, `premium_pro_monthly` → İstenen: `premium_starter_monthly`, `premium_pro_monthly`, `premium_elite_monthly` |
+| Plan isimleri uyumsuzluğu | Mevcut: Basic/Plus/Pro → İstenen: Starter/Pro/Elite |
+| Google Play Service Account | `GOOGLE_PLAY_SERVICE_ACCOUNT_KEY` secret'ı tanımlı değil |
+| Google Play Package Name | `GOOGLE_PLAY_PACKAGE_NAME` secret'ı tanımlı değil |
+| Native purchase eklentisi | purchaseService'de placeholder - gerçek eklenti entegrasyonu gerekli |
 
 ---
 
-## Uygulama Aşamaları
+## Uygulama Planı
 
-### Aşama 1: Temel Altyapı
-- Yeni veritabanı tabloları
-- RLS politikaları
-- Admin layout bileşeni
-- Dashboard istatistikleri
+### Aşama 1: Paket ID ve İsimlendirme Güncellemesi
 
-### Aşama 2: Kullanıcı Yönetimi
-- Kullanıcı listesi
-- Rol yönetimi
-- Premium atama
-- Askıya alma
+**1.1 - `src/constants/accessLevels.ts` Güncellemesi**
 
-### Aşama 3: AI & İçerik
-- Prompt yönetimi
-- Tahmin istatistikleri
-- Maç etiketleme
+Mevcut plan tipleri ve isimleri yeni yapıya dönüştürülecek:
 
-### Aşama 4: Push Bildirimleri
-- FCM entegrasyonu (Android)
-- Token yönetimi
-- Bildirim gönderme arayüzü
+```text
+Eski Format → Yeni Format:
+- premium_basic → premium_starter
+- premium_plus → premium_pro  
+- premium_pro → premium_elite
 
-### Aşama 5: Raporlama
-- Detaylı grafikler
-- Dışa aktarma
-- Otomatik raporlar
+Plan Limitleri (değişmez):
+- Starter: 3 chat/gün, sınırsız analiz
+- Pro: 5 chat/gün, sınırsız analiz
+- Elite: 10 chat/gün, sınırsız analiz
+```
+
+**1.2 - `src/services/purchaseService.ts` Güncellemesi**
+
+Product ID'ler güncellenecek:
+
+```text
+Yeni Product ID'ler:
+- premium_starter_monthly
+- premium_starter_yearly
+- premium_pro_monthly
+- premium_pro_yearly
+- premium_elite_monthly
+- premium_elite_yearly
+```
+
+**1.3 - Tüm UI Bileşenlerinde İsim Güncellemesi**
+
+- `PremiumUpgrade.tsx`
+- `PremiumGate.tsx`
+- `ChatLimitSheet.tsx`
+- `AnalysisLimitSheet.tsx`
 
 ---
 
-## Değiştirilecek Dosyalar
+### Aşama 2: Backend Edge Functions Güncellemesi
 
-| Dosya | İşlem |
-|-------|-------|
-| `src/pages/Admin.tsx` | Tamamen yeniden yazılacak |
-| `src/components/admin/*` | Yeni bileşenler |
-| `src/hooks/admin/*` | Yeni hook'lar |
-| `supabase/functions/admin-*` | 5 yeni edge function |
-| `supabase/migrations/` | Yeni tablolar |
-| `android/app/build.gradle` | FCM bağımlılıkları |
+**2.1 - `verify-purchase/index.ts` - getPlanType() Fonksiyonu**
+
+Yeni plan mapping:
+
+```text
+productId içerikleri:
+- "premium_starter" → "premium_starter"
+- "premium_pro" → "premium_pro"  
+- "premium_elite" → "premium_elite"
+```
+
+**2.2 - `play-store-webhook/index.ts`**
+
+Plan tipi çözümleme aynı mantıkla güncellenecek.
 
 ---
 
-## Beklenen Sonuç
+### Aşama 3: Native Purchase Plugin Entegrasyonu
 
-| Metrik | Önceki | Sonraki |
-|--------|--------|---------|
-| Admin özellikleri | Sadece cron izleme | Tam yönetim paneli |
-| Kullanıcı yönetimi | Manuel SQL | Arayüz üzerinden |
-| Premium atama | Manuel SQL | Tek tıkla atama |
-| Push bildirim | YOK | Tam destek |
-| İstatistik görselleştirme | YOK | Grafiklerle |
-| Admin aktivite takibi | YOK | Detaylı log |
+**3.1 - purchaseService.ts'de Gerçek Native Flow**
 
+```text
+İş akışı:
+1. Kullanıcı satın al butonuna tıklar
+2. Native plugin ile Google Play ödeme ekranı açılır
+3. Ödeme başarılı olursa purchaseToken alınır
+4. Token backend'e gönderilir (verify-purchase)
+5. Backend Google'dan doğrular
+6. Premium kaydı oluşturulur
+7. Frontend premium durumu günceller
+```
+
+**3.2 - Paket Bağımlılığı**
+
+`@capawesome/capacitor-purchases` veya benzer bir plugin kullanılacak. Bu Capacitor projesinde zaten kurulu değil, documentation'a yönlendirme yapılacak.
+
+---
+
+### Aşama 4: Eksik Secrets Tanımlama
+
+Aşağıdaki secret'ların eklenmesi gerekiyor:
+
+| Secret | Açıklama |
+|--------|----------|
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_KEY` | Google Cloud Console'dan alınan JSON service account key |
+| `GOOGLE_PLAY_PACKAGE_NAME` | `app.golmetrik.android` |
+
+---
+
+### Aşama 5: Veritabanı Tutarlılık Kontrolü
+
+Mevcut `premium_subscriptions` tablosundaki eski `plan_type` değerleri yeni isimlere migrate edilecek:
+
+```text
+Migration:
+- premium_basic → premium_starter
+- premium_plus → premium_pro
+- premium_pro → premium_elite
+```
+
+---
+
+## Dosya Değişiklikleri Özeti
+
+| Dosya | İşlem | Açıklama |
+|-------|-------|----------|
+| `src/constants/accessLevels.ts` | Düzenleme | PlanType enum ve tüm ilgili constant'lar |
+| `src/services/purchaseService.ts` | Düzenleme | Product ID'ler ve plan bilgileri |
+| `src/components/premium/PremiumUpgrade.tsx` | Düzenleme | Plan isimleri ve UI |
+| `src/components/chat/PremiumGate.tsx` | Düzenleme | Plan isimleri |
+| `src/components/chat/ChatLimitSheet.tsx` | Düzenleme | Plan isimleri |
+| `src/components/premium/AnalysisLimitSheet.tsx` | Düzenleme | Plan isimleri |
+| `src/hooks/usePremiumStatus.ts` | Düzenleme | Plan type mapping |
+| `supabase/functions/verify-purchase/index.ts` | Düzenleme | getPlanType() fonksiyonu |
+| `supabase/functions/play-store-webhook/index.ts` | Düzenleme | Plan type çözümleme |
+| Veritabanı migration | Yeni | Eski plan_type değerlerini güncelle |
+
+---
+
+## Güvenlik Kontrolü
+
+### ✅ Mevcut Güvenlik Önlemleri
+- Premium kontrolü backend'de yapılıyor (`verify-purchase`, `ai-chatbot`)
+- RLS politikaları mevcut (`premium_subscriptions` tablosunda)
+- JWT doğrulaması her edge function'da var
+- Günlük limitler `auth.uid()` ile korunuyor
+
+### ⚠️ Ek Kontroller
+- Client tarafında premium durumu ASLA güvenilmez kabul edilecek
+- Her API isteğinde backend'de premium ve limit kontrolü yapılacak
+
+---
+
+## Play Store Uyumluluk Kontrolü
+
+### ✅ Zaten Uyumlu
+- Abonelik otomatik yenileme uyarıları UI'da mevcut
+- İptal yönlendirmesi Google Play Store'a yapılıyor
+- Legal metinler (Kullanım Şartları, Gizlilik Politikası) mevcut
+
+### ✅ Mobil-Only Kontrol
+- "Uygulamayı indir" gibi ifadeler YOK
+- Tüm satın almalar Play Store üzerinden
+
+---
+
+## Sonraki Adımlar
+
+1. **Secret'ları ekle** - `GOOGLE_PLAY_SERVICE_ACCOUNT_KEY` ve `GOOGLE_PLAY_PACKAGE_NAME`
+2. **Kod değişikliklerini uygula** - Plan isimleri ve ID'ler
+3. **Veritabanı migration** - Eski plan_type değerlerini güncelle
+4. **Native plugin kurulumu** - Capacitor projesinde satın alma eklentisi
+5. **Test** - APK build alıp gerçek cihazda test
