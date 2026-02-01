@@ -760,6 +760,13 @@ export type Database = {
             referencedRelation: "predictions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "prediction_features_prediction_id_fkey"
+            columns: ["prediction_id"]
+            isOneToOne: false
+            referencedRelation: "public_predictions"
+            referencedColumns: ["id"]
+          },
         ]
       }
       predictions: {
@@ -982,6 +989,63 @@ export type Database = {
         }
         Relationships: []
       }
+      public_predictions: {
+        Row: {
+          actual_result: string | null
+          away_score: number | null
+          away_team: string | null
+          confidence: string | null
+          created_at: string | null
+          home_score: number | null
+          home_team: string | null
+          id: string | null
+          is_correct: boolean | null
+          is_premium: boolean | null
+          is_primary: boolean | null
+          league: string | null
+          match_date: string | null
+          prediction_type: string | null
+          prediction_value: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          actual_result?: string | null
+          away_score?: number | null
+          away_team?: string | null
+          confidence?: string | null
+          created_at?: string | null
+          home_score?: number | null
+          home_team?: string | null
+          id?: string | null
+          is_correct?: boolean | null
+          is_premium?: boolean | null
+          is_primary?: boolean | null
+          league?: string | null
+          match_date?: string | null
+          prediction_type?: string | null
+          prediction_value?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          actual_result?: string | null
+          away_score?: number | null
+          away_team?: string | null
+          confidence?: string | null
+          created_at?: string | null
+          home_score?: number | null
+          home_team?: string | null
+          id?: string | null
+          is_correct?: boolean | null
+          is_premium?: boolean | null
+          is_primary?: boolean | null
+          league?: string | null
+          match_date?: string | null
+          prediction_type?: string | null
+          prediction_value?: string | null
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cleanup_old_analysis_usage: { Args: never; Returns: undefined }
@@ -991,8 +1055,12 @@ export type Database = {
       cleanup_old_chatbot_usage: { Args: never; Returns: undefined }
       cleanup_old_features: { Args: never; Returns: undefined }
       cleanup_old_predictions: { Args: never; Returns: undefined }
-      get_daily_analysis_usage: { Args: { p_user_id: string }; Returns: number }
-      get_daily_usage: { Args: { p_user_id: string }; Returns: number }
+      get_daily_analysis_usage:
+        | { Args: never; Returns: number }
+        | { Args: { p_user_id: string }; Returns: number }
+      get_daily_usage:
+        | { Args: never; Returns: number }
+        | { Args: { p_user_id: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1000,9 +1068,15 @@ export type Database = {
         }
         Returns: boolean
       }
-      increment_analysis_usage: { Args: { p_user_id: string }; Returns: number }
-      increment_chatbot_usage: { Args: { p_user_id: string }; Returns: number }
-      is_premium_user: { Args: { p_user_id: string }; Returns: boolean }
+      increment_analysis_usage:
+        | { Args: never; Returns: number }
+        | { Args: { p_user_id: string }; Returns: number }
+      increment_chatbot_usage:
+        | { Args: never; Returns: number }
+        | { Args: { p_user_id: string }; Returns: number }
+      is_premium_user:
+        | { Args: never; Returns: boolean }
+        | { Args: { p_user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "vip"
