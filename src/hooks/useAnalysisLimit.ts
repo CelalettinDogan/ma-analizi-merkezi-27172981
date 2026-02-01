@@ -42,9 +42,7 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
     }
 
     try {
-      const { data, error } = await supabase.rpc('get_daily_analysis_usage', {
-        p_user_id: user.id
-      });
+      const { data, error } = await supabase.rpc('get_daily_analysis_usage');
 
       if (error) {
         console.error('Error fetching analysis usage:', error);
@@ -75,9 +73,7 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
     }
 
     try {
-      const { data, error } = await supabase.rpc('increment_analysis_usage', {
-        p_user_id: user.id
-      });
+      const { data, error } = await supabase.rpc('increment_analysis_usage');
 
       if (error) {
         console.error('Error incrementing analysis usage:', error);

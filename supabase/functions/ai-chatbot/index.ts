@@ -910,7 +910,7 @@ serve(async (req) => {
       
       // Only increment usage for non-admin users
       if (!isAdmin) {
-        await supabaseAdmin.rpc("increment_chatbot_usage", { p_user_id: userId });
+        await supabaseAdmin.rpc("increment_chatbot_usage");
       }
       
       await supabaseAdmin.from("chat_history").insert([
@@ -1138,9 +1138,7 @@ serve(async (req) => {
     // Increment usage count (skip for admin users)
     let newUsageCount = currentUsage;
     if (!isAdmin) {
-      const { data: newUsageData } = await supabaseAdmin.rpc("increment_chatbot_usage", {
-        p_user_id: userId
-      });
+      const { data: newUsageData } = await supabaseAdmin.rpc("increment_chatbot_usage");
       newUsageCount = newUsageData ?? currentUsage + 1;
     }
     
