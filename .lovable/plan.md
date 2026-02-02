@@ -1,185 +1,118 @@
 
-# Google Play Billing Entegrasyonu ve Backend Premium Yetkilendirme Planı
+# Hesap Silme Bağlantısı Ekleme Planı
 
-## Mevcut Durum Analizi
+## Google Play Store Gereksinimi
+Google Play Store, uygulamaların kullanıcıların hesap ve veri silme taleplerini yapabilecekleri bir web bağlantısı sağlamasını zorunlu kılıyor. Bu bağlantı Play Console'a girilecek.
 
-### ✅ Zaten Mevcut Olanlar
-| Bileşen | Durum | Açıklama |
-|---------|-------|----------|
-| `premium_subscriptions` tablosu | ✅ Mevcut | Google Play alanları (purchase_token, order_id, product_id, auto_renewing, purchase_state, acknowledged) mevcut |
-| `verify-purchase` Edge Function | ✅ Mevcut | Google Play Developer API ile token doğrulama, acknowledge, DB kayıt |
-| `play-store-webhook` Edge Function | ✅ Mevcut | RTDN (Real-Time Developer Notifications) desteği |
-| Erişim seviyeleri | ✅ Mevcut | `accessLevels.ts` - Free: 2 analiz, 0 chat / Basic: 3 chat / Plus: 5 chat / Pro: 10 chat |
-| UI Bileşenleri | ✅ Mevcut | PremiumUpgrade, PremiumGate, ChatLimitSheet, AnalysisLimitSheet |
-| Limit takibi | ✅ Mevcut | `chatbot_usage`, `analysis_usage` tabloları ve RPC fonksiyonları |
+## Mevcut Durum
+| Bileşen | Durum |
+|---------|-------|
+| Profil'de "Hesabı Sil" butonu | ✅ Mevcut |
+| delete-account Edge Function | ✅ Mevcut |
+| Privacy sayfasında silme bölümü | ⚠️ Eksik |
+| Ayrı hesap silme sayfası | ❌ Eksik |
 
-### ⚠️ Düzeltilmesi Gereken Noktalar
+## Yapılacak Değişiklikler
 
-| Sorun | Açıklama |
-|-------|----------|
-| Paket ID uyumsuzluğu | Mevcut: `premium_basic_monthly`, `premium_plus_monthly`, `premium_pro_monthly` → İstenen: `premium_starter_monthly`, `premium_pro_monthly`, `premium_elite_monthly` |
-| Plan isimleri uyumsuzluğu | Mevcut: Basic/Plus/Pro → İstenen: Starter/Pro/Elite |
-| Google Play Service Account | `GOOGLE_PLAY_SERVICE_ACCOUNT_KEY` secret'ı tanımlı değil |
-| Google Play Package Name | `GOOGLE_PLAY_PACKAGE_NAME` secret'ı tanımlı değil |
-| Native purchase eklentisi | purchaseService'de placeholder - gerçek eklenti entegrasyonu gerekli |
+### 1. Yeni Sayfa: `/delete-account`
+Web erişilebilir bir hesap silme talebi sayfası oluşturulacak:
 
----
+- **Giriş yapmış kullanıcılar:** Doğrudan hesap silme işlemi yapabilir
+- **Giriş yapmamış kullanıcılar:** Giriş yapması için yönlendirme
 
-## Uygulama Planı
+Sayfa içeriği:
+- Silme işleminin geri alınamayacağı uyarısı
+- Silinecek veriler listesi (profil, analiz geçmişi, chat geçmişi, abonelikler)
+- "SİL" yazarak onay mekanizması
+- İptal talebi için alternatif (email ile)
 
-### Aşama 1: Paket ID ve İsimlendirme Güncellemesi
-
-**1.1 - `src/constants/accessLevels.ts` Güncellemesi**
-
-Mevcut plan tipleri ve isimleri yeni yapıya dönüştürülecek:
+### 2. Privacy Sayfası Güncellemesi
+"Hesap ve Veri Silme" başlığı altında yeni bölüm:
 
 ```text
-Eski Format → Yeni Format:
-- premium_basic → premium_starter
-- premium_plus → premium_pro  
-- premium_pro → premium_elite
+10. Hesap ve Veri Silme
 
-Plan Limitleri (değişmez):
-- Starter: 3 chat/gün, sınırsız analiz
-- Pro: 5 chat/gün, sınırsız analiz
-- Elite: 10 chat/gün, sınırsız analiz
+Hesabınızı ve tüm ilişkili verilerinizi silmek istiyorsanız:
+
+Yöntem 1 - Uygulama İçi:
+Profil > Ayarlar > Hesabı Sil
+
+Yöntem 2 - Web:
+[Hesap Silme Talebi] sayfasından işlem yapabilirsiniz.
+
+Silme işlemi şunları kapsar:
+- Profil bilgileriniz
+- Analiz geçmişiniz
+- Chat geçmişiniz
+- Premium abonelik kayıtlarınız
+- Tüm kullanım verileri
+
+Not: Premium aboneliğiniz varsa, önce Google Play Store'dan iptal etmeniz önerilir.
 ```
 
-**1.2 - `src/services/purchaseService.ts` Güncellemesi**
-
-Product ID'ler güncellenecek:
-
+### 3. App.tsx Route Ekleme
 ```text
-Yeni Product ID'ler:
-- premium_starter_monthly
-- premium_starter_yearly
-- premium_pro_monthly
-- premium_pro_yearly
-- premium_elite_monthly
-- premium_elite_yearly
+<Route path="/delete-account" element={<DeleteAccount />} />
 ```
 
-**1.3 - Tüm UI Bileşenlerinde İsim Güncellemesi**
-
-- `PremiumUpgrade.tsx`
-- `PremiumGate.tsx`
-- `ChatLimitSheet.tsx`
-- `AnalysisLimitSheet.tsx`
-
----
-
-### Aşama 2: Backend Edge Functions Güncellemesi
-
-**2.1 - `verify-purchase/index.ts` - getPlanType() Fonksiyonu**
-
-Yeni plan mapping:
-
+### 4. Google Play Console URL
+Play Console'a girilecek URL:
 ```text
-productId içerikleri:
-- "premium_starter" → "premium_starter"
-- "premium_pro" → "premium_pro"  
-- "premium_elite" → "premium_elite"
-```
-
-**2.2 - `play-store-webhook/index.ts`**
-
-Plan tipi çözümleme aynı mantıkla güncellenecek.
-
----
-
-### Aşama 3: Native Purchase Plugin Entegrasyonu
-
-**3.1 - purchaseService.ts'de Gerçek Native Flow**
-
-```text
-İş akışı:
-1. Kullanıcı satın al butonuna tıklar
-2. Native plugin ile Google Play ödeme ekranı açılır
-3. Ödeme başarılı olursa purchaseToken alınır
-4. Token backend'e gönderilir (verify-purchase)
-5. Backend Google'dan doğrular
-6. Premium kaydı oluşturulur
-7. Frontend premium durumu günceller
-```
-
-**3.2 - Paket Bağımlılığı**
-
-`@capawesome/capacitor-purchases` veya benzer bir plugin kullanılacak. Bu Capacitor projesinde zaten kurulu değil, documentation'a yönlendirme yapılacak.
-
----
-
-### Aşama 4: Eksik Secrets Tanımlama
-
-Aşağıdaki secret'ların eklenmesi gerekiyor:
-
-| Secret | Açıklama |
-|--------|----------|
-| `GOOGLE_PLAY_SERVICE_ACCOUNT_KEY` | Google Cloud Console'dan alınan JSON service account key |
-| `GOOGLE_PLAY_PACKAGE_NAME` | `app.golmetrik.android` |
-
----
-
-### Aşama 5: Veritabanı Tutarlılık Kontrolü
-
-Mevcut `premium_subscriptions` tablosundaki eski `plan_type` değerleri yeni isimlere migrate edilecek:
-
-```text
-Migration:
-- premium_basic → premium_starter
-- premium_plus → premium_pro
-- premium_pro → premium_elite
+https://[preview-url]/delete-account
 ```
 
 ---
 
-## Dosya Değişiklikleri Özeti
+## Yeni Dosya: `src/pages/DeleteAccount.tsx`
 
-| Dosya | İşlem | Açıklama |
-|-------|-------|----------|
-| `src/constants/accessLevels.ts` | Düzenleme | PlanType enum ve tüm ilgili constant'lar |
-| `src/services/purchaseService.ts` | Düzenleme | Product ID'ler ve plan bilgileri |
-| `src/components/premium/PremiumUpgrade.tsx` | Düzenleme | Plan isimleri ve UI |
-| `src/components/chat/PremiumGate.tsx` | Düzenleme | Plan isimleri |
-| `src/components/chat/ChatLimitSheet.tsx` | Düzenleme | Plan isimleri |
-| `src/components/premium/AnalysisLimitSheet.tsx` | Düzenleme | Plan isimleri |
-| `src/hooks/usePremiumStatus.ts` | Düzenleme | Plan type mapping |
-| `supabase/functions/verify-purchase/index.ts` | Düzenleme | getPlanType() fonksiyonu |
-| `supabase/functions/play-store-webhook/index.ts` | Düzenleme | Plan type çözümleme |
-| Veritabanı migration | Yeni | Eski plan_type değerlerini güncelle |
+Sayfa özellikleri:
+- Mobil uyumlu tasarım
+- Auth kontrolü (giriş gerekli)
+- Mevcut delete-account Edge Function kullanımı
+- GDPR/KVKK uyumlu açıklamalar
+- Onay mekanizması (SİL yazma)
+- Başarı sonrası yönlendirme
 
 ---
 
-## Güvenlik Kontrolü
+## Değiştirilecek Dosyalar
 
-### ✅ Mevcut Güvenlik Önlemleri
-- Premium kontrolü backend'de yapılıyor (`verify-purchase`, `ai-chatbot`)
-- RLS politikaları mevcut (`premium_subscriptions` tablosunda)
-- JWT doğrulaması her edge function'da var
-- Günlük limitler `auth.uid()` ile korunuyor
-
-### ⚠️ Ek Kontroller
-- Client tarafında premium durumu ASLA güvenilmez kabul edilecek
-- Her API isteğinde backend'de premium ve limit kontrolü yapılacak
+| Dosya | İşlem |
+|-------|-------|
+| `src/pages/DeleteAccount.tsx` | Yeni oluştur |
+| `src/pages/Privacy.tsx` | Hesap silme bölümü ekle |
+| `src/App.tsx` | Route ekle |
 
 ---
 
-## Play Store Uyumluluk Kontrolü
+## Güvenlik
 
-### ✅ Zaten Uyumlu
-- Abonelik otomatik yenileme uyarıları UI'da mevcut
-- İptal yönlendirmesi Google Play Store'a yapılıyor
-- Legal metinler (Kullanım Şartları, Gizlilik Politikası) mevcut
-
-### ✅ Mobil-Only Kontrol
-- "Uygulamayı indir" gibi ifadeler YOK
-- Tüm satın almalar Play Store üzerinden
+- Hesap silme işlemi auth token ile korunuyor
+- Edge function service role ile silme yapıyor
+- Kullanıcı onayı zorunlu (SİL yazma)
+- İşlem geri alınamaz
 
 ---
 
-## Sonraki Adımlar
+## Teknik Detaylar
 
-1. **Secret'ları ekle** - `GOOGLE_PLAY_SERVICE_ACCOUNT_KEY` ve `GOOGLE_PLAY_PACKAGE_NAME`
-2. **Kod değişikliklerini uygula** - Plan isimleri ve ID'ler
-3. **Veritabanı migration** - Eski plan_type değerlerini güncelle
-4. **Native plugin kurulumu** - Capacitor projesinde satın alma eklentisi
-5. **Test** - APK build alıp gerçek cihazda test
+### DeleteAccount Sayfası Yapısı
+```text
+DeleteAccount.tsx
+├── Auth kontrolü (useAuth)
+├── Giriş yapılmamışsa → Auth sayfasına yönlendir
+├── Giriş yapılmışsa:
+│   ├── Uyarı kartı (geri alınamaz)
+│   ├── Silinecek veriler listesi
+│   ├── SİL yazma input
+│   ├── Silme butonu
+│   └── İptal butonu
+└── Silme sonrası → Ana sayfaya yönlendir
+```
+
+### Privacy Sayfası Güncellemesi
+Mevcut bölümlere "10. Hesap ve Veri Silme" eklenir:
+- Uygulama içi yöntem açıklaması
+- Web linki
+- Silinecek veriler
+- Abonelik iptali uyarısı
