@@ -9,9 +9,15 @@ const AnalysisSetButton: React.FC = () => {
   const { itemCount, setIsOpen } = useAnalysisSet();
   const isMobile = useIsMobile();
 
+  // Position higher on mobile to avoid BottomNav overlap
   const positionClass = isMobile 
-    ? "fixed bottom-20 right-4 z-50" 
+    ? "fixed bottom-28 right-4 z-40" 
     : "fixed bottom-6 right-6 z-50";
+
+  // Only show when there are items in the set
+  if (itemCount === 0) {
+    return <AnalysisSetDrawer />;
+  }
 
   return (
     <>
@@ -22,11 +28,9 @@ const AnalysisSetButton: React.FC = () => {
       >
         <FileText className="h-5 w-5 mr-2" />
         <span className="font-semibold">Analizler</span>
-        {itemCount > 0 && (
-          <span className="ml-2 bg-secondary text-secondary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
-            {itemCount}
-          </span>
-        )}
+        <span className="ml-2 bg-secondary text-secondary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
+          {itemCount}
+        </span>
       </Button>
       <AnalysisSetDrawer />
     </>

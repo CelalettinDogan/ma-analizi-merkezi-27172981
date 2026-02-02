@@ -7,4 +7,3 @@ export { default as CollapsibleAnalysis } from './CollapsibleAnalysis';
 export { default as AnalysisLoadingState } from './AnalysisLoadingState';
 export { default as TeamComparisonCard } from './TeamComparisonCard';
 export { default as AdvancedAnalysisTabs } from './AdvancedAnalysisTabs';
-export { default as StickyAnalysisCTA } from './StickyAnalysisCTA';
