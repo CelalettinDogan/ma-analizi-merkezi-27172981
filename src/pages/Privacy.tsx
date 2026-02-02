@@ -111,6 +111,44 @@ const Privacy: React.FC = () => {
             <p className="text-muted-foreground">
               Gizlilik ile ilgili sorularınız için info@golmetrik.com adresinden bize ulaşabilirsiniz.
             </p>
+
+            <h2 className="text-lg font-semibold mt-6 mb-3">10. Hesap ve Veri Silme</h2>
+            <p className="text-muted-foreground">
+              Hesabınızı ve tüm ilişkili verilerinizi silmek istiyorsanız aşağıdaki yöntemlerden birini kullanabilirsiniz:
+            </p>
+            
+            <p className="text-muted-foreground mt-3">
+              <strong>Yöntem 1 - Uygulama İçi:</strong><br />
+              Profil → Ayarlar → Hesabı Sil
+            </p>
+            
+            <p className="text-muted-foreground mt-3">
+              <strong>Yöntem 2 - Web:</strong><br />
+              <a 
+                href="/delete-account" 
+                className="text-primary hover:underline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/delete-account');
+                }}
+              >
+                Hesap Silme Talebi
+              </a> sayfasından işlem yapabilirsiniz.
+            </p>
+
+            <p className="text-muted-foreground mt-3">
+              <strong>Silme işlemi şunları kapsar:</strong>
+            </p>
+            <ul className="list-disc list-inside text-muted-foreground space-y-1 mt-2">
+              <li>Profil bilgileriniz</li>
+              <li>Analiz geçmişiniz</li>
+              <li>Chat geçmişiniz</li>
+              <li>Premium abonelik kayıtlarınız</li>
+              <li>Tüm kullanım verileri</li>
+            </ul>
+
+            <p className="text-amber-500 text-sm mt-3">
+              Not: Premium aboneliğiniz varsa, önce Google Play Store'dan iptal etmenizi öneririz.</p>
           </CardContent>
         </Card>
       </div>
