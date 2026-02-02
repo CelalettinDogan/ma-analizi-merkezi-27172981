@@ -30,8 +30,9 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
   const { isAdmin, isPremium } = useAccessLevel();
 
   // Dynamic nav items with badges based on user role
+  // Premium/Admin kullanıcılar için Premium sekmesi GİZLİ
   const navItems = useMemo((): NavItem[] => {
-    const items: NavItem[] = [
+    const baseItems: NavItem[] = [
       { icon: Home, label: 'Ana Sayfa', path: '/' },
       { icon: Zap, label: 'Canlı', path: '/live', badge: 'live' as const },
       { icon: Bot, label: 'AI Asistan', path: '/chat' },
@@ -40,7 +41,12 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
       { icon: User, label: 'Profil', path: '/profile' },
     ];
 
-    return items.map(item => {
+    // Premium veya Admin kullanıcılar için Premium sekmesini filtrele
+    const filteredItems = (isPremium || isAdmin) 
+      ? baseItems.filter(item => item.path !== '/premium')
+      : baseItems;
+
+    return filteredItems.map(item => {
       // Live badge - her zaman göster
       if (item.path === '/live') {
         return item;
@@ -56,12 +62,8 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
         return { ...item, badge: 'premium' as const };
       }
 
-      // Premium tab badge logic
+      // Premium tab badge logic (sadece Free kullanıcılar görecek)
       if (item.path === '/premium') {
-        // Admin: badge yok
-        if (isAdmin) return item;
-        // Premium: active badge göster
-        if (isPremium) return { ...item, badge: 'active' as const };
         // Free: premium badge göster (satış odaklı)
         return { ...item, badge: 'premium' as const };
       }
