@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { 
   Crown, Brain, Ban, History, Check, MessageSquare, Sparkles, Zap,
   Calendar, CreditCard, ExternalLink, Shield, Star, TrendingUp, Users,
-  Lock, Smartphone
+  Lock, Smartphone, BarChart2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -171,20 +171,21 @@ const SocialProofBadge = () => (
   </motion.div>
 );
 
-// Premium Features for Bento Grid
+// Premium Features for Bento Grid - Play Store uyumlu metinler
 const bentoFeatures = [
-  { icon: Brain, label: 'Sınırsız Analiz', description: 'Günlük limit yok', gradient: 'from-emerald-500/20 to-teal-500/10' },
-  { icon: MessageSquare, label: 'AI Asistan', description: 'Günlük mesaj hakkı', gradient: 'from-blue-500/20 to-indigo-500/10' },
-  { icon: Ban, label: 'Reklamsız', description: 'Kesintisiz deneyim', gradient: 'from-purple-500/20 to-pink-500/10' },
-  { icon: History, label: 'Geçmiş', description: 'Tüm analizlere erişim', gradient: 'from-amber-500/20 to-orange-500/10' },
+  { icon: Brain, label: 'Sınırsız Maç Analizi', description: 'Günlük limit yok', gradient: 'from-emerald-500/20 to-teal-500/10' },
+  { icon: BarChart2, label: 'Gelişmiş İstatistikler', description: 'Detaylı veri karşılaştırmaları', gradient: 'from-blue-500/20 to-indigo-500/10' },
+  { icon: MessageSquare, label: 'AI Destekli Yorumlar', description: 'Planına göre günlük limit', gradient: 'from-purple-500/20 to-pink-500/10' },
+  { icon: History, label: 'Analiz Geçmişi', description: 'Tüm analizlere erişim', gradient: 'from-amber-500/20 to-orange-500/10' },
 ];
 
-// Premium Features List
+// Premium Features List - Play Store uyumlu metinler
 const premiumFeatures = [
-  { icon: Brain, label: 'Sınırsız Analiz', description: 'Günlük limit olmadan maç analizi' },
-  { icon: MessageSquare, label: 'AI Asistan', description: 'Planına göre günlük AI mesaj hakkı' },
-  { icon: Ban, label: 'Reklamsız Deneyim', description: 'Kesintisiz, temiz deneyim' },
+  { icon: Brain, label: 'Sınırsız Maç Analizi', description: 'Günlük limit olmadan maç analizi' },
+  { icon: BarChart2, label: 'Gelişmiş İstatistikler', description: 'Detaylı veri karşılaştırmaları' },
+  { icon: MessageSquare, label: 'AI Destekli Yorumlar', description: 'Planına göre günlük AI mesaj hakkı' },
   { icon: History, label: 'Analiz Geçmişi', description: 'Tüm geçmiş analizlerine erişim' },
+  { icon: Ban, label: 'Reklamsız Deneyim', description: 'Kesintisiz, temiz kullanım' },
 ];
 
 // Plan Configurations
@@ -357,235 +358,10 @@ const Premium = () => {
   }
 
   // ============================================
-  // PREMIUM USER DASHBOARD
+  // PREMIUM/ADMIN KULLANICI → PROFİL REDIRECT
   // ============================================
   if (isPremium || isAdmin) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <AppHeader />
-        <main className="flex-1 container mx-auto px-3 sm:px-4 py-4 pb-24 lg:pb-6">
-          <motion.div 
-            initial="hidden" 
-            animate="visible" 
-            variants={containerVariants}
-            className="space-y-3 max-w-lg mx-auto"
-          >
-            {/* Plan Status Hero */}
-            <motion.div variants={itemVariants}>
-              <Card className={`overflow-hidden border-0 ${currentPlanConfig ? `bg-gradient-to-br ${currentPlanConfig.gradient}` : 'bg-gradient-to-br from-primary/20 to-accent/20'}`}>
-                <CardContent className="p-4 sm:p-5">
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <motion.div 
-                      className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br ${currentPlanConfig?.color || 'from-primary to-accent'}`}
-                      animate={{ 
-                        boxShadow: [
-                          '0 0 0 0 rgba(34, 197, 94, 0)',
-                          '0 0 20px 5px rgba(34, 197, 94, 0.3)',
-                          '0 0 0 0 rgba(34, 197, 94, 0)',
-                        ]
-                      }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      <Crown className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                    </motion.div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h1 className="text-lg sm:text-xl font-bold truncate">
-                          {isAdmin ? 'Admin' : planDisplayName}
-                        </h1>
-                        <motion.div
-                          animate={{ scale: [1, 1.05, 1] }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        >
-                          <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-600 border-emerald-500/30 text-[10px] sm:text-xs shrink-0">
-                            <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5" />
-                            Aktif
-                          </Badge>
-                        </motion.div>
-                      </div>
-                      {subscription && daysRemaining !== null && (
-                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 truncate">
-                          {daysRemaining > 30 
-                            ? `${format(new Date(subscription.expires_at), 'd MMM yyyy', { locale: tr })} tarihine kadar`
-                            : `${daysRemaining} gün kaldı`
-                          }
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Usage Stats */}
-            {canUseAIChat && !isAdmin && (
-              <motion.div variants={itemVariants}>
-                <Card className="glass-card">
-                  <CardHeader className="p-3 sm:p-4 pb-2">
-                    <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-                      <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                      Günlük AI Asistan
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-3 sm:p-4 pt-0">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs sm:text-sm">
-                        <span className="text-muted-foreground">Kullanılan</span>
-                        <span className="font-semibold text-base sm:text-lg">
-                          {dailyChatLimit - chatRemaining} / {dailyChatLimit}
-                        </span>
-                      </div>
-                      <div className="relative">
-                        <Progress 
-                          value={chatUsagePercent} 
-                          className={`h-2.5 sm:h-3 ${
-                            chatUsagePercent > 80 ? '[&>div]:bg-red-500' : 
-                            chatUsagePercent > 50 ? '[&>div]:bg-amber-500' : ''
-                          }`} 
-                        />
-                      </div>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">
-                        Her gece yarısı sıfırlanır
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* Plan Benefits - Compact Grid */}
-            <motion.div variants={itemVariants}>
-              <Card className="glass-card">
-                <CardHeader className="p-3 sm:p-4 pb-2">
-                  <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                    Plan Avantajları
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 sm:p-4 pt-0">
-                  <div className="grid grid-cols-2 gap-2">
-                    {bentoFeatures.map((feature, index) => (
-                      <motion.div
-                        key={index}
-                        whileHover={{ scale: 1.02 }}
-                        className={`flex items-start gap-2 p-2.5 sm:p-3 rounded-xl bg-gradient-to-br ${feature.gradient} border border-border/50`}
-                      >
-                        <div className="p-1.5 sm:p-2 rounded-lg bg-background/50 shrink-0">
-                          <feature.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-medium text-[10px] sm:text-xs truncate">{feature.label}</p>
-                          <p className="text-[9px] sm:text-[10px] text-muted-foreground leading-tight">{feature.description}</p>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Subscription Details */}
-            {subscription && (
-              <motion.div variants={itemVariants}>
-                <Card className="glass-card">
-                  <CardHeader className="p-3 sm:p-4 pb-2">
-                    <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-                      <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                      Abonelik Bilgileri
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-3 sm:p-4 pt-0 space-y-2">
-                    <div className="flex items-center justify-between py-1.5 sm:py-2 border-b border-border/50">
-                      <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
-                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                        <span className="hidden xs:inline">Başlangıç</span>
-                        <span className="xs:hidden">Başlangıç</span>
-                      </div>
-                      <span className="text-xs sm:text-sm font-medium">
-                        {format(new Date(subscription.starts_at), 'd MMM yyyy', { locale: tr })}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between py-1.5 sm:py-2 border-b border-border/50">
-                      <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
-                        <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
-                        Yenileme
-                      </div>
-                      <span className="text-xs sm:text-sm font-medium">
-                        {format(new Date(subscription.expires_at), 'd MMM yyyy', { locale: tr })}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between py-1.5 sm:py-2">
-                      <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
-                        <Shield className="w-3 h-3 sm:w-4 sm:h-4" />
-                        Durum
-                      </div>
-                      <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-600 text-[10px] sm:text-xs">
-                        Otomatik Yenileme
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* Manage Subscription Button */}
-            {!isAdmin && (
-              <motion.div variants={itemVariants}>
-                <Button
-                  onClick={handleManageSubscription}
-                  variant="outline"
-                  className="w-full gap-2 h-10 sm:h-11 text-xs sm:text-sm"
-                >
-                  <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  Google Play Aboneliklerini Yönet
-                </Button>
-              </motion.div>
-            )}
-
-            {/* Upgrade Option */}
-            {planType !== 'premium_pro' && !isAdmin && (
-              <motion.div variants={itemVariants}>
-                <Card className="glass-card border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5 overflow-hidden">
-                  <CardContent className="p-3 sm:p-4 relative">
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
-                      animate={{ x: ['-100%', '100%'] }}
-                      transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
-                    />
-                    <div className="flex items-center gap-3 relative">
-                      <motion.div 
-                        className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 shrink-0"
-                        animate={{ rotate: [0, -5, 5, 0] }}
-                        transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                      >
-                        <Star className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                      </motion.div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm sm:text-base">Pro'ya Yükselt</h3>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                          10 AI mesajı/gün + tüm özellikler
-                        </p>
-                      </div>
-                      <Button size="sm" onClick={() => setSelectedPlan('premium_pro')} className="shrink-0 text-xs h-8 px-3">
-                        Yükselt
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* Legal Notice */}
-            <motion.div variants={itemVariants} className="text-center pb-2">
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-                Aboneliğinizi Google Play &gt; Abonelikler'den yönetebilirsiniz.
-              </p>
-            </motion.div>
-          </motion.div>
-        </main>
-        <BottomNav />
-      </div>
-    );
+    return <Navigate to="/profile" replace />;
   }
 
   // ============================================
@@ -612,7 +388,7 @@ const Premium = () => {
                 GolMetrik Premium
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground px-4">
-                Kazanma şansını artır, sınırsız analize eriş
+                Veriye dayalı maç içgörüleri, gelişmiş istatistik karşılaştırmaları
               </p>
             </div>
             
@@ -725,17 +501,30 @@ const Premium = () => {
                   
                   <p className="font-semibold text-[10px] xs:text-xs sm:text-sm">{plan.name}</p>
                   
-                  <p className="text-sm xs:text-base sm:text-xl font-bold text-primary mt-0.5 sm:mt-1">
-                    ₺{displayPrice}
-                  </p>
-                  <p className="text-[8px] xs:text-[9px] sm:text-[10px] text-muted-foreground">
-                    {isYearly ? '/yıl' : '/ay'}
-                  </p>
+                  {/* Yıllık odaklı fiyatlandırma */}
+                  {isYearly ? (
+                    <>
+                      <p className="text-sm xs:text-base sm:text-xl font-bold text-primary mt-0.5 sm:mt-1">
+                        ₺{displayPrice}
+                      </p>
+                      <p className="text-[8px] xs:text-[9px] sm:text-[10px] text-muted-foreground">/yıl</p>
+                      <p className="text-[7px] xs:text-[8px] sm:text-[9px] text-emerald-500 font-medium">
+                        Aylık ₺{Math.round(displayPrice / 12)}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm xs:text-base sm:text-xl font-bold text-primary mt-0.5 sm:mt-1">
+                        ₺{displayPrice}
+                      </p>
+                      <p className="text-[8px] xs:text-[9px] sm:text-[10px] text-muted-foreground">/ay</p>
+                    </>
+                  )}
                   
                   <div className="flex items-center justify-center gap-0.5 sm:gap-1 mt-1 xs:mt-1.5 sm:mt-2">
                     <MessageSquare className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-muted-foreground" />
                     <span className="text-[8px] xs:text-[9px] sm:text-[11px] text-muted-foreground">
-                      {plan.chatLimit}/gün
+                      {plan.chatLimit} AI/gün
                     </span>
                   </div>
                   
@@ -876,7 +665,7 @@ const Premium = () => {
               ) : (
                 <span className="flex items-center gap-2 relative">
                   <Crown className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Premium Yolculuğuna Başla
+                  Google Play ile Premium Ol
                 </span>
               )}
             </Button>
