@@ -14,15 +14,16 @@ interface NavItem {
 }
 
 /**
- * Bottom Navigation Bar
+ * Bottom Navigation Bar (6 items)
  * 
- * Navigation Order: Ana Sayfa | Canlı | AI Asistan | Premium | Profil
+ * Navigation Order: Ana Sayfa | Canlı | AI Asistan | Sıralama | Premium | Profil
  * 
  * Badge Logic:
  * - Admin: Hiç badge gösterme
  * - Premium: Premium sekmesinde 'active' badge, AI Asistan badge yok
  * - Free: AI Asistan'da premium badge, Premium sekmesinde premium badge
  * - Live: Her zaman live badge göster
+ * - Sıralama: Badge yok
  */
 const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(({ onSearchClick }, ref) => {
   const location = useLocation();
@@ -34,6 +35,7 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
       { icon: Home, label: 'Ana Sayfa', path: '/' },
       { icon: Zap, label: 'Canlı', path: '/live', badge: 'live' as const },
       { icon: Bot, label: 'AI Asistan', path: '/chat' },
+      { icon: Trophy, label: 'Sıralama', path: '/standings' },
       { icon: Crown, label: 'Premium', path: '/premium' },
       { icon: User, label: 'Profil', path: '/profile' },
     ];
@@ -98,9 +100,9 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                 aria-label={item.label}
                 aria-current={isActive ? 'page' : undefined}
                 className={cn(
-                  "relative flex flex-col items-center justify-center gap-1 py-2 px-4",
-                  "min-w-[64px] min-h-[52px]", // WCAG touch target: 48px minimum
-                  "touch-manipulation rounded-xl transition-all duration-200",
+                  "relative flex flex-col items-center justify-center gap-0.5 py-1.5 px-2",
+                  "min-w-[56px] min-h-[48px]", // WCAG touch target for 6 items
+                  "touch-manipulation rounded-lg transition-all duration-200",
                   isActive && "scale-105"
                 )}
               >
