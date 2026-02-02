@@ -21,6 +21,7 @@ import Chat from "./pages/Chat";
 import AnalysisHistory from "./pages/AnalysisHistory";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import DeleteAccount from "./pages/DeleteAccount";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const AppContent = () => {
           <Route path="/analysis-history" element={<AnalysisHistory />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/delete-account" element={<DeleteAccount />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
