@@ -268,9 +268,9 @@ const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ onQuickPrompt }) => {
   );
 };
 
-// History loading skeleton
-const HistoryLoadingSkeleton: React.FC = () => (
-  <div className="py-4 space-y-4">
+// History loading skeleton - forwardRef for AnimatePresence compatibility
+const HistoryLoadingSkeleton = React.forwardRef<HTMLDivElement>((_, ref) => (
+  <div ref={ref} className="py-4 space-y-4">
     {[1, 2, 3].map((i) => (
       <div key={i} className="flex gap-3 p-4 animate-pulse">
         <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0" />
@@ -281,7 +281,8 @@ const HistoryLoadingSkeleton: React.FC = () => (
       </div>
     ))}
   </div>
-);
+));
+HistoryLoadingSkeleton.displayName = 'HistoryLoadingSkeleton';
 
 // New message scroll indicator
 const ScrollToBottomButton: React.FC<{ onClick: () => void; visible: boolean }> = ({ onClick, visible }) => (

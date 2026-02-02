@@ -79,7 +79,7 @@ const StickyAnalysisCTA: React.FC<StickyAnalysisCTAProps> = ({
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 100, opacity: 0 }}
-      className="fixed bottom-20 md:bottom-4 left-0 right-0 z-40 px-4"
+      className="fixed bottom-[5.5rem] md:bottom-4 left-0 right-0 z-40 px-4"
     >
       <div className="max-w-lg mx-auto">
         <div className="bg-card/95 backdrop-blur-lg border border-border rounded-2xl shadow-xl p-3">
