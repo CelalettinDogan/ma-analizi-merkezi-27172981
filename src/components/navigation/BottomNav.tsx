@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Zap, Bot, Trophy, User } from 'lucide-react';
+import { Home, Zap, Bot, Crown, Trophy, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useAccessLevel } from '@/hooks/useAccessLevel';
@@ -10,40 +10,38 @@ interface NavItem {
   label: string;
   path: string;
   isAction?: boolean;
-  badge?: 'premium' | 'live';
-}
-
-const baseNavItems: Omit<NavItem, 'badge'>[] = [
-  { icon: Home, label: 'Ana Sayfa', path: '/' },
-  { icon: Zap, label: 'Canlı', path: '/live' },
-  { icon: Bot, label: 'AI Asistan', path: '/chat' },
-  { icon: Trophy, label: 'Sıralama', path: '/standings' },
-  { icon: User, label: 'Profil', path: '/profile' },
-];
-
-interface BottomNavProps {
-  onSearchClick?: () => void;
+  badge?: 'premium' | 'live' | 'active';
 }
 
 /**
  * Bottom Navigation Bar
  * 
+ * Navigation Order: Ana Sayfa | Canlı | AI Asistan | Premium | Profil
+ * 
  * Badge Logic:
  * - Admin: Hiç badge gösterme
- * - Premium: AI Asistan badge gösterme (zaten erişimi var)
- * - Free: AI Asistan'da premium badge göster
+ * - Premium: Premium sekmesinde 'active' badge, AI Asistan badge yok
+ * - Free: AI Asistan'da premium badge, Premium sekmesinde premium badge
  * - Live: Her zaman live badge göster
  */
-const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(({ onSearchClick }, ref) => {
+const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(({ onSearchClick }, ref) => {
   const location = useLocation();
   const { isAdmin, isPremium } = useAccessLevel();
 
   // Dynamic nav items with badges based on user role
   const navItems = useMemo((): NavItem[] => {
-    return baseNavItems.map(item => {
+    const items: NavItem[] = [
+      { icon: Home, label: 'Ana Sayfa', path: '/' },
+      { icon: Zap, label: 'Canlı', path: '/live', badge: 'live' as const },
+      { icon: Bot, label: 'AI Asistan', path: '/chat' },
+      { icon: Crown, label: 'Premium', path: '/premium' },
+      { icon: User, label: 'Profil', path: '/profile' },
+    ];
+
+    return items.map(item => {
       // Live badge - her zaman göster
       if (item.path === '/live') {
-        return { ...item, badge: 'live' as const };
+        return item;
       }
       
       // AI Asistan badge logic
@@ -53,6 +51,16 @@ const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(({ onSearchClick
         // Premium: badge yok (zaten erişimi var)
         if (isPremium) return item;
         // Free: premium badge göster
+        return { ...item, badge: 'premium' as const };
+      }
+
+      // Premium tab badge logic
+      if (item.path === '/premium') {
+        // Admin: badge yok
+        if (isAdmin) return item;
+        // Premium: active badge göster
+        if (isPremium) return { ...item, badge: 'active' as const };
+        // Free: premium badge göster (satış odaklı)
         return { ...item, badge: 'premium' as const };
       }
       
@@ -119,6 +127,9 @@ const BottomNav = React.forwardRef<HTMLElement, BottomNavProps>(({ onSearchClick
                     <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-sm">
                       <span className="text-[7px] text-white font-bold">★</span>
                     </span>
+                  )}
+                  {item.badge === 'active' && (
+                    <span className="absolute -top-0.5 -right-1 w-2 h-2 bg-emerald-500 rounded-full" />
                   )}
                 </div>
                 <span className={cn(

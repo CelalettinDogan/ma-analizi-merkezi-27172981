@@ -29,7 +29,6 @@ import { useTheme } from 'next-themes';
 import AppHeader from '@/components/layout/AppHeader';
 import AppFooter from '@/components/layout/AppFooter';
 import BottomNav from '@/components/navigation/BottomNav';
-import { PremiumUpgrade } from '@/components/premium/PremiumUpgrade';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -60,7 +59,6 @@ const Profile = () => {
     dailyChatLimit,
     hasUnlimitedAnalyses,
     canUseAIChat,
-    shouldShowPurchaseCTA,
     isAdmin
   } = useAccessLevel();
   
@@ -351,22 +349,6 @@ const Profile = () => {
                       </div>
                     </div>
                   </div>
-
-                  {/* Premium CTA for Free Users */}
-                  {shouldShowPurchaseCTA && (
-                    <Button 
-                      className="w-full gap-2"
-                      onClick={() => {
-                        document.getElementById('premium-section')?.scrollIntoView({ 
-                          behavior: 'smooth' 
-                        });
-                      }}
-                    >
-                      <Crown className="w-4 h-4" />
-                      Premium'a Geç
-                      <ChevronRight className="w-4 h-4 ml-auto" />
-                    </Button>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -568,13 +550,6 @@ const Profile = () => {
             </Card>
           </motion.div>
 
-          {/* Premium - Only for non-premium users */}
-          {shouldShowPurchaseCTA && (
-            <motion.div id="premium-section" variants={itemVariants}>
-              <PremiumUpgrade />
-            </motion.div>
-          )}
-
           {/* Settings - Enhanced */}
           <motion.div variants={itemVariants}>
             <Card className="glass-card">
@@ -625,24 +600,6 @@ const Profile = () => {
                   </span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
-
-                {/* Premium Packages - Only for non-premium */}
-                {shouldShowPurchaseCTA && (
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-between h-11" 
-                    onClick={() => {
-                      const premiumSection = document.getElementById('premium-section');
-                      premiumSection?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                  >
-                    <span className="flex items-center gap-3">
-                      <Crown className="h-4 w-4 text-amber-500" />
-                      Premium Paketleri Gör
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                )}
 
                 {/* Delete Account */}
                 <Button 

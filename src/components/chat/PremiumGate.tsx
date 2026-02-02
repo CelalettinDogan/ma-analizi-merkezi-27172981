@@ -77,7 +77,7 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' 
   const IconComponent = content.icon;
 
   const handleUpgrade = () => {
-    navigate('/profile', { state: { openPremium: true } });
+    navigate('/premium');
   };
 
   return (
