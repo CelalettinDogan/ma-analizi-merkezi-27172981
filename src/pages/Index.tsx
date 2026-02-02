@@ -25,7 +25,6 @@ import {
   AnalysisLoadingState,
   TeamComparisonCard,
   AdvancedAnalysisTabs,
-  StickyAnalysisCTA,
 } from '@/components/analysis';
 import { MatchInput, Prediction } from '@/types/match';
 import { Match as ApiMatch, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
@@ -276,7 +275,7 @@ const Index: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-8">
+    <div className="min-h-screen bg-background pb-24 md:pb-8">
       {/* Header */}
       <AppHeader rightContent={searchButton} />
 
@@ -387,7 +386,7 @@ const Index: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-6 pb-32"
+              className="space-y-6 pb-24"
               style={{ scrollMarginTop: '80px' }}
             >
               {/* Match Hero Card - Team vs Team Header */}
@@ -405,7 +404,6 @@ const Index: React.FC = () => {
                 <AIRecommendationCard 
                   predictions={analysis.predictions} 
                   matchInput={analysis.input}
-                  fullAnalysis={analysis}
                 />
                 <div className="space-y-4">
                   <div className="p-4 rounded-xl bg-card border border-border">
@@ -445,19 +443,6 @@ const Index: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Sticky CTA - Shows when analysis is visible */}
-        <AnimatePresence>
-          {analysis && !analysisLoading && analysis.predictions.length > 0 && (
-            <StickyAnalysisCTA
-              prediction={[...analysis.predictions].sort((a, b) => {
-                const aHybrid = ((a.aiConfidence || 0) + (a.mathConfidence || 0)) / 2;
-                const bHybrid = ((b.aiConfidence || 0) + (b.mathConfidence || 0)) / 2;
-                return bHybrid - aHybrid;
-              })[0]}
-              matchInput={analysis.input}
-            />
-          )}
-        </AnimatePresence>
       </main>
 
       {/* Footer */}

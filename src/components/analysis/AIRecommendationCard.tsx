@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Plus, Star, AlertTriangle, Info, ChevronDown, Bot } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { Prediction, MatchInput, MatchAnalysis } from '@/types/match';
+import { Sparkles, Plus, Star, AlertTriangle, Info, ChevronDown } from 'lucide-react';
+import { Prediction, MatchInput } from '@/types/match';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useAnalysisSet } from '@/contexts/AnalysisSetContext';
-import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { cn } from '@/lib/utils';
 import ShareCard from '@/components/ShareCard';
 import { formatMatchDate } from '@/lib/utils';
@@ -15,7 +13,6 @@ import { CONFIDENCE_THRESHOLDS } from '@/constants/predictions';
 interface AIRecommendationCardProps {
   predictions: Prediction[];
   matchInput: MatchInput;
-  fullAnalysis?: MatchAnalysis;
 }
 
 // Helper to calculate hybrid confidence value
@@ -39,10 +36,8 @@ const confidenceConfig = {
   'düşük': { icon: AlertTriangle, label: 'Düşük Güven', color: 'text-muted-foreground', bg: 'bg-muted' },
 };
 
-const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions, matchInput, fullAnalysis }) => {
-  const navigate = useNavigate();
+const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions, matchInput }) => {
   const { addToSet, items } = useAnalysisSet();
-  const { isPremium } = usePremiumStatus();
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showFullReasoning, setShowFullReasoning] = useState(false);
   
@@ -177,8 +172,8 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
           )}
         </AnimatePresence>
 
-        {/* Action Buttons */}
-        <div className="flex gap-2">
+        {/* Action Buttons - Simplified with single CTA */}
+        <div className="flex items-center gap-2">
           <Button 
             onClick={handleAddToSetClick}
             disabled={isInSet}
@@ -202,22 +197,7 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
             )}
           </Button>
 
-          {/* AI Chat Button - Only for Premium */}
-          {fullAnalysis && (
-            <Button
-              variant="outline"
-              onClick={() => navigate('/chat', { state: { matchAnalysis: fullAnalysis } })}
-              className={cn(
-                "gap-2 border-primary/30 hover:bg-primary/10",
-                !isPremium && "opacity-50"
-              )}
-              title={isPremium ? "AI ile bu maçı analiz et" : "Premium özellik"}
-            >
-              <Bot className="w-4 h-4" />
-              <span className="hidden sm:inline">AI'a Sor</span>
-            </Button>
-          )}
-
+          {/* Share Icon - Compact */}
           <ShareCard
             homeTeam={matchInput.homeTeam}
             awayTeam={matchInput.awayTeam}
