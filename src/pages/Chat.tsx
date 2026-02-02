@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Trash2, Bot, Info, Crown, Sparkles, Star, MoreVertical } from 'lucide-react';
+import { ArrowLeft, Trash2, Bot, Crown, Sparkles, Star, MoreVertical, X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -211,113 +211,105 @@ const Chat: React.FC = () => {
         dailyLimit={dailyChatLimit}
       />
 
-      {/* Header */}
+      {/* Minimal Header */}
       <motion.header
         {...fadeInUp}
         className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 pt-safe"
       >
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between px-3 py-2.5">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate(-1)}
-              className="rounded-full"
+              className="rounded-full w-8 h-8"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
             </Button>
             
-            {/* Bot Avatar with Online Status */}
-            <div className="flex items-center gap-2.5">
+            {/* Compact Bot Avatar + Title */}
+            <div className="flex items-center gap-2">
               <div className="relative">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                  <Bot className="w-4.5 h-4.5 text-white" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/20">
+                  <Bot className="w-4 h-4 text-white" />
                 </div>
                 {/* Online indicator */}
-                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-background">
-                  <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-75" />
-                </span>
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-background" />
               </div>
               
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="font-semibold text-sm">Gol Asistan</h1>
-                  {isAdmin && (
-                    <Badge variant="secondary" className="text-[10px] h-5 bg-amber-500/20 text-amber-600 border-0">
-                      <Crown className="w-3 h-3 mr-1" />
-                      Admin
-                    </Badge>
-                  )}
-                  {isPremiumPro && !isAdmin && (
-                    <Badge variant="secondary" className="text-[10px] h-5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600 border-0">
-                      <Star className="w-3 h-3 mr-1" />
-                      Pro
-                    </Badge>
-                  )}
-                  {isPremiumPlus && !isAdmin && (
-                    <Badge variant="secondary" className="text-[10px] h-5 bg-primary/20 text-primary border-0">
-                      <Sparkles className="w-3 h-3 mr-1" />
-                      Plus
-                    </Badge>
-                  )}
-                  {isPremiumBasic && !isAdmin && (
-                    <Badge variant="secondary" className="text-[10px] h-5 bg-emerald-500/20 text-emerald-600 border-0">
-                      Basic
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <p className="text-[10px] text-muted-foreground">
-                    {chatLoading ? (
-                      <motion.span
-                        animate={{ opacity: [1, 0.5, 1] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                      >
-                        Yazıyor...
-                      </motion.span>
-                    ) : (
-                      "Çevrimiçi"
-                    )}
-                  </p>
-                </div>
+              <div className="flex items-center gap-1.5">
+                <h1 className="font-semibold text-sm">Gol Asistan</h1>
+                {isAdmin && (
+                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5 bg-amber-500/20 text-amber-600 border-0">
+                    <Crown className="w-2.5 h-2.5 mr-0.5" />
+                    Admin
+                  </Badge>
+                )}
+                {isPremiumPro && !isAdmin && (
+                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600 border-0">
+                    <Star className="w-2.5 h-2.5 mr-0.5" />
+                    Pro
+                  </Badge>
+                )}
+                {isPremiumPlus && !isAdmin && (
+                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5 bg-primary/20 text-primary border-0">
+                    <Sparkles className="w-2.5 h-2.5 mr-0.5" />
+                    Plus
+                  </Badge>
+                )}
+                {isPremiumBasic && !isAdmin && (
+                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5 bg-emerald-500/20 text-emerald-600 border-0">
+                    Basic
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Actions */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full"
+          {/* Status + Actions */}
+          <div className="flex items-center gap-1">
+            {chatLoading && (
+              <motion.span
+                animate={{ opacity: [1, 0.5, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="text-[10px] text-emerald-500 font-medium mr-1"
               >
-                <MoreVertical className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem 
-                onClick={handleClearMessages}
-                disabled={messages.length === 0}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Sohbeti Temizle
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                Yazıyor...
+              </motion.span>
+            )}
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full w-8 h-8"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem 
+                  onClick={handleClearMessages}
+                  disabled={messages.length === 0}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Sohbeti Temizle
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
-        {/* Match Context Banner */}
+        {/* Minimal Match Context Banner */}
         {matchContext && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="px-4 pb-3"
+            className="px-3 pb-2"
           >
-            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-primary/10 border border-primary/20">
-              <Info className="w-4 h-4 text-primary shrink-0" />
+            <div className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-card border-l-2 border-l-primary border border-border/50">
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium truncate">
                   {matchContext.homeTeam} vs {matchContext.awayTeam}
@@ -326,14 +318,14 @@ const Chat: React.FC = () => {
               </div>
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => {
                   setMatchContext(null);
                   setContextSent(false);
                 }}
-                className="text-xs h-7 px-2"
+                className="h-6 w-6 rounded-full"
               >
-                Kaldır
+                <X className="w-3 h-3" />
               </Button>
             </div>
           </motion.div>
@@ -349,7 +341,7 @@ const Chat: React.FC = () => {
           onQuickPrompt={handleSendMessage}
         />
         
-        {/* Usage meter for Premium users (not admin) */}
+        {/* Compact Usage meter for Premium users (not admin) */}
         {!isAdmin && usage && dailyChatLimit < 999 && (
           <UsageMeter current={usage.current} limit={usage.limit} isAdmin={false} />
         )}

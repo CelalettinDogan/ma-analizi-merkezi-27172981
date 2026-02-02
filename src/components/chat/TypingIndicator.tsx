@@ -8,7 +8,7 @@ interface TypingIndicatorProps {
 
 const TypingIndicator: React.FC<TypingIndicatorProps> = ({ className }) => {
   const [statusIndex, setStatusIndex] = useState(0);
-  const statuses = ["Düşünüyor", "Analiz yapıyor", "Yanıt hazırlanıyor"];
+  const statuses = ["Düşünüyor", "Analiz yapıyor", "Hazırlanıyor"];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -19,55 +19,46 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ className }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-      className={`flex gap-3 p-4 ${className}`}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      className={`flex gap-2.5 px-3 py-2 ${className}`}
     >
-      {/* Avatar */}
-      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-        <Bot className="w-4 h-4 text-white" />
+      {/* Compact Avatar */}
+      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/15">
+        <Bot className="w-3.5 h-3.5 text-white" />
       </div>
 
-      {/* Typing bubble */}
+      {/* Typing bubble - minimal */}
       <motion.div 
-        className="flex items-center gap-3 px-4 py-3 rounded-2xl rounded-tl-sm bg-card/80 backdrop-blur-xl border border-border/50 shadow-sm"
-        animate={{ 
-          boxShadow: [
-            '0 0 0 0 hsl(var(--primary) / 0)',
-            '0 0 0 4px hsl(var(--primary) / 0.1)',
-            '0 0 0 0 hsl(var(--primary) / 0)'
-          ]
-        }}
-        transition={{ duration: 2, repeat: Infinity }}
+        className="flex items-center gap-2 px-3 py-2 rounded-2xl rounded-tl-sm bg-card/70 backdrop-blur-lg border border-border/40"
       >
         {/* Animated dots */}
-        <div className="flex gap-1">
+        <div className="flex gap-0.5">
           {[0, 1, 2].map((i) => (
             <motion.div
               key={i}
               animate={{
-                y: [0, -6, 0],
-                scale: [1, 1.2, 1],
+                y: [0, -4, 0],
+                scale: [1, 1.15, 1],
               }}
               transition={{
-                duration: 0.6,
+                duration: 0.5,
                 repeat: Infinity,
-                delay: i * 0.15,
+                delay: i * 0.12,
                 ease: "easeInOut",
               }}
-              className="w-2 h-2 rounded-full bg-primary"
+              className="w-1.5 h-1.5 rounded-full bg-primary"
             />
           ))}
         </div>
 
-        {/* Dynamic status text */}
+        {/* Status text - subtle */}
         <motion.span
           key={statusIndex}
-          initial={{ opacity: 0, x: -5 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 5 }}
-          className="text-xs text-muted-foreground font-medium"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-[10px] text-muted-foreground"
         >
           {statuses[statusIndex]}...
         </motion.span>
