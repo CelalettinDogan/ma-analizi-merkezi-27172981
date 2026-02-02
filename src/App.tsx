@@ -13,6 +13,7 @@ import { App as CapApp } from "@capacitor/app";
 import Index from "./pages/Index";
 import Live from "./pages/Live";
 import Standings from "./pages/Standings";
+import Premium from "./pages/Premium";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
@@ -53,6 +54,7 @@ const AppContent = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/live" element={<Live />} />
           <Route path="/standings" element={<Standings />} />
+          <Route path="/premium" element={<Premium />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/chat" element={<Chat />} />
