@@ -22,8 +22,8 @@ const formatRelativeTime = (date: Date): string => {
   const diffHours = Math.floor(diffMs / 3600000);
   
   if (diffMins < 1) return 'Az önce';
-  if (diffMins < 60) return `${diffMins}dk önce`;
-  if (diffHours < 24) return `${diffHours}sa önce`;
+  if (diffMins < 60) return `${diffMins}dk`;
+  if (diffHours < 24) return `${diffHours}sa`;
   
   return date.toLocaleTimeString('tr-TR', { 
     hour: '2-digit', 
@@ -63,33 +63,33 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
     return (
       <motion.div
         ref={ref}
-        initial={{ opacity: 0, x: isUser ? 20 : -20, scale: 0.95 }}
+        initial={{ opacity: 0, x: isUser ? 15 : -15, scale: 0.98 }}
         animate={{ opacity: 1, x: 0, scale: 1 }}
-        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        transition={{ type: "spring", stiffness: 350, damping: 30 }}
         className={cn(
-          "flex gap-3 p-4 group",
+          "flex gap-2.5 px-3 py-2 group",
           isUser ? "flex-row-reverse" : "flex-row"
         )}
         onMouseEnter={() => setShowActions(true)}
         onMouseLeave={() => setShowActions(false)}
         onTouchStart={() => setShowActions(true)}
       >
-        {/* Avatar */}
+        {/* Compact Avatar */}
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 400, damping: 15, delay: 0.1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 15, delay: 0.05 }}
           className={cn(
-            "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-lg",
+            "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center shadow-md",
             isUser 
-              ? "bg-gradient-to-br from-primary to-primary/80 shadow-primary/20" 
-              : "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/20"
+              ? "bg-gradient-to-br from-primary to-primary/80 shadow-primary/15" 
+              : "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/15"
           )}
         >
           {isUser ? (
-            <User className="w-4 h-4 text-primary-foreground" />
+            <User className="w-3.5 h-3.5 text-primary-foreground" />
           ) : (
-            <Bot className="w-4 h-4 text-white" />
+            <Bot className="w-3.5 h-3.5 text-white" />
           )}
         </motion.div>
 
@@ -101,12 +101,12 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.15 }}
+            transition={{ delay: 0.1 }}
             className={cn(
-              "max-w-[85%] rounded-2xl px-4 py-3 relative",
+              "max-w-[85%] rounded-2xl px-3.5 py-2.5 relative",
               isUser 
-                ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-tr-sm shadow-lg shadow-primary/10" 
-                : "bg-card/80 backdrop-blur-xl border border-border/50 rounded-tl-sm shadow-sm"
+                ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-tr-sm shadow-sm shadow-primary/10" 
+                : "bg-card/70 backdrop-blur-lg border border-border/40 rounded-tl-sm"
             )}
           >
             {isUser ? (
@@ -116,16 +116,16 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                 <ReactMarkdown
                   components={{
                     p: ({ children }) => (
-                      <p className="mb-2 last:mb-0 leading-relaxed text-sm">{children}</p>
+                      <p className="mb-2 last:mb-0 leading-relaxed text-[13px]">{children}</p>
                     ),
                     ul: ({ children }) => (
-                      <ul className="list-disc list-inside mb-2 space-y-1 text-sm">{children}</ul>
+                      <ul className="list-disc list-inside mb-2 space-y-0.5 text-[13px]">{children}</ul>
                     ),
                     ol: ({ children }) => (
-                      <ol className="list-decimal list-inside mb-2 space-y-1 text-sm">{children}</ol>
+                      <ol className="list-decimal list-inside mb-2 space-y-0.5 text-[13px]">{children}</ol>
                     ),
                     li: ({ children }) => (
-                      <li className="text-sm">{children}</li>
+                      <li className="text-[13px]">{children}</li>
                     ),
                     strong: ({ children }) => (
                       <strong className="font-semibold text-foreground">{children}</strong>
@@ -134,22 +134,22 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                       <em className="italic text-muted-foreground">{children}</em>
                     ),
                     code: ({ children }) => (
-                      <code className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono text-primary">{children}</code>
+                      <code className="px-1 py-0.5 bg-muted rounded text-[11px] font-mono text-primary">{children}</code>
                     ),
                     h1: ({ children }) => (
-                      <h1 className="text-base font-bold mb-2 mt-3 first:mt-0 text-foreground">{children}</h1>
+                      <h1 className="text-sm font-bold mb-2 mt-2.5 first:mt-0 text-foreground">{children}</h1>
                     ),
                     h2: ({ children }) => (
-                      <h2 className="text-sm font-bold mb-2 mt-3 first:mt-0 text-foreground">{children}</h2>
+                      <h2 className="text-[13px] font-bold mb-1.5 mt-2 first:mt-0 text-foreground">{children}</h2>
                     ),
                     h3: ({ children }) => (
-                      <h3 className="text-sm font-semibold mb-1 mt-2 first:mt-0 text-foreground">{children}</h3>
+                      <h3 className="text-[13px] font-semibold mb-1 mt-1.5 first:mt-0 text-foreground">{children}</h3>
                     ),
                     blockquote: ({ children }) => (
-                      <blockquote className="border-l-2 border-primary/50 pl-3 italic text-muted-foreground my-2 text-sm">{children}</blockquote>
+                      <blockquote className="border-l-2 border-primary/50 pl-2.5 italic text-muted-foreground my-2 text-[13px]">{children}</blockquote>
                     ),
                     hr: () => (
-                      <hr className="border-border my-3" />
+                      <hr className="border-border my-2" />
                     ),
                   }}
                 >
@@ -161,12 +161,12 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
           
           {/* Actions & Timestamp Row */}
           <div className={cn(
-            "flex items-center gap-2 mt-1.5 px-1",
+            "flex items-center gap-1.5 mt-1 px-0.5",
             isUser ? "flex-row-reverse" : "flex-row"
           )}>
-            {/* Timestamp */}
+            {/* Timestamp - more subtle */}
             {timestamp && (
-              <span className="text-[10px] text-muted-foreground/60">
+              <span className="text-[9px] text-muted-foreground/50">
                 {formatRelativeTime(timestamp)}
               </span>
             )}
@@ -178,20 +178,20 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-0.5"
                 >
                   {/* Copy button */}
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={handleCopy}
-                    className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+                    className="p-1 rounded-md hover:bg-muted transition-colors"
                     title="Kopyala"
                   >
                     {copied ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-500" />
+                      <Check className="w-3 h-3 text-emerald-500" />
                     ) : (
-                      <Copy className="w-3.5 h-3.5 text-muted-foreground" />
+                      <Copy className="w-3 h-3 text-muted-foreground" />
                     )}
                   </motion.button>
 
@@ -202,14 +202,14 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                     onClick={() => handleFeedback(true)}
                     disabled={feedback !== null}
                     className={cn(
-                      "p-1.5 rounded-lg transition-colors",
+                      "p-1 rounded-md transition-colors",
                       feedback === 'positive' 
                         ? "bg-emerald-500/20 text-emerald-500" 
                         : "hover:bg-muted text-muted-foreground"
                     )}
                     title="Faydalı"
                   >
-                    <ThumbsUp className="w-3.5 h-3.5" />
+                    <ThumbsUp className="w-3 h-3" />
                   </motion.button>
                   
                   <motion.button
@@ -218,14 +218,14 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                     onClick={() => handleFeedback(false)}
                     disabled={feedback !== null}
                     className={cn(
-                      "p-1.5 rounded-lg transition-colors",
+                      "p-1 rounded-md transition-colors",
                       feedback === 'negative' 
                         ? "bg-destructive/20 text-destructive" 
                         : "hover:bg-muted text-muted-foreground"
                     )}
                     title="Geliştirilmeli"
                   >
-                    <ThumbsDown className="w-3.5 h-3.5" />
+                    <ThumbsDown className="w-3 h-3" />
                   </motion.button>
                 </motion.div>
               )}

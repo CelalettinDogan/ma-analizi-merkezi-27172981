@@ -15,22 +15,14 @@ interface ChatInputProps {
   maxLength?: number;
 }
 
-// Prompt categories with colors
-const promptCategoryColors: Record<string, { bg: string; text: string; border: string }> = {
-  match: { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/20' },
-  standings: { bg: 'bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-500/20' },
-  stats: { bg: 'bg-purple-500/10', text: 'text-purple-600 dark:text-purple-400', border: 'border-purple-500/20' },
-  trend: { bg: 'bg-orange-500/10', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-500/20' },
-  default: { bg: 'bg-muted', text: 'text-foreground', border: 'border-border/50' },
-};
-
-const getPromptCategory = (text: string): keyof typeof promptCategoryColors => {
+// Prompt categories with subtle border colors only
+const getPromptBorderColor = (text: string): string => {
   const lowerText = text.toLowerCase();
-  if (lowerText.includes('maç') || lowerText.includes('vs') || lowerText.includes('analiz')) return 'match';
-  if (lowerText.includes('puan') || lowerText.includes('sıralama') || lowerText.includes('lig')) return 'standings';
-  if (lowerText.includes('istatistik') || lowerText.includes('gol') || lowerText.includes('form')) return 'stats';
-  if (lowerText.includes('trend') || lowerText.includes('popüler') || lowerText.includes('favori')) return 'trend';
-  return 'default';
+  if (lowerText.includes('maç') || lowerText.includes('vs') || lowerText.includes('analiz')) return 'border-emerald-500/30';
+  if (lowerText.includes('puan') || lowerText.includes('sıralama') || lowerText.includes('lig')) return 'border-blue-500/30';
+  if (lowerText.includes('istatistik') || lowerText.includes('gol') || lowerText.includes('form')) return 'border-purple-500/30';
+  if (lowerText.includes('trend') || lowerText.includes('popüler') || lowerText.includes('favori')) return 'border-orange-500/30';
+  return 'border-border/50';
 };
 
 const ChatInput: React.FC<ChatInputProps> = ({ 
@@ -55,7 +47,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
     }
   }, [message]);
 
@@ -81,50 +73,37 @@ const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="border-t border-border/50 bg-card/50 backdrop-blur-xl p-4 space-y-3">
-      {/* Quick Prompts - Kategorize */}
+    <div className="border-t border-border/50 bg-card/50 backdrop-blur-xl p-3 space-y-2.5">
+      {/* Quick Prompts - Minimal design */}
       <AnimatePresence>
         {showQuickPrompts && !disabled && !promptsLoading && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="overflow-x-auto pb-2 -mb-2"
+            className="overflow-x-auto pb-1 -mb-1 scrollbar-hide"
           >
-            <div className="flex gap-2 min-w-min">
-              {prompts.map((prompt, index) => {
-                const category = getPromptCategory(prompt.text);
-                const colors = promptCategoryColors[category];
-                
-                return (
-                  <motion.button
-                    key={prompt.text}
-                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleQuickPrompt(prompt.text)}
-                    disabled={isLoading}
-                    className={cn(
-                      "px-3 py-2 text-xs rounded-full transition-all flex items-center gap-1.5 shrink-0",
-                      "border shadow-sm hover:shadow-md",
-                      colors.bg,
-                      colors.text,
-                      colors.border,
-                      "hover:border-primary/30"
-                    )}
-                  >
-                    <span className="shrink-0 text-sm">{prompt.icon}</span>
-                    <span className="truncate max-w-[160px] font-medium">{prompt.text}</span>
-                    {prompt.isPopular && (
-                      <span className="shrink-0 text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-full font-semibold">
-                        HOT
-                      </span>
-                    )}
-                  </motion.button>
-                );
-              })}
+            <div className="flex gap-1.5 min-w-min">
+              {prompts.map((prompt, index) => (
+                <motion.button
+                  key={prompt.text}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.03 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleQuickPrompt(prompt.text)}
+                  disabled={isLoading}
+                  className={cn(
+                    "px-2.5 py-1.5 text-[11px] rounded-full transition-all flex items-center gap-1 shrink-0",
+                    "bg-muted/50 border hover:bg-muted hover:border-primary/30",
+                    getPromptBorderColor(prompt.text)
+                  )}
+                >
+                  <span className="shrink-0">{prompt.icon}</span>
+                  <span className="truncate max-w-[130px] font-medium">{prompt.text}</span>
+                </motion.button>
+              ))}
             </div>
           </motion.div>
         )}
@@ -132,11 +111,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
       {/* Loading state for prompts */}
       {showQuickPrompts && promptsLoading && !disabled && (
-        <div className="flex gap-2 overflow-hidden">
+        <div className="flex gap-1.5 overflow-hidden">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-9 w-36 rounded-full bg-muted/40 animate-pulse shrink-0"
+              className="h-7 w-28 rounded-full bg-muted/40 animate-pulse shrink-0"
             />
           ))}
         </div>
@@ -146,14 +125,14 @@ const ChatInput: React.FC<ChatInputProps> = ({
       <div className="flex items-end gap-2">
         <div 
           className={cn(
-            "flex-1 relative rounded-2xl transition-all duration-200",
-            isFocused && "ring-2 ring-primary/20"
+            "flex-1 relative rounded-3xl transition-all duration-200",
+            isFocused && "ring-1 ring-primary/20"
           )}
         >
           <Textarea
             ref={textareaRef}
             value={message}
-            onChange={(e) => setMessage(e.target.value.slice(0, maxLength + 50))} // Allow slight overflow for UX
+            onChange={(e) => setMessage(e.target.value.slice(0, maxLength + 50))}
             onKeyDown={handleKeyDown}
             onFocus={() => {
               setShowQuickPrompts(true);
@@ -163,16 +142,16 @@ const ChatInput: React.FC<ChatInputProps> = ({
             placeholder={disabled && disabledReason ? disabledReason : placeholder}
             disabled={disabled || isLoading}
             className={cn(
-              "min-h-[44px] max-h-[150px] resize-none pr-12 rounded-2xl",
+              "min-h-[48px] max-h-[120px] resize-none pr-12 rounded-3xl text-sm",
               "bg-background/80 backdrop-blur-sm border-border/50",
               "focus:border-primary/50 focus-visible:ring-0 focus-visible:ring-offset-0",
-              "placeholder:text-muted-foreground/60",
+              "placeholder:text-muted-foreground/50",
               disabled && "opacity-60 cursor-not-allowed"
             )}
             rows={1}
           />
           
-          {/* Character counter */}
+          {/* Character counter - subtle */}
           <AnimatePresence>
             {message.length > 0 && (
               <motion.div
@@ -180,12 +159,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 className={cn(
-                  "absolute bottom-2 right-14 text-[10px] px-1.5 py-0.5 rounded-full",
+                  "absolute bottom-2.5 right-14 text-[9px] px-1.5 py-0.5 rounded-full",
                   isOverLimit 
                     ? "bg-destructive/20 text-destructive" 
                     : isNearLimit 
                       ? "bg-amber-500/20 text-amber-600 dark:text-amber-400" 
-                      : "text-muted-foreground"
+                      : "text-muted-foreground/50"
                 )}
               >
                 {characterCount}/{maxLength}
@@ -204,7 +183,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               "h-11 w-11 rounded-full shrink-0 transition-all duration-200",
               "bg-gradient-to-br from-primary to-primary/80",
               "hover:from-primary/90 hover:to-primary/70",
-              "shadow-lg shadow-primary/20 hover:shadow-primary/30",
+              "shadow-md shadow-primary/20 hover:shadow-lg",
               "disabled:opacity-50 disabled:shadow-none"
             )}
           >
@@ -222,7 +201,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center text-xs text-muted-foreground"
+          className="text-center text-[11px] text-muted-foreground"
         >
           {disabledReason}
         </motion.p>
