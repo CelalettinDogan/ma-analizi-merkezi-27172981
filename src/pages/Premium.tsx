@@ -152,24 +152,6 @@ const AnimatedCrown = () => (
   </motion.div>
 );
 
-// Social Proof Badge
-const SocialProofBadge = () => (
-  <motion.div 
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.5 }}
-    className="flex items-center justify-center gap-1.5 xs:gap-2"
-  >
-    <div className="flex -space-x-1">
-      {[...Array(5)].map((_, i) => (
-        <Star key={i} className="w-3 h-3 xs:w-3.5 xs:h-3.5 fill-amber-400 text-amber-400" />
-      ))}
-    </div>
-    <span className="text-[10px] xs:text-xs text-muted-foreground font-medium">
-      4.9/5 • <span className="text-foreground">2.500+</span> Değerlendirme
-    </span>
-  </motion.div>
-);
 
 // Premium Features for Bento Grid - Play Store uyumlu metinler
 const bentoFeatures = [
@@ -391,22 +373,6 @@ const Premium = () => {
                 Veriye dayalı maç içgörüleri, gelişmiş istatistik karşılaştırmaları
               </p>
             </div>
-            
-            {/* Social Proof */}
-            <SocialProofBadge />
-          </motion.div>
-
-          {/* User Stats Banner */}
-          <motion.div 
-            variants={itemVariants}
-            className="flex items-center justify-center gap-2 xs:gap-3 py-2 px-3 rounded-xl bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 border border-border/50"
-          >
-            <div className="flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-primary" />
-              <span className="text-[10px] xs:text-xs font-medium">10K+</span>
-            </div>
-            <div className="w-px h-4 bg-border" />
-            <span className="text-[10px] xs:text-xs text-muted-foreground">Aktif kullanıcı güveniyle</span>
           </motion.div>
 
           {/* Billing Toggle */}
@@ -451,7 +417,7 @@ const Premium = () => {
           </motion.div>
 
           {/* Plan Cards - Responsive Grid */}
-          <motion.div variants={itemVariants} className="grid grid-cols-3 gap-1.5 xs:gap-2 sm:gap-3">
+          <motion.div variants={itemVariants} className="grid grid-cols-3 gap-1.5 xs:gap-2 sm:gap-3 pt-3">
             {plans.map((plan) => {
               const isSelected = selectedPlan === plan.id;
               const displayPrice = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
