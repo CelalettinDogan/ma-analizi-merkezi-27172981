@@ -134,7 +134,7 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
             {isLongReasoning && (
               <button
                 onClick={() => setShowFullReasoning(!showFullReasoning)}
-                className="text-xs text-primary hover:underline mt-1"
+                className="min-h-[44px] text-xs text-primary hover:underline mt-1 touch-manipulation flex items-center"
               >
                 {showFullReasoning ? 'Daha az göster' : 'Devamını oku'}
               </button>
@@ -145,13 +145,13 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
         {/* Collapsible Disclaimer */}
         <button
           onClick={() => setShowDisclaimer(!showDisclaimer)}
-          className="w-full flex items-center justify-between text-xs text-amber-400/70 hover:text-amber-400 transition-colors mb-4"
+          className="w-full min-h-[44px] flex items-center justify-between text-xs text-amber-400/70 hover:text-amber-400 transition-colors mb-4 touch-manipulation"
         >
           <span className="flex items-center gap-1.5">
-            <AlertTriangle className="w-3 h-3" />
+            <AlertTriangle className="w-3.5 h-3.5" />
             Dış faktörler hakkında
           </span>
-          <ChevronDown className={cn("w-3 h-3 transition-transform", showDisclaimer && "rotate-180")} />
+          <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", showDisclaimer && "rotate-180")} />
         </button>
         
         <AnimatePresence>
@@ -177,8 +177,9 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
           <Button 
             onClick={handleAddToSetClick}
             disabled={isInSet}
+            size="lg"
             className={cn(
-              "flex-1 gap-2",
+              "flex-1 gap-2 min-h-[48px] touch-manipulation",
               isInSet 
                 ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30" 
                 : "bg-gradient-to-r from-primary to-emerald-500 hover:from-primary/90 hover:to-emerald-500/90"
