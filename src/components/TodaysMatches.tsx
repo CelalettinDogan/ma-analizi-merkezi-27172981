@@ -234,10 +234,11 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
             </motion.div>
           )}
 
-          {/* Featured Label with reason and H2H */}
-          <div className="absolute top-2 left-2 right-2 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-secondary text-secondary-foreground text-[10px]">
+          {/* Featured Label - Responsive Stack Layout */}
+          <div className="absolute top-2 left-2 right-2">
+            {/* İlk satır: Badge + H2H */}
+            <div className="flex items-center justify-between gap-2">
+              <Badge className="bg-secondary text-secondary-foreground text-[10px] shrink-0">
                 {featuredReason === 'Büyük Maç' ? (
                   <Sparkles className="w-3 h-3 mr-1" />
                 ) : featuredReason === 'En Yakın' ? (
@@ -247,18 +248,20 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                 )}
                 {featuredReason}
               </Badge>
-              {!hasMatchesToday && (
-                <Badge variant="outline" className="text-[10px]">
-                  {getDateLabel(featuredMatch.utcDate)}
-                </Badge>
-              )}
+              {/* H2H - Sağda, shrink-0 ile sabit */}
+              <FeaturedMatchH2H match={featuredMatch} />
             </div>
-            {/* H2H Summary for Featured Match */}
-            <FeaturedMatchH2H match={featuredMatch} />
+            
+            {/* İkinci satır: Tarih (sadece bugün değilse) */}
+            {!hasMatchesToday && (
+              <span className="text-[10px] text-muted-foreground mt-1 block">
+                {getDateLabel(featuredMatch.utcDate)}
+              </span>
+            )}
           </div>
 
-          {/* Match Content */}
-          <div className="flex items-center justify-between mt-6">
+          {/* Match Content - Daha fazla top margin */}
+          <div className="flex items-center justify-between mt-10 md:mt-8">
             {/* Home Team */}
             <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
               {featuredMatch.homeTeam.crest ? (
@@ -272,7 +275,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                   {featuredMatch.homeTeam.shortName?.[0] || featuredMatch.homeTeam.name[0]}
                 </div>
               )}
-              <span className="font-semibold text-sm md:text-base truncate">
+              <span className="font-semibold text-xs md:text-sm truncate">
                 {featuredMatch.homeTeam.shortName || featuredMatch.homeTeam.name}
               </span>
             </div>
@@ -289,7 +292,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
 
             {/* Away Team */}
             <div className="flex items-center gap-2 md:gap-3 flex-1 justify-end min-w-0">
-              <span className="font-semibold text-sm md:text-base truncate text-right">
+              <span className="font-semibold text-xs md:text-sm truncate text-right">
                 {featuredMatch.awayTeam.shortName || featuredMatch.awayTeam.name}
               </span>
               {featuredMatch.awayTeam.crest ? (
