@@ -109,11 +109,11 @@ const MatchSlide: React.FC<MatchSlideProps> = ({
                     <TooltipTrigger asChild>
                       <button
                         onClick={(e) => handleFavoriteClick(e, homeTeamId, match.homeTeam.name)}
-                        className="p-1 rounded-full hover:bg-muted/50 transition-colors"
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-muted/50 transition-colors touch-manipulation"
                       >
                         <Heart 
                           className={cn(
-                            "w-3.5 h-3.5 transition-colors",
+                            "w-4 h-4 transition-colors",
                             isHomeFavorite 
                               ? "fill-red-500 text-red-500" 
                               : "text-muted-foreground hover:text-red-400"
@@ -157,11 +157,11 @@ const MatchSlide: React.FC<MatchSlideProps> = ({
                     <TooltipTrigger asChild>
                       <button
                         onClick={(e) => handleFavoriteClick(e, awayTeamId, match.awayTeam.name)}
-                        className="p-1 rounded-full hover:bg-muted/50 transition-colors"
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-muted/50 transition-colors touch-manipulation"
                       >
                         <Heart 
                           className={cn(
-                            "w-3.5 h-3.5 transition-colors",
+                            "w-4 h-4 transition-colors",
                             isAwayFavorite 
                               ? "fill-red-500 text-red-500" 
                               : "text-muted-foreground hover:text-red-400"
