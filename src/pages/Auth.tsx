@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Loader2, Chrome } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,9 +19,18 @@ const Auth: React.FC = () => {
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [isResetting, setIsResetting] = useState(false);
-  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
+  const { user, signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Kullanıcı zaten giriş yapmışsa yönlendir
+  useEffect(() => {
+    if (user) {
+      const from = (location.state as { from?: string })?.from || '/';
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, location.state]);
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
@@ -49,15 +58,14 @@ const Auth: React.FC = () => {
           : error.message,
         variant: 'destructive',
       });
+      setIsLoading(false);
     } else {
       toast({
         title: 'Hoş Geldiniz!',
         description: 'Başarıyla giriş yaptınız.',
       });
-      navigate('/');
+      // Yönlendirme useEffect tarafından yapılacak
     }
-
-    setIsLoading(false);
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -92,15 +100,14 @@ const Auth: React.FC = () => {
         description: error.message,
         variant: 'destructive',
       });
+      setIsLoading(false);
     } else {
       toast({
         title: 'Hesap Oluşturuldu!',
         description: 'Başarıyla kayıt oldunuz.',
       });
-      navigate('/');
+      // Yönlendirme useEffect tarafından yapılacak
     }
-
-    setIsLoading(false);
   };
 
   const handleGoogleSignIn = async () => {
@@ -350,11 +357,6 @@ const Auth: React.FC = () => {
               </TabsContent>
             </Tabs>
 
-            <div className="mt-6 text-center">
-              <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
-                ← Anasayfaya Dön
-              </Link>
-            </div>
           </CardContent>
         </Card>
 
