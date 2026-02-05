@@ -8,6 +8,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AnalysisSetProvider } from "@/contexts/AnalysisSetContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import AuthGuard from "@/components/auth/AuthGuard";
 import { Capacitor } from "@capacitor/core";
 import { App as CapApp } from "@capacitor/app";
 import Index from "./pages/Index";
@@ -49,19 +50,23 @@ const AppContent = () => {
     <BrowserRouter>
       <ErrorBoundary>
         <Routes>
-          <Route path="/" element={<Index />} />
+          {/* Korumalı Sayfalar - Giriş zorunlu */}
+          <Route path="/" element={<AuthGuard><Index /></AuthGuard>} />
+          <Route path="/live" element={<AuthGuard><Live /></AuthGuard>} />
+          <Route path="/standings" element={<AuthGuard><Standings /></AuthGuard>} />
+          <Route path="/premium" element={<AuthGuard><Premium /></AuthGuard>} />
+          <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
+          <Route path="/admin" element={<AuthGuard><Admin /></AuthGuard>} />
+          <Route path="/chat" element={<AuthGuard><Chat /></AuthGuard>} />
+          <Route path="/analysis-history" element={<AuthGuard><AnalysisHistory /></AuthGuard>} />
+          
+          {/* Açık Sayfalar - Giriş gerektirmeyen */}
           <Route path="/auth" element={<Auth />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/live" element={<Live />} />
-          <Route path="/standings" element={<Standings />} />
-          <Route path="/premium" element={<Premium />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/analysis-history" element={<AnalysisHistory />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/delete-account" element={<DeleteAccount />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
