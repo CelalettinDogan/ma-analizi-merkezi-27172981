@@ -29,27 +29,10 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const AppContent = () => {
+// Deep Link Handler Component - must be inside BrowserRouter
+const DeepLinkHandler = () => {
   const navigate = useNavigate();
 
-  // Handle Android back button
-  useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
-      const backButtonListener = CapApp.addListener('backButton', ({ canGoBack }) => {
-        if (canGoBack) {
-          window.history.back();
-        } else {
-          CapApp.exitApp();
-        }
-      });
-
-      return () => {
-        backButtonListener.then(listener => listener.remove());
-      };
-    }
-  }, []);
-
-  // Handle Deep Link for OAuth callback (Native Android)
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
       const deepLinkListener = CapApp.addListener('appUrlOpen', async (event: URLOpenListenerEvent) => {
@@ -85,8 +68,30 @@ const AppContent = () => {
     }
   }, [navigate]);
 
+  return null;
+};
+
+const AppContent = () => {
+  // Handle Android back button
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      const backButtonListener = CapApp.addListener('backButton', ({ canGoBack }) => {
+        if (canGoBack) {
+          window.history.back();
+        } else {
+          CapApp.exitApp();
+        }
+      });
+
+      return () => {
+        backButtonListener.then(listener => listener.remove());
+      };
+    }
+  }, []);
+
   return (
     <BrowserRouter>
+      <DeepLinkHandler />
       <ErrorBoundary>
         <Routes>
           {/* Korumalı Sayfalar - Giriş zorunlu */}
