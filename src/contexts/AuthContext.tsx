@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
+import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
 
@@ -64,8 +65,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
+    // Native Android için custom scheme, web için origin
+    const redirectUri = Capacitor.isNativePlatform()
+      ? 'app.golmetrik.android://callback'
+      : window.location.origin;
+
     const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: redirectUri,
     });
     return { error: error as Error | null };
   };

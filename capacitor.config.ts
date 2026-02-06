@@ -4,6 +4,10 @@ const config: CapacitorConfig = {
   appId: 'app.golmetrik.android',
   appName: 'GolMetrik',
   webDir: 'dist',
+  server: {
+    androidScheme: 'https',
+    hostname: 'golmetrik.app',
+  },
   // NOTE: For development with hot reload, uncomment below:
   // server: {
   //   url: 'https://a043c351-80f7-4404-bfb0-4355af0b4d37.lovableproject.com?forceHideBadge=true',
