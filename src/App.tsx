@@ -3,14 +3,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AnalysisSetProvider } from "@/contexts/AnalysisSetContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { Capacitor } from "@capacitor/core";
-import { App as CapApp } from "@capacitor/app";
+import { App as CapApp, URLOpenListenerEvent } from "@capacitor/app";
+import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import Live from "./pages/Live";
 import Standings from "./pages/Standings";
@@ -29,6 +30,8 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
+  const navigate = useNavigate();
+
   // Handle Android back button
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
@@ -45,6 +48,42 @@ const AppContent = () => {
       };
     }
   }, []);
+
+  // Handle Deep Link for OAuth callback (Native Android)
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      const deepLinkListener = CapApp.addListener('appUrlOpen', async (event: URLOpenListenerEvent) => {
+        try {
+          const url = new URL(event.url);
+          
+          // OAuth callback için kontrol
+          if (url.host === 'callback' || url.pathname === '/callback') {
+            // URL hash veya search params'dan token'ları al
+            const hashParams = new URLSearchParams(url.hash.substring(1));
+            const searchParams = url.searchParams;
+            
+            const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
+            
+            if (accessToken && refreshToken) {
+              await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+              // Giriş başarılı, ana sayfaya yönlendir
+              navigate('/', { replace: true });
+            }
+          }
+        } catch (error) {
+          console.error('Deep link işleme hatası:', error);
+        }
+      });
+
+      return () => {
+        deepLinkListener.then(listener => listener.remove());
+      };
+    }
+  }, [navigate]);
 
   return (
     <BrowserRouter>
