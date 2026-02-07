@@ -73,7 +73,62 @@ export async function getHistoricalAccuracy(): Promise<{
   }
 }
 
-// Call ML prediction edge function
+// Generate cache key for a match
+function generateMatchCacheKey(homeTeam: string, awayTeam: string): string {
+  const today = new Date().toISOString().split('T')[0];
+  return `${homeTeam.toLowerCase().trim()}-${awayTeam.toLowerCase().trim()}-${today}`;
+}
+
+// Check if cached prediction exists and is valid
+async function getCachedPrediction(matchKey: string): Promise<MLPredictionResponse | null> {
+  try {
+    const { data, error } = await supabase
+      .from('cached_ai_predictions')
+      .select('predictions')
+      .eq('match_key', matchKey)
+      .gt('expires_at', new Date().toISOString())
+      .single();
+
+    if (error || !data) return null;
+    
+    console.log('[ML] Cache hit for:', matchKey);
+    return data.predictions as unknown as MLPredictionResponse;
+  } catch {
+    return null;
+  }
+}
+
+// Save prediction to cache
+async function cachePrediction(
+  matchKey: string,
+  homeTeam: string,
+  awayTeam: string,
+  predictions: MLPredictionResponse
+): Promise<void> {
+  try {
+    const matchDate = new Date().toISOString().split('T')[0];
+    const expiresAt = new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(); // 6 hours
+
+    // Use any to bypass strict typing for the new table not yet in types
+    const insertData = {
+      match_key: matchKey,
+      predictions: JSON.parse(JSON.stringify(predictions)),
+      home_team: homeTeam,
+      away_team: awayTeam,
+      match_date: matchDate,
+      expires_at: expiresAt,
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase.from('cached_ai_predictions') as any).upsert(insertData, { onConflict: 'match_key' });
+    
+    console.log('[ML] Prediction cached for:', matchKey);
+  } catch (error) {
+    console.error('[ML] Failed to cache prediction:', error);
+  }
+}
+
+// Call ML prediction edge function with caching
 export async function getMLPrediction(
   homeTeam: TeamFeatures,
   awayTeam: TeamFeatures,
@@ -81,9 +136,18 @@ export async function getMLPrediction(
   league: string
 ): Promise<MLPredictionResponse | null> {
   try {
-    // Get historical accuracy for feedback
+    // 1. Check cache first
+    const matchKey = generateMatchCacheKey(homeTeam.name, awayTeam.name);
+    const cachedResult = await getCachedPrediction(matchKey);
+    
+    if (cachedResult) {
+      return cachedResult;
+    }
+
+    // 2. Get historical accuracy for feedback
     const historicalAccuracy = await getHistoricalAccuracy();
 
+    // 3. Call AI if no cache
     const { data, error } = await supabase.functions.invoke('ml-prediction', {
       body: {
         homeTeam,
@@ -97,6 +161,11 @@ export async function getMLPrediction(
     if (error) {
       console.error('ML Prediction error:', error);
       return null;
+    }
+
+    // 4. Cache successful result
+    if (data?.success) {
+      await cachePrediction(matchKey, homeTeam.name, awayTeam.name, data);
     }
 
     return data as MLPredictionResponse;

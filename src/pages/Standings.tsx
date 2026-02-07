@@ -54,7 +54,7 @@ const StandingsPage: React.FC = () => {
   const isMountedRef = useRef(true);
 
   // Fetch standings from database (no rate limit!)
-  const fetchStandings = useCallback(async (triggerSync = false) => {
+  const fetchStandings = useCallback(async () => {
     if (!isMountedRef.current) return;
     setError(null);
 
@@ -72,26 +72,12 @@ const StandingsPage: React.FC = () => {
         setStandings(data as CachedStanding[]);
         setCompetitionName(data[0]?.competition_name || selectedLeague);
         setLastUpdated(data[0]?.updated_at || null);
-      } else if (triggerSync) {
-        // No cached data and first load - trigger sync silently in background
+      } else {
+        // No cached data - pg_cron will populate it within 1 hour
+        // No manual sync needed - reduces Cloud Balance usage
         setStandings([]);
         setCompetitionName(selectedLeague);
-        console.log('No cached standings, triggering background sync...');
-        
-        // Trigger sync silently (no toast)
-        supabase.functions.invoke('sync-standings').then(({ data: syncData, error: syncError }) => {
-          if (!isMountedRef.current) return;
-          if (syncError) {
-            console.error('Background sync error:', syncError);
-          } else {
-            console.log('Background sync completed:', syncData);
-            // Refetch after sync with cleanup
-            if (syncTimeoutRef.current) {
-              clearTimeout(syncTimeoutRef.current);
-            }
-            syncTimeoutRef.current = setTimeout(() => fetchStandings(false), 2000);
-          }
-        });
+        console.log('No cached standings, pg_cron will sync shortly...');
       }
     } catch (e) {
       console.error('Error fetching standings:', e);
@@ -107,7 +93,7 @@ const StandingsPage: React.FC = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    fetchStandings(true); // Allow sync on first load
+    fetchStandings();
   }, [fetchStandings]);
 
   // Cleanup when component unmounts
@@ -207,7 +193,7 @@ const StandingsPage: React.FC = () => {
                 <div className="text-center py-12 md:py-16">
                   <Trophy className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
                   <p className="text-muted-foreground mb-4 text-sm md:text-base">{error}</p>
-                  <Button variant="outline" onClick={() => fetchStandings(true)}>
+                  <Button variant="outline" onClick={() => fetchStandings()}>
                     Tekrar Dene
                   </Button>
                 </div>

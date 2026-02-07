@@ -190,6 +190,39 @@ export type Database = {
         }
         Relationships: []
       }
+      cached_ai_predictions: {
+        Row: {
+          away_team: string
+          created_at: string | null
+          expires_at: string | null
+          home_team: string
+          id: string
+          match_date: string
+          match_key: string
+          predictions: Json
+        }
+        Insert: {
+          away_team: string
+          created_at?: string | null
+          expires_at?: string | null
+          home_team: string
+          id?: string
+          match_date: string
+          match_key: string
+          predictions: Json
+        }
+        Update: {
+          away_team?: string
+          created_at?: string | null
+          expires_at?: string | null
+          home_team?: string
+          id?: string
+          match_date?: string
+          match_key?: string
+          predictions?: Json
+        }
+        Relationships: []
+      }
       cached_live_matches: {
         Row: {
           away_score: number | null
@@ -412,6 +445,30 @@ export type Database = {
           metadata?: Json | null
           role?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      chatbot_cache: {
+        Row: {
+          cache_key: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          response: string
+        }
+        Insert: {
+          cache_key: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          response: string
+        }
+        Update: {
+          cache_key?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          response?: string
         }
         Relationships: []
       }
@@ -1207,6 +1264,7 @@ export type Database = {
       }
     }
     Functions: {
+      cleanup_expired_caches: { Args: never; Returns: undefined }
       cleanup_old_analysis_usage: { Args: never; Returns: undefined }
       cleanup_old_bet_slips: { Args: never; Returns: undefined }
       cleanup_old_cached_matches: { Args: never; Returns: undefined }

@@ -180,10 +180,7 @@ const LivePage: React.FC = () => {
     };
   }, [selectedLeague]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Trigger sync only once on mount
-  useEffect(() => {
-    syncLiveMatches();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Note: Manual sync removed - pg_cron handles sync automatically every 15 minutes
 
   // Auto-refresh from cache
   useEffect(() => {
