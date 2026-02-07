@@ -69,7 +69,7 @@ const Index: React.FC = () => {
   const pendingAnalysisScrollRef = useRef(false);
   
   // Centralized data fetching - single source of truth
-  const { stats, liveMatches, todaysMatches, isLoading: homeDataLoading, lastUpdated, refetch, syncMatches } = useHomeData();
+  const { stats, liveMatches, todaysMatches, isLoading: homeDataLoading, lastUpdated, refetch } = useHomeData();
   
   const [selectedLeague, setSelectedLeague] = useState<CompetitionCode | ''>('');
   const [upcomingMatches, setUpcomingMatches] = useState<ApiMatch[]>([]);

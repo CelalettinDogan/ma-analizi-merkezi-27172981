@@ -18,7 +18,6 @@ interface HomeData {
   error: string | null;
   lastUpdated: Date | null;
   refetch: () => void;
-  syncMatches: () => Promise<void>;
 }
 
 // Auto-refresh interval (5 minutes)
@@ -142,20 +141,7 @@ export const useHomeData = (): HomeData => {
   const isMountedRef = useRef(true);
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Trigger sync edge functions in background
-  const syncMatches = useCallback(async () => {
-    console.log('[useHomeData] Triggering sync functions...');
-    try {
-      // Trigger both sync functions in parallel
-      await Promise.all([
-        supabase.functions.invoke('sync-matches'),
-        supabase.functions.invoke('sync-live-matches'),
-      ]);
-      console.log('[useHomeData] Sync completed');
-    } catch (e) {
-      console.error('[useHomeData] Sync exception:', e);
-    }
-  }, []);
+  // Note: Manual sync removed - pg_cron handles sync automatically every 15-30 minutes
 
   const fetchData = useCallback(async () => {
     if (!isMountedRef.current) return;
@@ -227,11 +213,8 @@ export const useHomeData = (): HomeData => {
       // Use today's matches if available, otherwise fall back to upcoming matches
       const matchesToShow = todayMatches.length > 0 ? todayMatches : upcomingMatches;
 
-      // If no cached data at all, trigger sync in background
-      if (matchesToShow.length === 0 && liveData.length === 0) {
-        console.log('[useHomeData] No cached data, triggering sync...');
-        syncMatches(); // Don't await, run in background
-      }
+      // Note: If no cached data, pg_cron will populate it within 15-30 minutes
+      // No manual sync needed - reduces Cloud Balance usage
 
       setTodaysMatches(matchesToShow);
       setLiveMatches(liveData);
@@ -260,7 +243,7 @@ export const useHomeData = (): HomeData => {
         setIsLoading(false);
       }
     }
-  }, [syncMatches]);
+  }, []);
 
   // Initial fetch
   useEffect(() => {
@@ -326,6 +309,5 @@ export const useHomeData = (): HomeData => {
     error,
     lastUpdated,
     refetch: fetchData,
-    syncMatches,
   };
 };

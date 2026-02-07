@@ -429,6 +429,7 @@ function parseUserIntent(message: string): {
   isNewsRequest: boolean;
   detectedLeague: { code: string; name: string } | null;
   isLongTermQuery: boolean;
+  cacheKey: string | null;
 } {
   const matchKeywords = ['maç', 'analiz', 'karşılaşma', 'oyun', 'tahmin', 'skor', 'form', 'istatistik', 'bugün', 'yarın'];
   const hasMatchIntent = matchKeywords.some(k => message.toLowerCase().includes(k));
@@ -455,12 +456,32 @@ function parseUserIntent(message: string): {
     type = 'league_query';
   }
   
+  // Generate cache key for cacheable queries
+  let cacheKey: string | null = null;
+  const today = new Date().toISOString().split('T')[0];
+  
+  if (type === 'match_analysis' && teams.length === 2) {
+    // Two teams match analysis - highly cacheable
+    const sortedTeams = teams.map(t => t.toLowerCase().trim()).sort();
+    cacheKey = `match-${sortedTeams[0]}-${sortedTeams[1]}-${today}`;
+  } else if (type === 'match_analysis' && teams.length === 1) {
+    // Single team form query
+    cacheKey = `form-${teams[0].toLowerCase().trim()}-${today}`;
+  } else if (type === 'league_analysis' && detectedLeague) {
+    // League championship query
+    cacheKey = `league-${detectedLeague.code}-championship-${today}`;
+  } else if (type === 'league_query' && detectedLeague) {
+    // League standings query
+    cacheKey = `league-${detectedLeague.code}-standings-${today}`;
+  }
+  
   return {
     type,
     teams,
     isNewsRequest: isNews,
     detectedLeague,
-    isLongTermQuery
+    isLongTermQuery,
+    cacheKey
   };
 }
 
@@ -1088,52 +1109,95 @@ serve(async (req) => {
       messages[messages.length - 1].content += `\n\n[VERİ DURUMU - KRİTİK]\n${JSON.stringify(noDataInfo, null, 2)}\n\nBu takım için veri YOK. Lütfen kullanıcıya bunu açıkça belirt ve ASLA uydurma bilgi verme.`;
     }
 
-    // Call Lovable AI Gateway
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    // Check chatbot cache for similar queries (before AI call)
+    let cachedResponse: string | null = null;
+    if (intent.cacheKey) {
+      console.log(`Checking cache for key: ${intent.cacheKey}`);
+      const { data: cacheHit } = await supabaseAdmin
+        .from("chatbot_cache")
+        .select("response")
+        .eq("cache_key", intent.cacheKey)
+        .gt("expires_at", new Date().toISOString())
+        .single();
+      
+      if (cacheHit?.response) {
+        console.log(`Cache HIT for: ${intent.cacheKey}`);
+        cachedResponse = cacheHit.response;
+      }
     }
 
-    console.log("Calling Lovable AI Gateway...");
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages,
-        max_tokens: 800,
-        temperature: 0.5, // Lower temperature for more factual responses
-      }),
-    });
+    let assistantMessage: string;
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI Gateway error:", aiResponse.status, errorText);
-      
-      if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "AI servisi şu anda yoğun. Lütfen biraz bekleyin.", code: "AI_RATE_LIMIT" }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+    if (cachedResponse) {
+      // Use cached response - skip AI call
+      assistantMessage = cachedResponse;
+      console.log("Using cached response, skipping AI Gateway call");
+    } else {
+      // Call Lovable AI Gateway
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+      if (!LOVABLE_API_KEY) {
+        throw new Error("LOVABLE_API_KEY is not configured");
       }
-      if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "AI servisi geçici olarak kullanılamıyor.", code: "AI_PAYMENT" }),
-          { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+
+      console.log("Calling Lovable AI Gateway...");
+      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages,
+          max_tokens: 800,
+          temperature: 0.5, // Lower temperature for more factual responses
+        }),
+      });
+
+      if (!aiResponse.ok) {
+        const errorText = await aiResponse.text();
+        console.error("AI Gateway error:", aiResponse.status, errorText);
+        
+        if (aiResponse.status === 429) {
+          return new Response(
+            JSON.stringify({ error: "AI servisi şu anda yoğun. Lütfen biraz bekleyin.", code: "AI_RATE_LIMIT" }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        if (aiResponse.status === 402) {
+          return new Response(
+            JSON.stringify({ error: "AI servisi geçici olarak kullanılamıyor.", code: "AI_PAYMENT" }),
+            { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        
+        throw new Error(`AI Gateway error: ${aiResponse.status}`);
       }
+
+      const aiData = await aiResponse.json();
+      assistantMessage = aiData.choices?.[0]?.message?.content || "Üzgünüm, bir yanıt oluşturamadım.";
+
+      // Apply policy filter
+      assistantMessage = applyPolicyFilter(assistantMessage);
       
-      throw new Error(`AI Gateway error: ${aiResponse.status}`);
+      // Save to cache if cacheKey exists
+      if (intent.cacheKey && assistantMessage.length > 50) {
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+        console.log(`Caching response for key: ${intent.cacheKey}`);
+        
+        await supabaseAdmin
+          .from("chatbot_cache")
+          .upsert({
+            cache_key: intent.cacheKey,
+            response: assistantMessage,
+            expires_at: expiresAt,
+          }, { onConflict: "cache_key" })
+          .then(({ error }) => {
+            if (error) console.error("Cache save error:", error);
+            else console.log("Response cached successfully");
+          });
+      }
     }
-
-    const aiData = await aiResponse.json();
-    let assistantMessage = aiData.choices?.[0]?.message?.content || "Üzgünüm, bir yanıt oluşturamadım.";
-
-    // Apply policy filter
-    assistantMessage = applyPolicyFilter(assistantMessage);
 
     // Increment usage count (skip for admin users)
     let newUsageCount = currentUsage;
@@ -1146,8 +1210,8 @@ serve(async (req) => {
 
     // Save messages to chat history
     await supabaseAdmin.from("chat_history").insert([
-      { user_id: userId, role: "user", content: message, metadata: { intent: intent.type, teams: intent.teams, hasContext: !!context, dataSource } },
-      { user_id: userId, role: "assistant", content: assistantMessage, metadata: { tokens: aiData.usage, dataAvailability } }
+      { user_id: userId, role: "user", content: message, metadata: { intent: intent.type, teams: intent.teams, hasContext: !!context, dataSource, cacheHit: !!cachedResponse } },
+      { user_id: userId, role: "assistant", content: assistantMessage, metadata: { cacheHit: !!cachedResponse, dataAvailability } }
     ]);
 
     // Return response
@@ -1162,7 +1226,8 @@ serve(async (req) => {
         planType,
         isAdmin,
         dataSource: context ? dataSource : null,
-        dataAvailability
+        dataAvailability,
+        cacheHit: !!cachedResponse
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
