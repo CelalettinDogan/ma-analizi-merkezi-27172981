@@ -1,143 +1,285 @@
 
-# Google OAuth - Native Android Uyumu
 
-## Tespit Edilen Sorun
+# Cloud Balance Optimizasyon Plani
 
-Mevcut Google OAuth yapılandırması **sadece web'de çalışır**. Native Android uygulamasında kullanıcı Google ile giriş yaptığında:
+## Mevcut Durum Analizi
 
-1. Google hesap seçim sayfası açılır (tarayıcıda)
-2. Kullanıcı hesabını seçer
-3. ❌ **Sorun**: Tarayıcı web URL'ye yönlendirir, **uygulama açılmaz**
+### Tespit Edilen Gereksiz Harcamalar
 
-## Teknik Açıklama
+| No | Sorun | Konum | Maliyet Etkisi |
+|----|-------|-------|----------------|
+| 1 | Manuel sync-matches cagirisi | useHomeData.ts (satir 146-158) | Her anasayfa acilisinda 2 edge function |
+| 2 | Manuel sync-live-matches cagirisi | Live.tsx (satir 183-186) | Her Live sayfa acilisinda 1 edge function |
+| 3 | Manuel sync-standings cagirisi | Standings.tsx (satir 75-94) | Her puan durumu acilisinda 1 edge function |
+| 4 | AI ml-prediction tekrari | useMatchAnalysis.ts (satir 324-404) | Ayni mac icin tekrar AI cagirisi |
+| 5 | Chatbot benzer sorular | ai-chatbot edge function | Ayni takimlar icin tekrar AI cagirisi |
 
+### Mevcut pg_cron Otomasyonu
+
+```text
++-------------------+------------------+------------------------+
+| Job               | Schedule         | Aciklama               |
++-------------------+------------------+------------------------+
+| sync-live-matches | */15 * * * *     | Her 15 dakikada        |
+| sync-matches      | */30 * * * *     | Her 30 dakikada        |
+| sync-standings    | 0 * * * *        | Her saatte             |
+| auto-verify       | 0 * * * *        | Her saatte             |
+| sync-match-history| 0 4 * * *        | Gunluk 04:00           |
++-------------------+------------------+------------------------+
 ```
-Mevcut Akış (Hatalı)
-=====================
-Uygulama → Tarayıcı → Google → Tarayıcı (kullanıcı burada kalır ❌)
 
-Doğru Akış
-===========
-Uygulama → Tarayıcı → Google → Deep Link → Uygulama ✅
-```
+pg_cron zaten aktif oldugu icin frontend'den manuel sync cagirmak **gereksiz maliyet** olusturuyor.
 
-## Çözüm: Deep Link + Custom URL Scheme
+---
 
-### 1. Capacitor Yapılandırması
+## Optimizasyon Plani
 
-`capacitor.config.ts` dosyasına server yapılandırması eklenecek:
+### Optimizasyon 1: useHomeData'dan Manuel Sync Kaldirma
+**Tahmini Tasarruf: 30-40%**
 
+**Mevcut Sorun:**
+- useHomeData hook'u her mount'ta `sync-matches` ve `sync-live-matches` cagiriyor
+- pg_cron zaten 15-30 dakikada bu isleri yapiyor
+- Gereksiz edge function maliyeti
+
+**Cozum:**
 ```typescript
-const config: CapacitorConfig = {
-  appId: 'app.golmetrik.android',
-  appName: 'GolMetrik',
-  webDir: 'dist',
-  server: {
-    androidScheme: 'https', // veya custom scheme
-    hostname: 'golmetrik.app',
-  },
-  // ...
-};
+// KALDIRILACAK KOD (useHomeData.ts satir 146-158):
+const syncMatches = useCallback(async () => {
+  await Promise.all([
+    supabase.functions.invoke('sync-matches'),
+    supabase.functions.invoke('sync-live-matches'),
+  ]);
+}, []);
+
+// KALDIRILACAK KOD (satir 231-234):
+if (matchesToShow.length === 0 && liveData.length === 0) {
+  syncMatches(); // Bu cagri kaldirilacak
+}
 ```
 
-### 2. Android Manifest Güncelleme
+**Yeni Davranis:**
+- Frontend SADECE database cache'den okuyacak
+- pg_cron otomasyonuna guvenilecek
+- Ilk acilista veri yoksa kullaniciya "Veri henuz senkronize edilmedi" mesaji
 
-`android/app/src/main/AndroidManifest.xml` dosyasına intent-filter eklenecek:
+---
 
-```xml
-<intent-filter android:autoVerify="true">
-    <action android:name="android.intent.action.VIEW" />
-    <category android:name="android.intent.category.DEFAULT" />
-    <category android:name="android.intent.category.BROWSABLE" />
-    <data android:scheme="app.golmetrik.android" android:host="callback" />
-</intent-filter>
-```
+### Optimizasyon 2: Live.tsx Mount Sync Kaldirma
+**Tahmini Tasarruf: 10-20%**
 
-### 3. AuthContext Güncelleme
-
-Platform bazlı dinamik redirect_uri:
-
+**Mevcut Sorun:**
 ```typescript
-import { Capacitor } from '@capacitor/core';
-
-const signInWithGoogle = async () => {
-  // Platform bazlı redirect URI
-  const redirectUri = Capacitor.isNativePlatform()
-    ? 'app.golmetrik.android://callback'
-    : window.location.origin;
-
-  const { error } = await lovable.auth.signInWithOAuth("google", {
-    redirect_uri: redirectUri,
-  });
-  return { error: error as Error | null };
-};
+// Live.tsx satir 183-186
+useEffect(() => {
+  syncLiveMatches(); // Her mount'ta edge function cagiriliyor
+}, []);
 ```
 
-### 4. Deep Link Handler
+**Cozum:**
+- `syncLiveMatches()` cagirisini kaldir
+- Sadece cache'den oku
+- pg_cron 15 dakikada bir guncelliyor
 
-Uygulama açıldığında callback URL'yi işleyecek handler:
+---
 
+### Optimizasyon 3: Standings Sync Optimizasyonu
+**Tahmini Tasarruf: 15-25%**
+
+**Mevcut Sorun:**
 ```typescript
-// App.tsx veya main.tsx
-import { App as CapApp, URLOpenListenerEvent } from '@capacitor/app';
+// Standings.tsx satir 75-94
+if (triggerSync) {
+  supabase.functions.invoke('sync-standings')...
+}
+```
 
-CapApp.addListener('appUrlOpen', async (event: URLOpenListenerEvent) => {
-  const url = new URL(event.url);
-  if (url.pathname === '/callback') {
-    // OAuth token'ları işle
-    const accessToken = url.searchParams.get('access_token');
-    const refreshToken = url.searchParams.get('refresh_token');
-    if (accessToken && refreshToken) {
-      await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      });
-    }
+**Cozum:**
+- pg_cron saatlik sync yeterli
+- Frontend'den sync cagrisini kaldir
+- Sadece cache'den oku
+
+---
+
+### Optimizasyon 4: AI Analiz Cache Sistemi (En Buyuk Tasarruf)
+**Tahmini Tasarruf: 20-40% AI maliyeti**
+
+**Mevcut Sorun:**
+- Ayni mac icin her kullanici ayri ml-prediction cagirisi
+- AI Gateway pahalı (Gemini modeli)
+- Tekrar eden analizler
+
+**Cozum - Yeni Tablo:**
+```sql
+CREATE TABLE cached_ai_predictions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  match_key TEXT UNIQUE NOT NULL, -- 'home_team-away_team-match_date'
+  predictions JSONB NOT NULL,
+  home_team TEXT NOT NULL,
+  away_team TEXT NOT NULL,
+  match_date DATE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  expires_at TIMESTAMPTZ DEFAULT (now() + INTERVAL '6 hours')
+);
+
+CREATE INDEX idx_cached_ai_match_key ON cached_ai_predictions(match_key);
+CREATE INDEX idx_cached_ai_expires ON cached_ai_predictions(expires_at);
+```
+
+**Yeni Akis:**
+```text
+Kullanici Analiz Isteği
+        |
+        v
++-------------------+
+| Cache Kontrol     |
+| (match_key ile)   |
++-------+-----------+
+        |
+   +----+----+
+   |         |
+Cache Var  Cache Yok
+   |         |
+   v         v
+Dogrudan  ml-prediction
+Dondur    Edge Function
+             |
+             v
+          Cache'e Kaydet
+             |
+             v
+          Dondur
+```
+
+**Kod Degisikligi (mlPredictionService.ts):**
+```typescript
+export async function getMLPrediction(...): Promise<MLPredictionResponse | null> {
+  // 1. Cache kontrol
+  const matchKey = `${homeTeam.name}-${awayTeam.name}-${new Date().toISOString().split('T')[0]}`;
+  
+  const { data: cached } = await supabase
+    .from('cached_ai_predictions')
+    .select('predictions')
+    .eq('match_key', matchKey)
+    .gt('expires_at', new Date().toISOString())
+    .single();
+  
+  if (cached) {
+    console.log('[ML] Cache hit for:', matchKey);
+    return cached.predictions as MLPredictionResponse;
   }
-});
+  
+  // 2. Cache yoksa AI cagir
+  const { data, error } = await supabase.functions.invoke('ml-prediction', {...});
+  
+  // 3. Basarili ise cache'e kaydet
+  if (data?.success) {
+    await supabase.from('cached_ai_predictions').upsert({
+      match_key: matchKey,
+      predictions: data,
+      home_team: homeTeam.name,
+      away_team: awayTeam.name,
+      match_date: new Date().toISOString().split('T')[0],
+      expires_at: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
+    }, { onConflict: 'match_key' });
+  }
+  
+  return data;
+}
 ```
 
 ---
 
-## Dosya Değişiklikleri
+### Optimizasyon 5: Chatbot Benzet Soru Cache
+**Tahmini Tasarruf: 10-20% AI maliyeti**
 
-| Dosya | İşlem |
-|-------|-------|
-| `capacitor.config.ts` | Güncelle - server yapılandırması |
-| `src/contexts/AuthContext.tsx` | Güncelle - platform bazlı redirect_uri |
-| `src/App.tsx` | Güncelle - Deep Link handler ekle |
-| `android/app/src/main/AndroidManifest.xml` | Güncelle - intent-filter (manuel) |
+**Mevcut Sorun:**
+- Ayni takim/lig icin benzer sorular tekrar AI'a gidiyor
+- Ornegin: "Barcelona formu nasil?" gibi sorular
 
----
+**Cozum - Basit Intent Cache:**
+```sql
+CREATE TABLE chatbot_cache (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  cache_key TEXT UNIQUE NOT NULL, -- 'team1-team2-intent_type'
+  response TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  expires_at TIMESTAMPTZ DEFAULT (now() + INTERVAL '1 hour')
+);
+```
 
-## Önemli Not: Manuel Adımlar
-
-Android Manifest değişikliği **Lovable dışında** yapılmalı:
-
-1. Projeyi GitHub'a export et
-2. `android/` klasöründe manifest dosyasını düzenle
-3. `npx cap sync` komutu çalıştır
-
----
-
-## Alternatif: In-App Browser
-
-Eğer Deep Link yapılandırması çok karmaşık gelirse, alternatif olarak **In-App Browser** (Capacitor Browser plugin) kullanılabilir. Bu yöntemde:
-
-- OAuth akışı uygulama içindeki tarayıcıda açılır
-- `browserFinished` event'i dinlenerek oturum kontrol edilir
-
-Ancak bu yöntem daha az güvenilirdir ve bazı OAuth sağlayıcıları tarafından desteklenmeyebilir.
+**Intent Bazli Cache Key:**
+- Takim formu: `barcelona-form`
+- Mac analizi: `barcelona-real_madrid-match`
+- Lig analizi: `PL-standings`
 
 ---
 
-## Test Senaryoları
+### Optimizasyon 6: sync-standings Cron Azaltma
+**Tahmini Tasarruf: 5-10%**
 
-1. **Native Build**:
-   - APK oluştur
-   - Google ile giriş yap
-   - Uygulama otomatik açılmalı ve giriş yapılmış olmalı
+**Mevcut:** Saatlik (24 cagri/gun)
+**Onerilen:** 6 saatte bir (4 cagri/gun)
 
-2. **Deep Link Test**:
-   - `adb shell am start -a android.intent.action.VIEW -d "app.golmetrik.android://callback?token=test"`
-   - Uygulama açılmalı
+Puan durumu gunluk 1-2 kez degisiyor, saatlik gereksiz.
+
+```sql
+-- Mevcut cron'u guncelle
+SELECT cron.unschedule(3); -- sync-standings jobid
+
+SELECT cron.schedule(
+  'sync-standings-every-6h',
+  '0 */6 * * *', -- Her 6 saatte
+  $$
+  SELECT net.http_post(
+    url:='https://qqhvdpzidjqcqwikpdeu.supabase.co/functions/v1/sync-standings',
+    headers:='{"Content-Type": "application/json", "Authorization": "Bearer ..."}'::jsonb,
+    body:='{}'::jsonb
+  ) as request_id;
+  $$
+);
+```
+
+---
+
+## Dosya Degisiklikleri Ozeti
+
+| Dosya | Islem | Detay |
+|-------|-------|-------|
+| `src/hooks/useHomeData.ts` | Duzenle | syncMatches fonksiyonunu ve cagirisini kaldir |
+| `src/pages/Live.tsx` | Duzenle | Mount sync cagirisini kaldir |
+| `src/pages/Standings.tsx` | Duzenle | triggerSync mantigini kaldir |
+| `src/services/mlPredictionService.ts` | Duzenle | Cache kontrol ekle |
+| `supabase/functions/ai-chatbot/index.ts` | Duzenle | Intent bazli cache ekle |
+
+---
+
+## Veritabani Degisiklikleri
+
+1. **cached_ai_predictions** tablosu olustur
+2. **chatbot_cache** tablosu olustur
+3. sync-standings cron'u 6 saate guncelle
+4. Eski cache temizleme cron'u ekle
+
+---
+
+## Beklenen Toplam Tasarruf
+
+| Optimizasyon | Tahmini Tasarruf |
+|--------------|------------------|
+| Manuel sync kaldir | 30-40% edge function |
+| Live.tsx sync kaldir | 10-20% edge function |
+| Standings sync kaldir | 15-25% edge function |
+| AI cache sistemi | 20-40% AI maliyeti |
+| Chatbot cache | 10-20% AI maliyeti |
+| Cron azaltma | 5-10% edge function |
+| **TOPLAM** | **~40-60% Cloud Balance tasarrufu** |
+
+---
+
+## Uygulama Onceligi
+
+1. **Yuksek Oncelik:** Manuel sync kaldir (useHomeData, Live, Standings)
+2. **Orta Oncelik:** AI cache sistemi
+3. **Dusuk Oncelik:** Chatbot cache ve cron optimizasyonu
+
