@@ -429,15 +429,10 @@ const Profile = () => {
           <motion.div variants={itemVariants}>
             <Card className="glass-card">
               <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-primary" />
-                    Son Analizler
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" onClick={() => navigate('/analysis-history')} className="text-xs h-7 px-2">
-                    Tümü <ChevronRight className="w-4 h-4 ml-1" />
-                  </Button>
-                </div>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  Son Analizler
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 {analysesLoading ? (
