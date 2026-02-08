@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import { Swords } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -22,7 +22,7 @@ interface H2HSummaryBadgeProps {
   compact?: boolean;
 }
 
-const H2HSummaryBadge: React.FC<H2HSummaryBadgeProps> = ({
+const H2HSummaryBadge = forwardRef<HTMLDivElement, H2HSummaryBadgeProps>(({
   homeTeam,
   awayTeam,
   lastMatches,
@@ -31,7 +31,7 @@ const H2HSummaryBadge: React.FC<H2HSummaryBadgeProps> = ({
   draws,
   className,
   compact = false
-}) => {
+}, ref) => {
   const getMatchResult = (match: H2HMatch): 'home' | 'away' | 'draw' => {
     if (!match?.score) return 'draw';
     const parts = match.score.split('-');
@@ -62,7 +62,7 @@ const H2HSummaryBadge: React.FC<H2HSummaryBadgeProps> = ({
       <TooltipProvider delayDuration={300}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className={cn("flex items-center gap-0.5", className)}>
+            <div ref={ref} className={cn("flex items-center gap-0.5", className)}>
               {recentMatches.map((match, i) => {
                 const result = getMatchResult(match);
                 return (
@@ -105,7 +105,7 @@ const H2HSummaryBadge: React.FC<H2HSummaryBadgeProps> = ({
     <TooltipProvider delayDuration={300}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className={cn(
+          <div ref={ref} className={cn(
             "flex items-center gap-1.5 px-2 py-1 rounded-full bg-muted/50 border border-border/50",
             className
           )}>
@@ -178,6 +178,8 @@ const H2HSummaryBadge: React.FC<H2HSummaryBadgeProps> = ({
       </Tooltip>
     </TooltipProvider>
   );
-};
+});
+
+H2HSummaryBadge.displayName = 'H2HSummaryBadge';
 
 export default H2HSummaryBadge;
