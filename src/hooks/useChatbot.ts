@@ -81,7 +81,7 @@ export const useChatbot = (): UseChatbotReturn => {
           .select('usage_count')
           .eq('user_id', user.id)
           .eq('usage_date', today)
-          .single();
+          .maybeSingle();
 
         const current = usageData?.usage_count ?? 0;
         setUsage({
