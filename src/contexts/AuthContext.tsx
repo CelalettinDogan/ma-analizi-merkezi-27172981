@@ -17,12 +17,59 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Native Android'de @codetrix-studio/capacitor-google-auth kullanarak
+ * harici tarayıcı açmadan Google Sign-In yapar.
+ * Web/dev ortamında Lovable managed OAuth fallback kullanır.
+ */
+async function nativeGoogleSignIn(): Promise<{ error: Error | null }> {
+  try {
+    const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
+
+    // Native Google hesap seçiciyi aç
+    const googleUser = await GoogleAuth.signIn();
+    const idToken = googleUser.authentication?.idToken;
+
+    if (!idToken) {
+      return { error: new Error('Google kimlik doğrulama jetonu alınamadı.') };
+    }
+
+    // idToken ile Supabase oturumu başlat
+    const { error } = await supabase.auth.signInWithIdToken({
+      provider: 'google',
+      token: idToken,
+    });
+
+    if (error) {
+      return { error: error as Error };
+    }
+
+    return { error: null };
+  } catch (err: any) {
+    // Kullanıcı iptal ettiyse
+    if (err?.message?.includes('canceled') || err?.message?.includes('cancelled') || err?.code === '12501') {
+      return { error: new Error('Google girişi iptal edildi.') };
+    }
+    console.error('Native Google Sign-In hatası:', err);
+    return { error: err instanceof Error ? err : new Error(String(err)) };
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Native platformda GoogleAuth'u başlat
+    if (Capacitor.isNativePlatform()) {
+      import('@codetrix-studio/capacitor-google-auth').then(({ GoogleAuth }) => {
+        GoogleAuth.initialize({
+          scopes: ['profile', 'email'],
+        });
+      }).catch(console.warn);
+    }
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -65,11 +112,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    // Native Android için custom scheme, web için origin
-    const redirectUri = Capacitor.isNativePlatform()
-      ? 'app.golmetrik.android://callback'
-      : window.location.origin;
+    // Native Android'de harici tarayıcı açmadan native Google Sign-In kullan
+    if (Capacitor.isNativePlatform()) {
+      return nativeGoogleSignIn();
+    }
 
+    // Web/dev ortamında Lovable managed OAuth fallback
+    const redirectUri = window.location.origin;
     const { error } = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: redirectUri,
     });
@@ -77,6 +126,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    // Native'de Google oturumunu da kapat
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
+        await GoogleAuth.signOut();
+      } catch (e) {
+        console.warn('Google Sign-Out hatası:', e);
+      }
+    }
     await supabase.auth.signOut();
   };
 
