@@ -81,34 +81,43 @@ function extractRetryAfterSeconds(message: string): number | null {
 }
 
 async function executeRequest(body: Record<string, unknown>): Promise<unknown> {
-  const { data, error } = await supabase.functions.invoke('football-api', {
-    body,
-  });
+  try {
+    const { data, error } = await supabase.functions.invoke('football-api', {
+      body,
+    });
 
-  if (error) {
-    const message = (error as unknown as { message?: string })?.message || 'API çağrısı başarısız';
+    if (error) {
+      const message = (error as unknown as { message?: string })?.message || 'API çağrısı başarısız';
 
-    // When the function returns a non-2xx (e.g., 429), supabase-js surfaces it as `error`
-    // so we need to interpret it here to trigger our backoff/retry logic.
-    if (message.includes('returned 429')) {
-      const retryAfter = extractRetryAfterSeconds(message) ?? 15;
+      // When the function returns a non-2xx (e.g., 429), supabase-js surfaces it as `error`
+      // so we need to interpret it here to trigger our backoff/retry logic.
+      if (message.includes('returned 429') || message.includes('429')) {
+        const retryAfter = extractRetryAfterSeconds(message) ?? 15;
+        throw new Error(`RATE_LIMIT:${retryAfter}`);
+      }
+
+      throw new Error(message);
+    }
+
+    // If the function responds with 200 but includes a rate-limit payload (defensive)
+    if (data?.error?.includes?.('Rate limit') || data?.retryAfter) {
+      const retryAfter = data.retryAfter || 10;
       throw new Error(`RATE_LIMIT:${retryAfter}`);
     }
 
-    throw new Error(message);
-  }
+    if (data?.error) {
+      throw new Error(data.error);
+    }
 
-  // If the function responds with 200 but includes a rate-limit payload (defensive)
-  if (data?.error?.includes?.('Rate limit') || data?.retryAfter) {
-    const retryAfter = data.retryAfter || 10;
-    throw new Error(`RATE_LIMIT:${retryAfter}`);
+    return data;
+  } catch (err) {
+    // Re-throw rate limit errors for proper handling
+    if (err instanceof Error && err.message.startsWith('RATE_LIMIT:')) {
+      throw err;
+    }
+    // For other errors, wrap with more context
+    throw new Error(err instanceof Error ? err.message : 'API çağrısı başarısız');
   }
-
-  if (data?.error) {
-    throw new Error(data.error);
-  }
-
-  return data;
 }
 
 async function processQueue(): Promise<void> {

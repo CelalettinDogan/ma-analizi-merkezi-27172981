@@ -20,9 +20,9 @@ interface H2HCache {
 // In-memory cache for H2H data to avoid repeated API calls
 const h2hCache: H2HCache = {};
 
-// Track failed requests to avoid repeated attempts
-const failedRequests = new Set<string>();
-const FAILED_REQUEST_COOLDOWN = 60000; // 1 minute cooldown for failed requests
+// Track failed requests to avoid repeated attempts  
+const failedRequests = new Map<string, number>(); // cacheKey -> timestamp
+const FAILED_REQUEST_COOLDOWN = 120000; // 2 minute cooldown for failed requests (rate limit protection)
 
 export function useH2HPreview(matchId: number | null, homeTeam: string, awayTeam: string) {
   const [data, setData] = useState<H2HData | null>(null);
@@ -42,8 +42,13 @@ export function useH2HPreview(matchId: number | null, homeTeam: string, awayTeam
     }
 
     // Check if this request recently failed (rate limit protection)
-    if (failedRequests.has(cacheKey)) {
+    const failedTimestamp = failedRequests.get(cacheKey);
+    if (failedTimestamp && Date.now() - failedTimestamp < FAILED_REQUEST_COOLDOWN) {
       return;
+    }
+    // Clean up old entries
+    if (failedTimestamp) {
+      failedRequests.delete(cacheKey);
     }
 
     // Check if we have cached data in apiRequestManager
@@ -118,16 +123,19 @@ export function useH2HPreview(matchId: number | null, homeTeam: string, awayTeam
         }
       }
     } catch (err) {
-      console.warn('H2H fetch failed (gracefully degrading):', err);
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      console.warn('H2H fetch failed (gracefully degrading):', errorMsg);
       
-      // Mark as failed to prevent repeated attempts
-      failedRequests.add(cacheKey);
-      setTimeout(() => failedRequests.delete(cacheKey), FAILED_REQUEST_COOLDOWN);
+      // Mark as failed to prevent repeated attempts (especially for rate limits)
+      failedRequests.set(cacheKey, Date.now());
       
-      // Don't show error to user, just gracefully degrade
+      // Don't show error to user for rate limits, just gracefully degrade
       h2hCache[cacheKey] = null;
       if (mountedRef.current) {
-        setError('H2H verisi yüklenemedi');
+        // Only set error for non-rate-limit issues
+        if (!errorMsg.includes('rate limit') && !errorMsg.includes('RATE_LIMIT')) {
+          setError('H2H verisi yüklenemedi');
+        }
       }
     } finally {
       if (mountedRef.current) {
