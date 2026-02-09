@@ -1,8 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Flame, Snowflake } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { TrendingUp, TrendingDown, Flame, Snowflake, Info } from 'lucide-react';
 
 interface StandingData {
   team_name: string;
@@ -21,18 +20,37 @@ interface FormAnalysisTabProps {
   isLoading?: boolean;
 }
 
-// Calculate form points (W=3, D=1, L=0)
-const calculateFormPoints = (form: string | null): number => {
-  if (!form) return 0;
-  return form.split(',').reduce((total, result) => {
-    const r = result.trim().toUpperCase();
-    if (r === 'W') return total + 3;
-    if (r === 'D') return total + 1;
-    return total;
-  }, 0);
+const calculateFormPoints = (team: StandingData): number => {
+  if (team.form) {
+    return team.form.split(',').reduce((total, r) => {
+      const u = r.trim().toUpperCase();
+      return total + (u === 'W' ? 3 : u === 'D' ? 1 : 0);
+    }, 0);
+  }
+  return (team.won * 3) + (team.draw * 1);
 };
 
-// Get form display
+const getPointsPerGame = (team: StandingData): number => {
+  const pts = calculateFormPoints(team);
+  return team.played_games > 0 ? pts / team.played_games : 0;
+};
+
+const generateFallbackForm = (team: StandingData): string[] => {
+  const total = team.won + team.draw + team.lost;
+  if (total === 0) return [];
+  const slots = Math.min(5, total);
+  const result: string[] = [];
+  for (let i = 0; i < slots; i++) {
+    const pos = (i + 0.5) / slots;
+    const wRatio = team.won / total;
+    const dRatio = team.draw / total;
+    if (pos < wRatio) result.push('W');
+    else if (pos < wRatio + dRatio) result.push('D');
+    else result.push('L');
+  }
+  return result;
+};
+
 const getFormIcon = (result: string) => {
   switch (result.trim().toUpperCase()) {
     case 'W': return <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold border border-primary/30">G</span>;
@@ -70,60 +88,24 @@ const FormAnalysisTab: React.FC<FormAnalysisTabProps> = ({ standings, isLoading 
     );
   }
 
-  // Calculate form points for each team
-  const teamsWithFormPoints = standings.map(team => ({
+  const hasRealForm = standings.some(t => t.form != null);
+
+  const teamsWithFormData = standings.map(team => ({
     ...team,
-    formPoints: calculateFormPoints(team.form),
-    formArray: team.form ? team.form.split(',').slice(0, 5) : []
+    formPoints: calculateFormPoints(team),
+    pointsPerGame: getPointsPerGame(team),
+    formArray: team.form ? team.form.split(',').slice(0, 5) : generateFallbackForm(team),
   }));
 
-  // Rising teams (best form)
-  const risingTeams = [...teamsWithFormPoints]
-    .sort((a, b) => b.formPoints - a.formPoints)
+  const risingTeams = [...teamsWithFormData]
+    .sort((a, b) => b.pointsPerGame - a.pointsPerGame)
     .slice(0, 5);
 
-  // Falling teams (worst form)
-  const fallingTeams = [...teamsWithFormPoints]
-    .sort((a, b) => a.formPoints - b.formPoints)
+  const fallingTeams = [...teamsWithFormData]
+    .sort((a, b) => a.pointsPerGame - b.pointsPerGame)
     .slice(0, 5);
 
-  // Hot streaks (consecutive wins)
-  const getWinStreak = (form: string | null): number => {
-    if (!form) return 0;
-    const results = form.split(',');
-    let streak = 0;
-    for (const r of results) {
-      if (r.trim().toUpperCase() === 'W') streak++;
-      else break;
-    }
-    return streak;
-  };
-
-  const hotStreaks = [...teamsWithFormPoints]
-    .map(team => ({ ...team, winStreak: getWinStreak(team.form) }))
-    .filter(team => team.winStreak >= 2)
-    .sort((a, b) => b.winStreak - a.winStreak)
-    .slice(0, 5);
-
-  // Cold streaks (consecutive losses/no wins)
-  const getNoWinStreak = (form: string | null): number => {
-    if (!form) return 0;
-    const results = form.split(',');
-    let streak = 0;
-    for (const r of results) {
-      if (r.trim().toUpperCase() !== 'W') streak++;
-      else break;
-    }
-    return streak;
-  };
-
-  const coldStreaks = [...teamsWithFormPoints]
-    .map(team => ({ ...team, noWinStreak: getNoWinStreak(team.form) }))
-    .filter(team => team.noWinStreak >= 2)
-    .sort((a, b) => b.noWinStreak - a.noWinStreak)
-    .slice(0, 5);
-
-  const renderTeamWithForm = (team: typeof teamsWithFormPoints[0], index: number, badge?: string) => (
+  const renderTeamRow = (team: typeof teamsWithFormData[0], index: number, badge: string) => (
     <motion.div
       key={team.team_name}
       initial={{ opacity: 0, x: -10 }}
@@ -139,55 +121,99 @@ const FormAnalysisTab: React.FC<FormAnalysisTabProps> = ({ standings, isLoading 
         <p className="text-sm font-medium truncate">
           {team.team_short_name || team.team_name}
         </p>
-        {badge && (
-          <span className="text-xs text-muted-foreground">{badge}</span>
-        )}
+        <span className="text-xs text-muted-foreground">{badge}</span>
       </div>
       <div className="flex items-center gap-1">
         {team.formArray.map((result, i) => (
-          <React.Fragment key={i}>
-            {getFormIcon(result)}
-          </React.Fragment>
+          <React.Fragment key={i}>{getFormIcon(result)}</React.Fragment>
         ))}
       </div>
     </motion.div>
   );
 
+  const FallbackNotice = () => (
+    !hasRealForm ? (
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
+        <Info className="w-3 h-3" />
+        <span>Sezon geneli performansa göre hesaplanmıştır</span>
+      </div>
+    ) : null
+  );
+
+  // Streak cards: only show real streaks if form data exists
+  const getWinStreak = (form: string | null): number => {
+    if (!form) return 0;
+    let streak = 0;
+    for (const r of form.split(',')) {
+      if (r.trim().toUpperCase() === 'W') streak++; else break;
+    }
+    return streak;
+  };
+
+  const getNoWinStreak = (form: string | null): number => {
+    if (!form) return 0;
+    let streak = 0;
+    for (const r of form.split(',')) {
+      if (r.trim().toUpperCase() !== 'W') streak++; else break;
+    }
+    return streak;
+  };
+
+  const hotStreaks = hasRealForm
+    ? [...teamsWithFormData]
+        .map(t => ({ ...t, winStreak: getWinStreak(t.form) }))
+        .filter(t => t.winStreak >= 2)
+        .sort((a, b) => b.winStreak - a.winStreak)
+        .slice(0, 5)
+    : [];
+
+  const coldStreaks = hasRealForm
+    ? [...teamsWithFormData]
+        .map(t => ({ ...t, noWinStreak: getNoWinStreak(t.form) }))
+        .filter(t => t.noWinStreak >= 2)
+        .sort((a, b) => b.noWinStreak - a.noWinStreak)
+        .slice(0, 5)
+    : [];
+
+  const StreakUnavailable = () => (
+    <div className="flex flex-col items-center gap-2 py-4 text-center">
+      <Info className="w-5 h-5 text-muted-foreground" />
+      <p className="text-sm text-muted-foreground">
+        Form verisi mevcut değil – genel performansa göre sıralama gösteriliyor
+      </p>
+    </div>
+  );
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {/* Rising Teams */}
       <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
             <TrendingUp className="w-4 h-4 text-primary" />
             Yükselen Takımlar
           </CardTitle>
-          <p className="text-xs text-muted-foreground">Son 5 maçta en iyi performans</p>
+          <p className="text-xs text-muted-foreground">En iyi maç başı puan ortalaması</p>
+          <FallbackNotice />
         </CardHeader>
         <CardContent className="space-y-3">
-          {risingTeams.map((team, i) => 
-            renderTeamWithForm(team, i, `${team.formPoints} puan`)
-          )}
+          {risingTeams.map((t, i) => renderTeamRow(t, i, `${t.pointsPerGame.toFixed(2)} puan/maç`))}
         </CardContent>
       </Card>
 
-      {/* Falling Teams */}
       <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
             <TrendingDown className="w-4 h-4 text-destructive" />
             Düşüşte Olanlar
           </CardTitle>
-          <p className="text-xs text-muted-foreground">Son 5 maçta düşük performans</p>
+          <p className="text-xs text-muted-foreground">En düşük maç başı puan ortalaması</p>
+          <FallbackNotice />
         </CardHeader>
         <CardContent className="space-y-3">
-          {fallingTeams.map((team, i) => 
-            renderTeamWithForm(team, i, `${team.formPoints} puan`)
-          )}
+          {fallingTeams.map((t, i) => renderTeamRow(t, i, `${t.pointsPerGame.toFixed(2)} puan/maç`))}
         </CardContent>
       </Card>
 
-      {/* Hot Streaks */}
       <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
@@ -197,19 +223,14 @@ const FormAnalysisTab: React.FC<FormAnalysisTabProps> = ({ standings, isLoading 
           <p className="text-xs text-muted-foreground">Üst üste kazanan takımlar</p>
         </CardHeader>
         <CardContent className="space-y-3">
-          {hotStreaks.length > 0 ? (
-            hotStreaks.map((team, i) => 
-              renderTeamWithForm(team, i, `${team.winStreak} galibiyet`)
-            )
+          {!hasRealForm ? <StreakUnavailable /> : hotStreaks.length > 0 ? (
+            hotStreaks.map((t, i) => renderTeamRow(t, i, `${t.winStreak} galibiyet`))
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Şu an galibiyet serisinde takım yok
-            </p>
+            <p className="text-sm text-muted-foreground text-center py-4">Şu an galibiyet serisinde takım yok</p>
           )}
         </CardContent>
       </Card>
 
-      {/* Cold Streaks */}
       <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
@@ -219,14 +240,10 @@ const FormAnalysisTab: React.FC<FormAnalysisTabProps> = ({ standings, isLoading 
           <p className="text-xs text-muted-foreground">Galibiyet alamayan takımlar</p>
         </CardHeader>
         <CardContent className="space-y-3">
-          {coldStreaks.length > 0 ? (
-            coldStreaks.map((team, i) => 
-              renderTeamWithForm(team, i, `${team.noWinStreak} maç galibiyetsiz`)
-            )
+          {!hasRealForm ? <StreakUnavailable /> : coldStreaks.length > 0 ? (
+            coldStreaks.map((t, i) => renderTeamRow(t, i, `${t.noWinStreak} maç galibiyetsiz`))
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Şu an galibiyetsiz seride takım yok
-            </p>
+            <p className="text-sm text-muted-foreground text-center py-4">Şu an galibiyetsiz seride takım yok</p>
           )}
         </CardContent>
       </Card>
