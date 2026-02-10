@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
-import { 
-  Crown, Check, Sparkles, Zap, Shield,
-  Brain, MessageSquare, Ban, History
-} from 'lucide-react';
+import { Crown, Check, Sparkles, Zap, Shield, Brain, MessageSquare, Ban, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAccessLevel } from '@/hooks/useAccessLevel';
 import { usePlatformPremium } from '@/hooks/usePlatformPremium';
@@ -17,17 +13,7 @@ import AppHeader from '@/components/layout/AppHeader';
 import BottomNav from '@/components/navigation/BottomNav';
 import { toast } from 'sonner';
 
-// ─── Animation Variants ────────────────────────────────────
-const container = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.07 } },
-};
-const item = {
-  hidden: { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-};
-
-// ─── Plan Configs ──────────────────────────────────────────
+// ─── Plan data ─────────────────────────────────────────────
 interface PlanConfig {
   id: 'premium_basic' | 'premium_plus' | 'premium_pro';
   name: string;
@@ -43,176 +29,32 @@ interface PlanConfig {
 
 const plans: PlanConfig[] = [
   {
-    id: 'premium_basic',
-    name: 'Basic',
-    tagline: 'Sınırsız analiz başlangıcı',
-    monthlyId: PRODUCTS.PREMIUM_BASIC_MONTHLY,
-    yearlyId: PRODUCTS.PREMIUM_BASIC_YEARLY,
-    monthlyPrice: PLAN_PRICES.premium_basic.monthly,
-    yearlyPrice: PLAN_PRICES.premium_basic.yearly,
-    chatLimit: PLAN_PRODUCTS.premium_basic.chatLimit,
-    popular: false,
-    icon: Zap,
+    id: 'premium_basic', name: 'Basic', tagline: '3 AI/gün',
+    monthlyId: PRODUCTS.PREMIUM_BASIC_MONTHLY, yearlyId: PRODUCTS.PREMIUM_BASIC_YEARLY,
+    monthlyPrice: PLAN_PRICES.premium_basic.monthly, yearlyPrice: PLAN_PRICES.premium_basic.yearly,
+    chatLimit: PLAN_PRODUCTS.premium_basic.chatLimit, popular: false, icon: Zap,
   },
   {
-    id: 'premium_plus',
-    name: 'Plus',
-    tagline: 'En iyi fiyat / performans',
-    monthlyId: PRODUCTS.PREMIUM_PLUS_MONTHLY,
-    yearlyId: PRODUCTS.PREMIUM_PLUS_YEARLY,
-    monthlyPrice: PLAN_PRICES.premium_plus.monthly,
-    yearlyPrice: PLAN_PRICES.premium_plus.yearly,
-    chatLimit: PLAN_PRODUCTS.premium_plus.chatLimit,
-    popular: true,
-    icon: Crown,
+    id: 'premium_plus', name: 'Plus', tagline: '5 AI/gün',
+    monthlyId: PRODUCTS.PREMIUM_PLUS_MONTHLY, yearlyId: PRODUCTS.PREMIUM_PLUS_YEARLY,
+    monthlyPrice: PLAN_PRICES.premium_plus.monthly, yearlyPrice: PLAN_PRICES.premium_plus.yearly,
+    chatLimit: PLAN_PRODUCTS.premium_plus.chatLimit, popular: true, icon: Crown,
   },
   {
-    id: 'premium_pro',
-    name: 'Pro',
-    tagline: 'Maksimum AI deneyimi',
-    monthlyId: PRODUCTS.PREMIUM_PRO_MONTHLY,
-    yearlyId: PRODUCTS.PREMIUM_PRO_YEARLY,
-    monthlyPrice: PLAN_PRICES.premium_pro.monthly,
-    yearlyPrice: PLAN_PRICES.premium_pro.yearly,
-    chatLimit: PLAN_PRODUCTS.premium_pro.chatLimit,
-    popular: false,
-    icon: Sparkles,
+    id: 'premium_pro', name: 'Pro', tagline: '10 AI/gün',
+    monthlyId: PRODUCTS.PREMIUM_PRO_MONTHLY, yearlyId: PRODUCTS.PREMIUM_PRO_YEARLY,
+    monthlyPrice: PLAN_PRICES.premium_pro.monthly, yearlyPrice: PLAN_PRICES.premium_pro.yearly,
+    chatLimit: PLAN_PRODUCTS.premium_pro.chatLimit, popular: false, icon: Sparkles,
   },
 ];
 
-// ─── Billing Toggle ────────────────────────────────────────
-const BillingToggle: React.FC<{ isYearly: boolean; onChange: (v: boolean) => void }> = ({ isYearly, onChange }) => (
-  <motion.div variants={item} className="flex justify-center">
-    <div className="relative inline-flex items-center rounded-full bg-muted/60 p-1 backdrop-blur-sm border border-border/50">
-      <button
-        onClick={() => onChange(false)}
-        className={`relative z-10 px-5 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
-          !isYearly ? 'text-foreground' : 'text-muted-foreground'
-        }`}
-      >
-        Aylık
-      </button>
-      <button
-        onClick={() => onChange(true)}
-        className={`relative z-10 px-5 py-2 rounded-full text-sm font-medium transition-colors duration-200 flex items-center gap-1.5 ${
-          isYearly ? 'text-foreground' : 'text-muted-foreground'
-        }`}
-      >
-        Yıllık
-        {isYearly && (
-          <motion.span
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="text-[10px] font-bold text-emerald-500"
-          >
-            -17%
-          </motion.span>
-        )}
-      </button>
-      {/* Sliding pill */}
-      <motion.div
-        layout
-        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-        className="absolute inset-y-1 rounded-full bg-background shadow-sm border border-border/80"
-        style={{
-          width: 'calc(50% - 4px)',
-          left: isYearly ? 'calc(50% + 2px)' : '4px',
-        }}
-      />
-    </div>
-  </motion.div>
-);
-
-// ─── Plan Card ─────────────────────────────────────────────
-const PlanCard: React.FC<{
-  plan: PlanConfig;
-  isSelected: boolean;
-  isYearly: boolean;
-  onSelect: () => void;
-}> = ({ plan, isSelected, isYearly, onSelect }) => {
-  const displayPrice = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
-  const period = isYearly ? '/yıl' : '/ay';
-  const Icon = plan.icon;
-
-  return (
-    <motion.button
-      whileTap={{ scale: 0.97 }}
-      onClick={onSelect}
-      className={`relative w-full rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
-        plan.popular
-          ? isSelected
-            ? 'border-primary bg-primary/5 shadow-[0_0_30px_-5px_hsl(var(--primary)/0.25)]'
-            : 'border-primary/40 bg-primary/[0.02]'
-          : isSelected
-            ? 'border-primary bg-primary/5 shadow-lg'
-            : 'border-border/60 bg-card/60 backdrop-blur-sm hover:border-border'
-      }`}
-    >
-      {/* Popüler badge – sits INSIDE the card with proper spacing */}
-      {plan.popular && (
-        <div className="bg-primary text-primary-foreground text-[11px] font-semibold text-center py-1.5 flex items-center justify-center gap-1">
-          <Sparkles className="w-3 h-3" />
-          En İyi Fiyat / Performans
-        </div>
-      )}
-
-      <div className={`p-4 ${plan.popular ? '' : 'pt-5'}`}>
-        {/* Header row */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2.5">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-              plan.popular
-                ? 'bg-primary/15'
-                : 'bg-muted/80'
-            }`}>
-              <Icon className={`w-4.5 h-4.5 ${plan.popular ? 'text-primary' : 'text-muted-foreground'}`} />
-            </div>
-            <div>
-              <p className="font-bold text-base">{plan.name}</p>
-              <p className="text-[11px] text-muted-foreground leading-tight">{plan.tagline}</p>
-            </div>
-          </div>
-          {/* Selection indicator */}
-          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-            isSelected ? 'border-primary bg-primary' : 'border-muted-foreground/30'
-          }`}>
-            {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
-          </div>
-        </div>
-
-        {/* Price */}
-        <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-extrabold tracking-tight">₺{displayPrice}</span>
-          <span className="text-xs text-muted-foreground">{period}</span>
-        </div>
-
-        {isYearly && (
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            aylık ₺{Math.round(displayPrice / 12)}
-          </p>
-        )}
-
-        {/* Key differentiator */}
-        <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <MessageSquare className="w-3.5 h-3.5" />
-          <span>{plan.chatLimit} AI mesajı/gün</span>
-          <span className="text-border">•</span>
-          <span>Sınırsız analiz</span>
-        </div>
-      </div>
-    </motion.button>
-  );
-};
-
-// ─── All Premium Features (shown once) ────────────────────
-const allFeatures = [
-  { icon: Brain, label: 'Sınırsız maç analizi' },
-  { icon: MessageSquare, label: 'AI destekli yorumlar' },
-  { icon: History, label: 'Analiz geçmişine erişim' },
-  { icon: Ban, label: 'Reklamsız deneyim' },
+const includedFeatures = [
+  { icon: Brain, label: 'Sınırsız analiz' },
+  { icon: Ban, label: 'Reklamsız' },
+  { icon: History, label: 'Geçmiş erişimi' },
+  { icon: MessageSquare, label: 'AI yorumlar' },
 ];
 
-// ─── Main Component ───────────────────────────────────────
 const Premium = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
@@ -224,9 +66,9 @@ const Premium = () => {
   const [selectedPlan, setSelectedPlan] = useState<PlanConfig['id']>('premium_plus');
   const [isYearly, setIsYearly] = useState(true);
 
-  const selectedPlanConfig = plans.find(p => p.id === selectedPlan)!;
-  const productId = isYearly ? selectedPlanConfig.yearlyId : selectedPlanConfig.monthlyId;
-  const price = isYearly ? selectedPlanConfig.yearlyPrice : selectedPlanConfig.monthlyPrice;
+  const sel = plans.find(p => p.id === selectedPlan)!;
+  const productId = isYearly ? sel.yearlyId : sel.monthlyId;
+  const price = isYearly ? sel.yearlyPrice : sel.monthlyPrice;
   const planName = PLAN_PRODUCTS[selectedPlan].name;
 
   const handlePurchase = async () => {
@@ -235,7 +77,7 @@ const Premium = () => {
     try {
       if (isNative) {
         const result = await purchaseService.purchaseSubscription(productId);
-        if (result.success) toast.success(`${planName} üyeliğin aktif edildi!`);
+        if (result.success) toast.success(`${planName} aktif edildi!`);
         else toast.error(result.error || 'Satın alma başarısız');
       } else {
         toast.info('Gerçek satın alma için mobil uygulama gerekli');
@@ -247,155 +89,241 @@ const Premium = () => {
   const handleRestore = async () => {
     setIsLoading(true);
     try {
-      const result = await purchaseService.restorePurchases();
-      if (result.success) toast.success('Satın almalar geri yüklendi!');
-      else toast.info(result.error || 'Geri yüklenecek satın alma bulunamadı');
-    } catch { toast.error('Geri yükleme başarısız'); }
+      const r = await purchaseService.restorePurchases();
+      if (r.success) toast.success('Geri yüklendi!');
+      else toast.info(r.error || 'Bulunamadı');
+    } catch { toast.error('Hata'); }
     finally { setIsLoading(false); }
   };
 
-  // ── Loading ──
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background">
         <AppHeader />
-        <main className="container mx-auto px-4 py-6 pb-24">
-          <div className="animate-pulse space-y-4 max-w-md mx-auto">
-            <div className="h-20 bg-muted rounded-2xl" />
-            <div className="h-12 bg-muted rounded-full w-48 mx-auto" />
-            <div className="h-32 bg-muted rounded-2xl" />
-            <div className="h-32 bg-muted rounded-2xl" />
+        <div className="flex items-center justify-center flex-1 py-20">
+          <div className="animate-pulse space-y-3 w-full max-w-sm px-4">
+            <div className="h-10 bg-muted rounded-xl" />
+            <div className="h-8 bg-muted rounded-full w-40 mx-auto" />
+            <div className="grid grid-cols-3 gap-2">
+              <div className="h-28 bg-muted rounded-xl" />
+              <div className="h-32 bg-muted rounded-xl" />
+              <div className="h-28 bg-muted rounded-xl" />
+            </div>
           </div>
-        </main>
+        </div>
         <BottomNav />
       </div>
     );
   }
 
-  // ── Premium/Admin redirect ──
   if (isPremium || isAdmin) return <Navigate to="/profile" replace />;
 
-  // ── Free User Landing ──
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-[100dvh] bg-background flex flex-col">
       <AppHeader />
 
-      <main className="flex-1 container mx-auto px-4 sm:px-6 py-5 pb-52 lg:pb-8">
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={container}
-          className="space-y-5 max-w-md mx-auto"
-        >
-          {/* ── Hero ── */}
-          <motion.div variants={item} className="text-center space-y-2 pt-2">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-              className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-amber-400 via-primary to-accent p-[2px]"
-            >
-              <div className="w-full h-full rounded-2xl bg-background flex items-center justify-center">
-                <Crown className="w-8 h-8 text-primary" />
+      {/* 
+        Main content: uses flex-1 + justify-between to fill available space
+        between header and bottom nav WITHOUT scrolling.
+        Bottom padding accounts for fixed CTA + BottomNav.
+      */}
+      <main className="flex-1 flex flex-col justify-center px-4 sm:px-6"
+        style={{ paddingBottom: 'calc(8.5rem + env(safe-area-inset-bottom, 0px))' }}
+      >
+        <div className="w-full max-w-md mx-auto space-y-4">
+
+          {/* ── Mini Hero ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center space-y-1"
+          >
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-primary p-[1.5px]">
+                <div className="w-full h-full rounded-xl bg-background flex items-center justify-center">
+                  <Crown className="w-4 h-4 text-primary" />
+                </div>
               </div>
-            </motion.div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-400 via-primary to-accent bg-clip-text text-transparent">
-              GolMetrik Premium
-            </h1>
-            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-              Veriye dayalı maç içgörüleri, gelişmiş istatistik karşılaştırmaları
+              <h1 className="text-lg font-bold bg-gradient-to-r from-amber-400 via-primary to-accent bg-clip-text text-transparent">
+                GolMetrik Premium
+              </h1>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Gelişmiş analiz ve AI destekli içgörüler
             </p>
           </motion.div>
 
-          {/* ── Billing Toggle ── */}
-          <BillingToggle isYearly={isYearly} onChange={setIsYearly} />
-
-          {/* ── Plan Cards (vertical stack) ── */}
-          <motion.div variants={item} className="space-y-3">
-            {plans.map(plan => (
-              <PlanCard
-                key={plan.id}
-                plan={plan}
-                isSelected={selectedPlan === plan.id}
-                isYearly={isYearly}
-                onSelect={() => setSelectedPlan(plan.id)}
+          {/* ── Native Segmented Control (Aylık/Yıllık) ── */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.05 }}
+            className="flex justify-center"
+          >
+            <div className="relative inline-flex bg-muted/70 rounded-xl p-[3px] border border-border/50">
+              <motion.div
+                layout
+                transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                className="absolute inset-y-[3px] rounded-[10px] bg-background shadow-sm border border-border/80"
+                style={{
+                  width: 'calc(50% - 3px)',
+                  left: isYearly ? 'calc(50%)' : '3px',
+                }}
               />
+              <button
+                onClick={() => setIsYearly(false)}
+                className={`relative z-10 px-6 py-1.5 rounded-[10px] text-xs font-medium transition-colors ${
+                  !isYearly ? 'text-foreground' : 'text-muted-foreground'
+                }`}
+              >
+                Aylık
+              </button>
+              <button
+                onClick={() => setIsYearly(true)}
+                className={`relative z-10 px-6 py-1.5 rounded-[10px] text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                  isYearly ? 'text-foreground' : 'text-muted-foreground'
+                }`}
+              >
+                Yıllık
+                <span className="text-[9px] font-bold text-emerald-500">2 ay🎁</span>
+              </button>
+            </div>
+          </motion.div>
+
+          {/* ── 3-Column Plan Cards ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="grid grid-cols-3 gap-2"
+          >
+            {plans.map(plan => {
+              const isSelected = selectedPlan === plan.id;
+              const dp = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+              const Icon = plan.icon;
+
+              return (
+                <motion.button
+                  key={plan.id}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => setSelectedPlan(plan.id)}
+                  className={`relative rounded-2xl border-2 transition-all duration-200 flex flex-col items-center text-center overflow-hidden ${
+                    plan.popular
+                      ? isSelected
+                        ? 'border-primary bg-primary/[0.06] shadow-[0_2px_20px_-4px_hsl(var(--primary)/0.3)]'
+                        : 'border-primary/40 bg-primary/[0.02]'
+                      : isSelected
+                        ? 'border-primary bg-primary/[0.04] shadow-md'
+                        : 'border-border/50 bg-card/60'
+                  }`}
+                >
+                  {/* Popüler banner - inside card, no overflow */}
+                  {plan.popular && (
+                    <div className="w-full bg-primary text-primary-foreground text-[9px] xs:text-[10px] font-bold py-1 flex items-center justify-center gap-0.5">
+                      <Sparkles className="w-2.5 h-2.5" />
+                      Popüler
+                    </div>
+                  )}
+
+                  <div className={`flex flex-col items-center w-full px-2 pb-3 ${plan.popular ? 'pt-2' : 'pt-3'}`}>
+                    {/* Icon */}
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-1.5 ${
+                      plan.popular ? 'bg-primary/15' : 'bg-muted'
+                    }`}>
+                      <Icon className={`w-4 h-4 ${plan.popular ? 'text-primary' : 'text-muted-foreground'}`} />
+                    </div>
+
+                    {/* Name */}
+                    <p className="font-bold text-xs">{plan.name}</p>
+
+                    {/* Price */}
+                    <p className="text-lg xs:text-xl font-extrabold tracking-tight mt-0.5">
+                      ₺{dp}
+                    </p>
+                    <p className="text-[9px] text-muted-foreground -mt-0.5">
+                      {isYearly ? '/yıl' : '/ay'}
+                    </p>
+
+                    {isYearly && (
+                      <p className="text-[8px] xs:text-[9px] text-emerald-500 font-medium mt-0.5">
+                        aylık ₺{Math.round(dp / 12)}
+                      </p>
+                    )}
+
+                    {/* Key differentiator */}
+                    <p className="text-[9px] xs:text-[10px] text-muted-foreground mt-1.5">
+                      {plan.tagline}
+                    </p>
+
+                    {/* Selection dot */}
+                    <div className={`w-4 h-4 rounded-full border-2 mt-2 flex items-center justify-center transition-all ${
+                      isSelected ? 'border-primary bg-primary' : 'border-muted-foreground/25'
+                    }`}>
+                      {isSelected && <Check className="w-2.5 h-2.5 text-primary-foreground" />}
+                    </div>
+                  </div>
+                </motion.button>
+              );
+            })}
+          </motion.div>
+
+          {/* ── Included in all plans ── */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.15 }}
+            className="flex items-center justify-center gap-3 flex-wrap"
+          >
+            {includedFeatures.map(f => (
+              <div key={f.label} className="flex items-center gap-1">
+                <Check className="w-3 h-3 text-emerald-500" />
+                <span className="text-[10px] text-muted-foreground">{f.label}</span>
+              </div>
             ))}
           </motion.div>
-
-          {/* ── All plans include ── */}
-          <motion.div variants={item} className="rounded-2xl bg-muted/30 border border-border/50 p-4">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-              Tüm planlarda
-            </p>
-            <div className="grid grid-cols-2 gap-2.5">
-              {allFeatures.map(f => (
-                <div key={f.label} className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-md bg-emerald-500/10 flex items-center justify-center">
-                    <Check className="w-3 h-3 text-emerald-500" />
-                  </div>
-                  <span className="text-xs text-foreground/80">{f.label}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* ── Trust ── */}
-          <motion.div variants={item} className="flex items-center justify-center gap-4">
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Shield className="w-3.5 h-3.5 text-emerald-500" />
-              <span className="text-[10px]">Güvenli Ödeme</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Zap className="w-3.5 h-3.5 text-amber-500" />
-              <span className="text-[10px]">Anında Aktif</span>
-            </div>
-          </motion.div>
-        </motion.div>
+        </div>
       </main>
 
-      {/* ── Fixed CTA ── */}
+      {/* ── Fixed CTA — above BottomNav ── */}
       <div
-        className="fixed left-0 right-0 z-40 px-4 pt-3 pb-3 bg-gradient-to-t from-background via-background/98 to-background/0 lg:hidden"
+        className="fixed left-0 right-0 z-40 px-4 pt-2 pb-2 bg-background/95 backdrop-blur-sm border-t border-border/30 lg:hidden"
         style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}
       >
-        <div className="max-w-md mx-auto space-y-2">
+        <div className="max-w-md mx-auto space-y-1.5">
           <motion.div whileTap={{ scale: 0.98 }}>
             <Button
               onClick={handlePurchase}
               disabled={isLoading}
-              className="w-full h-[52px] text-[15px] font-semibold bg-gradient-to-r from-primary to-accent hover:opacity-90 relative overflow-hidden rounded-xl"
-              style={{ boxShadow: '0 0 24px -4px hsl(var(--primary) / 0.35)' }}
+              className="w-full h-12 text-sm font-semibold bg-gradient-to-r from-primary to-accent hover:opacity-90 relative overflow-hidden rounded-xl"
+              style={{ boxShadow: '0 0 20px -4px hsl(var(--primary) / 0.3)' }}
               size="lg"
             >
               <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
                 animate={{ x: ['-100%', '100%'] }}
-                transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1.5 }}
+                transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 2 }}
               />
               {isLoading ? (
                 <span className="flex items-center gap-2 relative">
-                  <span className="animate-spin">⏳</span>
-                  İşleniyor...
+                  <span className="animate-spin">⏳</span> İşleniyor...
                 </span>
               ) : (
                 <span className="flex items-center gap-2 relative">
-                  <Crown className="h-4.5 w-4.5" />
-                  Premium'a Geç
+                  <Crown className="h-4 w-4" /> Premium'a Geç
                 </span>
               )}
             </Button>
           </motion.div>
 
-          <p className="text-[10px] text-muted-foreground text-center">
-            Google Play güvencesiyle •{' '}
-            <button onClick={handleRestore} className="underline">
-              Satın almaları geri yükle
-            </button>
-          </p>
+          <div className="flex items-center justify-center gap-1 text-[9px] text-muted-foreground">
+            <Shield className="w-3 h-3 text-emerald-500/70" />
+            <span>Google Play güvencesiyle • İstediğin zaman iptal</span>
+            <span className="mx-0.5">•</span>
+            <button onClick={handleRestore} className="underline">Geri yükle</button>
+          </div>
 
-          <p className="text-[9px] text-muted-foreground/60 text-center leading-relaxed">
-            Abonelik otomatik yenilenir. Google Play &gt; Abonelikler'den iptal edebilirsiniz.{' '}
+          <p className="text-[8px] text-muted-foreground/50 text-center">
+            Abonelik otomatik yenilenir.{' '}
             <Link to="/terms" className="underline">Şartlar</Link> ve{' '}
             <Link to="/privacy" className="underline">Gizlilik</Link>
           </p>
