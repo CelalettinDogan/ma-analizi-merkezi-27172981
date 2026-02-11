@@ -289,12 +289,12 @@ const Premium = () => {
         className="fixed left-0 right-0 z-40 px-4 pt-2 pb-2 bg-background/95 backdrop-blur-sm border-t border-border/30 lg:hidden"
         style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}
       >
-        <div className="max-w-md mx-auto space-y-1.5">
+        <div className="max-w-md mx-auto space-y-1">
           <motion.div whileTap={{ scale: 0.98 }}>
             <Button
               onClick={handlePurchase}
               disabled={isLoading}
-              className="w-full h-12 text-sm font-semibold bg-gradient-to-r from-primary to-accent hover:opacity-90 relative overflow-hidden rounded-xl"
+              className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-primary to-accent hover:opacity-90 relative overflow-hidden rounded-xl"
               style={{ boxShadow: '0 0 20px -4px hsl(var(--primary) / 0.3)' }}
               size="lg"
             >
@@ -315,14 +315,14 @@ const Premium = () => {
             </Button>
           </motion.div>
 
-          <div className="flex items-center justify-center gap-1 text-[9px] text-muted-foreground">
-            <Shield className="w-3 h-3 text-emerald-500/70" />
+          <div className="flex items-center justify-center gap-1 text-[9px] text-muted-foreground leading-tight">
+            <Shield className="w-3 h-3 text-emerald-500/70 shrink-0" />
             <span>Google Play güvencesiyle • İstediğin zaman iptal</span>
             <span className="mx-0.5">•</span>
             <button onClick={handleRestore} className="underline">Geri yükle</button>
           </div>
 
-          <p className="text-[8px] text-muted-foreground/50 text-center">
+          <p className="text-[9px] text-muted-foreground/60 text-center leading-tight">
             Abonelik otomatik yenilenir.{' '}
             <Link to="/terms" className="underline">Şartlar</Link> ve{' '}
             <Link to="/privacy" className="underline">Gizlilik</Link>
