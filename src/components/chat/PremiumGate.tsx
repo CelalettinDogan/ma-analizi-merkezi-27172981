@@ -1,9 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Sparkles, Lock, BarChart3, Star, Zap, ArrowLeft, Check, Bot, AlertCircle, MessageCircle } from 'lucide-react';
+import { Crown, Lock, Bot, BarChart3, Sparkles, Star, Zap, ArrowLeft, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { PLAN_PRICES } from '@/constants/accessLevels';
 
@@ -14,221 +12,151 @@ interface PremiumGateProps {
 
 const variantContent = {
   chatbot: {
-    title: 'AI Asistan Premium Kullanıcılara Özel',
-    subtitle: 'Yapay zeka destekli maç analizlerine erişmek için Premium planına geç',
+    title: 'AI Asistan',
+    subtitle: 'Premium üyelere özel',
     icon: Bot,
-    gradient: 'from-emerald-500 via-teal-500 to-cyan-500',
   },
   analysis: {
-    title: 'Analiz Limitine Ulaştınız',
-    subtitle: 'Sınırsız analiz için Premium planına geçin',
+    title: 'Analiz Limiti',
+    subtitle: 'Sınırsız analiz için yükselt',
     icon: BarChart3,
-    gradient: 'from-orange-500 to-red-500',
   },
   general: {
     title: 'Premium Özellik',
-    subtitle: 'Bu özellik Premium üyelere özel',
+    subtitle: 'Premium üyelere özel',
     icon: Crown,
-    gradient: 'from-amber-500 to-orange-500',
   },
 };
 
-const planComparison = [
-  { 
-    name: 'Basic', 
-    price: PLAN_PRICES.premium_basic.monthly,
-    chat: '3/gün',
-    analysis: 'Sınırsız',
-    highlight: false,
-  },
-  { 
-    name: 'Plus', 
-    price: PLAN_PRICES.premium_plus.monthly,
-    chat: '5/gün',
-    analysis: 'Sınırsız',
-    highlight: false,
-  },
-  { 
-    name: 'Pro', 
-    price: PLAN_PRICES.premium_pro.monthly,
-    chat: '10/gün',
-    analysis: 'Sınırsız',
-    highlight: true,
-  },
+const plans = [
+  { name: 'Basic', price: PLAN_PRICES.premium_basic.monthly, chat: '3/gün', highlight: false },
+  { name: 'Plus', price: PLAN_PRICES.premium_plus.monthly, chat: '5/gün', highlight: true },
+  { name: 'Pro', price: PLAN_PRICES.premium_pro.monthly, chat: '10/gün', highlight: false },
 ];
 
-const premiumBenefits = [
-  { icon: Bot, label: 'AI Asistan', description: 'Yapay zeka destekli analizler' },
-  { icon: BarChart3, label: 'Sınırsız Analiz', description: 'Günlük limit yok' },
-  { icon: Sparkles, label: 'Gelişmiş İstatistikler', description: 'Tüm detaylı veriler' },
-  { icon: Star, label: 'Reklamsız Deneyim', description: 'Kesintisiz kullanım' },
+const features = [
+  { icon: Bot, label: 'AI Asistan' },
+  { icon: BarChart3, label: 'Sınırsız Analiz' },
+  { icon: Sparkles, label: 'Detaylı İstatistik' },
+  { icon: Star, label: 'Reklamsız' },
 ];
 
-/**
- * Free kullanıcılar için Premium tanıtım sayfası
- * 
- * - Paket karşılaştırma tablosu
- * - Premium avantajları
- * - Play Store uyumlu legal metinler
- */
 const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' }) => {
   const navigate = useNavigate();
   const content = variantContent[variant];
   const IconComponent = content.icon;
 
-  const handleUpgrade = () => {
-    navigate('/premium');
-  };
-
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50 pt-safe">
-        <div className="container max-w-4xl mx-auto px-4 py-3">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose || (() => navigate(-1))}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="font-semibold">Premium Planlar</h1>
-          </div>
-        </div>
+      <header className="flex items-center gap-3 px-4 py-3 pt-safe">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="shrink-0"
+          onClick={onClose || (() => navigate(-1))}
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        <h1 className="font-semibold text-base">Premium</h1>
       </header>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 pb-32">
+      {/* Main content — vertically centered, no scroll */}
+      <main className="flex-1 flex flex-col justify-center px-5 gap-4 pb-36">
+        {/* Hero: icon + text */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md mx-auto space-y-6"
+          className="flex flex-col items-center gap-2 text-center"
         >
-          {/* Icon */}
-          <div className="text-center">
-            <motion.div 
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200, damping: 15 }}
-              className={`w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br ${content.gradient} p-0.5`}
-            >
-              <div className="w-full h-full rounded-3xl bg-background flex items-center justify-center">
-                <IconComponent className="w-10 h-10 text-primary" />
-              </div>
-            </motion.div>
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+            <IconComponent className="w-7 h-7 text-primary" />
           </div>
-
-          {/* Title & Subtitle */}
-          <div className="text-center space-y-2">
-            <div className="flex items-center justify-center gap-2">
-              <Lock className="w-4 h-4 text-muted-foreground" />
-              <Badge variant="secondary" className="bg-primary/10 text-primary text-xs">
+          <div>
+            <div className="flex items-center justify-center gap-1.5 mb-1">
+              <Lock className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="text-[11px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                 Premium Özellik
-              </Badge>
+              </span>
             </div>
-            <h2 className="text-xl font-bold">{content.title}</h2>
-            <p className="text-sm text-muted-foreground">{content.subtitle}</p>
-          </div>
-
-          {/* Plan Comparison */}
-          <Card className="p-4">
-            <p className="text-xs font-medium text-center text-muted-foreground mb-4">
-              Paket Karşılaştırması
-            </p>
-            <div className="space-y-2">
-              {planComparison.map((plan) => (
-                <div
-                  key={plan.name}
-                  className={`flex items-center justify-between p-3 rounded-xl ${
-                    plan.highlight 
-                      ? 'bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/30' 
-                      : 'bg-muted/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    {plan.highlight && <Star className="w-4 h-4 text-primary" />}
-                    <span className={`font-medium ${plan.highlight ? 'text-primary' : ''}`}>
-                      {plan.name}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4 text-xs">
-                    <div className="text-center">
-                      <MessageCircle className="w-3 h-3 mx-auto mb-0.5 text-muted-foreground" />
-                      <span>{plan.chat}</span>
-                    </div>
-                    <div className="font-semibold">
-                      ₺{plan.price}/ay
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          {/* Benefits */}
-          <Card className="p-4 space-y-3">
-            <p className="text-xs font-medium text-center text-muted-foreground">
-              Premium Avantajları
-            </p>
-            {premiumBenefits.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
-              >
-                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <feature.icon className="w-4 h-4 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm">{feature.label}</p>
-                  <p className="text-xs text-muted-foreground">{feature.description}</p>
-                </div>
-                <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-              </motion.div>
-            ))}
-          </Card>
-
-          {/* Legal notice */}
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50">
-            <AlertCircle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-            <p className="text-[10px] text-muted-foreground leading-relaxed">
-              Abonelik otomatik yenilenir. Google Play &gt; Abonelikler'den iptal edebilirsiniz.
-            </p>
-          </div>
-
-          {/* Trust Badge */}
-          <div className="text-center">
-            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Zap className="w-3 h-3 text-amber-500" />
-              Yıllık planlarda 2 ay bedava!
-            </span>
+            <h2 className="text-lg font-bold leading-tight">{content.title}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">{content.subtitle}</p>
           </div>
         </motion.div>
-      </div>
+
+        {/* Plan cards — horizontal 3-col */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-3 gap-2"
+        >
+          {plans.map((plan) => (
+            <div
+              key={plan.name}
+              className={`relative rounded-2xl overflow-hidden flex flex-col items-center text-center ${
+                plan.highlight
+                  ? 'bg-primary/5 border-2 border-primary shadow-sm'
+                  : 'bg-muted/40 border border-border/50'
+              }`}
+            >
+              {plan.highlight && (
+                <div className="w-full bg-primary text-primary-foreground text-[9px] font-bold py-1 flex items-center justify-center gap-0.5">
+                  <Zap className="w-2.5 h-2.5" />
+                  Popüler
+                </div>
+              )}
+              <div className={`flex flex-col items-center py-3 px-1 ${!plan.highlight ? 'pt-4' : ''}`}>
+                <span className={`text-xs font-semibold ${plan.highlight ? 'text-primary' : 'text-foreground'}`}>
+                  {plan.name}
+                </span>
+                <span className="text-lg font-bold mt-1">₺{plan.price}</span>
+                <span className="text-[10px] text-muted-foreground">/ay</span>
+                <span className="text-[10px] text-muted-foreground mt-1.5">
+                  {plan.chat} mesaj
+                </span>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Features — compact inline grid */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-2 gap-x-3 gap-y-2 px-1"
+        >
+          {features.map((f, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+              <span className="text-xs text-muted-foreground">{f.label}</span>
+            </div>
+          ))}
+        </motion.div>
+      </main>
 
       {/* Fixed CTA */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-xl border-t border-border/50">
-        <div className="max-w-md mx-auto space-y-3">
+      <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe bg-background/95 backdrop-blur-lg border-t border-border/30">
+        <div className="max-w-md mx-auto space-y-2">
           <Button
-            onClick={handleUpgrade}
-            className="w-full h-14 text-lg bg-gradient-to-r from-primary to-accent hover:opacity-90"
+            onClick={() => navigate('/premium')}
+            className="w-full h-13 text-base font-bold bg-gradient-to-r from-primary to-emerald-500 hover:opacity-90 rounded-2xl shadow-lg"
             size="lg"
           >
             <Crown className="w-5 h-5 mr-2" />
-            Premium Planları Gör
+            Premium'a Geç
           </Button>
-          
+          <p className="text-[10px] text-center text-muted-foreground">
+            Google Play güvencesiyle • İstediğin zaman iptal
+          </p>
           {onClose && (
-            <Button
-              variant="ghost"
+            <button
               onClick={onClose}
-              className="w-full"
+              className="w-full text-xs text-muted-foreground py-1 active:opacity-70"
             >
               Daha Sonra
-            </Button>
+            </button>
           )}
         </div>
       </div>
