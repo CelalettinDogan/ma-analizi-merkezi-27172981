@@ -18,17 +18,24 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 /**
- * Native Android'de @codetrix-studio/capacitor-google-auth kullanarak
+ * Native Android'de @capgo/capacitor-social-login kullanarak
  * harici tarayıcı açmadan Google Sign-In yapar.
  * Web/dev ortamında Lovable managed OAuth fallback kullanır.
  */
 async function nativeGoogleSignIn(): Promise<{ error: Error | null }> {
   try {
-    const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
+    const { SocialLogin } = await import('@capgo/capacitor-social-login');
 
     // Native Google hesap seçiciyi aç
-    const googleUser = await GoogleAuth.signIn();
-    const idToken = googleUser.authentication?.idToken;
+    const loginResult = await SocialLogin.login({
+      provider: 'google',
+      options: {
+        scopes: ['profile', 'email'],
+      },
+    });
+
+    const googleResult = loginResult?.result;
+    const idToken = googleResult && 'idToken' in googleResult ? googleResult.idToken : null;
 
     if (!idToken) {
       return { error: new Error('Google kimlik doğrulama jetonu alınamadı.') };
@@ -61,11 +68,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Native platformda GoogleAuth'u başlat
+    // Native platformda SocialLogin'i başlat
     if (Capacitor.isNativePlatform()) {
-      import('@codetrix-studio/capacitor-google-auth').then(({ GoogleAuth }) => {
-        GoogleAuth.initialize({
-          scopes: ['profile', 'email'],
+      import('@capgo/capacitor-social-login').then(({ SocialLogin }) => {
+        SocialLogin.initialize({
+          google: {
+            webClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
+          },
         });
       }).catch(console.warn);
     }
@@ -129,8 +138,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Native'de Google oturumunu da kapat
     if (Capacitor.isNativePlatform()) {
       try {
-        const { GoogleAuth } = await import('@codetrix-studio/capacitor-google-auth');
-        await GoogleAuth.signOut();
+        const { SocialLogin } = await import('@capgo/capacitor-social-login');
+        await SocialLogin.logout({ provider: 'google' });
       } catch (e) {
         console.warn('Google Sign-Out hatası:', e);
       }
