@@ -12,6 +12,7 @@ import AuthGuard from "@/components/auth/AuthGuard";
 import { Capacitor } from "@capacitor/core";
 import { App as CapApp, URLOpenListenerEvent } from "@capacitor/app";
 import { supabase } from "@/integrations/supabase/client";
+import { purchaseService } from "@/services/purchaseService";
 import Index from "./pages/Index";
 import Live from "./pages/Live";
 import Standings from "./pages/Standings";
@@ -72,6 +73,11 @@ const DeepLinkHandler = () => {
 };
 
 const AppContent = () => {
+  // Initialize purchase service
+  useEffect(() => {
+    purchaseService.initialize().catch(console.error);
+  }, []);
+
   // Handle Android back button
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
