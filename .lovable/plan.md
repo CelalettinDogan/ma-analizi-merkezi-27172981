@@ -1,58 +1,46 @@
 
 
-# AI Asistan Upsell Ekrani - Yeniden Tasarim
+# Capacitor 8 Uyumluluk Sorunu - Cozum Plani
 
-## Ozet
-PremiumGate bilesenini satin alma ekrani olmaktan cikarip, AI chatbot deneyimini tanitan bir upsell ekranina donusturuyoruz. Plan kartlari kaldirilacak, yerine blur efektli ornek chat preview ve AI odakli ozellik listesi gelecek.
+## Sorun
+`@codetrix-studio/capacitor-google-auth` eklentisi sadece Capacitor 6 ile uyumlu. Projeniz Capacitor 8 kullaniyor. Bu yuzden `npm install` basarisiz oluyor.
 
-## Tasarim Kararlari
+## Cozum
+Eski eklentiyi kaldirip, Capacitor 8 ile uyumlu olan `@capgo/capacitor-social-login` eklentisine gecis yapacagiz. Bu eklenti, eski eklentinin resmi alternatifi ve ayni islevi goruyor.
 
-**Neden plan kartlari kaldiriliyor?**
-Bu ekran satin alma sayfasi degil, chatbot ozelliginin degerini gosteren bir tanitim ekrani. Kullanici "AI Asistani Ac" butonuyla Premium sayfasina yonlendirilecek.
+## Yapilacaklar
 
-**Neden chat preview?**
-Kullaniciya "bunu kaciriyorsun" hissi veren somut bir ornek gostermek, soyut ozellik listesinden cok daha etkili bir ikna araci.
+### 1. Paket degisikligi
+- `@codetrix-studio/capacitor-google-auth` kaldirilacak
+- `@capgo/capacitor-social-login` (v8) eklenecek
 
-## Yapilacak Degisiklikler
+### 2. AuthContext.tsx guncellenmesi
+Import ve kullanim degisiklikleri:
 
-### Dosya: `src/components/chat/PremiumGate.tsx`
+- `GoogleAuth.initialize()` yerine `SocialLogin.initialize()` kullanilacak
+- `GoogleAuth.signIn()` yerine `SocialLogin.login({ provider: 'google' })` kullanilacak
+- `GoogleAuth.signOut()` yerine `SocialLogin.logout({ provider: 'google' })` kullanilacak
+- idToken alma yolu yeni API'ye uyarlanacak
 
-Bilesenin tum icerigi yeniden yapilandirilacak:
+### 3. capacitor.config.ts guncellenmesi
+`GoogleAuth` plugin ayari `SocialLogin` formatina donusturulecek.
 
-1. **Header**: "AI Asistan" basligi korunacak, geri butonu kalacak
+## Yerel Kurulum Adimlari (degisiklikler uygulandiktan sonra)
 
-2. **Hero Alani** (ust kisim):
-   - Bot ikonu
-   - "AI Asistan" basligi
-   - Slogan: "Sinursiz Yapay Zeka Mac Analizi"
+Terminalde sirasiyla su komutlari calistirmaniz gerekecek:
 
-3. **Chat Preview** (orta kisim):
-   - Blur efektli (`backdrop-blur` + `overflow-hidden`) bir sahte chat baloncugu alani
-   - Kullanici mesaji: "Fenerbahce - Galatasaray macini analiz et"
-   - AI cevabi: "Fenerbahce son 5 mac icinde %72 galibiyet orani..." (kisaltilmis, blur ile kaybolan)
-   - Bu alan premium deneyimi somutlastirir
-
-4. **Ozellikler Listesi** (alt-orta):
-   - 5 madde, dikey kompakt liste
-   - Her biri ikon + tek satir:
-     - Bot -> Sinursiz AI mac yorumu
-     - BarChart3 -> Detayli istatistik aciklamalari
-     - Shield -> Risk seviyesi analizi
-     - Zap -> Canli mac icgoruleri
-     - Star -> Reklamsiz deneyim
-
-5. **CTA** (sabit alt):
-   - "AI Asistani Ac" butonu (gradient, full width)
-   - `/premium` sayfasina yonlendirme
-   - "Daha Sonra" linki korunacak
+```text
+git pull
+npm install
+npm run build
+npx cap sync
+npx cap run android
+```
 
 ## Teknik Detaylar
 
-- Plan kartlari (`plans` dizisi ve grid) tamamen kaldirilacak
-- `PLAN_PRICES` importu kaldirilacak
-- `variant` prop'u korunacak ama chatbot varianti icin icerik tamamen farkli olacak
-- Tum icerik `flex-col justify-center` ile tek ekrana sigacak, scroll olmayacak
-- Chat preview alani `relative overflow-hidden` ile `mask-image: linear-gradient(...)` kullanarak alt kismi blur/fade edecek
-- Responsive: kucuk ekranlarda gap ve font boyutlari `xs:` breakpoint ile ayarlanacak
-- `pb-32` ile CTA alani icin bos alan birakilacak
+Degisecek dosyalar:
+- `package.json` - eski paket cikarilip yeni paket eklenecek
+- `src/contexts/AuthContext.tsx` - Google Auth API cagrilari guncellenecek
+- `capacitor.config.ts` - Plugin konfigurasyonu guncellenecek
 
