@@ -1,33 +1,63 @@
 
 
-# Capacitor 8 Uyumluluk Sorunu - Cozum Plani
+# Google Play Store Satın Alma Entegrasyonu
 
-## Sorun
-`@codetrix-studio/capacitor-google-auth` eklentisi sadece Capacitor 6 ile uyumlu. Projeniz Capacitor 8 kullaniyor. Bu yuzden `npm install` basarisiz oluyor.
+## Mevcut Durum
 
-## Cozum
-Eski eklentiyi kaldirip, Capacitor 8 ile uyumlu olan `@capgo/capacitor-social-login` eklentisine gecis yapacagiz. Bu eklenti, eski eklentinin resmi alternatifi ve ayni islevi goruyor.
+Backend tamam: `verify-purchase` ve `play-store-webhook` edge function'ları zaten hazır. Eksik olan tek sey istemci tarafinda gercek Google Play Billing API baglantisi. Su an `purchaseService.ts` icinde sadece placeholder kod var ve "Native satin alma eklentisi kurulu degil" hatasi donuyor.
 
-## Yapilacaklar
+## Cozum: @capgo/native-purchases
 
-### 1. Paket degisikligi
-- `@codetrix-studio/capacitor-google-auth` kaldirilacak
-- `@capgo/capacitor-social-login` (v8) eklenecek
+Bu eklenti Capacitor 8 ile tam uyumlu, ucretsiz ve Google Play Billing 7.x kullaniyor. RevenueCat gibi ucuncu parti servis gerektirmiyor - dogrudan Google Play ile konusuyor.
 
-### 2. AuthContext.tsx guncellenmesi
-Import ve kullanim degisiklikleri:
+## Satin Alma Akisi
 
-- `GoogleAuth.initialize()` yerine `SocialLogin.initialize()` kullanilacak
-- `GoogleAuth.signIn()` yerine `SocialLogin.login({ provider: 'google' })` kullanilacak
-- `GoogleAuth.signOut()` yerine `SocialLogin.logout({ provider: 'google' })` kullanilacak
-- idToken alma yolu yeni API'ye uyarlanacak
+```text
+Kullanici "Premium'a Gec" butonuna basar
+        |
+        v
+purchaseService.purchaseSubscription(productId)
+        |
+        v
+NativePurchases.purchaseProduct(productId)
+  (Google Play satin alma ekrani acilir)
+        |
+        v
+Basarili olursa purchaseToken alinir
+        |
+        v
+verify-purchase Edge Function cagirilir
+  (Google Play API ile dogrulama)
+        |
+        v
+premium_subscriptions tablosuna kayit
+        |
+        v
+Kullanici Premium olur
+```
 
-### 3. capacitor.config.ts guncellenmesi
-`GoogleAuth` plugin ayari `SocialLogin` formatina donusturulecek.
+## Yapilacak Degisiklikler
 
-## Yerel Kurulum Adimlari (degisiklikler uygulandiktan sonra)
+### 1. Paket Kurulumu
+`@capgo/native-purchases` paketi projeye eklenecek.
 
-Terminalde sirasiyla su komutlari calistirmaniz gerekecek:
+### 2. purchaseService.ts - Tam Yeniden Yazim
+Mevcut placeholder kodlar gercek eklenti cagrilariyla degistirilecek:
+
+- `initialize()`: Eklentiyi baslatir, urunleri yukler
+- `getProducts()`: Google Play'den gercek fiyatlari ceker (kullanicinin bolgesine gore dinamik fiyat)
+- `purchaseSubscription()`: Gercek satin alma akisini baslatir, basarili olursa `verify-purchase` edge function'a purchaseToken gonderir
+- `restorePurchases()`: Onceki satin alimlari geri yukler ve backend'e dogrulama gonderir
+
+### 3. Premium.tsx - Kucuk Guncelleme
+`handlePurchase` fonksiyonu zaten `purchaseService.purchaseSubscription()` cagiriyor, bu yuzden buyuk degisiklik gerekmez. Sadece basarili satin alma sonrasi `refetch()` cagrisi eklenerek premium durumu anlik guncellenecek.
+
+### 4. App Baslangicinda Initialization
+`App.tsx` veya `main.tsx` icinde uygulama acildiginda `purchaseService.initialize()` cagirilacak.
+
+## Yerel Kurulum (Sizin Yapmaniz Gerekenler)
+
+Degisiklikler uygulandiktan sonra terminalde:
 
 ```text
 git pull
@@ -37,10 +67,26 @@ npx cap sync
 npx cap run android
 ```
 
+## Onemli: Google Play Console Gereksinimleri
+
+Satin alma butonlarinin calismasi icin Google Play Console'da su adimlarin tamamlanmis olmasi gerekir:
+
+1. Uygulamanin en az bir kez dahili test (internal testing) olarak yuklenmiş olmasi
+2. Play Console'da "Abonelikler" bolumunde su urun ID'lerinin olusturulmus olmasi:
+   - `premium_basic_monthly`
+   - `premium_basic_yearly`
+   - `premium_plus_monthly`
+   - `premium_plus_yearly`
+   - `premium_pro_monthly`
+   - `premium_pro_yearly`
+3. Bir "base plan" ve fiyatlandirma tanimlanmis olmasi
+4. Lisanslı test kullanicilari eklenmis olmasi (test satin alimlari icin)
+
 ## Teknik Detaylar
 
 Degisecek dosyalar:
-- `package.json` - eski paket cikarilip yeni paket eklenecek
-- `src/contexts/AuthContext.tsx` - Google Auth API cagrilari guncellenecek
-- `capacitor.config.ts` - Plugin konfigurasyonu guncellenecek
+- `package.json` - @capgo/native-purchases eklenmesi
+- `src/services/purchaseService.ts` - Gercek billing entegrasyonu
+- `src/pages/Premium.tsx` - Basarili satin alma sonrasi refetch
+- `src/App.tsx` - Uygulama baslatma sirasinda initialize
 
