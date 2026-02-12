@@ -71,14 +71,20 @@ const Premium = () => {
   const price = isYearly ? sel.yearlyPrice : sel.monthlyPrice;
   const planName = PLAN_PRODUCTS[selectedPlan].name;
 
+  const { refetch } = usePlatformPremium();
+
   const handlePurchase = async () => {
     if (!user) { navigate('/auth'); return; }
     setIsLoading(true);
     try {
       if (isNative) {
         const result = await purchaseService.purchaseSubscription(productId);
-        if (result.success) toast.success(`${planName} aktif edildi!`);
-        else toast.error(result.error || 'Satın alma başarısız');
+        if (result.success) {
+          toast.success(`${planName} aktif edildi! 🎉`);
+          refetch();
+        } else {
+          toast.error(result.error || 'Satın alma başarısız');
+        }
       } else {
         toast.info('Gerçek satın alma için mobil uygulama gerekli');
       }
