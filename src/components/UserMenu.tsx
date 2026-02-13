@@ -20,11 +20,7 @@ const UserMenu: React.FC = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    toast({
-      title: 'Çıkış Yapıldı',
-      description: 'Başarıyla çıkış yaptınız.',
-    });
-    navigate('/');
+    navigate('/auth', { replace: true });
   };
 
   if (isLoading) {
