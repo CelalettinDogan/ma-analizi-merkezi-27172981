@@ -135,6 +135,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    // State'i hemen temizle (race condition önlemi)
+    setUser(null);
+    setSession(null);
+
     // Native'de Google oturumunu da kapat
     if (Capacitor.isNativePlatform()) {
       try {

@@ -150,7 +150,7 @@ const Profile = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
+    navigate('/auth', { replace: true });
   };
 
   const handleDeleteAccount = async () => {
