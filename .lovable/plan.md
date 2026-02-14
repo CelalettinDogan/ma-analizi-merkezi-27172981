@@ -1,29 +1,46 @@
 
-# BottomNav Anlık Titreme (Flash) Sorunu Cozumu
+# Varsayilan Tema ve BottomNav Titreme Sorunu Cozumu
 
-## Sorunun Kokeni
+## Sorun 1: Varsayilan tema dark
+`App.tsx` icindeki `ThemeProvider` bileseninde `defaultTheme="dark"` olarak ayarli. Bu `"light"` olarak degistirilecek.
 
-`useAccessLevel` hook'u uc async kaynaktan veri cekiyor:
-- `usePlatformPremium` (premium durumu)
-- `useUserRole` (admin rolu)
-- `useAuth` (kullanici bilgisi)
+## Sorun 2: BottomNav hala titriyor
+Onceki fix (`useRef` ile stabil liste koruma) calismiyordu cunku BottomNav her sayfanin icinde ayri ayri render ediliyor. Sayfa gecislerinde BottomNav unmount olup tekrar mount oluyor, bu da `useRef`'i sifirliyor ve hook'lar `isLoading: true` ile baslayarak flash'a neden oluyor.
 
-Sayfa gecislerinde bu hook'lar yeniden calisir ve yukleme sirasinda `isPremium = false`, `isAdmin = false` olarak baslar. Bu da Premium sekmesinin anlik olarak gorunup kaybolmasina neden olur.
+### Cozum
+BottomNav'i her sayfadan cikarip, `AppContent` bileseninde (Routes disinda, BrowserRouter icinde) tek bir yerde render etmek. Boylece sayfa gecislerinde BottomNav hic unmount olmayacak, hook state'i korunacak ve titreme tamamen onlenecek.
 
-## Cozum
+## Yapilacak Degisiklikler
 
-`BottomNav` bileseninde `isLoading` durumunu kontrol edip, yukleme tamamlanana kadar onceki nav yapisini korumak.
+### Dosya 1: `src/App.tsx`
+- `ThemeProvider` icinde `defaultTheme="dark"` yerine `defaultTheme="light"` yapilacak
+- `AppContent` bilesenine BottomNav eklenmesi (Routes'un disinda, BrowserRouter icinde)
+- Auth sayfasi ve bazi ozel sayfalarda BottomNav gizlenecek (konum kontrolu ile)
 
-## Yapilacak Degisiklik
+### Dosya 2-8: Her sayfadan BottomNav kaldirilacak
+Asagidaki dosyalardan BottomNav import'u ve kullanimi silinecek:
+- `src/pages/Index.tsx`
+- `src/pages/Live.tsx`
+- `src/pages/Standings.tsx`
+- `src/pages/Premium.tsx`
+- `src/pages/Profile.tsx`
+- `src/pages/Chat.tsx`
 
-### Dosya: `src/components/navigation/BottomNav.tsx`
+### AppContent'teki Yeni Yapi
 
-1. `useAccessLevel` hook'undan `isLoading` degeri de alinacak
-2. `useMemo` icinde `isLoading` true iken onceki hesaplanmis deger korunacak (React `useRef` ile)
-3. Boylece yukleme sirasinda nav yapisi degismeyecek, titreme olmayacak
+```text
+BrowserRouter
+  +-- DeepLinkHandler
+  +-- ErrorBoundary
+  |     +-- Routes (sayfa icerikleri)
+  +-- BottomNav (Routes disinda, her zaman mount, konum bazli gizleme)
+```
 
-Teknik yaklasim:
-- Bir `useRef` ile son gecerli (loaded) nav items listesi saklanacak
-- `isLoading` false oldugunda ref guncellenir ve yeni liste kullanilir
-- `isLoading` true oldugunda ref'teki eski liste gosterilmeye devam eder
-- Bu sayede sayfa gecislerinde anlik 6-5 sekme degisimi onlenir
+BottomNav icinde `useLocation` kontrolu ile `/auth`, `/reset-password`, `/terms`, `/privacy`, `/delete-account` sayfalarinda gizlenecek.
+
+## Teknik Detaylar
+
+- BottomNav artik hic unmount olmayacagi icin `useAccessLevel` hook'u sadece bir kez calisacak ve state korunacak
+- `useRef` cozumu de artik dogru calismaya baslayacak cunku ref kaybolmayacak
+- `onSearchClick` prop'u kaldirilacak (CommandPalette her sayfanin kendi icinde kalacak)
+- Tema degisikligi aninda uygulanacak, mevcut kullanicilarin tercihi localStorage'dan gelecek
