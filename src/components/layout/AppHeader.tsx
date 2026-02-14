@@ -29,41 +29,44 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50 pt-safe">
-      <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
-          <img 
-            src={logoImage} 
-            alt="Gol Metrik Logo" 
-            className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain drop-shadow-lg transition-all duration-200 group-hover:scale-110 dark:drop-shadow-[0_0_12px_rgba(234,179,8,0.5)] dark:brightness-110"
-          />
-          <span className="font-display font-bold text-sm xs:text-base sm:text-lg md:text-xl text-foreground">GolMetrik</span>
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border/40 pt-safe">
+      <div className="container mx-auto px-4 h-14 flex items-center justify-between">
+        {/* Logo - compact native style */}
+        <Link to="/" className="flex items-center gap-2.5 group flex-shrink-0">
+          <div className="relative">
+            <img 
+              src={logoImage} 
+              alt="GolMetrik" 
+              className="w-9 h-9 sm:w-10 sm:h-10 object-contain transition-transform duration-200 group-hover:scale-105"
+            />
+            <div className="absolute -inset-1 rounded-full bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity -z-10" />
+          </div>
+          <span className="font-display font-bold text-base sm:text-lg tracking-tight text-foreground">
+            GolMetrik
+          </span>
         </Link>
         
-        {/* Desktop Nav - Show from lg breakpoint to avoid tablet overflow */}
-        <nav className="hidden lg:flex items-center gap-1">
+        {/* Desktop Nav */}
+        <nav className="hidden lg:flex items-center gap-0.5 bg-muted/50 rounded-xl p-1">
           {navItems.map((item) => (
-            <Button 
+            <Link
               key={item.path}
-              variant="ghost" 
-              size="sm" 
-              asChild
+              to={item.path}
               className={cn(
-                "text-sm",
-                isActive(item.path) && "bg-primary/10 text-primary"
+                "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                isActive(item.path)
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Link to={item.path} className="gap-1.5">
-                {item.icon}
-                {item.label}
-              </Link>
-            </Button>
+              {item.icon}
+              {item.label}
+            </Link>
           ))}
         </nav>
 
-        {/* Right Side */}
-        <div className="flex items-center gap-2">
+        {/* Right Side - tighter spacing */}
+        <div className="flex items-center gap-1">
           {rightContent}
           <ThemeToggle />
           <UserMenu />
