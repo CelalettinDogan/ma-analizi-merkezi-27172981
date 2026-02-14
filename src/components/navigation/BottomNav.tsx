@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Zap, Bot, Crown, Trophy, User } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -27,11 +27,12 @@ interface NavItem {
  */
 const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(({ onSearchClick }, ref) => {
   const location = useLocation();
-  const { isAdmin, isPremium } = useAccessLevel();
+  const { isAdmin, isPremium, isLoading } = useAccessLevel();
+  const stableItemsRef = useRef<NavItem[] | null>(null);
 
   // Dynamic nav items with badges based on user role
   // Premium/Admin kullanıcılar için Premium sekmesi GİZLİ
-  const navItems = useMemo((): NavItem[] => {
+  const computedItems = useMemo((): NavItem[] => {
     const baseItems: NavItem[] = [
       { icon: Home, label: 'Ana Sayfa', path: '/' },
       { icon: Zap, label: 'Canlı', path: '/live', badge: 'live' as const },
@@ -47,30 +48,27 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
       : baseItems;
 
     return filteredItems.map(item => {
-      // Live badge - her zaman göster
-      if (item.path === '/live') {
-        return item;
-      }
-      
-      // AI Asistan badge logic
+      if (item.path === '/live') return item;
       if (item.path === '/chat') {
-        // Admin: badge yok
         if (isAdmin) return item;
-        // Premium: badge yok (zaten erişimi var)
         if (isPremium) return item;
-        // Free: premium badge göster
         return { ...item, badge: 'premium' as const };
       }
-
-      // Premium tab badge logic (sadece Free kullanıcılar görecek)
       if (item.path === '/premium') {
-        // Free: premium badge göster (satış odaklı)
         return { ...item, badge: 'premium' as const };
       }
-      
       return item;
     });
   }, [isAdmin, isPremium]);
+
+  // isLoading true iken önceki stabil listeyi koru, titreme önle
+  const navItems = useMemo(() => {
+    if (!isLoading) {
+      stableItemsRef.current = computedItems;
+      return computedItems;
+    }
+    return stableItemsRef.current ?? computedItems;
+  }, [isLoading, computedItems]);
 
   const handleClick = (item: NavItem, e: React.MouseEvent) => {
     if (item.isAction && onSearchClick) {
