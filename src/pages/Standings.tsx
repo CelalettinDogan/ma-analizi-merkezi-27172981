@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import AppHeader from '@/components/layout/AppHeader';
 import LeagueGrid from '@/components/league/LeagueGrid';
-import BottomNav from '@/components/navigation/BottomNav';
+
 import CommandPalette from '@/components/navigation/CommandPalette';
 import GoalStatsTab from '@/components/standings/GoalStatsTab';
 import FormAnalysisTab from '@/components/standings/FormAnalysisTab';
@@ -311,9 +311,6 @@ const StandingsPage: React.FC = () => {
         </motion.div>
       </main>
 
-      {/* Bottom Navigation */}
-      <BottomNav onSearchClick={() => setCommandOpen(true)} />
-      
       {/* Command Palette */}
       <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
     </div>

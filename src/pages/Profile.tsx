@@ -28,7 +28,7 @@ import { useChatbot } from '@/hooks/useChatbot';
 import { useTheme } from 'next-themes';
 import AppHeader from '@/components/layout/AppHeader';
 import AppFooter from '@/components/layout/AppFooter';
-import BottomNav from '@/components/navigation/BottomNav';
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -217,7 +217,6 @@ const Profile = () => {
             <Skeleton className="h-32 w-full rounded-xl" />
           </div>
         </main>
-        <BottomNav />
       </div>
     );
   }
@@ -237,7 +236,6 @@ const Profile = () => {
           </Card>
         </main>
         <AppFooter />
-        <BottomNav />
       </div>
     );
   }
@@ -626,8 +624,6 @@ const Profile = () => {
         </motion.div>
       </main>
       <AppFooter />
-      <BottomNav />
-
       {/* Notification Settings Sheet */}
       <Sheet open={showNotificationSheet} onOpenChange={setShowNotificationSheet}>
         <SheetContent side="bottom" className="h-auto max-h-[80vh]">

@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { useLocation } from "react-router-dom";
 import { AnalysisSetProvider } from "@/contexts/AnalysisSetContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import AuthGuard from "@/components/auth/AuthGuard";
@@ -27,8 +28,17 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import DeleteAccount from "./pages/DeleteAccount";
 import NotFound from "./pages/NotFound";
+import BottomNav from "@/components/navigation/BottomNav";
 
 const queryClient = new QueryClient();
+
+const HIDE_BOTTOM_NAV_ROUTES = ['/auth', '/reset-password', '/terms', '/privacy', '/delete-account'];
+
+const GlobalBottomNav = () => {
+  const location = useLocation();
+  if (HIDE_BOTTOM_NAV_ROUTES.includes(location.pathname)) return null;
+  return <BottomNav />;
+};
 
 // Deep Link Handler Component - must be inside BrowserRouter
 const DeepLinkHandler = () => {
@@ -121,13 +131,14 @@ const AppContent = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </ErrorBoundary>
+      <GlobalBottomNav />
     </BrowserRouter>
   );
 };
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <TooltipProvider>
         <AuthProvider>
           <AnalysisSetProvider>

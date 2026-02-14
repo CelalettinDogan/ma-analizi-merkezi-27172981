@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import AppHeader from '@/components/layout/AppHeader';
 import LiveMatchCard2 from '@/components/live/LiveMatchCard2';
 import LeagueGrid from '@/components/league/LeagueGrid';
-import BottomNav from '@/components/navigation/BottomNav';
+
 import CommandPalette from '@/components/navigation/CommandPalette';
 import { Match, CompetitionCode, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
 import { supabase } from '@/integrations/supabase/client';
@@ -345,7 +345,6 @@ const LivePage: React.FC = () => {
         )}
       </main>
 
-      <BottomNav onSearchClick={() => setCommandOpen(true)} />
       <CommandPalette 
         open={commandOpen} 
         onOpenChange={setCommandOpen}

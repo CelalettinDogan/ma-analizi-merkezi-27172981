@@ -10,7 +10,7 @@ import { usePlatform } from '@/hooks/usePlatform';
 import { purchaseService, PRODUCTS, PLAN_PRODUCTS } from '@/services/purchaseService';
 import { PLAN_PRICES } from '@/constants/accessLevels';
 import AppHeader from '@/components/layout/AppHeader';
-import BottomNav from '@/components/navigation/BottomNav';
+
 import { toast } from 'sonner';
 
 // ─── Plan data ─────────────────────────────────────────────
@@ -117,7 +117,6 @@ const Premium = () => {
             </div>
           </div>
         </div>
-        <BottomNav />
       </div>
     );
   }
@@ -336,7 +335,6 @@ const Premium = () => {
         </div>
       </div>
 
-      <BottomNav />
     </div>
   );
 };
