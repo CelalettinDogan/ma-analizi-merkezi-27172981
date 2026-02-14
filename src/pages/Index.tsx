@@ -9,7 +9,7 @@ import AppHeader from '@/components/layout/AppHeader';
 import AppFooter from '@/components/layout/AppFooter';
 import LeagueGrid from '@/components/league/LeagueGrid';
 import MatchCarousel from '@/components/match/MatchCarousel';
-import BottomNav from '@/components/navigation/BottomNav';
+
 import CommandPalette from '@/components/navigation/CommandPalette';
 import Onboarding from '@/components/Onboarding';
 import TodaysMatches from '@/components/TodaysMatches';
@@ -450,9 +450,6 @@ const Index: React.FC = () => {
 
       {/* Analysis Set Floating Button */}
       <AnalysisSetButton />
-
-      {/* Bottom Navigation */}
-      <BottomNav onSearchClick={() => setCommandOpen(true)} />
 
       {/* Command Palette */}
       <CommandPalette 

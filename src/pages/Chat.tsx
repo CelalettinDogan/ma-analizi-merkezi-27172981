@@ -19,7 +19,7 @@ import UsageMeter from '@/components/chat/UsageMeter';
 import PremiumGate from '@/components/chat/PremiumGate';
 import GuestGate from '@/components/chat/GuestGate';
 import ChatLimitSheet from '@/components/chat/ChatLimitSheet';
-import BottomNav from '@/components/navigation/BottomNav';
+
 import { fadeInUp } from '@/lib/animations';
 import { MatchAnalysis } from '@/types/match';
 import { cn } from '@/lib/utils';
@@ -361,7 +361,6 @@ const Chat: React.FC = () => {
         />
       </main>
 
-      <BottomNav />
     </div>
   );
 };
