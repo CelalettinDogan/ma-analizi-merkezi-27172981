@@ -29,9 +29,7 @@ async function nativeGoogleSignIn(): Promise<{ error: Error | null }> {
     // Native Google hesap seçiciyi aç
     const loginResult = await SocialLogin.login({
       provider: 'google',
-      options: {
-        scopes: ['profile', 'email'],
-      },
+      options: {},
     });
 
     const googleResult = loginResult?.result;
