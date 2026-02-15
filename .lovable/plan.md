@@ -1,27 +1,39 @@
 
 
-# Auth Sayfasi - Tam Ekran Native Responsive Duzeltme
+# Google Sign-In "scopes" Hatasi Cozumu
 
 ## Sorun
-Auth sayfasi `min-h-screen` ve sabit padding degerleri (`pt-12`, `pb-8`, `pb-6`) kullaniyor. Mobil uygulamada icerik viewport'u asiyor ve gereksiz scroll olusturuyor. Native bir uygulamada giris sayfasi tek ekrana sigmali ve scroll gerektirmemeli.
+Native Android'de Google ile giris yaparken su hata aliniyor:
+"You CANNOT use scopes without modifying the main activity. Please follow the docs!"
+
+Bu hata `@capgo/capacitor-social-login` eklentisinden geliyor. `SocialLogin.login()` cagirisinda `scopes: ['profile', 'email']` parametresi geciliyor, ancak Android tarafinda `MainActivity.java` dosyasi bu scopes destegi icin yapilandirilmamis.
 
 ## Cozum
-Sayfayi `h-[100dvh]` (dynamic viewport height) ile tam ekrana sabitleyelim, `overflow-hidden` ile scroll'u engelleyelim ve sabit padding'ler yerine dinamik spacing (`justify-between` / `gap`) kullanalim. Boylece her ekran boyutunda icerik otomatik olarak sigacak.
+`scopes` parametresini kaldirmak. Google Sign-In zaten varsayilan olarak `email` ve `profile` bilgilerini idToken icerisinde dondurur, bu yuzden ayrica scope belirtmeye gerek yoktur.
 
-## Yapilacak Degisiklikler
+## Yapilacak Degisiklik
 
-### Dosya: `src/pages/Auth.tsx`
+### Dosya: `src/contexts/AuthContext.tsx`
 
-1. Ana container: `min-h-screen` yerine `h-[100dvh] overflow-hidden` kullanilacak
-2. Logo bolumu: Sabit `pt-12 pb-6` yerine `py-4 xs:py-6 sm:py-8` gibi breakpoint bazli kucuk padding'ler
-3. Logo boyutu: `w-20 h-20` yerine `w-14 h-14 xs:w-16 xs:h-16 sm:w-20 sm:h-20` dinamik boyut
-4. Baslik: `text-3xl` yerine `text-2xl sm:text-3xl`
-5. Ana icerik alani: `flex-1 overflow-y-auto` ile sadece form alani gerekirse scroll edilebilir (ama genelde gerekmeyecek)
-6. Icerik padding: `pb-8` yerine `pb-4`
-7. Divider margin: `my-5` yerine `my-3`
-8. Form araliklari: `space-y-4` yerine `space-y-3` (daha kompakt)
-9. Google butonu: `h-14 mb-6` yerine `h-12 mb-4`
-10. Disclaimer: `mt-8` yerine `mt-4`
+`nativeGoogleSignIn` fonksiyonundaki `SocialLogin.login()` cagrisindan `options.scopes` parametresi kaldirilacak:
 
-Bu degisikliklerle sayfa 320px'den 414px+'a kadar her ekran boyutunda scroll olmadan tek ekrana sigacak.
+Onceki:
+```typescript
+const loginResult = await SocialLogin.login({
+  provider: 'google',
+  options: {
+    scopes: ['profile', 'email'],
+  },
+});
+```
+
+Sonraki:
+```typescript
+const loginResult = await SocialLogin.login({
+  provider: 'google',
+  options: {},
+});
+```
+
+Bu tek satirlik degisiklik sorunu cozecektir.
 
