@@ -36,12 +36,12 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.08 }
+    transition: { staggerChildren: 0.06 }
   }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 15 },
+  hidden: { opacity: 0, y: 12 },
   visible: { opacity: 1, y: 0 }
 };
 
@@ -51,7 +51,6 @@ const Profile = () => {
   const { favorites, getFavoritesByType } = useFavorites();
   const { theme, setTheme } = useTheme();
   
-  // Access Level & Limits
   const {
     isPremium,
     planDisplayName,
@@ -75,35 +74,24 @@ const Profile = () => {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   
-  // Notification Settings with localStorage persistence
   const [notificationSettings, setNotificationSettings] = useState(() => {
     const saved = localStorage.getItem('golmetrik-notification-settings');
     if (saved) {
       try {
         return JSON.parse(saved);
       } catch {
-        return {
-          matchReminders: true,
-          resultNotifications: true,
-          premiumOffers: false,
-        };
+        return { matchReminders: true, resultNotifications: true, premiumOffers: false };
       }
     }
-    return {
-      matchReminders: true,
-      resultNotifications: true,
-      premiumOffers: false,
-    };
+    return { matchReminders: true, resultNotifications: true, premiumOffers: false };
   });
 
-  // Update notification settings helper
   const updateNotificationSetting = (key: string, value: boolean) => {
     const newSettings = { ...notificationSettings, [key]: value };
     setNotificationSettings(newSettings);
     localStorage.setItem('golmetrik-notification-settings', JSON.stringify(newSettings));
   };
 
-  // Upcoming Matches Query
   const { data: upcomingMatches, isLoading: matchesLoading } = useQuery({
     queryKey: ['upcoming-matches-profile'],
     queryFn: async () => {
@@ -120,13 +108,11 @@ const Profile = () => {
     staleTime: 5 * 60 * 1000
   });
 
-  // Recent Analyses Query - Last 7 days
   const { data: recentAnalyses, isLoading: analysesLoading } = useQuery({
     queryKey: ['recent-analyses-profile'],
     queryFn: async () => {
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      
       const { data } = await supabase
         .from('predictions')
         .select('*')
@@ -139,12 +125,8 @@ const Profile = () => {
   });
 
   const getResultBadge = (isCorrect: boolean | null, verifiedAt: string | null) => {
-    if (!verifiedAt) {
-      return { text: 'Bekliyor', className: 'bg-amber-500/20 text-amber-500 border-amber-500/30' };
-    }
-    if (isCorrect) {
-      return { text: 'Doğru', className: 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30' };
-    }
+    if (!verifiedAt) return { text: 'Bekliyor', className: 'bg-amber-500/20 text-amber-500 border-amber-500/30' };
+    if (isCorrect) return { text: 'Doğru', className: 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30' };
     return { text: 'Yanlış', className: 'bg-red-500/20 text-red-500 border-red-500/30' };
   };
 
@@ -155,10 +137,8 @@ const Profile = () => {
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== 'SİL' || !user) return;
-    
     setIsDeleting(true);
     try {
-      // Call edge function to delete account
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`,
         {
@@ -169,13 +149,8 @@ const Profile = () => {
           },
         }
       );
-
       const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Hesap silinemedi');
-      }
-
+      if (!response.ok) throw new Error(data.error || 'Hesap silinemedi');
       toast.success('Hesabınız başarıyla silindi');
       await signOut();
       navigate('/');
@@ -195,7 +170,6 @@ const Profile = () => {
     }
   };
 
-  // Get plan badge styling
   const getPlanBadgeStyle = () => {
     if (isAdmin) return 'bg-amber-500/20 text-amber-600 border-amber-500/30';
     switch (planDisplayName) {
@@ -208,13 +182,13 @@ const Profile = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="h-[100dvh] bg-background flex flex-col">
         <AppHeader />
-        <main className="container mx-auto px-4 py-6 pb-24 lg:pb-6">
-          <div className="space-y-4 max-w-lg mx-auto">
-            <Skeleton className="h-28 w-full rounded-xl" />
+        <main className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:pb-6">
+          <div className="space-y-3 max-w-lg mx-auto">
             <Skeleton className="h-24 w-full rounded-xl" />
-            <Skeleton className="h-32 w-full rounded-xl" />
+            <Skeleton className="h-20 w-full rounded-xl" />
+            <Skeleton className="h-28 w-full rounded-xl" />
           </div>
         </main>
       </div>
@@ -223,14 +197,14 @@ const Profile = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="h-[100dvh] bg-background flex flex-col">
         <AppHeader />
-        <main className="flex-1 container mx-auto px-4 py-6 pb-24 lg:pb-6 flex items-center justify-center">
+        <main className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:pb-6 flex items-center justify-center">
           <Card className="w-full max-w-md glass-card">
             <CardContent className="pt-6 text-center">
-              <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-bold mb-2">Giriş Yapın</h2>
-              <p className="text-muted-foreground mb-6">Profilinizi görüntülemek için lütfen giriş yapın</p>
+              <User className="h-14 w-14 text-muted-foreground mx-auto mb-3" />
+              <h2 className="text-lg font-bold mb-2">Giriş Yapın</h2>
+              <p className="text-sm text-muted-foreground mb-4">Profilinizi görüntülemek için lütfen giriş yapın</p>
               <Link to="/auth"><Button className="w-full">Giriş Yap</Button></Link>
             </CardContent>
           </Card>
@@ -246,79 +220,72 @@ const Profile = () => {
   const favoriteLeagues = getFavoritesByType('league');
   const favoriteTeams = getFavoritesByType('team');
 
-  // Chat remaining calculation
   const chatRemaining = chatUsage 
     ? (typeof chatUsage.remaining === 'number' ? chatUsage.remaining : '∞')
     : (canUseAIChat ? dailyChatLimit : 0);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-[100dvh] bg-background flex flex-col">
       <AppHeader />
-      <main className="flex-1 container mx-auto px-4 py-6 pb-24 lg:pb-6">
+      <main className="flex-1 overflow-y-auto px-3 xs:px-4 py-3 xs:py-4 pb-24 lg:pb-6">
         <motion.div 
           initial="hidden" 
           animate="visible" 
           variants={containerVariants}
-          className="space-y-4 max-w-lg mx-auto"
+          className="space-y-3 max-w-lg mx-auto"
         >
-          {/* Profile Header */}
+          {/* Profile Header - Compact */}
           <motion.div variants={itemVariants}>
             <Card className="glass-card">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-16 w-16 border-2 border-primary/30">
-                    <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">{initials}</AvatarFallback>
+              <CardContent className="py-4 px-4">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-12 w-12 xs:h-14 xs:w-14 border-2 border-primary/30 flex-shrink-0">
+                    <AvatarFallback className="bg-primary/10 text-primary text-base xs:text-lg font-bold">{initials}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h1 className="text-xl font-bold truncate">{displayName}</h1>
-                      {(isPremium || isAdmin) && <Crown className="h-5 w-5 text-amber-500 flex-shrink-0" />}
+                    <div className="flex items-center gap-1.5">
+                      <h1 className="text-base xs:text-lg font-bold truncate">{displayName}</h1>
+                      {(isPremium || isAdmin) && <Crown className="h-4 w-4 text-amber-500 flex-shrink-0" />}
                     </div>
-                    <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-                    {memberSince && <p className="text-xs text-muted-foreground mt-1">Üye: {memberSince}</p>}
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    {memberSince && <p className="text-[11px] text-muted-foreground mt-0.5">Üye: {memberSince}</p>}
                   </div>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* User Status Card - NEW */}
+          {/* User Status Card - Compact */}
           <motion.div variants={itemVariants}>
             <Card className="glass-card border-primary/20">
-              <CardContent className="pt-5 pb-5">
-                <div className="space-y-4">
+              <CardContent className="py-3 px-4">
+                <div className="space-y-3">
                   {/* Plan Badge */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {isAdmin ? (
-                        <Badge variant="outline" className={getPlanBadgeStyle()}>
-                          <Crown className="w-3.5 h-3.5 mr-1" />
-                          Admin
-                        </Badge>
-                      ) : isPremium ? (
-                        <Badge variant="outline" className={getPlanBadgeStyle()}>
-                          <Crown className="w-3.5 h-3.5 mr-1" />
-                          {planDisplayName}
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className={getPlanBadgeStyle()}>
-                          <User className="w-3.5 h-3.5 mr-1" />
-                          Ücretsiz Kullanıcı
-                        </Badge>
-                      )}
-                    </div>
+                  <div className="flex items-center">
+                    {isAdmin ? (
+                      <Badge variant="outline" className={`text-xs ${getPlanBadgeStyle()}`}>
+                        <Crown className="w-3 h-3 mr-1" /> Admin
+                      </Badge>
+                    ) : isPremium ? (
+                      <Badge variant="outline" className={`text-xs ${getPlanBadgeStyle()}`}>
+                        <Crown className="w-3 h-3 mr-1" /> {planDisplayName}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className={`text-xs ${getPlanBadgeStyle()}`}>
+                        <User className="w-3 h-3 mr-1" /> Ücretsiz Kullanıcı
+                      </Badge>
+                    )}
                   </div>
 
                   {/* Usage Stats */}
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Analysis Stats */}
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <Zap className="w-4 h-4 text-primary" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-muted/30">
+                      <div className="p-1.5 rounded-md bg-primary/10">
+                        <Zap className="w-3.5 h-3.5 text-primary" />
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">Günlük Analiz</p>
-                        <p className="font-semibold">
+                        <p className="text-[11px] text-muted-foreground leading-tight">Günlük Analiz</p>
+                        <p className="text-sm font-semibold leading-tight">
                           {hasUnlimitedAnalyses ? (
                             <span className="text-emerald-500">Sınırsız</span>
                           ) : (
@@ -328,14 +295,13 @@ const Profile = () => {
                       </div>
                     </div>
 
-                    {/* Chat Stats */}
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <MessageCircle className="w-4 h-4 text-primary" />
+                    <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-muted/30">
+                      <div className="p-1.5 rounded-md bg-primary/10">
+                        <MessageCircle className="w-3.5 h-3.5 text-primary" />
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">AI Asistan</p>
-                        <p className="font-semibold">
+                        <p className="text-[11px] text-muted-foreground leading-tight">AI Asistan</p>
+                        <p className="text-sm font-semibold leading-tight">
                           {!canUseAIChat ? (
                             <span className="text-muted-foreground">Kapalı</span>
                           ) : dailyChatLimit >= 999 ? (
@@ -352,19 +318,17 @@ const Profile = () => {
             </Card>
           </motion.div>
 
-          {/* Analysis Engine Info - Safe Text */}
+          {/* Analysis Engine Info */}
           <motion.div variants={itemVariants}>
             <Card className="glass-card border-primary/20">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Brain className="w-5 h-5 text-primary" />
-                  Analiz Motoru
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Analiz motoru, en güncel maç verileriyle düzenli olarak iyileştirilmektedir.
-                </p>
+              <CardContent className="py-3 px-4">
+                <div className="flex items-center gap-2.5">
+                  <Brain className="w-4 h-4 text-primary flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold">Analiz Motoru</p>
+                    <p className="text-xs text-muted-foreground">En güncel maç verileriyle düzenli olarak iyileştirilmektedir.</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
@@ -372,50 +336,41 @@ const Profile = () => {
           {/* Recent Analyses */}
           <motion.div variants={itemVariants}>
             <Card className="glass-card">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-primary" />
+              <CardHeader className="pb-2 pt-4 px-4">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-primary" />
                   Son Analizler
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 pb-4">
                 {analysesLoading ? (
                   <div className="space-y-2">
-                    {[1, 2, 3].map(i => (
-                      <Skeleton key={i} className="h-14 w-full" />
-                    ))}
+                    {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
                   </div>
                 ) : recentAnalyses && recentAnalyses.length > 0 ? (
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     {recentAnalyses.map((analysis: any) => {
                       const resultBadge = getResultBadge(analysis.is_correct, analysis.verified_at);
                       const hasScore = analysis.home_score !== null && analysis.away_score !== null;
-                      
                       return (
-                        <div 
-                          key={analysis.id} 
-                          className="p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-                        >
+                        <div key={analysis.id} className="p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <p className="text-sm font-medium truncate">
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-xs xs:text-sm font-medium truncate">
                                   {analysis.home_team} vs {analysis.away_team}
                                 </p>
                                 {hasScore && (
-                                  <span className="text-xs text-muted-foreground flex-shrink-0">
+                                  <span className="text-[11px] text-muted-foreground flex-shrink-0">
                                     ({analysis.home_score}-{analysis.away_score})
                                   </span>
                                 )}
                               </div>
-                              <p className="text-xs text-muted-foreground mt-0.5">
+                              <p className="text-[11px] text-muted-foreground mt-0.5">
                                 {analysis.prediction_type}: {analysis.prediction_value}
                               </p>
                             </div>
-                            <Badge 
-                              variant="outline" 
-                              className={`text-xs flex-shrink-0 ${resultBadge.className}`}
-                            >
+                            <Badge variant="outline" className={`text-[10px] flex-shrink-0 ${resultBadge.className}`}>
                               {resultBadge.text}
                             </Badge>
                           </div>
@@ -424,17 +379,10 @@ const Profile = () => {
                     })}
                   </div>
                 ) : (
-                  <div className="text-center py-6">
-                    <Sparkles className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      Henüz analiz yapılmamış
-                    </p>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => navigate('/')}
-                      className="mt-2"
-                    >
+                  <div className="text-center py-4">
+                    <Sparkles className="w-7 h-7 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Henüz analiz yapılmamış</p>
+                    <Button variant="outline" size="sm" onClick={() => navigate('/')} className="mt-2 text-xs h-8">
                       Analiz Yap
                     </Button>
                   </div>
@@ -446,24 +394,24 @@ const Profile = () => {
           {/* Favorites */}
           <motion.div variants={itemVariants}>
             <Card className="glass-card">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Heart className="h-5 w-5 text-primary" />
+              <CardHeader className="pb-2 pt-4 px-4">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <Heart className="h-4 w-4 text-primary" />
                   Favorilerim
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 pb-4">
                 {favorites.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">Henüz favori eklenmedi</p>
+                  <p className="text-xs text-muted-foreground text-center py-3">Henüz favori eklenmedi</p>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     {favoriteLeagues.length > 0 && (
                       <div>
-                        <p className="text-xs text-muted-foreground mb-2">Ligler</p>
-                        <div className="flex flex-wrap gap-2">
+                        <p className="text-[11px] text-muted-foreground mb-1.5">Ligler</p>
+                        <div className="flex flex-wrap gap-1.5">
                           {favoriteLeagues.map((fav) => (
-                            <Badge key={fav.id} variant="outline" className="gap-1">
-                              <Star className="h-3 w-3 text-primary" />
+                            <Badge key={fav.id} variant="outline" className="gap-1 text-xs">
+                              <Star className="h-2.5 w-2.5 text-primary" />
                               {fav.favorite_name}
                             </Badge>
                           ))}
@@ -472,11 +420,11 @@ const Profile = () => {
                     )}
                     {favoriteTeams.length > 0 && (
                       <div>
-                        <p className="text-xs text-muted-foreground mb-2">Takımlar</p>
-                        <div className="flex flex-wrap gap-2">
+                        <p className="text-[11px] text-muted-foreground mb-1.5">Takımlar</p>
+                        <div className="flex flex-wrap gap-1.5">
                           {favoriteTeams.map((fav) => (
-                            <Badge key={fav.id} variant="outline" className="gap-1">
-                              <Star className="h-3 w-3 text-primary" />
+                            <Badge key={fav.id} variant="outline" className="gap-1 text-xs">
+                              <Star className="h-2.5 w-2.5 text-primary" />
                               {fav.favorite_name}
                             </Badge>
                           ))}
@@ -489,76 +437,51 @@ const Profile = () => {
             </Card>
           </motion.div>
 
-          {/* Settings - Enhanced */}
+          {/* Settings */}
           <motion.div variants={itemVariants}>
             <Card className="glass-card">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Settings className="h-5 w-5 text-primary" />
+              <CardHeader className="pb-2 pt-4 px-4">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <Settings className="h-4 w-4 text-primary" />
                   Ayarlar
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-1">
-                {/* Notification Settings */}
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-between h-11" 
-                  onClick={() => setShowNotificationSheet(true)}
-                >
-                  <span className="flex items-center gap-3">
+              <CardContent className="px-4 pb-4 space-y-0.5">
+                <Button variant="ghost" className="w-full justify-between h-10 text-sm" onClick={() => setShowNotificationSheet(true)}>
+                  <span className="flex items-center gap-2.5">
                     <Bell className="h-4 w-4 text-muted-foreground" />
                     Bildirim Ayarları
                   </span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
 
-                {/* Theme Settings */}
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-between h-11" 
-                  onClick={() => setShowThemeSheet(true)}
-                >
-                  <span className="flex items-center gap-3">
+                <Button variant="ghost" className="w-full justify-between h-10 text-sm" onClick={() => setShowThemeSheet(true)}>
+                  <span className="flex items-center gap-2.5">
                     <Palette className="h-4 w-4 text-muted-foreground" />
                     Tema
                   </span>
-                  <span className="text-sm text-muted-foreground capitalize">
+                  <span className="text-xs text-muted-foreground capitalize">
                     {theme === 'dark' ? 'Koyu' : theme === 'light' ? 'Açık' : 'Sistem'}
                   </span>
                 </Button>
 
-                {/* AI Info */}
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-between h-11" 
-                  onClick={() => setShowAIInfoSheet(true)}
-                >
-                  <span className="flex items-center gap-3">
+                <Button variant="ghost" className="w-full justify-between h-10 text-sm" onClick={() => setShowAIInfoSheet(true)}>
+                  <span className="flex items-center gap-2.5">
                     <HelpCircle className="h-4 w-4 text-muted-foreground" />
                     AI Nasıl Çalışır?
                   </span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
 
-                {/* Delete Account */}
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-between h-11 text-destructive hover:text-destructive hover:bg-destructive/10" 
-                  onClick={() => setShowDeleteAccountSheet(true)}
-                >
-                  <span className="flex items-center gap-3">
+                <Button variant="ghost" className="w-full justify-between h-10 text-sm text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setShowDeleteAccountSheet(true)}>
+                  <span className="flex items-center gap-2.5">
                     <Trash2 className="h-4 w-4" />
                     Hesabı Sil
                   </span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
 
-                {/* Sign Out */}
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start gap-3 h-11 text-destructive hover:text-destructive hover:bg-destructive/10" 
-                  onClick={handleSignOut}
-                >
+                <Button variant="ghost" className="w-full justify-start gap-2.5 h-10 text-sm text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4" />
                   <span>Çıkış Yap</span>
                 </Button>
@@ -569,39 +492,29 @@ const Profile = () => {
           {/* About Section */}
           <motion.div variants={itemVariants}>
             <Card className="glass-card">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Info className="h-5 w-5 text-primary" />
+              <CardHeader className="pb-2 pt-4 px-4">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <Info className="h-4 w-4 text-primary" />
                   Hakkında
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="text-center pb-2">
-                  <p className="font-semibold">Gol Metrik</p>
-                  <p className="text-xs text-muted-foreground">Versiyon 1.0.0</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    İstatistik destekli futbol analiz platformu
-                  </p>
+              <CardContent className="px-4 pb-4 space-y-2.5">
+                <div className="text-center pb-1">
+                  <p className="font-semibold text-sm">Gol Metrik</p>
+                  <p className="text-[11px] text-muted-foreground">Versiyon 1.0.0</p>
+                  <p className="text-[11px] text-muted-foreground">İstatistik destekli futbol analiz platformu</p>
                 </div>
                 
-                <div className="space-y-2">
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-between h-11" 
-                    onClick={() => setShowPrivacySheet(true)}
-                  >
-                    <span className="flex items-center gap-3">
+                <div className="space-y-0.5">
+                  <Button variant="ghost" className="w-full justify-between h-10 text-sm" onClick={() => setShowPrivacySheet(true)}>
+                    <span className="flex items-center gap-2.5">
                       <Shield className="h-4 w-4 text-muted-foreground" />
                       Gizlilik Politikası
                     </span>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-between h-11" 
-                    onClick={() => setShowTermsSheet(true)}
-                  >
-                    <span className="flex items-center gap-3">
+                  <Button variant="ghost" className="w-full justify-between h-10 text-sm" onClick={() => setShowTermsSheet(true)}>
+                    <span className="flex items-center gap-2.5">
                       <FileText className="h-4 w-4 text-muted-foreground" />
                       Kullanım Şartları
                     </span>
@@ -609,8 +522,8 @@ const Profile = () => {
                   </Button>
                 </div>
                 
-                <div className="pt-2 border-t border-border">
-                  <p className="text-xs text-muted-foreground text-center">
+                <div className="pt-1.5 border-t border-border">
+                  <p className="text-[11px] text-muted-foreground text-center">
                     ⚠️ Sunulan analizler bilgilendirme amaçlıdır ve kesin kazanç garantisi vermez.
                   </p>
                 </div>
@@ -618,12 +531,13 @@ const Profile = () => {
             </Card>
           </motion.div>
 
-          <p className="text-xs text-muted-foreground text-center px-4">
+          <p className="text-[11px] text-muted-foreground text-center px-4 pb-2">
             📊 Tüm içerikler istatistiksel analiz amaçlıdır ve tavsiye niteliği taşımaz.
           </p>
         </motion.div>
       </main>
       <AppFooter />
+
       {/* Notification Settings Sheet */}
       <Sheet open={showNotificationSheet} onOpenChange={setShowNotificationSheet}>
         <SheetContent side="bottom" className="h-auto max-h-[80vh]">
@@ -632,48 +546,31 @@ const Profile = () => {
               <Bell className="w-5 h-5" />
               Bildirim Ayarları
             </SheetTitle>
-            <SheetDescription>
-              Hangi bildirimleri almak istediğinizi seçin
-            </SheetDescription>
+            <SheetDescription>Hangi bildirimleri almak istediğinizi seçin</SheetDescription>
           </SheetHeader>
-          
           <div className="space-y-4 pb-6">
             <div className="flex items-center justify-between py-3 border-b border-border">
               <div>
-                <p className="font-medium">Maç Hatırlatıcıları</p>
-                <p className="text-sm text-muted-foreground">Takip ettiğiniz maçlar başlamadan önce</p>
+                <p className="font-medium text-sm">Maç Hatırlatıcıları</p>
+                <p className="text-xs text-muted-foreground">Takip ettiğiniz maçlar başlamadan önce</p>
               </div>
-              <Switch 
-                checked={notificationSettings.matchReminders}
-                onCheckedChange={(checked) => updateNotificationSetting('matchReminders', checked)}
-              />
+              <Switch checked={notificationSettings.matchReminders} onCheckedChange={(checked) => updateNotificationSetting('matchReminders', checked)} />
             </div>
-            
             <div className="flex items-center justify-between py-3 border-b border-border">
               <div>
-                <p className="font-medium">Sonuç Bildirimleri</p>
-                <p className="text-sm text-muted-foreground">Analiz sonuçları doğrulandığında</p>
+                <p className="font-medium text-sm">Sonuç Bildirimleri</p>
+                <p className="text-xs text-muted-foreground">Analiz sonuçları doğrulandığında</p>
               </div>
-              <Switch 
-                checked={notificationSettings.resultNotifications}
-                onCheckedChange={(checked) => updateNotificationSetting('resultNotifications', checked)}
-              />
+              <Switch checked={notificationSettings.resultNotifications} onCheckedChange={(checked) => updateNotificationSetting('resultNotifications', checked)} />
             </div>
-            
             <div className="flex items-center justify-between py-3">
               <div>
-                <p className="font-medium">Premium Teklifleri</p>
-                <p className="text-sm text-muted-foreground">Özel kampanya ve indirimler</p>
+                <p className="font-medium text-sm">Premium Teklifleri</p>
+                <p className="text-xs text-muted-foreground">Özel kampanya ve indirimler</p>
               </div>
-              <Switch 
-                checked={notificationSettings.premiumOffers}
-                onCheckedChange={(checked) => updateNotificationSetting('premiumOffers', checked)}
-              />
+              <Switch checked={notificationSettings.premiumOffers} onCheckedChange={(checked) => updateNotificationSetting('premiumOffers', checked)} />
             </div>
-
-            <p className="text-xs text-muted-foreground pt-2">
-              📱 Bildirim ayarları cihaz ayarlarınızdan da yönetilebilir.
-            </p>
+            <p className="text-[11px] text-muted-foreground pt-2">📱 Bildirim ayarları cihaz ayarlarınızdan da yönetilebilir.</p>
           </div>
         </SheetContent>
       </Sheet>
@@ -686,33 +583,28 @@ const Profile = () => {
               <Palette className="w-5 h-5" />
               Tema Seçimi
             </SheetTitle>
-            <SheetDescription>
-              Uygulama görünümünü kişiselleştirin
-            </SheetDescription>
+            <SheetDescription>Uygulama görünümünü kişiselleştirin</SheetDescription>
           </SheetHeader>
-          
           <RadioGroup value={theme} onValueChange={setTheme} className="space-y-3 pb-6">
             <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
               <RadioGroupItem value="light" id="light" />
               <Label htmlFor="light" className="flex-1 cursor-pointer">
-                <span className="font-medium">☀️ Açık Tema</span>
-                <p className="text-sm text-muted-foreground">Gündüz kullanımı için ideal</p>
+                <span className="font-medium text-sm">☀️ Açık Tema</span>
+                <p className="text-xs text-muted-foreground">Gündüz kullanımı için ideal</p>
               </Label>
             </div>
-            
             <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
               <RadioGroupItem value="dark" id="dark" />
               <Label htmlFor="dark" className="flex-1 cursor-pointer">
-                <span className="font-medium">🌙 Koyu Tema</span>
-                <p className="text-sm text-muted-foreground">Göz yorgunluğunu azaltır</p>
+                <span className="font-medium text-sm">🌙 Koyu Tema</span>
+                <p className="text-xs text-muted-foreground">Göz yorgunluğunu azaltır</p>
               </Label>
             </div>
-            
             <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
               <RadioGroupItem value="system" id="system" />
               <Label htmlFor="system" className="flex-1 cursor-pointer">
-                <span className="font-medium">📱 Sistem</span>
-                <p className="text-sm text-muted-foreground">Cihaz ayarlarını takip eder</p>
+                <span className="font-medium text-sm">📱 Sistem</span>
+                <p className="text-xs text-muted-foreground">Cihaz ayarlarını takip eder</p>
               </Label>
             </div>
           </RadioGroup>
@@ -728,54 +620,43 @@ const Profile = () => {
               Analiz Motoru Hakkında
             </SheetTitle>
           </SheetHeader>
-          
           <ScrollArea className="h-full max-h-[60vh]">
             <div className="space-y-4 pb-6">
-              <p className="text-sm text-muted-foreground">
-                Gol Metrik, maç analizleri için istatistiksel modeller kullanmaktadır:
-              </p>
-              
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
-                  <TrendingUp className="w-5 h-5 text-primary mt-0.5" />
+              <p className="text-sm text-muted-foreground">Gol Metrik, maç analizleri için istatistiksel modeller kullanmaktadır:</p>
+              <div className="space-y-2.5">
+                <div className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/30">
+                  <TrendingUp className="w-4 h-4 text-primary mt-0.5" />
                   <div>
-                    <p className="font-medium">Takım Performans Verileri</p>
-                    <p className="text-sm text-muted-foreground">Son maç formları ve istatistikleri</p>
+                    <p className="font-medium text-sm">Takım Performans Verileri</p>
+                    <p className="text-xs text-muted-foreground">Son maç formları ve istatistikleri</p>
                   </div>
                 </div>
-                
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
-                  <Heart className="w-5 h-5 text-primary mt-0.5" />
+                <div className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/30">
+                  <Heart className="w-4 h-4 text-primary mt-0.5" />
                   <div>
-                    <p className="font-medium">H2H İstatistikleri</p>
-                    <p className="text-sm text-muted-foreground">Kafa kafaya geçmiş karşılaşmalar</p>
+                    <p className="font-medium text-sm">H2H İstatistikleri</p>
+                    <p className="text-xs text-muted-foreground">Kafa kafaya geçmiş karşılaşmalar</p>
                   </div>
                 </div>
-                
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
-                  <Calendar className="w-5 h-5 text-primary mt-0.5" />
+                <div className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/30">
+                  <Calendar className="w-4 h-4 text-primary mt-0.5" />
                   <div>
-                    <p className="font-medium">Lig Sıralama Bilgileri</p>
-                    <p className="text-sm text-muted-foreground">Güncel puan durumu ve konumlar</p>
+                    <p className="font-medium text-sm">Lig Sıralama Bilgileri</p>
+                    <p className="text-xs text-muted-foreground">Güncel puan durumu ve konumlar</p>
                   </div>
                 </div>
-                
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
-                  <Sparkles className="w-5 h-5 text-primary mt-0.5" />
+                <div className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/30">
+                  <Sparkles className="w-4 h-4 text-primary mt-0.5" />
                   <div>
-                    <p className="font-medium">Form Analizleri</p>
-                    <p className="text-sm text-muted-foreground">Ev/deplasman performans farkları</p>
+                    <p className="font-medium text-sm">Form Analizleri</p>
+                    <p className="text-xs text-muted-foreground">Ev/deplasman performans farkları</p>
                   </div>
                 </div>
               </div>
-              
-              <p className="text-sm text-muted-foreground">
-                Analiz motoru, en güncel maç verileriyle düzenli olarak iyileştirilmektedir.
-              </p>
-              
+              <p className="text-xs text-muted-foreground">Analiz motoru, en güncel maç verileriyle düzenli olarak iyileştirilmektedir.</p>
               <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
                 <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5" />
-                <p className="text-sm text-amber-600 dark:text-amber-400">
+                <p className="text-xs text-amber-600 dark:text-amber-400">
                   <strong>Önemli:</strong> Sunulan analizler bilgilendirme amaçlıdır ve kesin kazanç garantisi vermez.
                 </p>
               </div>
@@ -784,7 +665,7 @@ const Profile = () => {
         </SheetContent>
       </Sheet>
 
-      {/* Delete Account Sheet - GDPR Compliant */}
+      {/* Delete Account Sheet */}
       <Sheet open={showDeleteAccountSheet} onOpenChange={setShowDeleteAccountSheet}>
         <SheetContent side="bottom" className="h-auto max-h-[80vh]">
           <SheetHeader className="pb-4">
@@ -792,20 +673,15 @@ const Profile = () => {
               <Trash2 className="w-5 h-5" />
               Hesabı Sil
             </SheetTitle>
-            <SheetDescription>
-              Bu işlem geri alınamaz
-            </SheetDescription>
+            <SheetDescription>Bu işlem geri alınamaz</SheetDescription>
           </SheetHeader>
-          
           <div className="space-y-4 pb-6">
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
-              <AlertTriangle className="w-5 h-5 text-destructive mt-0.5" />
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+              <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-medium text-destructive">Dikkat!</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Hesabınızı sildiğinizde aşağıdaki veriler kalıcı olarak silinecektir:
-                </p>
-                <ul className="text-sm text-muted-foreground mt-2 space-y-1 list-disc list-inside">
+                <p className="font-medium text-sm text-destructive">Dikkat!</p>
+                <p className="text-xs text-muted-foreground mt-1">Hesabınızı sildiğinizde aşağıdaki veriler kalıcı olarak silinecektir:</p>
+                <ul className="text-xs text-muted-foreground mt-1.5 space-y-0.5 list-disc list-inside">
                   <li>Tüm analiz geçmişiniz</li>
                   <li>Favorileriniz</li>
                   <li>AI Asistan sohbet geçmişiniz</li>
@@ -813,9 +689,8 @@ const Profile = () => {
                 </ul>
               </div>
             </div>
-            
             <div className="space-y-2">
-              <Label htmlFor="delete-confirm">
+              <Label htmlFor="delete-confirm" className="text-sm">
                 Onaylamak için <strong className="text-destructive">SİL</strong> yazın:
               </Label>
               <Input
@@ -826,31 +701,15 @@ const Profile = () => {
                 className="uppercase"
               />
             </div>
-            
             <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={() => {
-                  setShowDeleteAccountSheet(false);
-                  setDeleteConfirmText('');
-                }}
-              >
+              <Button variant="outline" className="flex-1" onClick={() => { setShowDeleteAccountSheet(false); setDeleteConfirmText(''); }}>
                 Vazgeç
               </Button>
-              <Button 
-                variant="destructive" 
-                className="flex-1"
-                disabled={deleteConfirmText !== 'SİL' || isDeleting}
-                onClick={handleDeleteAccount}
-              >
+              <Button variant="destructive" className="flex-1" disabled={deleteConfirmText !== 'SİL' || isDeleting} onClick={handleDeleteAccount}>
                 {isDeleting ? 'Siliniyor...' : 'Hesabı Sil'}
               </Button>
             </div>
-
-            <p className="text-xs text-muted-foreground text-center">
-              KVKK/GDPR kapsamında verileriniz kalıcı olarak silinecektir.
-            </p>
+            <p className="text-[11px] text-muted-foreground text-center">KVKK/GDPR kapsamında verileriniz kalıcı olarak silinecektir.</p>
           </div>
         </SheetContent>
       </Sheet>
@@ -861,62 +720,25 @@ const Profile = () => {
           <ScrollArea className="h-full px-6 py-6">
             <div className="space-y-6 pb-8">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">Gizlilik Politikası</h2>
-                <Button variant="ghost" size="sm" onClick={() => setShowPrivacySheet(false)}>
-                  Kapat
-                </Button>
+                <h2 className="text-lg font-bold">Gizlilik Politikası</h2>
+                <Button variant="ghost" size="sm" onClick={() => setShowPrivacySheet(false)}>Kapat</Button>
               </div>
-              <p className="text-sm text-muted-foreground">Son güncelleme: 25 Ocak 2026</p>
-              
+              <p className="text-xs text-muted-foreground">Son güncelleme: 25 Ocak 2026</p>
               <div className="space-y-4">
-                <section>
-                  <h3 className="font-semibold mb-2">1. Veri Toplama</h3>
-                  <p className="text-sm text-muted-foreground">
-                    GolMetrik olarak, hizmetlerimizi sunabilmek için belirli kişisel verilerinizi topluyoruz. Bu veriler arasında e-posta adresiniz, kullanıcı tercihleri ve uygulama kullanım istatistikleri yer almaktadır.
-                  </p>
-                </section>
-                
-                <section>
-                  <h3 className="font-semibold mb-2">2. Veri Kullanımı</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Topladığımız veriler, size kişiselleştirilmiş futbol analizi sunmak, uygulama deneyimini iyileştirmek ve teknik destek sağlamak amacıyla kullanılmaktadır.
-                  </p>
-                </section>
-                
-                <section>
-                  <h3 className="font-semibold mb-2">3. Veri Güvenliği</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Verileriniz endüstri standardı güvenlik protokolleri ile korunmaktadır. SSL şifreleme ve güvenli sunucu altyapısı kullanıyoruz.
-                  </p>
-                </section>
-                
-                <section>
-                  <h3 className="font-semibold mb-2">4. Üçüncü Taraf Paylaşımı</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Kişisel verileriniz, yasal zorunluluklar dışında üçüncü taraflarla paylaşılmaz. Analiz hizmetleri için anonim ve toplu veriler kullanılabilir.
-                  </p>
-                </section>
-                
-                <section>
-                  <h3 className="font-semibold mb-2">5. Çerezler</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Uygulamamız, oturum yönetimi ve kullanıcı tercihlerini saklamak için gerekli çerezleri kullanmaktadır.
-                  </p>
-                </section>
-                
-                <section>
-                  <h3 className="font-semibold mb-2">6. Kullanıcı Hakları</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Verilerinize erişim, düzeltme veya silme talep etme hakkına sahipsiniz. Bu talepler için destek ekibimizle iletişime geçebilirsiniz.
-                  </p>
-                </section>
-                
-                <section>
-                  <h3 className="font-semibold mb-2">7. İletişim</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Gizlilik politikamız hakkında sorularınız için: destek@golmetrik.com
-                  </p>
-                </section>
+                {[
+                  { t: '1. Veri Toplama', d: 'GolMetrik olarak, hizmetlerimizi sunabilmek için belirli kişisel verilerinizi topluyoruz. Bu veriler arasında e-posta adresiniz, kullanıcı tercihleri ve uygulama kullanım istatistikleri yer almaktadır.' },
+                  { t: '2. Veri Kullanımı', d: 'Topladığımız veriler, size kişiselleştirilmiş futbol analizi sunmak, uygulama deneyimini iyileştirmek ve teknik destek sağlamak amacıyla kullanılmaktadır.' },
+                  { t: '3. Veri Güvenliği', d: 'Verileriniz endüstri standardı güvenlik protokolleri ile korunmaktadır. SSL şifreleme ve güvenli sunucu altyapısı kullanıyoruz.' },
+                  { t: '4. Üçüncü Taraf Paylaşımı', d: 'Kişisel verileriniz, yasal zorunluluklar dışında üçüncü taraflarla paylaşılmaz. Analiz hizmetleri için anonim ve toplu veriler kullanılabilir.' },
+                  { t: '5. Çerezler', d: 'Uygulamamız, oturum yönetimi ve kullanıcı tercihlerini saklamak için gerekli çerezleri kullanmaktadır.' },
+                  { t: '6. Kullanıcı Hakları', d: 'Verilerinize erişim, düzeltme veya silme talep etme hakkına sahipsiniz. Bu talepler için destek ekibimizle iletişime geçebilirsiniz.' },
+                  { t: '7. İletişim', d: 'Gizlilik politikamız hakkında sorularınız için: destek@golmetrik.com' },
+                ].map(s => (
+                  <section key={s.t}>
+                    <h3 className="font-semibold text-sm mb-1">{s.t}</h3>
+                    <p className="text-xs text-muted-foreground">{s.d}</p>
+                  </section>
+                ))}
               </div>
             </div>
           </ScrollArea>
@@ -929,69 +751,26 @@ const Profile = () => {
           <ScrollArea className="h-full px-6 py-6">
             <div className="space-y-6 pb-8">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">Kullanım Şartları</h2>
-                <Button variant="ghost" size="sm" onClick={() => setShowTermsSheet(false)}>
-                  Kapat
-                </Button>
+                <h2 className="text-lg font-bold">Kullanım Şartları</h2>
+                <Button variant="ghost" size="sm" onClick={() => setShowTermsSheet(false)}>Kapat</Button>
               </div>
-              <p className="text-sm text-muted-foreground">Son güncelleme: 25 Ocak 2026</p>
-              
+              <p className="text-xs text-muted-foreground">Son güncelleme: 25 Ocak 2026</p>
               <div className="space-y-4">
-                <section>
-                  <h3 className="font-semibold mb-2">1. Hizmet Tanımı</h3>
-                  <p className="text-sm text-muted-foreground">
-                    GolMetrik, istatistik destekli futbol analiz platformudur. Sunulan tüm analizler istatistiksel değerlendirmeler olup, kesin sonuç garantisi vermez.
-                  </p>
-                </section>
-                
-                <section>
-                  <h3 className="font-semibold mb-2">2. Kullanım Koşulları</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Uygulamayı kullanarak bu şartları kabul etmiş olursunuz. Platform 18 yaş üstü kullanıcılar içindir. Yasal olmayan amaçlarla kullanım yasaktır.
-                  </p>
-                </section>
-                
-                <section>
-                  <h3 className="font-semibold mb-2">3. Sorumluluk Reddi</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Sunulan analizler bilgilendirme amaçlıdır. Bahis veya finansal kararlar için tavsiye niteliği taşımaz. Kullanıcılar kendi kararlarından sorumludur.
-                  </p>
-                </section>
-                
-                <section>
-                  <h3 className="font-semibold mb-2">4. Fikri Mülkiyet</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Uygulama içeriği, algoritmaları ve tasarımı GolMetrik'e aittir. İzinsiz kopyalama veya dağıtım yasaktır.
-                  </p>
-                </section>
-                
-                <section>
-                  <h3 className="font-semibold mb-2">5. Hesap Güvenliği</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Kullanıcılar hesap bilgilerini güvende tutmakla yükümlüdür. Şüpheli aktivite durumunda derhal bildirim yapılmalıdır.
-                  </p>
-                </section>
-                
-                <section>
-                  <h3 className="font-semibold mb-2">6. Premium Üyelik</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Premium özellikler ücretli abonelik gerektirir. İptal ve iade koşulları uygulama mağazası politikalarına tabidir.
-                  </p>
-                </section>
-                
-                <section>
-                  <h3 className="font-semibold mb-2">7. Değişiklikler</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Bu şartlar önceden bildirimle güncellenebilir. Güncel versiyonu uygulama içinden takip edebilirsiniz.
-                  </p>
-                </section>
-                
-                <section>
-                  <h3 className="font-semibold mb-2">8. İletişim</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Sorularınız için: destek@golmetrik.com
-                  </p>
-                </section>
+                {[
+                  { t: '1. Hizmet Tanımı', d: 'GolMetrik, istatistik destekli futbol analiz platformudur. Sunulan tüm analizler istatistiksel değerlendirmeler olup, kesin sonuç garantisi vermez.' },
+                  { t: '2. Kullanım Koşulları', d: 'Uygulamayı kullanarak bu şartları kabul etmiş olursunuz. Platform 18 yaş üstü kullanıcılar içindir. Yasal olmayan amaçlarla kullanım yasaktır.' },
+                  { t: '3. Sorumluluk Reddi', d: 'Sunulan analizler bilgilendirme amaçlıdır. Bahis veya finansal kararlar için tavsiye niteliği taşımaz. Kullanıcılar kendi kararlarından sorumludur.' },
+                  { t: '4. Fikri Mülkiyet', d: 'Uygulama içeriği, algoritmaları ve tasarımı GolMetrik\'e aittir. İzinsiz kopyalama veya dağıtım yasaktır.' },
+                  { t: '5. Hesap Güvenliği', d: 'Kullanıcılar hesap bilgilerini güvende tutmakla yükümlüdür. Şüpheli aktivite durumunda derhal bildirim yapılmalıdır.' },
+                  { t: '6. Premium Üyelik', d: 'Premium özellikler ücretli abonelik gerektirir. İptal ve iade koşulları uygulama mağazası politikalarına tabidir.' },
+                  { t: '7. Değişiklikler', d: 'Bu şartlar önceden bildirimle güncellenebilir. Güncel versiyonu uygulama içinden takip edebilirsiniz.' },
+                  { t: '8. İletişim', d: 'Sorularınız için: destek@golmetrik.com' },
+                ].map(s => (
+                  <section key={s.t}>
+                    <h3 className="font-semibold text-sm mb-1">{s.t}</h3>
+                    <p className="text-xs text-muted-foreground">{s.d}</p>
+                  </section>
+                ))}
               </div>
             </div>
           </ScrollArea>
