@@ -115,20 +115,20 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30 flex flex-col pt-safe">
+    <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-background via-background to-muted/30 flex flex-col pt-safe">
       {/* Logo & Brand Section */}
-      <div className="flex-shrink-0 flex flex-col items-center justify-center pt-12 pb-6 px-6">
-        <img src={logoImg} alt="GolMetrik" className="w-20 h-20 mb-4 rounded-2xl shadow-lg" />
-        <h1 className="font-display font-bold text-3xl text-foreground">GolMetrik</h1>
-        <p className="text-sm text-muted-foreground mt-1">Akıllı Futbol Analizi</p>
+      <div className="flex-shrink-0 flex flex-col items-center justify-center py-4 xs:py-5 sm:py-8 px-6">
+        <img src={logoImg} alt="GolMetrik" className="w-14 h-14 xs:w-16 xs:h-16 sm:w-20 sm:h-20 mb-3 rounded-2xl shadow-lg" />
+        <h1 className="font-display font-bold text-2xl sm:text-3xl text-foreground">GolMetrik</h1>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Akıllı Futbol Analizi</p>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 px-6 pb-8 max-w-md mx-auto w-full">
+      <div className="flex-1 overflow-y-auto px-6 pb-4 max-w-md mx-auto w-full">
         {/* Google Sign In - Prominent */}
         <Button
           variant="outline"
-          className="w-full h-14 text-base font-medium gap-3 border-border/60 bg-card/80 hover:bg-card mb-6 rounded-xl shadow-sm touch-manipulation"
+          className="w-full h-12 text-base font-medium gap-3 border-border/60 bg-card/80 hover:bg-card mb-4 rounded-xl shadow-sm touch-manipulation"
           onClick={handleGoogleSignIn}
           disabled={isLoading}
         >
@@ -142,7 +142,7 @@ const Auth: React.FC = () => {
         </Button>
 
         {/* Divider */}
-        <div className="relative my-5">
+        <div className="relative my-3">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t border-border/50" />
           </div>
@@ -160,7 +160,7 @@ const Auth: React.FC = () => {
 
           {/* Login */}
           <TabsContent value="login">
-            <form onSubmit={handleLogin} className="space-y-4 mt-5">
+            <form onSubmit={handleLogin} className="space-y-3 mt-4">
               <div className="space-y-2">
                 <Label htmlFor="login-email" className="text-sm">E-posta</Label>
                 <div className="relative">
@@ -215,7 +215,7 @@ const Auth: React.FC = () => {
 
           {/* Register */}
           <TabsContent value="register">
-            <form onSubmit={handleRegister} className="space-y-4 mt-5">
+            <form onSubmit={handleRegister} className="space-y-3 mt-4">
               <div className="space-y-2">
                 <Label htmlFor="register-name" className="text-sm">İsim</Label>
                 <div className="relative">
@@ -295,7 +295,7 @@ const Auth: React.FC = () => {
           </TabsContent>
         </Tabs>
 
-        <p className="text-xs text-muted-foreground text-center mt-8">
+        <p className="text-xs text-muted-foreground text-center mt-4 pb-2">
           İçerikler bilgilendirme amaçlıdır ve tavsiye niteliği taşımaz.
         </p>
       </div>
