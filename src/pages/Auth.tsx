@@ -148,8 +148,8 @@ const Auth: React.FC = () => {
   return (
     <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-background via-background to-muted/30 flex flex-col pt-safe">
       {/* Logo & Brand Section */}
-      <div className="flex-shrink-0 flex flex-col items-center justify-center py-4 xs:py-5 sm:py-8 px-6">
-        <img src={logoImg} alt="GolMetrik" className="w-14 h-14 xs:w-16 xs:h-16 sm:w-20 sm:h-20 mb-3 rounded-2xl shadow-lg" />
+      <div className="flex-shrink-0 flex flex-col items-center justify-center py-3 xs:py-4 sm:py-6 px-6">
+        <img src={logoImg} alt="GolMetrik" className="w-14 h-14 xs:w-16 xs:h-16 sm:w-20 sm:h-20 aspect-square object-cover mb-2 rounded-2xl shadow-lg" />
         <h1 className="font-display font-bold text-2xl sm:text-3xl text-foreground">GolMetrik</h1>
         <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Akıllı Futbol Analizi</p>
       </div>
@@ -246,8 +246,8 @@ const Auth: React.FC = () => {
 
           {/* Register */}
           <TabsContent value="register">
-            <form onSubmit={handleRegister} className="space-y-3 mt-4">
-              <div className="space-y-2">
+            <form onSubmit={handleRegister} className="space-y-2.5 mt-3">
+              <div className="space-y-1.5">
                 <Label htmlFor="register-name" className="text-sm">İsim</Label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -257,11 +257,11 @@ const Auth: React.FC = () => {
                     placeholder="Adınız"
                     value={registerName}
                     onChange={(e) => setRegisterName(e.target.value)}
-                    className="pl-11 h-12 rounded-xl bg-muted/30 border-border/50"
+                    className="pl-11 h-11 rounded-xl bg-muted/30 border-border/50"
                   />
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="register-email" className="text-sm">E-posta</Label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -271,12 +271,12 @@ const Auth: React.FC = () => {
                     placeholder="ornek@email.com"
                     value={registerEmail}
                     onChange={(e) => setRegisterEmail(e.target.value)}
-                    className="pl-11 h-12 rounded-xl bg-muted/30 border-border/50"
+                    className="pl-11 h-11 rounded-xl bg-muted/30 border-border/50"
                     required
                   />
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="register-password" className="text-sm">Şifre</Label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -286,7 +286,7 @@ const Auth: React.FC = () => {
                     placeholder="En az 6 karakter"
                     value={registerPassword}
                     onChange={(e) => setRegisterPassword(e.target.value)}
-                    className="pl-11 pr-11 h-12 rounded-xl bg-muted/30 border-border/50"
+                    className="pl-11 pr-11 h-11 rounded-xl bg-muted/30 border-border/50"
                     required
                     minLength={6}
                   />
@@ -300,7 +300,7 @@ const Auth: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 pt-1">
+              <div className="flex items-start gap-3">
                 <Checkbox 
                   id="terms" 
                   checked={termsAccepted} 
@@ -319,14 +319,14 @@ const Auth: React.FC = () => {
                 </label>
               </div>
 
-              <Button type="submit" className="w-full h-12 rounded-xl text-base font-medium" disabled={isLoading || !termsAccepted}>
+              <Button type="submit" className="w-full h-11 rounded-xl text-base font-medium" disabled={isLoading || !termsAccepted}>
                 {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Kayıt yapılıyor...</> : 'Kayıt Ol'}
               </Button>
             </form>
           </TabsContent>
         </Tabs>
 
-        <p className="text-xs text-muted-foreground text-center mt-4 pb-2">
+        <p className="text-xs text-muted-foreground text-center mt-3 pb-1">
           İçerikler bilgilendirme amaçlıdır ve tavsiye niteliği taşımaz.
         </p>
       </div>
