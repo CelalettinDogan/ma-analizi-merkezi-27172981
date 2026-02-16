@@ -45,11 +45,15 @@ const Auth: React.FC = () => {
     setIsLoading(true);
     const { error } = await signIn(loginEmail, loginPassword);
     if (error) {
+      let msg = error.message === 'Invalid login credentials' 
+        ? 'E-posta veya şifre hatalı' 
+        : error.message;
+      if (error.message.toLowerCase().includes('rate limit') || error.message.includes('429')) {
+        msg = 'Çok fazla giriş denemesi. Lütfen birkaç dakika bekleyin.';
+      }
       toast({
         title: 'Giriş Hatası',
-        description: error.message === 'Invalid login credentials' 
-          ? 'E-posta veya şifre hatalı' 
-          : error.message,
+        description: msg,
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -76,15 +80,42 @@ const Auth: React.FC = () => {
       setIsLoading(false);
       return;
     }
-    const { error } = await signUp(registerEmail, registerPassword, registerName);
+    const { error, data } = await signUp(registerEmail, registerPassword, registerName);
     if (error) {
+      let msg = error.message;
+      if (error.message.toLowerCase().includes('rate limit') || error.message.includes('429')) {
+        msg = 'Çok fazla deneme yaptınız. Lütfen birkaç dakika bekleyin.';
+      }
       toast({
         title: 'Kayıt Hatası',
-        description: error.message,
+        description: msg,
         variant: 'destructive',
       });
       setIsLoading(false);
+      return;
     }
+
+    // Var olan e-posta kontrolü
+    if (data?.user?.identities?.length === 0) {
+      toast({
+        title: 'Bu e-posta zaten kayıtlı',
+        description: 'Giriş Yap sekmesinden giriş yapın.',
+        variant: 'destructive',
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // Başarılı kayıt
+    toast({
+      title: 'Kayıt Başarılı',
+      description: 'E-posta adresinize doğrulama bağlantısı gönderildi.',
+    });
+    setRegisterEmail('');
+    setRegisterPassword('');
+    setRegisterName('');
+    setTermsAccepted(false);
+    setIsLoading(false);
   };
 
   const handleGoogleSignIn = async () => {
