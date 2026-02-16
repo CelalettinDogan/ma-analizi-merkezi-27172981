@@ -1,86 +1,32 @@
 
-# Auth Sayfasi Hata Duzeltmeleri
 
-## Tespit Edilen Sorunlar
+# Kayit Ol Sayfasi - Native Responsive ve Logo Duzeltme
 
-### 1. Basarili kayitta loading spinner sonsuza kadar donuyor
-`handleRegister` fonksiyonunda `setIsLoading(false)` sadece hata durumunda cagiriliyor (satir 87). Basarili kayit sonrasi kullanici e-posta dogrulama beklerken buton surekli "Kayit yapiliyor..." olarak kaliyor.
-
-### 2. Var olan e-posta ile kayit olununca yanlis davranis
-Supabase, e-posta numaralandirmayi onlemek icin var olan bir e-postayla `signUp` yapildiginda hata dondurmez. Bunun yerine `user.identities` dizisi bos doner. Bu kontrol edilmedigi icin kullanici yanlis yonlendiriliyor.
-
-### 3. Rate limit hatasi kullanici dostu degil
-"email rate limit exceeded" hatasi ham Ingilizce olarak gosteriliyor. Turkce ve anlasilir bir mesaja donusturulmeli.
+## Sorun
+- Kayit Ol sekmesi 3 form alani (isim, e-posta, sifre) + checkbox + buton iceriyor ve kucuk ekranlarda viewport'u asabiliyor
+- Logo 1:1 kare oraninda zorlanmis degil, gorsel oranina bagli
 
 ## Yapilacak Degisiklikler
 
 ### Dosya: `src/pages/Auth.tsx`
 
-#### handleRegister fonksiyonu yeniden yazilacak:
+1. **Logo 1:1 kare zorlama**: `aspect-square object-cover` eklenerek logonun her zaman kare gorunmesi saglanacak
 
-1. `signUp` cagrisindan donen `data` objesi kontrol edilecek
-2. Eger `data.user?.identities` bos diziyse, "Bu e-posta zaten kayitli" hatasi gosterilecek
-3. Basarili kayit sonrasi `setIsLoading(false)` cagrilacak ve "E-posta dogrulama baglantisi gonderildi" mesaji gosterilecek
-4. Form alanlari temizlenecek
+2. **Logo bolumu daha kompakt**: `py-4 xs:py-5 sm:py-8` yerine `py-3 xs:py-4 sm:py-6` ile ust kisim daraltilacak, `mb-3` yerine `mb-2`
 
-#### handleLogin fonksiyonunda rate limit kontrolu:
+3. **Kayit formu araliklari**: `space-y-3` yerine `space-y-2.5` yapilarak form alanlari arasindaki bosluk azaltilacak
 
-1. Hata mesajinda "rate limit" veya "429" varsa Turkce mesaj gosterilecek
+4. **Input yukseklikleri**: `h-12` yerine `h-11` ile input'lar biraz daha kompakt
 
-#### AuthContext signUp donusu:
+5. **Label boyutlari**: `space-y-2` (label ile input arasi) yerine `space-y-1.5`
 
-`signUp` fonksiyonu sadece `{ error }` donduruyor, `data` donmesi gerekiyor.
+6. **Checkbox alani**: `pt-1` kaldirilarak daha kompakt
 
-### Dosya: `src/contexts/AuthContext.tsx`
+7. **Kayit butonu**: `h-12` yerine `h-11`
 
-`signUp` fonksiyonunun donus tipi `{ error, data }` olarak guncellenecek:
+8. **Tab content margin**: `mt-4` yerine `mt-3`
 
-```text
-Onceki:  return { error: error as Error | null };
-Sonraki: return { error: error as Error | null, data };
-```
+9. **Disclaimer**: `mt-4 pb-2` yerine `mt-3 pb-1`
 
-Interface'e de `data` eklenmeli.
+Bu degisikliklerle Kayit Ol sekmesi 320px ekranlarda bile scroll olmadan sigacak ve logo her zaman kare gorunecek.
 
-### Auth.tsx'teki handleRegister degisiklikleri:
-
-```text
-const { error, data } = await signUp(registerEmail, registerPassword, registerName);
-
-if (error) {
-  // Rate limit kontrolu
-  if (error.message.includes('rate limit') || error.message.includes('429')) {
-    mesaj = 'Cok fazla deneme yaptiniz. Lutfen birka dakika bekleyin.';
-  }
-  toast({ ... });
-  setIsLoading(false);
-  return;
-}
-
-// Var olan e-posta kontrolu
-if (data?.user?.identities?.length === 0) {
-  toast({ title: 'Bu e-posta zaten kayitli', description: 'Giris Yap sekmesinden giris yapin.' });
-  setIsLoading(false);
-  return;
-}
-
-// Basarili kayit
-toast({ title: 'Kayit Basarili', description: 'E-posta adresinize dogrulama baglantisi gonderildi.' });
-setIsLoading(false);
-```
-
-### handleLogin'deki rate limit kontrolu:
-
-```text
-if (error.message.includes('rate limit') || error.message.includes('429')) {
-  mesaj = 'Cok fazla giris denemesi. Lutfen birka dakika bekleyin.';
-}
-```
-
-## Ozet
-
-- 2 dosya degisecek: `AuthContext.tsx` ve `Auth.tsx`
-- signUp donus tipi genisletilecek (data eklenmesi)
-- Var olan e-posta kontrolu eklenecek
-- Rate limit hatalari Turkce mesajla gosterilecek
-- Basarili kayit sonrasi loading durdurup bilgi mesaji gosterilecek
