@@ -210,6 +210,8 @@ const Index: React.FC = () => {
       league: leagueCode,
       matchDate: match.utcDate.split('T')[0],
       matchId: match.id,
+      homeTeamId: match.homeTeam.id,
+      awayTeamId: match.awayTeam.id,
     };
     
     // Mark scroll request for after analysis completes

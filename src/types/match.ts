@@ -4,6 +4,8 @@ export interface MatchInput {
   awayTeam: string;
   matchDate: string;
   matchId?: number; // Optional match ID for real H2H API calls
+  homeTeamId?: number; // Optional team ID for cross-league lookup
+  awayTeamId?: number; // Optional team ID for cross-league lookup
   homeTeamCrest?: string;
   awayTeamCrest?: string;
 }
