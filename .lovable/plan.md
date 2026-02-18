@@ -1,59 +1,51 @@
 
-# Sampiyonlar Ligi (CL) Maclarinin Analiz Edilememesi Sorunu
+
+# Native Android'de Google Sign-In: Tarayici Tabanli Yonteme Gecis
 
 ## Sorun
-Galatasaray vs Juventus gibi CL maclari analiz edilemiyor cunku:
-1. `sync-standings` edge function'i CL'yi desteklemiyor (sadece PL, BL1, PD, SA, FL1)
-2. CL'de geleneksel lig tablosu yok (play-off/grup formati)
-3. `useMatchAnalysis` hook'u takimlari puan durumundan ariyor - CL icin bos donuyor
-4. Sistem "Takim Bulunamadi" toast'i gostererek mock veriye dusuyor
+Native Android'de `@capgo/capacitor-social-login` eklentisi `webClientId` olarak placeholder (`YOUR_WEB_CLIENT_ID`) kullaniyor. Bu yuzden `[16] error communicating with server` hatasi aliniyor.
 
-## Cozum Yaklasimi
-CL maclari icin takimlarin ait oldugu ulke liglerinden (PL, BL1, PD, SA, FL1) puan durumu verisini kullanmak. Ornegin:
-- Galatasaray SK -> Turkiye ligi (API'de yok, ozel isleme ihtiyaci var)
-- Juventus FC -> Serie A (SA) puan durumundan cekilebilir
+## Cozum
+Native platformda da Lovable Cloud'un yonettigi OAuth akisini kullanmak. `@capacitor/browser` eklentisi ile uygulama ici tarayici acilacak ve Google girisi yapilacak. Ekstra yapilandirma gerektirmez.
 
-### Adim 1: `useMatchAnalysis.ts` - CL icin cross-league standings lookup
-CL maclarinda takimlar bulunamadiginda, tum desteklenen liglerin puan durumundan takimlari aramak:
+## Yapilacak Degisiklikler
 
+### Dosya: `src/contexts/AuthContext.tsx`
+
+1. `nativeGoogleSignIn` fonksiyonu kaldirilacak
+2. `signInWithGoogle` fonksiyonunda native platform kontrolu kaldirilacak
+3. Hem web hem native icin ayni yol kullanilacak: `lovable.auth.signInWithOAuth("google")`
+4. `SocialLogin.initialize()` cagrisi `useEffect`'ten kaldirilacak
+5. `signOut`'taki native Google logout kodu kaldirilacak
+
+Yeni `signInWithGoogle`:
 ```text
-// Eger competition CL ise ve takimlar bulunamadiysa
-// Tum liglerin standings'lerini paralel olarak cek
-// Her iki takimi da bulmaya calis
+const signInWithGoogle = async () => {
+  const redirectUri = window.location.origin;
+  const { error } = await lovable.auth.signInWithOAuth("google", {
+    redirect_uri: redirectUri,
+  });
+  return { error: error as Error | null };
+};
 ```
 
-### Adim 2: Eger takimlar hicbir ligde bulunamazsa (ornegin Galatasaray - Turk ligi API'de yok)
-Bu durumda sadece H2H verisi + Poisson hesaplamasi kullanilarak kismi analiz yapmak. Puan durumu olmadan da:
-- H2H API verisi zaten geliyor (network log'larda gorunuyor)
-- AI (Gemini) tahmini yine calisabilir
-- Mock yerine "sinirli veri ile analiz" modu olusturmak
-
-### Yapilacak Degisiklikler
-
-#### Dosya: `src/hooks/useMatchAnalysis.ts`
-
-1. CL maclari icin `analyzeMatch` fonksiyonuna yeni bir dal eklenecek
-2. `homeStanding` veya `awayStanding` bulunamadiginda, diger liglerde arama yapilacak
-3. Hala bulunamazsa (Galatasaray gibi API'de olmayan takimlar icin), H2H + AI tabanli kismi analiz olusturulacak
-4. Mock veriye dusmek yerine, mevcut veriyle (H2H, AI) anlamli bir analiz sunulacak
-
-#### Teknik Detaylar
-
+Yeni `signOut` (sadeleştirilmiş):
 ```text
-// Mevcut akis (satir 84-115):
-const [standings, recentMatches] = await Promise.all([...]);
-const homeStanding = standings.find(...);
-const awayStanding = standings.find(...);
-if (!homeStanding || !awayStanding) -> mock fallback
-
-// Yeni akis:
-1. CL ise -> tum liglerin standings'lerini cek
-2. Takimlari tum liglerde ara
-3. Bulunamazsa -> "limitedAnalysis" modu:
-   - H2H verisini kullan (zaten matchId ile geliyor)
-   - AI tahminini (ml-prediction) yine cagir
-   - Poisson hesaplamasini ortalama degerlerle yap
-   - Kullaniciya "sinirli veri ile analiz" bilgisi goster
+const signOut = async () => {
+  setUser(null);
+  setSession(null);
+  await supabase.auth.signOut();
+};
 ```
 
-Bu degisiklikle Galatasaray vs Juventus ve diger CL maclari analiz edilebilir hale gelecek.
+### Dosya: `capacitor.config.ts`
+
+`SocialLogin` plugin yapilandirmasi kaldirilacak (artik kullanilmiyor).
+
+## Ozet
+
+- 2 dosya degisecek
+- Native'de tarayici tabanli Google OAuth kullanilacak
+- `@capgo/capacitor-social-login` bagimliligi kodda kullanilmayacak (package.json'dan kaldirilabilir ama opsiyonel)
+- Hicbir ek yapilandirma gerektirmez, Lovable Cloud otomatik yonetir
+
