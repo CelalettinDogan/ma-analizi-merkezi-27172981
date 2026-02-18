@@ -14,7 +14,7 @@ import { staggerContainer, staggerItem, fadeInUp } from '@/lib/animations';
 import { toast } from 'sonner';
 import { getTeamNextMatch } from '@/services/footballApiService';
 
-const REFRESH_INTERVAL = 15000; // 15 seconds - faster since we read from cache
+const REFRESH_INTERVAL = 60000; // 60 seconds - cache is updated by pg_cron
 
 // Transform cached match to Match type
 const transformCachedLiveMatch = (cached: {
@@ -139,28 +139,13 @@ const LivePage: React.FC = () => {
     }
   }, [selectedLeague]);
 
-  // Trigger sync edge function
+  // Retry by re-fetching from cache (no edge function call to save Cloud balance)
   const syncLiveMatches = useCallback(async () => {
     if (!isMountedRef.current) return;
     setIsSyncing(true);
-    try {
-      const { error: syncError } = await supabase.functions.invoke('sync-live-matches');
-      if (syncError) throw syncError;
-      
-      // Refetch from cache after sync
-      await fetchFromCache();
-      if (isMountedRef.current) {
-        toast.success('Canlı maçlar güncellendi');
-      }
-    } catch (e) {
-      console.error('Sync error:', e);
-      if (isMountedRef.current) {
-        toast.error('Senkronizasyon hatası');
-      }
-    } finally {
-      if (isMountedRef.current) {
-        setIsSyncing(false);
-      }
+    await fetchFromCache();
+    if (isMountedRef.current) {
+      setIsSyncing(false);
     }
   }, [fetchFromCache]);
 
@@ -281,7 +266,7 @@ const LivePage: React.FC = () => {
                 
                 <h3 className="font-display font-bold text-lg sm:text-xl mb-2">Şu an canlı maç yok</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto mb-4 sm:mb-6 px-2">
-                  Desteklenen liglerde şu anda oynanmakta olan maç bulunmuyor. Sayfa her 15 saniyede otomatik güncellenir.
+                  Desteklenen liglerde şu anda oynanmakta olan maç bulunmuyor. Sayfa her 60 saniyede otomatik güncellenir.
                 </p>
 
                 <Button 
@@ -340,7 +325,7 @@ const LivePage: React.FC = () => {
               transition={{ duration: 2, repeat: Infinity }}
               className="w-2 h-2 rounded-full bg-green-500"
             />
-            <span>Otomatik güncelleme aktif (15 sn)</span>
+            <span>Otomatik güncelleme aktif (60 sn)</span>
           </motion.div>
         )}
       </main>

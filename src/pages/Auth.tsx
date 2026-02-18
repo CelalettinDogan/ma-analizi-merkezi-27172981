@@ -148,18 +148,18 @@ const Auth: React.FC = () => {
   return (
     <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-background via-background to-muted/30 flex flex-col pt-safe">
       {/* Logo & Brand Section */}
-      <div className="flex-shrink-0 flex flex-col items-center justify-center py-3 xs:py-4 sm:py-6 px-6">
-        <img src={logoImg} alt="GolMetrik" className="w-14 h-14 xs:w-16 xs:h-16 sm:w-20 sm:h-20 aspect-square object-cover mb-2 rounded-2xl shadow-lg" />
+      <div className="flex-shrink-0 flex flex-col items-center justify-center py-2 xs:py-3 sm:py-6 px-6">
+        <img src={logoImg} alt="GolMetrik" className="w-12 h-12 xs:w-14 xs:h-14 sm:w-20 sm:h-20 aspect-square object-cover mb-1 rounded-2xl shadow-lg" />
         <h1 className="font-display font-bold text-2xl sm:text-3xl text-foreground">GolMetrik</h1>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Akıllı Futbol Analizi</p>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0">Akıllı Futbol Analizi</p>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto px-6 pb-4 max-w-md mx-auto w-full">
+      <div className="flex-1 overflow-hidden px-6 pb-2 max-w-md mx-auto w-full">
         {/* Google Sign In - Prominent */}
         <Button
           variant="outline"
-          className="w-full h-12 text-base font-medium gap-3 border-border/60 bg-card/80 hover:bg-card mb-4 rounded-xl shadow-sm touch-manipulation"
+          className="w-full h-10 text-base font-medium gap-3 border-border/60 bg-card/80 hover:bg-card mb-3 rounded-xl shadow-sm touch-manipulation"
           onClick={handleGoogleSignIn}
           disabled={isLoading}
         >
@@ -173,7 +173,7 @@ const Auth: React.FC = () => {
         </Button>
 
         {/* Divider */}
-        <div className="relative my-3">
+        <div className="relative my-2">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t border-border/50" />
           </div>
@@ -184,7 +184,7 @@ const Auth: React.FC = () => {
 
         {/* Tabs */}
         <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-muted/40 rounded-xl h-11">
+          <TabsList className="grid w-full grid-cols-2 bg-muted/40 rounded-xl h-10">
             <TabsTrigger value="login" className="rounded-lg text-sm">Giriş Yap</TabsTrigger>
             <TabsTrigger value="register" className="rounded-lg text-sm">Kayıt Ol</TabsTrigger>
           </TabsList>
@@ -246,7 +246,7 @@ const Auth: React.FC = () => {
 
           {/* Register */}
           <TabsContent value="register">
-            <form onSubmit={handleRegister} className="space-y-2.5 mt-3">
+            <form onSubmit={handleRegister} className="space-y-2 mt-2">
               <div className="space-y-1.5">
                 <Label htmlFor="register-name" className="text-sm">İsim</Label>
                 <div className="relative">
@@ -257,7 +257,7 @@ const Auth: React.FC = () => {
                     placeholder="Adınız"
                     value={registerName}
                     onChange={(e) => setRegisterName(e.target.value)}
-                    className="pl-11 h-11 rounded-xl bg-muted/30 border-border/50"
+                    className="pl-11 h-10 rounded-xl bg-muted/30 border-border/50"
                   />
                 </div>
               </div>
@@ -271,7 +271,7 @@ const Auth: React.FC = () => {
                     placeholder="ornek@email.com"
                     value={registerEmail}
                     onChange={(e) => setRegisterEmail(e.target.value)}
-                    className="pl-11 h-11 rounded-xl bg-muted/30 border-border/50"
+                    className="pl-11 h-10 rounded-xl bg-muted/30 border-border/50"
                     required
                   />
                 </div>
@@ -286,7 +286,7 @@ const Auth: React.FC = () => {
                     placeholder="En az 6 karakter"
                     value={registerPassword}
                     onChange={(e) => setRegisterPassword(e.target.value)}
-                    className="pl-11 pr-11 h-11 rounded-xl bg-muted/30 border-border/50"
+                    className="pl-11 pr-11 h-10 rounded-xl bg-muted/30 border-border/50"
                     required
                     minLength={6}
                   />
@@ -307,7 +307,7 @@ const Auth: React.FC = () => {
                   onCheckedChange={(checked) => setTermsAccepted(checked === true)}
                   className="mt-0.5"
                 />
-                <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight">
+                <label htmlFor="terms" className="text-xs text-muted-foreground leading-tight">
                   <button type="button" onClick={() => setShowPrivacySheet(true)} className="text-primary hover:underline">
                     Gizlilik Politikası
                   </button>
@@ -319,14 +319,14 @@ const Auth: React.FC = () => {
                 </label>
               </div>
 
-              <Button type="submit" className="w-full h-11 rounded-xl text-base font-medium" disabled={isLoading || !termsAccepted}>
+              <Button type="submit" className="w-full h-10 rounded-xl text-base font-medium" disabled={isLoading || !termsAccepted}>
                 {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Kayıt yapılıyor...</> : 'Kayıt Ol'}
               </Button>
             </form>
           </TabsContent>
         </Tabs>
 
-        <p className="text-xs text-muted-foreground text-center mt-3 pb-1">
+        <p className="text-[10px] text-muted-foreground text-center mt-2 pb-0">
           İçerikler bilgilendirme amaçlıdır ve tavsiye niteliği taşımaz.
         </p>
       </div>
