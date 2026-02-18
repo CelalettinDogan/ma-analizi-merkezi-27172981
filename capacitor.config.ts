@@ -29,11 +29,6 @@ const config: CapacitorConfig = {
       resize: 'body',
       resizeOnFullScreen: true,
     },
-    SocialLogin: {
-      google: {
-        webClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
-      },
-    },
   },
   android: {
     allowMixedContent: false,
