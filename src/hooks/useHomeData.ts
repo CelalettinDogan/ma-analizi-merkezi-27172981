@@ -250,19 +250,7 @@ export const useHomeData = (): HomeData => {
     fetchData();
   }, [fetchData]);
 
-  // Auto-refresh interval
-  useEffect(() => {
-    refreshIntervalRef.current = setInterval(() => {
-      console.log('[useHomeData] Auto-refreshing data...');
-      fetchData();
-    }, AUTO_REFRESH_INTERVAL);
-
-    return () => {
-      if (refreshIntervalRef.current) {
-        clearInterval(refreshIntervalRef.current);
-      }
-    };
-  }, [fetchData]);
+  // Auto-refresh interval removed - Realtime subscription handles updates
 
   // Realtime subscription for cached_matches changes
   useEffect(() => {
