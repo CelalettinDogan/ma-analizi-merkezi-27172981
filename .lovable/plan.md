@@ -1,71 +1,86 @@
 
+# GolMetrik -> GolMetrik AI Rebranding + Header Logo Iyilestirmesi
 
-# Kayit Ol Ekrani Native Responsive + Cloud Balance Optimizasyonu
+## 1. Marka Adi Degisikligi: "GolMetrik" -> "GolMetrik AI"
 
-## 1. Auth Sayfasi - Tek Ekran Native Layout
+Tum dosyalarda "GolMetrik" ifadesi "GolMetrik AI" olarak guncellenecek. E-posta adresleri, appId, hostname, localStorage key'leri ve URL'ler gibi teknik tanimlar degismeyecek (bunlar marka adi degil, teknik identifier).
 
-### Sorun
-`flex-1 overflow-y-auto` (satir 158) kullanildigi icin icerik ekrandan tastiginda scroll olusturuyor. Kayit Ol sekmesinde 3 input + checkbox + buton var ve kucuk ekranlarda tasiyor.
+### Degisecek Dosyalar ve Satirlar
 
-### Cozum
-- `overflow-y-auto` yerine `overflow-hidden` kullanarak scroll'u tamamen engellemek
-- Tum bilesenler icin dinamik boyutlandirma: `clamp()` veya daha agresif kompakt spacing
-- Logo boyutunu kucuk ekranlarda daha da kucultmek (w-12 h-12)
-- Google butonu ve divider'i daha kompakt yapmak
-- Input yuksekliklerini `h-10` yapmak (h-11'den)
-- Form spacing'i `space-y-2` yapmak (space-y-2.5'ten)
-- Checkbox label font-size'i `text-xs` ile daha dar
-- Alt disclaimer'i `text-[10px]` yapmak
+**`index.html`**:
+- Title: "GolMetrik AI - AI Destekli Futbol Tahmin Platformu"
+- Author: "GolMetrik AI"
+- OG title: "GolMetrik AI - AI Mac Tahminleri"
+- Twitter title: "GolMetrik AI - AI Mac Tahminleri"
 
-### Dosya: `src/pages/Auth.tsx`
+**`public/manifest.json`**:
+- name: "GolMetrik AI"
+- short_name: "GolMetrik AI"
 
-Degisiklikler:
-- Satir 149: `overflow-hidden` korunacak (zaten var)
-- Satir 151: Logo padding `py-2 xs:py-3 sm:py-6`
-- Satir 152: Logo boyutu `w-12 h-12 xs:w-14 xs:h-14 sm:w-20 sm:h-20`, mb-1
-- Satir 153-154: Baslik ve alt yazi arasindaki bosluk sifirlanacak
-- Satir 158: `overflow-hidden` (scroll engelleme)
-- Satir 162: Google butonu `h-10` (h-12'den)
-- Satir 176: Divider margin `my-2` (my-3'ten)
-- Satir 187: TabsList `h-10` (h-11'den)
-- Satir 249: Register form `space-y-2 mt-2`
-- Satir 260-290: Input'lar `h-10` (h-11'den)
-- Satir 310: Checkbox label `text-xs leading-tight`
-- Satir 322: Kayit Ol butonu `h-10` (h-11'den)
-- Satir 329: Disclaimer `mt-2 pb-0 text-[10px]`
+**`capacitor.config.ts`**:
+- appName: "GolMetrik AI"
+
+**`src/components/layout/AppHeader.tsx`**:
+- alt text ve brand text: "GolMetrik AI"
+
+**`src/components/layout/AppFooter.tsx`**:
+- Brand text: "GolMetrik AI"
+- Copyright: "GolMetrik AI"
+
+**`src/pages/Auth.tsx`**:
+- Logo alt, h1, ve icerik metinlerindeki "GolMetrik" -> "GolMetrik AI"
+
+**`src/pages/Premium.tsx`**:
+- "GolMetrik Premium" -> "GolMetrik AI Premium"
+
+**`src/pages/Terms.tsx`**:
+- Tum "GolMetrik" referanslari -> "GolMetrik AI"
+
+**`src/pages/Privacy.tsx`**:
+- Tum "GolMetrik" referanslari -> "GolMetrik AI"
+
+**`src/pages/Profile.tsx`**:
+- Icerik metinlerindeki "GolMetrik" -> "GolMetrik AI"
+
+**`src/components/Onboarding.tsx`**:
+- "GolMetrik'e Hos Geldin!" -> "GolMetrik AI'a Hos Geldin!"
+
+**`src/components/admin/AdminLayout.tsx`**:
+- "GolMetrik" -> "GolMetrik AI"
+
+**`supabase/functions/ai-chatbot/index.ts`**:
+- System prompt: "GolMetrik'in" -> "GolMetrik AI'in"
+
+### Degismeyecekler (teknik identifier'lar)
+- `app.golmetrik.android` (appId)
+- `golmetrik.app` (hostname)
+- `info@golmetrik.com`, `destek@golmetrik.com` (e-posta)
+- `golmetrik_onboarding_completed` (localStorage key)
+- `golmetrik-notification-settings` (localStorage key)
+- `golmetrik_recent_searches` (localStorage key)
+- Play Store URL
 
 ---
 
-## 2. Cloud Balance Optimizasyonu
+## 2. Header Logo - Daha Buyuk ve Native 1:1
 
-### Tespit Edilen Gereksiz Kullanimlar
+`AppHeader.tsx`'deki logo simdi `w-9 h-9` (36px) boyutunda ve `object-contain` kullaniyor. Daha gorunur ve native hissiyat icin:
 
-#### A. useHomeData.ts - Realtime + Polling Cakismasi
-Realtime subscription (satir 267-291) VE 5 dakikalik auto-refresh interval (satir 254-265) ayni anda calisiyor. Realtime zaten degisiklikleri anlik bildirdiginden, 5 dakikalik polling gereksiz.
+- Boyut: `w-10 h-10 sm:w-11 sm:h-11` (40-44px)
+- `object-contain` yerine `aspect-square object-cover` (1:1 kare, native stil)
+- `rounded-xl` eklenerek kosesel native gorunum
+- Hover glow efektini korumak
 
-**Cozum**: Auto-refresh interval'i kaldirmak. Realtime yeterli.
+### Teknik Detay
 
-#### B. Live.tsx - 15 Saniye Polling
-`fetchFromCache()` her 15 saniyede cagiriliyor (satir 186-193). Cache verisi zaten pg_cron tarafindan guncelleniyor. 15 saniye cok agresif.
+```text
+// Mevcut:
+<img src={logoImage} className="w-9 h-9 sm:w-10 sm:h-10 object-contain ..." />
 
-**Cozum**: Polling interval'i 60 saniyeye cikarmak (15'ten).
+// Yeni:
+<img src={logoImage} className="w-10 h-10 sm:w-11 sm:h-11 aspect-square object-cover rounded-xl shadow-sm ..." />
+```
 
-#### C. Live.tsx - Manuel syncLiveMatches Fonksiyonu
-`syncLiveMatches` fonksiyonu (satir 143-165) hala edge function cagirisi yapiyor. Sadece hata durumunda "Tekrar Dene" butonunda kullaniliyor ama gereksiz edge function cagrisi olusturabiliyor.
+---
 
-**Cozum**: Hata durumunda sadece cache'den tekrar okumak, edge function cagirmamak.
-
-### Tahmini Tasarruf
-- Realtime polling kaldirma: ~%20 daha az DB sorgusu
-- Live page polling azaltma (15s -> 60s): ~%75 daha az DB sorgusu (Live sayfasinda)
-- Manuel sync kaldirma: Sporadik edge function cagrilerinin onlenmesi
-
-### Dosya Degisiklikleri
-
-**`src/hooks/useHomeData.ts`**:
-- Satir 254-265: Auto-refresh interval useEffect'i kaldirilacak
-
-**`src/pages/Live.tsx`**:
-- Satir 17: REFRESH_INTERVAL 15000 -> 60000
-- Satir 143-165: syncLiveMatches fonksiyonu sadece fetchFromCache() cagracak (edge function cagrisi kaldirilacak)
-
+## Toplam: ~15 dosya degisecek, tamaminda basit metin degisikligi + 1 dosyada logo boyut/stil guncellemesi
