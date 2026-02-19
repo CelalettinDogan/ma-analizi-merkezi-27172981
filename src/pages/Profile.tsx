@@ -500,7 +500,7 @@ const Profile = () => {
               </CardHeader>
               <CardContent className="px-4 pb-4 space-y-2.5">
                 <div className="text-center pb-1">
-                  <p className="font-semibold text-sm">Gol Metrik</p>
+                  <p className="font-semibold text-sm">GolMetrik AI</p>
                   <p className="text-[11px] text-muted-foreground">Versiyon 1.0.0</p>
                   <p className="text-[11px] text-muted-foreground">İstatistik destekli futbol analiz platformu</p>
                 </div>
@@ -622,7 +622,7 @@ const Profile = () => {
           </SheetHeader>
           <ScrollArea className="h-full max-h-[60vh]">
             <div className="space-y-4 pb-6">
-              <p className="text-sm text-muted-foreground">Gol Metrik, maç analizleri için istatistiksel modeller kullanmaktadır:</p>
+              <p className="text-sm text-muted-foreground">GolMetrik AI, maç analizleri için istatistiksel modeller kullanmaktadır:</p>
               <div className="space-y-2.5">
                 <div className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/30">
                   <TrendingUp className="w-4 h-4 text-primary mt-0.5" />
@@ -726,7 +726,7 @@ const Profile = () => {
               <p className="text-xs text-muted-foreground">Son güncelleme: 25 Ocak 2026</p>
               <div className="space-y-4">
                 {[
-                  { t: '1. Veri Toplama', d: 'GolMetrik olarak, hizmetlerimizi sunabilmek için belirli kişisel verilerinizi topluyoruz. Bu veriler arasında e-posta adresiniz, kullanıcı tercihleri ve uygulama kullanım istatistikleri yer almaktadır.' },
+                  { t: '1. Veri Toplama', d: 'GolMetrik AI olarak, hizmetlerimizi sunabilmek için belirli kişisel verilerinizi topluyoruz. Bu veriler arasında e-posta adresiniz, kullanıcı tercihleri ve uygulama kullanım istatistikleri yer almaktadır.' },
                   { t: '2. Veri Kullanımı', d: 'Topladığımız veriler, size kişiselleştirilmiş futbol analizi sunmak, uygulama deneyimini iyileştirmek ve teknik destek sağlamak amacıyla kullanılmaktadır.' },
                   { t: '3. Veri Güvenliği', d: 'Verileriniz endüstri standardı güvenlik protokolleri ile korunmaktadır. SSL şifreleme ve güvenli sunucu altyapısı kullanıyoruz.' },
                   { t: '4. Üçüncü Taraf Paylaşımı', d: 'Kişisel verileriniz, yasal zorunluluklar dışında üçüncü taraflarla paylaşılmaz. Analiz hizmetleri için anonim ve toplu veriler kullanılabilir.' },
@@ -757,10 +757,10 @@ const Profile = () => {
               <p className="text-xs text-muted-foreground">Son güncelleme: 25 Ocak 2026</p>
               <div className="space-y-4">
                 {[
-                  { t: '1. Hizmet Tanımı', d: 'GolMetrik, istatistik destekli futbol analiz platformudur. Sunulan tüm analizler istatistiksel değerlendirmeler olup, kesin sonuç garantisi vermez.' },
+                  { t: '1. Hizmet Tanımı', d: 'GolMetrik AI, istatistik destekli futbol analiz platformudur. Sunulan tüm analizler istatistiksel değerlendirmeler olup, kesin sonuç garantisi vermez.' },
                   { t: '2. Kullanım Koşulları', d: 'Uygulamayı kullanarak bu şartları kabul etmiş olursunuz. Platform 18 yaş üstü kullanıcılar içindir. Yasal olmayan amaçlarla kullanım yasaktır.' },
                   { t: '3. Sorumluluk Reddi', d: 'Sunulan analizler bilgilendirme amaçlıdır. Bahis veya finansal kararlar için tavsiye niteliği taşımaz. Kullanıcılar kendi kararlarından sorumludur.' },
-                  { t: '4. Fikri Mülkiyet', d: 'Uygulama içeriği, algoritmaları ve tasarımı GolMetrik\'e aittir. İzinsiz kopyalama veya dağıtım yasaktır.' },
+                  { t: '4. Fikri Mülkiyet', d: 'Uygulama içeriği, algoritmaları ve tasarımı GolMetrik AI\'a aittir. İzinsiz kopyalama veya dağıtım yasaktır.' },
                   { t: '5. Hesap Güvenliği', d: 'Kullanıcılar hesap bilgilerini güvende tutmakla yükümlüdür. Şüpheli aktivite durumunda derhal bildirim yapılmalıdır.' },
                   { t: '6. Premium Üyelik', d: 'Premium özellikler ücretli abonelik gerektirir. İptal ve iade koşulları uygulama mağazası politikalarına tabidir.' },
                   { t: '7. Değişiklikler', d: 'Bu şartlar önceden bildirimle güncellenebilir. Güncel versiyonu uygulama içinden takip edebilirsiniz.' },

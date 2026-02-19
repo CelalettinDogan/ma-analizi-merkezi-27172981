@@ -150,7 +150,7 @@ const Premium = () => {
                 </div>
               </div>
               <h1 className="text-lg font-bold bg-gradient-to-r from-amber-400 via-primary to-accent bg-clip-text text-transparent">
-                GolMetrik Premium
+                GolMetrik AI Premium
               </h1>
             </div>
             <p className="text-[11px] text-muted-foreground">
