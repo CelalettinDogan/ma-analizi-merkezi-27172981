@@ -1,6 +1,6 @@
 {
-  "name": "GolMetrik",
-  "short_name": "GolMetrik",
+  "name": "GolMetrik AI",
+  "short_name": "GolMetrik AI",
   "description": "AI Destekli Futbol Tahmin Platformu",
   "start_url": "/",
   "display": "standalone",

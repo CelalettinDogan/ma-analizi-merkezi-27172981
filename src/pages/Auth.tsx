@@ -149,8 +149,8 @@ const Auth: React.FC = () => {
     <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-background via-background to-muted/30 flex flex-col pt-safe">
       {/* Logo & Brand Section */}
       <div className="flex-shrink-0 flex flex-col items-center justify-center py-2 xs:py-3 sm:py-6 px-6">
-        <img src={logoImg} alt="GolMetrik" className="w-12 h-12 xs:w-14 xs:h-14 sm:w-20 sm:h-20 aspect-square object-cover mb-1 rounded-2xl shadow-lg" />
-        <h1 className="font-display font-bold text-2xl sm:text-3xl text-foreground">GolMetrik</h1>
+        <img src={logoImg} alt="GolMetrik AI" className="w-12 h-12 xs:w-14 xs:h-14 sm:w-20 sm:h-20 aspect-square object-cover mb-1 rounded-2xl shadow-lg" />
+        <h1 className="font-display font-bold text-2xl sm:text-3xl text-foreground">GolMetrik AI</h1>
         <p className="text-xs sm:text-sm text-muted-foreground mt-0">Akıllı Futbol Analizi</p>
       </div>
 
@@ -373,7 +373,7 @@ const Auth: React.FC = () => {
             <div className="prose prose-sm dark:prose-invert max-w-none pb-8">
               <p className="text-muted-foreground text-sm mb-6">Son güncelleme: 25 Ocak 2026</p>
               <h2 className="text-lg font-semibold mt-6 mb-3">1. Veri Toplama</h2>
-              <p className="text-muted-foreground">GolMetrik olarak, kullanıcı deneyimini iyileştirmek için aşağıdaki verileri topluyoruz:</p>
+              <p className="text-muted-foreground">GolMetrik AI olarak, kullanıcı deneyimini iyileştirmek için aşağıdaki verileri topluyoruz:</p>
               <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-2">
                 <li><strong>Hesap Bilgileri:</strong> E-posta adresi ve şifre (şifrelenmiş olarak saklanır)</li>
                 <li><strong>Kullanım Verileri:</strong> Uygulama kullanım istatistikleri, analiz geçmişi</li>
@@ -411,11 +411,11 @@ const Auth: React.FC = () => {
             <div className="prose prose-sm dark:prose-invert max-w-none pb-8">
               <p className="text-muted-foreground text-sm mb-6">Son güncelleme: 25 Ocak 2026</p>
               <h2 className="text-lg font-semibold mt-6 mb-3">1. Hizmet Tanımı</h2>
-              <p className="text-muted-foreground">GolMetrik, futbol maçları için istatistiksel analizler sunan bir bilgilendirme platformudur.</p>
+              <p className="text-muted-foreground">GolMetrik AI, futbol maçları için istatistiksel analizler sunan bir bilgilendirme platformudur.</p>
               <h2 className="text-lg font-semibold mt-6 mb-3">2. Kullanım Koşulları</h2>
               <p className="text-muted-foreground">Sunulan analizler bilgilendirme amaçlıdır ve yatırım tavsiyesi değildir.</p>
               <h2 className="text-lg font-semibold mt-6 mb-3">3. Sorumluluk Reddi</h2>
-              <p className="text-muted-foreground">GolMetrik, sunulan analizlerin doğruluğunu garanti etmez. Kullanıcılar kararlarından kendileri sorumludur.</p>
+              <p className="text-muted-foreground">GolMetrik AI, sunulan analizlerin doğruluğunu garanti etmez. Kullanıcılar kararlarından kendileri sorumludur.</p>
               <h2 className="text-lg font-semibold mt-6 mb-3">4. Premium Üyelik</h2>
               <p className="text-muted-foreground">Abonelikler otomatik yenilenir, iptal Google Play hesabınız üzerinden yapılır.</p>
               <h2 className="text-lg font-semibold mt-6 mb-3">5. İletişim</h2>

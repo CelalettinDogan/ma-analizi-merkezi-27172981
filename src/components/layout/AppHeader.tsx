@@ -36,13 +36,13 @@ const AppHeader: React.FC<AppHeaderProps> = ({
           <div className="relative">
             <img 
               src={logoImage} 
-              alt="GolMetrik" 
-              className="w-9 h-9 sm:w-10 sm:h-10 object-contain transition-transform duration-200 group-hover:scale-105"
+              alt="GolMetrik AI" 
+              className="w-10 h-10 sm:w-11 sm:h-11 aspect-square object-cover rounded-xl shadow-sm transition-transform duration-200 group-hover:scale-105"
             />
-            <div className="absolute -inset-1 rounded-full bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity -z-10" />
+            <div className="absolute -inset-1 rounded-xl bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity -z-10" />
           </div>
           <span className="font-display font-bold text-base sm:text-lg tracking-tight text-foreground">
-            GolMetrik
+            GolMetrik AI
           </span>
         </Link>
         

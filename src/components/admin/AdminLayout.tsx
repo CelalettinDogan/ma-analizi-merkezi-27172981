@@ -95,7 +95,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
               </div>
               <div>
                 <h2 className="font-bold text-sm">Admin Panel</h2>
-                <p className="text-xs text-muted-foreground">GolMetrik</p>
+                <p className="text-xs text-muted-foreground">GolMetrik AI</p>
               </div>
             </div>
             <Button
