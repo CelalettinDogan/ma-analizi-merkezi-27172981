@@ -569,10 +569,7 @@ export function useMatchAnalysis() {
             },
           ];
 
-          toast({
-            title: '🤖 AI Analizi Tamamlandı',
-            description: 'Yapay zeka destekli hibrit tahminler oluşturuldu.',
-          });
+          // Analysis complete - no toast needed
         }
       } catch (aiError) {
         console.error('AI prediction error (falling back to math):', aiError);
@@ -627,12 +624,7 @@ export function useMatchAnalysis() {
         console.error('Error saving predictions:', saveError);
       }
       
-      if (!isAIEnhanced) {
-        toast({
-          title: 'Analiz Tamamlandı',
-          description: 'Matematiksel verilerle tahmin oluşturuldu.',
-        });
-      }
+      // Analysis complete - no toast needed
 
       return result;
     } catch (error) {
