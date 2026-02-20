@@ -1,86 +1,90 @@
 
-# GolMetrik -> GolMetrik AI Rebranding + Header Logo Iyilestirmesi
 
-## 1. Marka Adi Degisikligi: "GolMetrik" -> "GolMetrik AI"
+# Native Android'de Google Sign-In 404 Hatasi Cozumu
 
-Tum dosyalarda "GolMetrik" ifadesi "GolMetrik AI" olarak guncellenecek. E-posta adresleri, appId, hostname, localStorage key'leri ve URL'ler gibi teknik tanimlar degismeyecek (bunlar marka adi degil, teknik identifier).
+## Sorunun Kok Nedeni
 
-### Degisecek Dosyalar ve Satirlar
+`@lovable.dev/cloud-auth-js` kutuphanesi, Google girisi icin `/~oauth/initiate` adresine yonlendirme yapiyor. Bu adres Lovable'in web altyapisinda otomatik olarak yakalanip isleniyor. Ancak native Android'de (Capacitor), uygulama `https://golmetrik.app` hostname'i ile calisiyor ve `/~oauth/initiate` adresi icin bir sunucu yok. React Router bu adresi yakalayamayinca 404 gosteriyor.
 
-**`index.html`**:
-- Title: "GolMetrik AI - AI Destekli Futbol Tahmin Platformu"
-- Author: "GolMetrik AI"
-- OG title: "GolMetrik AI - AI Mac Tahminleri"
-- Twitter title: "GolMetrik AI - AI Mac Tahminleri"
+## Cozum
 
-**`public/manifest.json`**:
-- name: "GolMetrik AI"
-- short_name: "GolMetrik AI"
+Native platformda `lovable.auth` yerine dogrudan Supabase OAuth kullanilacak. `@capacitor/browser` ile uygulama ici tarayici acilacak, kullanici Google'da giris yapacak, sonra deep link ile uygulamaya donecek.
 
-**`capacitor.config.ts`**:
-- appName: "GolMetrik AI"
+## Degisecek Dosyalar
 
-**`src/components/layout/AppHeader.tsx`**:
-- alt text ve brand text: "GolMetrik AI"
+### 1. `src/contexts/AuthContext.tsx`
 
-**`src/components/layout/AppFooter.tsx`**:
-- Brand text: "GolMetrik AI"
-- Copyright: "GolMetrik AI"
+`signInWithGoogle` fonksiyonu platform kontrolu yapacak:
 
-**`src/pages/Auth.tsx`**:
-- Logo alt, h1, ve icerik metinlerindeki "GolMetrik" -> "GolMetrik AI"
-
-**`src/pages/Premium.tsx`**:
-- "GolMetrik Premium" -> "GolMetrik AI Premium"
-
-**`src/pages/Terms.tsx`**:
-- Tum "GolMetrik" referanslari -> "GolMetrik AI"
-
-**`src/pages/Privacy.tsx`**:
-- Tum "GolMetrik" referanslari -> "GolMetrik AI"
-
-**`src/pages/Profile.tsx`**:
-- Icerik metinlerindeki "GolMetrik" -> "GolMetrik AI"
-
-**`src/components/Onboarding.tsx`**:
-- "GolMetrik'e Hos Geldin!" -> "GolMetrik AI'a Hos Geldin!"
-
-**`src/components/admin/AdminLayout.tsx`**:
-- "GolMetrik" -> "GolMetrik AI"
-
-**`supabase/functions/ai-chatbot/index.ts`**:
-- System prompt: "GolMetrik'in" -> "GolMetrik AI'in"
-
-### Degismeyecekler (teknik identifier'lar)
-- `app.golmetrik.android` (appId)
-- `golmetrik.app` (hostname)
-- `info@golmetrik.com`, `destek@golmetrik.com` (e-posta)
-- `golmetrik_onboarding_completed` (localStorage key)
-- `golmetrik-notification-settings` (localStorage key)
-- `golmetrik_recent_searches` (localStorage key)
-- Play Store URL
-
----
-
-## 2. Header Logo - Daha Buyuk ve Native 1:1
-
-`AppHeader.tsx`'deki logo simdi `w-9 h-9` (36px) boyutunda ve `object-contain` kullaniyor. Daha gorunur ve native hissiyat icin:
-
-- Boyut: `w-10 h-10 sm:w-11 sm:h-11` (40-44px)
-- `object-contain` yerine `aspect-square object-cover` (1:1 kare, native stil)
-- `rounded-xl` eklenerek kosesel native gorunum
-- Hover glow efektini korumak
-
-### Teknik Detay
+- **Web (iframe/tarayici)**: Mevcut `lovable.auth.signInWithOAuth("google")` kullanilmaya devam edecek
+- **Native (Capacitor)**: `supabase.auth.signInWithOAuth` ile `skipBrowserRedirect: true` kullanilacak, donen URL `@capacitor/browser` ile acilacak
 
 ```text
-// Mevcut:
-<img src={logoImage} className="w-9 h-9 sm:w-10 sm:h-10 object-contain ..." />
+import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 
-// Yeni:
-<img src={logoImage} className="w-10 h-10 sm:w-11 sm:h-11 aspect-square object-cover rounded-xl shadow-sm ..." />
+const signInWithGoogle = async () => {
+  if (Capacitor.isNativePlatform()) {
+    // Native: Supabase OAuth + in-app browser
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://golmetrik.app/callback',
+        skipBrowserRedirect: true,
+      },
+    });
+    if (error) return { error: error as Error };
+    if (data?.url) {
+      await Browser.open({ url: data.url });
+    }
+    return { error: null };
+  } else {
+    // Web: Lovable Cloud managed OAuth
+    const { error } = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    return { error: error as Error | null };
+  }
+};
 ```
 
----
+### 2. `src/App.tsx` - DeepLinkHandler Guncelleme
 
-## Toplam: ~15 dosya degisecek, tamaminda basit metin degisikligi + 1 dosyada logo boyut/stil guncellemesi
+Mevcut deep link handler zaten `/callback` yolunu dinliyor. Ek olarak `@capacitor/browser` dinleyicisi eklenecek ki OAuth sonrasi tarayici otomatik kapansin ve oturum kurulsun:
+
+```text
+// DeepLinkHandler icinde Browser listener ekleme
+import { Browser } from '@capacitor/browser';
+
+// appUrlOpen event'inde callback kontrolu + Browser.close()
+// URL hash'inden veya search params'tan access_token/refresh_token alinip
+// supabase.auth.setSession ile oturum kurulacak
+```
+
+### 3. `capacitor.config.ts` - Deep Link Yapilandirmasi (Degisiklik Yok)
+
+Mevcut yapilandirma zaten `hostname: 'golmetrik.app'` ve `androidScheme: 'https'` kullaniyor. Deep link yakalama icin Android tarafinda `AndroidManifest.xml`'de intent-filter gerekiyor ama bu dosya Capacitor tarafindan otomatik olusturuluyor.
+
+## Akis Ozeti
+
+```text
+Kullanici "Google ile Giris Yap" tiklar
+  -> Native mi? Evet
+    -> supabase.auth.signInWithOAuth (skipBrowserRedirect: true)
+    -> URL alinir, Browser.open() ile acilir
+    -> Google giris sayfasi gosterilir
+    -> Basarili giris sonrasi golmetrik.app/callback'e yonlendirilir
+    -> Capacitor appUrlOpen event'i tetiklenir
+    -> Token'lar URL'den parse edilir
+    -> supabase.auth.setSession ile oturum kurulur
+    -> Browser.close() ile tarayici kapatilir
+    -> Ana sayfaya yonlendirilir
+```
+
+## Ozet
+
+- 2 dosya degisecek: `AuthContext.tsx` ve `App.tsx`
+- Web'de Lovable Cloud managed OAuth korunacak (degisiklik yok)
+- Native'de Supabase direct OAuth + in-app browser kullanilacak
+- Deep link callback ile token'lar yakalanip oturum kurulacak
+
