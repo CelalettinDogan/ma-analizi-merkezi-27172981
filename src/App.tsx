@@ -12,6 +12,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { Capacitor } from "@capacitor/core";
 import { App as CapApp, URLOpenListenerEvent } from "@capacitor/app";
+import { Browser } from "@capacitor/browser";
 import { supabase } from "@/integrations/supabase/client";
 import { purchaseService } from "@/services/purchaseService";
 import Index from "./pages/Index";
@@ -64,6 +65,12 @@ const DeepLinkHandler = () => {
                 access_token: accessToken,
                 refresh_token: refreshToken,
               });
+              // In-app tarayıcıyı kapat
+              try {
+                await Browser.close();
+              } catch (e) {
+                // Browser zaten kapalı olabilir
+              }
               // Giriş başarılı, ana sayfaya yönlendir
               navigate('/', { replace: true });
             }
