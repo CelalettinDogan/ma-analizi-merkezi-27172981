@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast as sonnerToast } from 'sonner';
 import { MatchInput, MatchAnalysis, Prediction, MatchInsights, MatchContext, TeamPower, PoissonData, GoalLineProbabilities } from '@/types/match';
 import { CompetitionCode, Standing, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
 import { getStandings, getFinishedMatches, getHeadToHead } from '@/services/footballApiService';
@@ -569,7 +570,7 @@ export function useMatchAnalysis() {
             },
           ];
 
-          // Analysis complete - no toast needed
+          sonnerToast('AI analizi hazır ✓', { duration: 1500 });
         }
       } catch (aiError) {
         console.error('AI prediction error (falling back to math):', aiError);
@@ -624,7 +625,9 @@ export function useMatchAnalysis() {
         console.error('Error saving predictions:', saveError);
       }
       
-      // Analysis complete - no toast needed
+      if (!isAIEnhanced) {
+        sonnerToast('Analiz hazır ✓', { duration: 1500 });
+      }
 
       return result;
     } catch (error) {
