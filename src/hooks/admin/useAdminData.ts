@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { PLAN_PRICES } from '@/constants/accessLevels';
 
 interface DashboardData {
   totalUsers: number;
@@ -36,6 +37,13 @@ interface PlanStats {
 
 interface PredictionStats {
   type: string;
+  total: number;
+  correct: number;
+  accuracy: number;
+}
+
+export interface LeagueStats {
+  league: string;
   total: number;
   correct: number;
   accuracy: number;
@@ -88,6 +96,9 @@ export const useAdminData = () => {
 
   // Activity Logs
   const [activityLogs, setActivityLogs] = useState<LogEntry[]>([]);
+
+  // League Stats
+  const [leagueStats, setLeagueStats] = useState<LeagueStats[]>([]);
 
   // Fetch dashboard data
   const fetchDashboard = useCallback(async () => {
@@ -244,16 +255,16 @@ export const useAdminData = () => {
         counts[sub.plan_type] = (counts[sub.plan_type] || 0) + 1;
       });
 
-      const prices: Record<string, number> = {
-        basic: 29.99,
-        plus: 49.99,
-        pro: 79.99,
+      const priceMap: Record<string, number> = {
+        premium_basic: PLAN_PRICES.premium_basic.monthly,
+        premium_plus: PLAN_PRICES.premium_plus.monthly,
+        premium_pro: PLAN_PRICES.premium_pro.monthly,
       };
 
       const stats: PlanStats[] = Object.entries(counts).map(([planType, count]) => ({
         planType,
         count,
-        revenue: count * (prices[planType] || 0),
+        revenue: count * (priceMap[planType] || 0),
       }));
 
       setPlanStats(stats);
@@ -280,6 +291,39 @@ export const useAdminData = () => {
       }
     } catch (e) {
       console.error('Prediction stats fetch error:', e);
+    }
+  }, []);
+
+  // Fetch league stats
+  const fetchLeagueStats = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from('predictions')
+        .select('league, is_correct')
+        .eq('is_primary', true)
+        .not('is_correct', 'is', null);
+
+      if (data) {
+        const grouped: Record<string, { total: number; correct: number }> = {};
+        data.forEach(row => {
+          if (!grouped[row.league]) grouped[row.league] = { total: 0, correct: 0 };
+          grouped[row.league].total++;
+          if (row.is_correct) grouped[row.league].correct++;
+        });
+
+        const stats: LeagueStats[] = Object.entries(grouped)
+          .map(([league, { total, correct }]) => ({
+            league,
+            total,
+            correct,
+            accuracy: total > 0 ? (correct / total) * 100 : 0,
+          }))
+          .sort((a, b) => b.total - a.total);
+
+        setLeagueStats(stats);
+      }
+    } catch (e) {
+      console.error('League stats fetch error:', e);
     }
   }, []);
 
@@ -480,6 +524,7 @@ export const useAdminData = () => {
         fetchUsers(),
         fetchPlanStats(),
         fetchPredictionStats(),
+        fetchLeagueStats(),
         fetchSystemPrompt(),
         fetchNotifications(),
         fetchActivityLogs(),
@@ -519,8 +564,10 @@ export const useAdminData = () => {
 
     // AI
     predictionStats,
+    leagueStats,
     systemPrompt,
     refreshPredictionStats: fetchPredictionStats,
+    refreshLeagueStats: fetchLeagueStats,
     savePrompt,
 
     // Notifications

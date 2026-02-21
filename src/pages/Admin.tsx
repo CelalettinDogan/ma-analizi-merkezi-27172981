@@ -38,8 +38,10 @@ const AdminPage: React.FC = () => {
     planStats,
     refreshPlanStats,
     predictionStats,
+    leagueStats,
     systemPrompt,
     refreshPredictionStats,
+    refreshLeagueStats,
     savePrompt,
     notifications,
     tokenCount,
@@ -153,12 +155,13 @@ const AdminPage: React.FC = () => {
         return (
           <AIManagement
             predictionStats={predictionStats}
+            leagueStats={leagueStats}
             overallAccuracy={overallAccuracy}
             totalPredictions={totalPredictions}
             systemPrompt={systemPrompt}
             isLoading={isLoading}
             onSavePrompt={savePrompt}
-            onRefresh={refreshPredictionStats}
+            onRefresh={() => { refreshPredictionStats(); refreshLeagueStats(); }}
           />
         );
       
