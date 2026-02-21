@@ -7,9 +7,8 @@ import {
   Save,
   Loader2,
   RefreshCw,
-  TrendingUp,
-  TrendingDown,
-  BarChart3
+  BarChart3,
+  Trophy
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -20,6 +19,8 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { staggerContainer, staggerItem } from '@/lib/animations';
+import { LEAGUE_NAMES } from '@/constants/predictions';
+import type { LeagueStats } from '@/hooks/admin/useAdminData';
 
 interface PredictionStats {
   type: string;
@@ -30,6 +31,7 @@ interface PredictionStats {
 
 interface AIManagementProps {
   predictionStats: PredictionStats[];
+  leagueStats: LeagueStats[];
   overallAccuracy: number;
   totalPredictions: number;
   systemPrompt: string;
@@ -38,8 +40,13 @@ interface AIManagementProps {
   onRefresh: () => void;
 }
 
+const getLeagueDisplayName = (code: string): string => {
+  return LEAGUE_NAMES[code] || code;
+};
+
 const AIManagement: React.FC<AIManagementProps> = ({
   predictionStats,
+  leagueStats,
   overallAccuracy,
   totalPredictions,
   systemPrompt: initialPrompt,
@@ -151,13 +158,13 @@ const AIManagement: React.FC<AIManagementProps> = ({
       </motion.div>
 
       <Tabs defaultValue="stats" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="stats">İstatistikler</TabsTrigger>
+          <TabsTrigger value="leagues">Lig Bazlı</TabsTrigger>
           <TabsTrigger value="prompt">Sistem Promptu</TabsTrigger>
         </TabsList>
 
         <TabsContent value="stats" className="space-y-4">
-          {/* Prediction Stats by Type */}
           <motion.div variants={staggerItem}>
             <Card>
               <CardHeader>
@@ -195,8 +202,48 @@ const AIManagement: React.FC<AIManagementProps> = ({
           </motion.div>
         </TabsContent>
 
+        <TabsContent value="leagues" className="space-y-4">
+          <motion.div variants={staggerItem}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5" />
+                  Lig Bazlı Başarı
+                </CardTitle>
+                <CardDescription>Hangi liglerde daha başarılı tahminler yapılıyor</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {leagueStats.map((stat) => (
+                  <div key={stat.league} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{getLeagueDisplayName(stat.league)}</span>
+                        {getAccuracyBadge(stat.accuracy)}
+                      </div>
+                      <div className="flex items-center gap-4 text-sm">
+                        <span className="text-muted-foreground">
+                          {stat.correct}/{stat.total}
+                        </span>
+                        <span className={`font-bold ${getAccuracyColor(stat.accuracy)}`}>
+                          %{stat.accuracy.toFixed(1)}
+                        </span>
+                      </div>
+                    </div>
+                    <Progress value={stat.accuracy} className="h-2" />
+                  </div>
+                ))}
+
+                {leagueStats.length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">
+                    Henüz lig bazlı veri bulunmuyor
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        </TabsContent>
+
         <TabsContent value="prompt" className="space-y-4">
-          {/* System Prompt Editor */}
           <motion.div variants={staggerItem}>
             <Card>
               <CardHeader>
