@@ -6,7 +6,7 @@ import HeroSection from '@/components/HeroSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
 import { AnalysisSetButton } from '@/components/analysis-set';
 import AppHeader from '@/components/layout/AppHeader';
-import AppFooter from '@/components/layout/AppFooter';
+
 import LeagueGrid from '@/components/league/LeagueGrid';
 import MatchCarousel from '@/components/match/MatchCarousel';
 
@@ -448,8 +448,6 @@ const Index: React.FC = () => {
 
       </main>
 
-      {/* Footer */}
-      <AppFooter />
 
       {/* Analysis Set Floating Button */}
       <AnalysisSetButton />

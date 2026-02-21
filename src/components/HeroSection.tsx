@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Zap, TrendingUp, Shield, Sparkles } from 'lucide-react';
+import { ArrowRight, Zap, TrendingUp, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface HeroStats {
@@ -129,16 +129,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
             
-            {/* Micro-guidance */}
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-xs text-muted-foreground/70 flex items-center gap-1"
-            >
-              <Sparkles className="w-3 h-3" />
-              Aşağıdan lig seç, maça tıkla
-            </motion.p>
           </motion.div>
 
           {/* Live indicator - Only if live matches exist */}
@@ -166,23 +156,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           )}
         </motion.div>
 
-        {/* Visual Guide Arrow - Points to leagues */}
-        <motion.div 
-          className="flex justify-center mt-8"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-        >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            className="text-muted-foreground/40"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 5v14M5 12l7 7 7-7"/>
-            </svg>
-          </motion.div>
-        </motion.div>
       </div>
     </section>
   );

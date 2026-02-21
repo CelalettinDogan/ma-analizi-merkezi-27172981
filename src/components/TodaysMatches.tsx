@@ -419,9 +419,6 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                   <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 shrink-0">
                     {match.competition.code}
                   </Badge>
-                  <span className="text-[10px] md:text-xs text-muted-foreground shrink-0 hidden sm:block">
-                    {match.competition.code}
-                  </span>
 
                   {/* Arrow or Loading */}
                   {isThisLoading ? (

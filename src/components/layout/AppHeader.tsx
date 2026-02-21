@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Trophy, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import ThemeToggle from '@/components/ThemeToggle';
+
 import UserMenu from '@/components/UserMenu';
 import { cn } from '@/lib/utils';
 import logoImage from '@/assets/logo.png';
@@ -68,7 +68,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({
         {/* Right Side - tighter spacing */}
         <div className="flex items-center gap-1">
           {rightContent}
-          <ThemeToggle />
           <UserMenu />
         </div>
       </div>
