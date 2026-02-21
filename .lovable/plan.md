@@ -1,52 +1,65 @@
 
 
-# Uygulama 2026 Native Uyumluluk Degerlendirmesi
-
-Uygulamayi mobil gorunumde (390x844) detayli inceledim. Genel olarak cok iyi durumda -- modern glassmorphism, responsive layout, WCAG touch target'lari ve native-uyumlu bottom nav. Ancak birkaç noktada iyilestirme yapilabilir:
+# Admin Paneli Lig Bazli Basari + Yanlis Fiyat Duzeltmesi
 
 ## Tespit Edilen Sorunlar
 
-### 1. ThemeToggle Header'da Gereksiz Yer Kapliyor (Mobilde)
-- Bu proje sadece Android native uygulama olarak tanimlanmis (memory: platform-scope-v2)
-- Theme toggle (gunes/ay ikonu) header'da yer kapliyor ama native Android uygulamalarinda genellikle sistem temasini takip eder veya profil ayarlarinda saklanir
-- **Cozum**: ThemeToggle'i header'dan kaldirip Profil sayfasindaki mevcut tema ayarlari sheet'ine birakabiliriz (zaten orada var)
+### 1. YANLIS FIYAT BILGISI (Kritik)
+`useAdminData.ts` satir 247-251'de plan fiyatlari **yanlis**:
+- Kodda: `basic: 29.99`, `plus: 49.99`, `pro: 79.99`
+- Gercek fiyatlar (`accessLevels.ts`): `premium_basic: 49 TL`, `premium_plus: 79 TL`, `premium_pro: 99 TL`
+- Ayrica plan key'leri uyusmuyor: Veritabaninda `premium_basic` olarak kayitli ama fiyat lookup `basic` arayor, dolayisiyla gelir her zaman 0 TL gosteriliyor.
 
-### 2. AppFooter Web-Only Ama Hala Kodda
-- `AppFooter` zaten `hidden md:block` ile mobilde gizli, sorun yok
-- Ancak native-only bir projede gereksiz DOM yuku olusturuyor
-- **Cozum**: Index.tsx'te `<AppFooter />` render'ini tamamen kaldirmak (sadece Android uygulamasi oldugu icin footer'a gerek yok)
+### 2. Lig Bazli Basari Verisi Eksik
+Admin panelinde sadece tahmin turune gore (Mac Sonucu, KG, Alt/Ust) basari gosteriliyor. Hangi liglerde daha iyi performans gosterildigi hic yer almiyor.
 
-### 3. Hero Section "Hemen Analiz Al" CTA + Ok Animasyonu
-- Hero section'daki asagi ok animasyonu (`↓`) modern 2026 native uygulamalarda artik kullanilmiyor, gereksiz gorsel kirlilik
-- "Asagidan lig sec, maca tikla" metni fazla aciklayici, native uygulamalar bunu kullaniciya birakir
-- **Cozum**: Asagi ok animasyonunu ve micro-guidance metnini kaldirmak
+---
 
-### 4. Lig Badge Tekrari (TodaysMatches)
-- Kompakt mac listesinde her satirda hem `Badge` (lig kodu) hem de `span` (lig kodu tekrar) gosteriliyor (satir 419-424)
-- `span` zaten `hidden sm:block` ama ayni lig badge'i iki kez render ediliyor
-- **Cozum**: Tekrar eden `span` elementini kaldirmak
+## Cozum Plani
 
-### 5. Onboarding Modal Arka Plani
-- Onboarding modali acildiginda arka plan beyaz/acik renk gorunuyor, native uygulamalardaki gibi bulanik (blurred) koyu overlay yok
-- **Cozum**: Onboarding wrapper'ina `bg-background/80 backdrop-blur-sm` eklemek (mevcut yapiya bakmak lazim)
+### Dosya 1: `src/hooks/admin/useAdminData.ts`
+**Fiyat duzeltmesi:**
+- `accessLevels.ts`'den `PLAN_PRICES` import edilecek
+- Hardcoded yanlis fiyatlar kaldirilip dogru fiyatlar kullanilacak
+- Key eslesmesi duzeltilecek (`premium_basic` -> `premium_basic`)
 
-## Degisecek Dosyalar
+**Lig bazli istatistik eklenmesi:**
+- Yeni state: `leagueStats`
+- Yeni fetch fonksiyonu: `fetchLeagueStats` -- mevcut `prediction_stats` view'i lig bazli veri vermiyor, bunun yerine `predictions` tablosundan direkt sorgulama yapilacak
+- Tek bir GROUP BY sorgusu ile tum lig verileri cekilecek (cloud yuku minimum)
+
+```text
+Yeni interface:
+interface LeagueStats {
+  league: string;
+  total: number;
+  correct: number;
+  accuracy: number;
+}
+```
+
+### Dosya 2: `src/components/admin/AIManagement.tsx`
+- Yeni prop: `leagueStats`
+- Tabs icine 3. sekme: "Lig Bazli" eklenmesi
+- Her lig icin basari orani, toplam tahmin ve progress bar gosterimi
+- Lig kodlari icin Turkce isim eslesmesi (PL -> Premier Lig, BL1 -> Bundesliga, vb.)
+
+### Dosya 3: `src/pages/Admin.tsx`
+- `leagueStats` state'ini `AIManagement` componentine prop olarak gecirmek
+
+---
+
+## Cloud Balance Etkisi
+- Tek bir SQL sorgusu ekleniyor (GROUP BY league), predictions tablosunda zaten index var
+- Sayfa ilk yuklemesinde diger sorgularla paralel calisacak
+- Realtime subscription veya polling YOK -- sadece manuel "Yenile" butonuyla tetiklenir
+- Ek bir tablo veya view olusturulmuyor
+
+## Degisecek Dosyalar Ozeti
 
 | Dosya | Degisiklik |
 |-------|-----------|
-| `src/components/layout/AppHeader.tsx` | ThemeToggle'i header'dan kaldir |
-| `src/pages/Index.tsx` | AppFooter import ve render'ini kaldir |
-| `src/components/HeroSection.tsx` | Asagi ok animasyonu ve micro-guidance metnini kaldir |
-| `src/components/TodaysMatches.tsx` | Tekrar eden lig kodu span'ini kaldir |
+| `src/hooks/admin/useAdminData.ts` | Yanlis fiyatlari duzelt + `leagueStats` fetch ekle |
+| `src/components/admin/AIManagement.tsx` | "Lig Bazli" sekmesi ekle + leagueStats prop |
+| `src/pages/Admin.tsx` | `leagueStats` prop'unu AIManagement'a gecir |
 
-## Degismeyecekler (Zaten Iyi Olan)
-- BottomNav: Spring animasyonlu, 5-6 sekmeli, WCAG uyumlu touch target'lar
-- Auth sayfasi: Google sign-in belirgin, h-[100dvh] overflow-hidden, native hissiyat
-- Profil: glass-card'lar, kompakt header, stagger animasyonlar
-- Canli Mac: Empty state tasarimi, otomatik guncelleme gostergesi
-- Analiz sonuclari: MatchHeroCard, PredictionPillSelector, gradient efektler
-
-## Ozet
-- 4 dosyada toplam kucuk degisiklikler
-- Gereksiz web kalintilarini temizleyerek %100 native Android deneyimi
-- Performans iyilestirmesi (gereksiz DOM elemanlari kaldirilacak)
