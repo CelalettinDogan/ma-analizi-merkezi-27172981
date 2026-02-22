@@ -202,7 +202,7 @@ const Chat: React.FC = () => {
 
   // PREMIUM USER: Has access - show chat interface
   return (
-    <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Chat Limit Sheet for Premium users */}
       <ChatLimitSheet
         isOpen={showLimitSheet}
@@ -333,7 +333,7 @@ const Chat: React.FC = () => {
       </motion.header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden pb-safe">
+      <main className="flex-1 flex flex-col overflow-hidden pb-24 md:pb-0">
         <ChatContainer 
           messages={messages} 
           isLoading={chatLoading}

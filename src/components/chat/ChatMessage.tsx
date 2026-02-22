@@ -103,7 +103,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
             className={cn(
-              "max-w-[min(85%,400px)] rounded-2xl px-3.5 py-2.5 relative",
+              "max-w-[85%] rounded-2xl px-3.5 py-2.5 relative",
               isUser 
                 ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-tr-sm shadow-sm shadow-primary/10" 
                 : "bg-card/70 backdrop-blur-lg border border-border/40 rounded-tl-sm"

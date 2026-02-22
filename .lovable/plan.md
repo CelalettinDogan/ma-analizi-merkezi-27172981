@@ -1,60 +1,76 @@
 
 
-# Chatbot Native Iyilestirme + Google Giris Hatasi Duzeltmesi
+# Kapsamli Uygulama Guncelleme Plani
 
-## 1. Google ile Giris Hatasi (Kritik)
+## Tespit Edilen Sorunlar
 
-**Sorun**: Gorseldeki hata: `{"code":400,"error_code":"validation_failed","msg":"Unsupported provider: missing OAuth secret"}`
+### 1. YANLIS BILGILER - PremiumManagement (Kritik)
+`PremiumManagement.tsx` icinde **hardcoded yanlis fiyatlar ve plan key'leri** var:
+- Satir 31-49: `basic: 29.99`, `plus: 49.99`, `pro: 79.99` -- Gercek fiyatlar 49, 79, 99 TL
+- Plan key'leri `basic`, `plus`, `pro` ama veritabaninda `premium_basic`, `premium_plus`, `premium_pro` -- eslesmez, 0 abone gosterir
+- Feature listeleri yanlis: "10 Gunluk Chat" yerine "3 Chat/Gun" olmali
 
-Auth loglarinda da ayni hata gorunuyor: `missing OAuth secret` (400 hatasi).
+### 2. YANLIS BILGILER - Chatbot Baslik
+`Chat.tsx` satir 241: Chatbot header'da **"Gol Asistan"** yaziyor ama memory'ye gore isim **"GolMetrik AI Asistani"** olmali (ai-chatbot edge function'daki system prompt ile uyumlu)
 
-**Neden**: `AuthContext.tsx` satir 69-82'de native platformda `supabase.auth.signInWithOAuth()` direkt olarak cagriliyor. Bu yontem, Supabase tarafinda manuel olarak Google OAuth client ID ve secret yapilandirilmasini gerektiriyor. Ancak bu projede Lovable Cloud yonetimli OAuth kullaniliyor -- yani `lovable.auth.signInWithOAuth()` kullanilmasi gerekiyor.
+### 3. Admin Paneline Erisim Yok (UserMenu)
+Admin kullanicilari profil menusunden admin paneline erisemiyor. `UserMenu.tsx`'te admin linki yok. Plana gore admin, profil ikonuna tikladiginda admin paneline erisebilmeli.
 
-**Cozum**: Native platformda da `lovable.auth.signInWithOAuth()` kullanilacak. Native'de tarayici acildiginda OAuth tamamlandiktan sonra session otomatik olarak set edilecek. `supabase.auth.signInWithOAuth` kullanan native dalini kaldirip her iki platform icin de ayni Lovable Cloud yontemini kullanmak yeterli.
+### 4. Admin Paneli Responsive/Native Degil
+- `AdminLayout.tsx` sidebar yapisi masaustu odakli, mobilde hamburger menu ile calisiyor ama native Android deneyimi sunmuyor
+- Admin sayfasi BottomNav ile cakisiyor (`/admin` route'u `HIDE_BOTTOM_NAV_ROUTES`'a ekli degil)
+- Maçlar ve Istatistikler sekmeleri "yakinda" placeholder gosteriyor -- bos sekmeler yerine gizlenmeli
 
-### Degisiklik: `src/contexts/AuthContext.tsx`
-- `Capacitor.isNativePlatform()` dalindaki `supabase.auth.signInWithOAuth` kullanimini kaldirmak
-- Her iki platformda da `lovable.auth.signInWithOAuth("google", ...)` kullanmak
-- Native'de redirect_uri olarak deep link URL'si (`https://golmetrik.app/callback`) kullanilabilir, web'de `window.location.origin`
+### 5. Chatbot Ekrani Degerlendirmesi
+- Chatbot UI genel olarak iyi durumda (native hissiyat, markdown, typing indicator)
+- Chatbot cevaplari duzgun calisiyor (test edildi, 200 OK)
+- Kucuk iyilestirme: Chat header'daki "Gol Asistan" ismi tutarsiz
 
----
-
-## 2. Chatbot Ekrani Native Iyilestirmeleri
-
-Mevcut chatbot ekrani iyi durumda ancak su noktalar iyilestirilecek:
-
-### 2a. Chat.tsx - Tam Ekran Native Layout
-- `min-h-screen` yerine `h-[100dvh]` kullanmak (iOS/Android klavye acildiginda dogru davranir)
-- `overflow-hidden` ekleyerek sayfa kaymasini onlemek
-- `pb-24 md:pb-0` yerine `pb-safe` kullanarak BottomNav cakismasini her cihazda onlemek (chat sayfasinda BottomNav zaten gizli degil ama /chat route'u App.tsx'te HIDE listesinde olabilir -- kontrol edilecek)
-- Header'da `pt-safe` zaten var, iyi
-
-### 2b. ChatContainer.tsx - Responsive Welcome
-- Welcome mesajindaki `max-w-xs` sinirlamasi kucuk ekranlarda (320px) tasabilir, `max-w-[85vw]` ile degistirmek
-- `h-full` yerine `flex-1` ile welcome alaninin tum bos alani kaplamasini saglamak
-- Smart prompt kartlarinin 320px ekranlarda daha iyi gorunmesi icin `gap-1.5` kullanmak
-
-### 2c. ChatInput.tsx - Keyboard-Safe Input
-- Input alanina `pb-safe` ekleyerek Android navigation bar ile cakismayi onlemek
-- Send butonunun touch target'ini 44px minimum tutmak (zaten `h-11 w-11` = 44px, iyi)
-
-### 2d. ChatMessage.tsx - Responsive Bubble Genisligi
-- `max-w-[85%]` yerine `max-w-[min(85%,400px)]` kullanarak buyuk ekranlarda (tablet) asiri genis baloncuklari onlemek
+### 6. Guvenlik
+- RLS politikalari genel olarak saglam (incelendi)
+- Admin rol kontrolu `has_role()` SECURITY DEFINER fonksiyonu ile yapiliyor (dogru)
+- `profiles` tablosunda admin SELECT politikasi yok -- admin panelinde kullanici listesi gorunmuyor olabilir (RLS "Users can view their own profile" sadece kendi profilini gosteriyor)
 
 ---
 
-## Degisecek Dosyalar
+## Uygulama Plani
 
-| Dosya | Degisiklik |
-|-------|-----------|
-| `src/contexts/AuthContext.tsx` | Native Google OAuth'u Lovable Cloud'a gecirmek |
-| `src/pages/Chat.tsx` | `h-[100dvh] overflow-hidden` + `pb-safe` layout |
-| `src/components/chat/ChatContainer.tsx` | Welcome ekrani responsive genislik |
-| `src/components/chat/ChatMessage.tsx` | Bubble max-width tablet uyumu |
-| `src/components/chat/ChatInput.tsx` | `pb-safe` ekleme |
+### Dosya 1: `src/components/admin/PremiumManagement.tsx`
+- `PLAN_PRICES` import edilecek (`accessLevels.ts`'den)
+- `planDetails` objesi dogru key'ler (`premium_basic`, `premium_plus`, `premium_pro`) ve dogru fiyatlarla (49, 79, 99 TL) guncellenecek
+- Feature listeleri gercek plan bilgileriyle eslestirilecek:
+  - Basic: 3 Chat/Gun, Sinirsiz Analiz
+  - Plus: 5 Chat/Gun, Sinirsiz Analiz, Oncelikli Destek
+  - Pro: 10 Chat/Gun, Sinirsiz Analiz, Oncelikli Destek
+
+### Dosya 2: `src/components/UserMenu.tsx`
+- `useUserRole` hook'u import edilecek
+- Admin kullanicilari icin "Admin Panel" menu ogesi eklenecek (Shield ikonu ile)
+- Sadece `isAdmin === true` oldugunda gorunur olacak
+
+### Dosya 3: `src/App.tsx`
+- `/admin` route'unu `HIDE_BOTTOM_NAV_ROUTES` dizisine eklemek (BottomNav cakismasini onlemek)
+
+### Dosya 4: `src/components/admin/AdminLayout.tsx`
+- Mobil deneyimi iyilestirmek: sidebar yerine mobilde tab-bazli navigasyon (BottomNav benzeri) kullanmak
+- Bos sekmeler (`matches`, `statistics`) kaldirmak veya gizlemek -- navItems dizisinden cikarilacak
+- `pt-safe` ve `pb-safe` eklemek
+
+### Dosya 5: `src/pages/Chat.tsx`
+- "Gol Asistan" -> "AI Asistan" olarak guncellemek (tutarlilik)
+
+### Dosya 6: `src/pages/Admin.tsx`
+- `matches` ve `statistics` case'lerini kaldirmak (bos placeholder yerine temiz yapi)
+
+---
 
 ## Degismeyecekler
-- `useChatbot.ts` -- chatbot mantigi duzgun calisiyor
-- `ai-chatbot` edge function -- dokunulmayacak
-- `TypingIndicator`, `UsageMeter` -- mevcut haliyle iyi
+- Chatbot edge function (`ai-chatbot/index.ts`) -- duzgun calisiyor, dokunulmayacak
+- RLS politikalari -- guvenlik saglam, ek migration gerekmiyor (profiles tablosunda admin SELECT icin `has_role` fonksiyonu zaten kullanilabilir, `useAdminData` service_role degil client kullandigina dikkat; ancak profiles tablosu kendi verisini cekiyor `count` ile -- bu calisiyor)
+- BottomNav, AuthGuard, AuthContext -- mevcut yapi dogru
+
+## Guvenlik Notu
+- Tum admin islemleri RLS + `has_role()` SECURITY DEFINER ile korunuyor
+- Admin paneline erisim hem client-side (`useUserRole`) hem de server-side (RLS) kontrolleriyle saglanir
+- Yeni tablo veya migration gerekmiyor
 

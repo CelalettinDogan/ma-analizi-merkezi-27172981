@@ -73,7 +73,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="border-t border-border/50 bg-card/50 backdrop-blur-xl p-3 pb-safe space-y-2.5">
+    <div className="border-t border-border/50 bg-card/50 backdrop-blur-xl p-3 space-y-2.5">
       {/* Quick Prompts - Minimal design */}
       <AnimatePresence>
         {showQuickPrompts && !disabled && !promptsLoading && (
