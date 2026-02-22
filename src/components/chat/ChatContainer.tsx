@@ -70,7 +70,7 @@ const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ onQuickPrompt }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center justify-center h-full p-5 text-center"
+      className="flex flex-col items-center justify-center flex-1 p-5 text-center"
     >
       {/* Compact Bot Avatar */}
       <motion.div
@@ -112,7 +112,7 @@ const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ onQuickPrompt }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="w-full max-w-xs mb-5"
+        className="w-full max-w-[85vw] sm:max-w-xs mb-5"
       >
         <div className="grid grid-cols-2 gap-2">
           {promptsLoading ? (
