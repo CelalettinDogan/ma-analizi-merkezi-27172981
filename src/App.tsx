@@ -33,7 +33,7 @@ import BottomNav from "@/components/navigation/BottomNav";
 
 const queryClient = new QueryClient();
 
-const HIDE_BOTTOM_NAV_ROUTES = ['/auth', '/reset-password', '/terms', '/privacy', '/delete-account'];
+const HIDE_BOTTOM_NAV_ROUTES = ['/auth', '/reset-password', '/terms', '/privacy', '/delete-account', '/admin'];
 
 const GlobalBottomNav = () => {
   const location = useLocation();

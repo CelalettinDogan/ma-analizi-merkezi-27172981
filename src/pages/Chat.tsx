@@ -238,7 +238,7 @@ const Chat: React.FC = () => {
               </div>
               
               <div className="flex items-center gap-1.5">
-                <h1 className="font-semibold text-sm">Gol Asistan</h1>
+                <h1 className="font-semibold text-sm">AI Asistan</h1>
                 {isAdmin && (
                   <Badge variant="secondary" className="text-[9px] h-4 px-1.5 bg-amber-500/20 text-amber-600 border-0">
                     <Crown className="w-2.5 h-2.5 mr-0.5" />

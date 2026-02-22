@@ -165,14 +165,6 @@ const AdminPage: React.FC = () => {
           />
         );
       
-      case 'matches':
-        return (
-          <div className="text-center py-12 text-muted-foreground">
-            <h2 className="text-2xl font-bold mb-2">Maç Yönetimi</h2>
-            <p>Bu modül yakında aktif olacak.</p>
-          </div>
-        );
-      
       case 'notifications':
         return (
           <NotificationManagement
@@ -182,14 +174,6 @@ const AdminPage: React.FC = () => {
             onSendNotification={sendNotification}
             onRefresh={refreshNotifications}
           />
-        );
-      
-      case 'statistics':
-        return (
-          <div className="text-center py-12 text-muted-foreground">
-            <h2 className="text-2xl font-bold mb-2">İstatistikler</h2>
-            <p>Detaylı grafikler ve raporlar yakında eklenecek.</p>
-          </div>
         );
       
       case 'logs':
