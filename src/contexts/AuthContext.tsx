@@ -3,7 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
 import { Capacitor } from '@capacitor/core';
-import { Browser } from '@capacitor/browser';
+
 
 interface AuthContextType {
   user: User | null;
@@ -66,28 +66,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    if (Capacitor.isNativePlatform()) {
-      // Native: Supabase OAuth + in-app browser
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: 'https://golmetrik.app/callback',
-          skipBrowserRedirect: true,
-        },
-      });
-      if (error) return { error: error as Error };
-      if (data?.url) {
-        await Browser.open({ url: data.url });
-      }
-      return { error: null };
-    } else {
-      // Web: Lovable Cloud managed OAuth
-      const redirectUri = window.location.origin;
-      const { error } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: redirectUri,
-      });
-      return { error: error as Error | null };
-    }
+    const isNative = Capacitor.isNativePlatform();
+    const redirectUri = isNative ? 'https://golmetrik.app/callback' : window.location.origin;
+    
+    const { error } = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: redirectUri,
+    });
+    return { error: error as Error | null };
   };
 
   const signOut = async () => {
