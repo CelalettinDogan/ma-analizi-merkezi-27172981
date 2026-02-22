@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { staggerContainer, staggerItem } from '@/lib/animations';
+import { PLAN_PRICES, PLAN_ACCESS_LEVELS } from '@/constants/accessLevels';
 
 interface PlanStats {
   planType: string;
@@ -28,22 +29,22 @@ interface PremiumManagementProps {
 }
 
 const planDetails: Record<string, { name: string; price: number; features: string[]; color: string }> = {
-  basic: {
+  premium_basic: {
     name: 'Basic',
-    price: 29.99,
-    features: ['10 Günlük Chat', '5 Analiz/Gün', 'Temel Tahminler'],
+    price: PLAN_PRICES.premium_basic.monthly,
+    features: [`${PLAN_ACCESS_LEVELS.premium_basic.aiChat} Chat/Gün`, 'Sınırsız Analiz', '30 Gün Geçmiş'],
     color: 'bg-blue-500',
   },
-  plus: {
+  premium_plus: {
     name: 'Plus',
-    price: 49.99,
-    features: ['25 Günlük Chat', '15 Analiz/Gün', 'Gelişmiş Tahminler', 'AI Önerileri'],
+    price: PLAN_PRICES.premium_plus.monthly,
+    features: [`${PLAN_ACCESS_LEVELS.premium_plus.aiChat} Chat/Gün`, 'Sınırsız Analiz', 'Öncelikli Destek'],
     color: 'bg-purple-500',
   },
-  pro: {
+  premium_pro: {
     name: 'Pro',
-    price: 79.99,
-    features: ['Sınırsız Chat', 'Sınırsız Analiz', 'Premium Tahminler', 'Öncelikli Destek'],
+    price: PLAN_PRICES.premium_pro.monthly,
+    features: [`${PLAN_ACCESS_LEVELS.premium_pro.aiChat} Chat/Gün`, 'Sınırsız Analiz', 'Öncelikli Destek'],
     color: 'bg-yellow-500',
   },
 };
