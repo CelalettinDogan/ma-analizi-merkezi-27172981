@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, Trophy, ArrowDown } from 'lucide-react';
+import { Trophy, ArrowDown } from 'lucide-react';
+import varioAvatar from '@/assets/vario-avatar.png';
 import ChatMessage from './ChatMessage';
 import { ChatMessage as ChatMessageType } from '@/hooks/useChatbot';
 import { useSmartPrompts } from '@/hooks/useSmartPrompts';
@@ -79,9 +80,7 @@ const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ onQuickPrompt }) => {
         transition={{ type: "spring", stiffness: 200, damping: 15 }}
         className="relative mb-4"
       >
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-xl shadow-emerald-500/25">
-          <Bot className="w-8 h-8 text-white" />
-        </div>
+        <img src={varioAvatar} alt="VARio" className="w-16 h-16 rounded-full object-cover shadow-xl shadow-emerald-500/25" />
         {/* Simple glow */}
         <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-xl -z-10" />
         {/* Online indicator */}
@@ -95,7 +94,7 @@ const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ onQuickPrompt }) => {
         transition={{ delay: 0.1 }}
         className="text-lg font-bold mb-1"
       >
-        Merhaba! 👋
+        Merhaba! Ben VARio 👋
       </motion.h2>
 
       <motion.p

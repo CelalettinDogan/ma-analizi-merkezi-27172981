@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Bot, LogIn, UserPlus, ArrowLeft } from 'lucide-react';
+import { LogIn, UserPlus, ArrowLeft } from 'lucide-react';
+import varioAvatar from '@/assets/vario-avatar.png';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
@@ -39,7 +40,7 @@ const GuestGate: React.FC<GuestGateProps> = ({ onClose }) => {
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <h1 className="font-semibold">AI Asistan</h1>
+            <h1 className="font-semibold">VARio - AI Asistan</h1>
           </div>
         </div>
       </header>
@@ -59,15 +60,13 @@ const GuestGate: React.FC<GuestGateProps> = ({ onClose }) => {
               transition={{ type: "spring", stiffness: 200, damping: 15 }}
               className="w-24 h-24 mx-auto rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 p-0.5"
             >
-              <div className="w-full h-full rounded-3xl bg-background flex items-center justify-center">
-                <Bot className="w-12 h-12 text-emerald-500" />
-              </div>
+              <img src={varioAvatar} alt="VARio" className="w-full h-full rounded-3xl object-cover" />
             </motion.div>
           </div>
 
           {/* Title & Description */}
           <div className="text-center space-y-3">
-            <h2 className="text-2xl font-bold">AI Asistan'a Hoş Geldin</h2>
+            <h2 className="text-2xl font-bold">VARio - AI Asistan'a Hoş Geldin</h2>
             <p className="text-muted-foreground">
               Yapay zeka destekli maç analizleri ve tahminler için giriş yapman gerekiyor.
             </p>
@@ -76,7 +75,7 @@ const GuestGate: React.FC<GuestGateProps> = ({ onClose }) => {
           {/* Features Card */}
           <Card className="p-4 space-y-3 bg-muted/30">
             <p className="text-sm font-medium text-center text-muted-foreground">
-              AI Asistan ile:
+              VARio ile:
             </p>
             <ul className="space-y-2 text-sm">
               <li className="flex items-center gap-2">
@@ -124,7 +123,7 @@ const GuestGate: React.FC<GuestGateProps> = ({ onClose }) => {
           <p className="text-center text-xs text-muted-foreground">
             Ücretsiz hesap oluşturarak maç analizlerine erişebilirsin.
             <br />
-            AI Asistan Premium kullanıcılara özeldir.
+            VARio Premium kullanıcılara özeldir.
           </p>
         </motion.div>
       </div>

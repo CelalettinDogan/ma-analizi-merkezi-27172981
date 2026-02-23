@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bot } from 'lucide-react';
+import varioAvatar from '@/assets/vario-avatar.png';
 
 interface TypingIndicatorProps {
   className?: string;
@@ -25,9 +25,7 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ className }) => {
       className={`flex gap-2.5 px-3 py-2 ${className}`}
     >
       {/* Compact Avatar */}
-      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/15">
-        <Bot className="w-3.5 h-3.5 text-white" />
-      </div>
+      <img src={varioAvatar} alt="VARio" className="flex-shrink-0 w-7 h-7 rounded-full object-cover shadow-md shadow-emerald-500/15" />
 
       {/* Typing bubble - minimal */}
       <motion.div 

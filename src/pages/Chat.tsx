@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Trash2, Bot, Crown, Sparkles, Star, MoreVertical, X } from 'lucide-react';
+import { ArrowLeft, Trash2, Crown, Sparkles, Star, MoreVertical, X } from 'lucide-react';
+import varioAvatar from '@/assets/vario-avatar.png';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -230,15 +231,13 @@ const Chat: React.FC = () => {
             {/* Compact Bot Avatar + Title */}
             <div className="flex items-center gap-2">
               <div className="relative">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/20">
-                  <Bot className="w-4 h-4 text-white" />
-                </div>
+                <img src={varioAvatar} alt="VARio" className="w-8 h-8 rounded-full object-cover shadow-md shadow-emerald-500/20" />
                 {/* Online indicator */}
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-background" />
               </div>
               
               <div className="flex items-center gap-1.5">
-                <h1 className="font-semibold text-sm">AI Asistan</h1>
+                <h1 className="font-semibold text-sm">VARio - AI Asistan</h1>
                 {isAdmin && (
                   <Badge variant="secondary" className="text-[9px] h-4 px-1.5 bg-amber-500/20 text-amber-600 border-0">
                     <Crown className="w-2.5 h-2.5 mr-0.5" />
