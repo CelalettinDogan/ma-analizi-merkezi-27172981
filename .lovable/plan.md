@@ -1,57 +1,84 @@
 
 
-# Native Google OAuth 404 Hatasi - Kok Neden ve Cozum
+# Native Google OAuth - redirect_uri Hatasi Cozumu
 
 ## Sorun
 
-Lovable'in `cloud-auth-js` kutuphanesi, iframe disindayken `window.location.href = "/~oauth/initiate?..."` yaparak sayfayi yonlendiriyor. Web onizlemede bu calisiyor cunku `/~oauth/initiate` Lovable sunucusu tarafindan karsilaniyor. Ancak native Capacitor'da WebView'in hostname'i `golmetrik.app` oldugu icin bu URL `https://golmetrik.app/~oauth/initiate` oluyor -- bu rota React Router'da yok, sonuc: 404.
+Lovable Cloud OAuth sistemi, yalnizca projenin kendi preview domain'ini (`id-preview--...lovable.app`) redirect_uri olarak kabul ediyor. Kodda `https://golmetrik.app/callback` kullaniliyor, bu yuzden "redirect_uri is not allowed" hatasi aliyor.
+
+## Zorluk
+
+Harici tarayicida (Chrome) OAuth tamamlandiktan sonra token'larin native uygulamaya geri donmesi gerekiyor. Bunun icin iki asamali bir yaklasim gerekli:
+
+1. OAuth sonrasi preview domain'e yonlendir (izin verilen URI)
+2. Preview domain'deki sayfa, token'lari native uygulamaya aktarsin
 
 ## Cozum
 
-Native platformda `lovable.auth.signInWithOAuth` kullanmak yerine, OAuth URL'sini manuel olarak olusturup `@capacitor/browser` ile harici tarayicida acmak gerekiyor.
+### Dosya 1: `src/contexts/AuthContext.tsx`
+
+redirect_uri'yi preview domain olarak degistir:
 
 ```text
-OAuth akisi (native):
+// Eski:
+redirect_uri: 'https://golmetrik.app/callback'
+
+// Yeni:
+redirect_uri: `${LOVABLE_CLOUD_URL}/callback?platform=native`
+```
+
+`?platform=native` parametresi, callback sayfasinin native uygulama icin calistigini belirtir.
+
+### Dosya 2: `src/pages/AuthCallback.tsx`
+
+Callback sayfasina native platform yonlendirmesi ekle:
+
+- `platform=native` query parametresi var mi kontrol et
+- Varsa: Token'lari URL'ye ekleyerek `golmetrik://callback?access_token=X&refresh_token=Y` adresine yonlendir (custom URL scheme)
+- Yoksa: Mevcut davranis (session olustur, ana sayfaya git)
+
+Bu sayfa Lovable preview domain'inde deploy edildiginde calisacak, yani harici tarayici bu sayfayi yukleyip native uygulamaya yonlendirecek.
+
+### Kullanici Tarafinda Yapilacak (Android Studio)
+
+Native uygulamanin `golmetrik://` custom URL scheme'ini dinlemesi gerekiyor. `android/app/src/main/AndroidManifest.xml` dosyasina su intent-filter eklenmelidir:
+
+```text
+<intent-filter>
+  <action android:name="android.intent.action.VIEW" />
+  <category android:name="android.intent.category.DEFAULT" />
+  <category android:name="android.intent.category.BROWSABLE" />
+  <data android:scheme="golmetrik" android:host="callback" />
+</intent-filter>
+```
+
+### Dosya 3: `src/App.tsx` (DeepLinkHandler)
+
+DeepLinkHandler'a `golmetrik://` scheme'ini de yakalama destegi ekle. Mevcut host kontrolune `golmetrik` scheme'ini ekle.
+
+## Akis
+
+```text
 1. Kullanici "Google ile Giris" tiklar
-2. OAuth URL olusturulur: https://id-preview--a043c351-80f7-4404-bfb0-4355af0b4d37.lovable.app/~oauth/initiate?provider=google&redirect_uri=https://golmetrik.app/callback
-3. Browser.open() ile harici tarayici acilir
-4. Google consent -> Lovable Cloud -> https://golmetrik.app/callback#access_token=...
-5. Deep link handler veya /callback route'u token'lari yakalar
-6. supabase.auth.setSession() ile oturum baslatilir
-7. Harici tarayici kapatilir, ana sayfaya yonlendirilir
+2. Browser.open() ile harici tarayici acilir:
+   -> LOVABLE_CLOUD_URL/~oauth/initiate?provider=google&redirect_uri=LOVABLE_CLOUD_URL/callback?platform=native
+3. Google giris -> Lovable Cloud -> preview-domain/callback?platform=native#access_token=...
+4. AuthCallback sayfasi (preview domain'de) calisir
+5. platform=native algilanir -> window.location.href = golmetrik://callback?access_token=X&refresh_token=Y
+6. Android intent-filter tetiklenir -> appUrlOpen event
+7. DeepLinkHandler token'lari alir -> supabase.auth.setSession()
+8. Browser kapanir, ana sayfaya yonlendirilir
 ```
 
-### Dosya: `src/contexts/AuthContext.tsx`
-
-Native dalinda su degisiklikler yapilacak:
-
-1. `@capacitor/browser` import edilecek (Browser.open icin)
-2. `lovable.auth.signInWithOAuth` yerine manuel URL olusturulacak
-3. Lovable Cloud'un OAuth broker endpoint'i (`/~oauth/initiate`) tam URL ile cagrilacak
-4. `Browser.open()` ile harici tarayicide acilacak
-
-```text
-// Native dal (yeni):
-const state = crypto.getRandomValues(new Uint8Array(16))
-  .reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
-
-const params = new URLSearchParams({
-  provider: 'google',
-  redirect_uri: 'https://golmetrik.app/callback',
-  state,
-});
-
-const oauthUrl = `https://id-preview--a043c351-80f7-4404-bfb0-4355af0b4d37.lovable.app/~oauth/initiate?${params}`;
-
-await Browser.open({ url: oauthUrl });
-return { error: null };
-```
-
-Deep link handler (`DeepLinkHandler` in App.tsx) ve `/callback` route'u (`AuthCallback.tsx`) zaten token'lari isliyor -- bu kisimda degisiklik gerekmez.
-
-## Degisecek Dosya
+## Degisecek Dosyalar
 
 | Dosya | Degisiklik |
 |-------|-----------|
-| `src/contexts/AuthContext.tsx` | Native dalinda lovable.auth yerine manuel OAuth URL + Browser.open kullan |
+| `src/contexts/AuthContext.tsx` | redirect_uri'yi preview domain + platform=native olarak degistir |
+| `src/pages/AuthCallback.tsx` | Native platform algilama ve custom scheme yonlendirmesi ekle |
+| `src/App.tsx` | DeepLinkHandler'da golmetrik:// scheme destegi ekle |
+
+## Kullanici Aksiyonu
+
+Android Studio'da `AndroidManifest.xml`'e intent-filter eklenmesi gerekecek. Bu adim icin talimatlar verilecek.
 
