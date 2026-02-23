@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Bot, ArrowLeft, BarChart3, Shield, Zap, Star, Crown, Check } from 'lucide-react';
+import { ArrowLeft, BarChart3, Shield, Zap, Star, Bot, Crown, Check } from 'lucide-react';
+import varioAvatar from '@/assets/vario-avatar.png';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,7 +33,7 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' 
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h1 className="font-semibold text-base">AI Asistan</h1>
+        <h1 className="font-semibold text-base">VARio - AI Asistan</h1>
       </header>
 
       {/* Main — scroll-free, centered */}
@@ -43,10 +44,8 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' 
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col items-center gap-1.5 text-center"
         >
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-            <Bot className="w-7 h-7 text-primary" />
-          </div>
-          <h2 className="text-lg xs:text-xl font-bold leading-tight mt-1">AI Asistan</h2>
+          <img src={varioAvatar} alt="VARio" className="w-14 h-14 rounded-2xl object-cover shadow-lg" />
+          <h2 className="text-lg xs:text-xl font-bold leading-tight mt-1">VARio - AI Asistan</h2>
           <p className="text-xs xs:text-sm text-muted-foreground">Sınırsız Yapay Zeka Maç Analizi</p>
         </motion.div>
 
@@ -66,9 +65,7 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' 
             </div>
             {/* AI bubble */}
             <div className="flex gap-2">
-              <div className="shrink-0 w-6 h-6 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                <Bot className="w-3 h-3 text-white" />
-              </div>
+              <img src={varioAvatar} alt="VARio" className="shrink-0 w-6 h-6 rounded-full object-cover" />
               <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-card/80 border border-border/30 px-3.5 py-2.5">
                 <p className="text-xs text-foreground/80">
                   Fenerbahçe son 5 maçta %72 galibiyet oranı yakaladı. Ev sahibi avantajı ve form durumu göz önüne alındığında...
@@ -110,7 +107,7 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' 
             size="lg"
           >
             <Crown className="w-5 h-5 mr-2" />
-            AI Asistanı Aç
+            VARio'yu Aç
           </Button>
           {onClose && (
             <button

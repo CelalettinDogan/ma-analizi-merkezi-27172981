@@ -1,6 +1,7 @@
 import React, { forwardRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, User, Copy, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { User, Copy, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
+import varioAvatar from '@/assets/vario-avatar.png';
 import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -80,16 +81,16 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 400, damping: 15, delay: 0.05 }}
           className={cn(
-            "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center shadow-md",
+            "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center shadow-md overflow-hidden",
             isUser 
               ? "bg-gradient-to-br from-primary to-primary/80 shadow-primary/15" 
-              : "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/15"
+              : "shadow-emerald-500/15"
           )}
         >
           {isUser ? (
             <User className="w-3.5 h-3.5 text-primary-foreground" />
           ) : (
-            <Bot className="w-3.5 h-3.5 text-white" />
+            <img src={varioAvatar} alt="VARio" className="w-full h-full rounded-full object-cover" />
           )}
         </motion.div>
 

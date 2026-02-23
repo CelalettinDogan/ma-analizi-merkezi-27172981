@@ -110,7 +110,7 @@ const ChatLimitSheet: React.FC<ChatLimitSheetProps> = ({
           </div>
 
           <DrawerTitle className="text-xl font-bold text-center">
-            Günlük AI Asistan Hakkın Doldu
+            Günlük VARio Mesaj Hakkın Doldu
           </DrawerTitle>
           
           <DrawerDescription className="text-center mt-2">
