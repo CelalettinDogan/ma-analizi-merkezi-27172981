@@ -52,8 +52,9 @@ const DeepLinkHandler = () => {
         try {
           const url = new URL(event.url);
           
-          // OAuth callback için kontrol
-          if (url.host === 'callback' || url.pathname === '/callback') {
+          // OAuth callback için kontrol (golmetrik://callback veya https://*/callback)
+          const isCallback = url.protocol === 'golmetrik:' || url.host === 'callback' || url.pathname === '/callback';
+          if (isCallback) {
             // URL hash veya search params'dan token'ları al
             const hashParams = new URLSearchParams(url.hash.substring(1));
             const searchParams = url.searchParams;

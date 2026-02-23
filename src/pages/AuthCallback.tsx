@@ -14,8 +14,17 @@ const AuthCallback = () => {
 
         const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
+        const isNativePlatform = searchParams.get('platform') === 'native';
 
         if (accessToken && refreshToken) {
+          // Native platformdan geldiyse, token'ları custom scheme ile native uygulamaya aktar
+          if (isNativePlatform) {
+            const nativeUrl = `golmetrik://callback?access_token=${encodeURIComponent(accessToken)}&refresh_token=${encodeURIComponent(refreshToken)}`;
+            window.location.href = nativeUrl;
+            return;
+          }
+
+          // Web platformu: normal session oluştur
           const { error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
