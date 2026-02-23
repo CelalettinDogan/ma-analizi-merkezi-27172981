@@ -76,24 +76,24 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
         ref={ref}
         {...wrapperProps}
         className={cn(
-          "flex gap-2.5 px-3 py-2 group min-w-0",
+          "flex gap-2 px-3 py-[5px] group min-w-0 items-end",
           isUser ? "flex-row-reverse" : "flex-row"
         )}
         onMouseEnter={() => setShowActions(true)}
         onMouseLeave={() => setShowActions(false)}
         onTouchStart={() => setShowActions(true)}
       >
-        {/* Compact Avatar */}
+        {/* Avatar */}
         <div
           className={cn(
-            "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center shadow-md overflow-hidden",
+            "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-md overflow-hidden",
             isUser 
               ? "bg-gradient-to-br from-primary to-primary/80 shadow-primary/15" 
               : "shadow-emerald-500/15"
           )}
         >
           {isUser ? (
-            <User className="w-3.5 h-3.5 text-primary-foreground" />
+            <User className="w-4 h-4 text-primary-foreground" />
           ) : (
             <img src={varioAvatar} alt="VARio" className="w-full h-full rounded-full object-cover" />
           )}
@@ -106,30 +106,30 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
         )}>
           <div
             className={cn(
-              "max-w-[min(85%,400px)] rounded-2xl px-3.5 py-2.5 relative break-words",
+              "max-w-[80%] rounded-[20px] px-4 py-3 relative break-words leading-[1.5]",
               isUser 
-                ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-tr-sm shadow-sm shadow-primary/10" 
-                : "bg-card/70 backdrop-blur-lg border border-border/40 rounded-tl-sm"
+                ? "bg-gradient-to-br from-primary via-primary/95 to-emerald-600/90 text-primary-foreground rounded-tr-md shadow-md shadow-primary/[0.08]" 
+                : "bg-muted/60 backdrop-blur-xl border border-border/30 rounded-tl-md shadow-sm shadow-black/5"
             )}
-            style={{ wordBreak: 'break-word' }}
+            style={{ wordBreak: 'normal', overflowWrap: 'anywhere' }}
           >
             {isUser ? (
-              <p className="text-sm whitespace-pre-wrap leading-relaxed">{content}</p>
+              <p className="text-sm whitespace-pre-wrap leading-[1.5]">{content}</p>
             ) : (
               <div className="prose prose-sm dark:prose-invert max-w-none text-foreground">
                 <ReactMarkdown
                   components={{
                     p: ({ children }) => (
-                      <p className="mb-2 last:mb-0 leading-relaxed text-[13px]">{children}</p>
+                      <p className="mb-2 last:mb-0 leading-[1.5] text-[13.5px]">{children}</p>
                     ),
                     ul: ({ children }) => (
-                      <ul className="list-disc list-inside mb-2 space-y-0.5 text-[13px]">{children}</ul>
+                      <ul className="list-disc list-inside mb-2 space-y-0.5 text-[13.5px]">{children}</ul>
                     ),
                     ol: ({ children }) => (
-                      <ol className="list-decimal list-inside mb-2 space-y-0.5 text-[13px]">{children}</ol>
+                      <ol className="list-decimal list-inside mb-2 space-y-0.5 text-[13.5px]">{children}</ol>
                     ),
                     li: ({ children }) => (
-                      <li className="text-[13px]">{children}</li>
+                      <li className="text-[13.5px] leading-[1.5]">{children}</li>
                     ),
                     strong: ({ children }) => (
                       <strong className="font-semibold text-foreground">{children}</strong>
@@ -141,16 +141,16 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                       <code className="px-1 py-0.5 bg-muted rounded text-[11px] font-mono text-primary">{children}</code>
                     ),
                     h1: ({ children }) => (
-                      <h1 className="text-sm font-bold mb-2 mt-2.5 first:mt-0 text-foreground">{children}</h1>
+                      <h1 className="text-[15px] font-bold mb-2 mt-2.5 first:mt-0 text-foreground leading-[1.5]">{children}</h1>
                     ),
                     h2: ({ children }) => (
-                      <h2 className="text-[13px] font-bold mb-1.5 mt-2 first:mt-0 text-foreground">{children}</h2>
+                      <h2 className="text-[14px] font-bold mb-1.5 mt-2 first:mt-0 text-foreground leading-[1.5]">{children}</h2>
                     ),
                     h3: ({ children }) => (
-                      <h3 className="text-[13px] font-semibold mb-1 mt-1.5 first:mt-0 text-foreground">{children}</h3>
+                      <h3 className="text-[13.5px] font-semibold mb-1 mt-1.5 first:mt-0 text-foreground leading-[1.5]">{children}</h3>
                     ),
                     blockquote: ({ children }) => (
-                      <blockquote className="border-l-2 border-primary/50 pl-2.5 italic text-muted-foreground my-2 text-[13px]">{children}</blockquote>
+                      <blockquote className="border-l-2 border-primary/50 pl-2.5 italic text-muted-foreground my-2 text-[13.5px]">{children}</blockquote>
                     ),
                     hr: () => (
                       <hr className="border-border my-2" />
@@ -170,7 +170,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
           )}>
             {/* Timestamp - more subtle */}
             {timestamp && (
-              <span className="text-[9px] text-muted-foreground/50">
+              <span className="text-[10px] text-muted-foreground/60">
                 {formatRelativeTime(timestamp)}
               </span>
             )}

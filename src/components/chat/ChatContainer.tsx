@@ -358,7 +358,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       className="flex-1 overflow-y-auto relative"
       onScroll={handleScroll}
     >
-      <div className="py-3">
+      <div className="py-1.5">
         {messages.map((message, index) => {
           const prevMessage = index > 0 ? messages[index - 1] : null;
           const showDivider = needsDateDivider(message.createdAt, prevMessage?.createdAt);
