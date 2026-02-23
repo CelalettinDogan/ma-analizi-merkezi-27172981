@@ -351,68 +351,32 @@ export const useAdminData = () => {
 
   // ========== NON-CACHED FETCHERS (unchanged) ==========
 
-  // Fetch users with pagination
+  // Fetch users via edge function (gets real emails from auth.users)
   const fetchUsers = useCallback(async () => {
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const offset = (usersPage - 1) * pageSize;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) return;
 
-      const { data: profiles, count } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(offset, offset + pageSize - 1);
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/admin-users?page=${usersPage}&pageSize=${pageSize}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
-      if (!profiles) return;
+      if (!response.ok) {
+        console.error('Admin users fetch failed:', response.status);
+        return;
+      }
 
-      const userIds = profiles.map(p => p.user_id);
-
-      const { data: rolesData } = await supabase
-        .from('user_roles')
-        .select('user_id, role')
-        .in('user_id', userIds);
-
-      const { data: premiumData } = await supabase
-        .from('premium_subscriptions')
-        .select('user_id, plan_type, is_active, expires_at')
-        .in('user_id', userIds)
-        .eq('is_active', true);
-
-      const { data: chatUsage } = await supabase
-        .from('chatbot_usage')
-        .select('user_id, usage_count')
-        .in('user_id', userIds)
-        .eq('usage_date', today);
-
-      const { data: analysisUsage } = await supabase
-        .from('analysis_usage')
-        .select('user_id, usage_count')
-        .in('user_id', userIds)
-        .eq('usage_date', today);
-
-      const userList: User[] = profiles.map(profile => {
-        const roles = rolesData?.filter(r => r.user_id === profile.user_id).map(r => r.role) || [];
-        const premium = premiumData?.find(p => p.user_id === profile.user_id && new Date(p.expires_at) > new Date());
-        const chat = chatUsage?.find(c => c.user_id === profile.user_id);
-        const analysis = analysisUsage?.find(a => a.user_id === profile.user_id);
-
-        return {
-          id: profile.user_id,
-          email: profile.user_id,
-          displayName: profile.display_name || '',
-          createdAt: profile.created_at,
-          lastSignIn: null,
-          isPremium: !!premium,
-          planType: premium?.plan_type || null,
-          roles,
-          chatUsageToday: chat?.usage_count || 0,
-          analysisUsageToday: analysis?.usage_count || 0,
-          isBanned: (profile as any).is_banned || false,
-        };
-      });
-
-      setUsers(userList);
-      setUsersCount(count || 0);
+      const result = await response.json();
+      setUsers(result.users || []);
+      setUsersCount(result.totalCount || 0);
     } catch (e) {
       console.error('Users fetch error:', e);
     }
