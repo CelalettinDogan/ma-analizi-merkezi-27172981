@@ -62,6 +62,7 @@ interface RequestBody {
     correctScore: number;
     firstHalf: number;
   };
+  leagueOver25Pct?: number;
 }
 
 interface AIPrediction {
@@ -82,7 +83,7 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
 
     const body: RequestBody = await req.json();
-    const { homeTeam, awayTeam, h2h, league, context, poisson, historicalAccuracy } = body;
+    const { homeTeam, awayTeam, h2h, league, context, poisson, historicalAccuracy, leagueOver25Pct } = body;
 
     // Enhanced system prompt
     let systemPrompt = `Sen profesyonel bir futbol analiz uzmanısın. Kapsamlı veri analizi yaparak maç tahmini üretiyorsun.
@@ -130,6 +131,17 @@ GEÇMİŞ PERFORMANS:
 - Alt/Üst: %${(historicalAccuracy.totalGoals * 100).toFixed(0)}
 - KG: %${(historicalAccuracy.bothTeamsScore * 100).toFixed(0)}
 Düşük doğruluk kategorilerinde daha temkinli ol.`;
+
+      // Özel Alt/Üst uyarısı
+      if (historicalAccuracy.totalGoals < 0.55) {
+        systemPrompt += `
+
+⚠️ KRİTİK UYARI - TOPLAM GOL ALT/ÜST:
+Bu kategoride geçmiş başarı oranın sadece %${(historicalAccuracy.totalGoals * 100).toFixed(0)}.
+- Poisson over2.5 olasılığı %45-55 arasındaysa bu SINIR BÖLGEDİR. Güven seviyesini 0.40-0.50 arasında tut.
+- Beklenen gol 2.0-2.5 arasındayken "Alt" tahmin etme eğiliminden kaçın - bu aralıkta maçlar genellikle 3+ golle bitiyor.
+- Poisson modelinin hesapladığı kesin olasılığa güven, sezgisel yargıya değil.`;
+      }
     }
 
     // Enhanced user prompt
@@ -184,6 +196,15 @@ H2H (Son ${h2h.totalMatches} maç): ${homeTeam.name} ${h2h.homeWins}G - ${h2h.dr
 - Beklenen Gol: ${homeTeam.name} ${poisson.homeExpected?.toFixed(2)} - ${poisson.awayExpected?.toFixed(2)} ${awayTeam.name}
 - Olasılıklar: Ev %${poisson.homeWinProb?.toFixed(0)} | Beraberlik %${poisson.drawProb?.toFixed(0)} | Dep %${poisson.awayWinProb?.toFixed(0)}
 - 2.5 Üst: %${poisson.over2_5Prob?.toFixed(0)} | KG Var: %${poisson.bttsProb?.toFixed(0)}`;
+
+      if (leagueOver25Pct) {
+        userPrompt += `\n- Lig Ortalaması 2.5 Üst: %${leagueOver25Pct.toFixed(0)}`;
+      }
+
+      const over25 = poisson.over2_5Prob || 0;
+      if (over25 >= 45 && over25 <= 55) {
+        userPrompt += `\n\n⚠️ SINIR BÖLGESİ: Poisson over2.5 olasılığı %${over25.toFixed(0)} - bu belirsiz bölge! Güven seviyesini düşük tut (0.40-0.50).`;
+      }
     }
 
     userPrompt += `\n\nTüm verileri analiz ederek kapsamlı tahmin yap.`;

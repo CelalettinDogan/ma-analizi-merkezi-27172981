@@ -133,7 +133,13 @@ export async function getMLPrediction(
   homeTeam: TeamFeatures,
   awayTeam: TeamFeatures,
   h2h: H2HFeatures,
-  league: string
+  league: string,
+  poissonExtra?: {
+    over25Prob?: number; // percentage 0-100
+    leagueOver25Pct?: number; // percentage 0-100
+    homeExpected?: number;
+    awayExpected?: number;
+  }
 ): Promise<MLPredictionResponse | null> {
   try {
     // 1. Check cache first
@@ -155,6 +161,12 @@ export async function getMLPrediction(
         h2h,
         league,
         historicalAccuracy,
+        poisson: poissonExtra ? {
+          homeExpected: poissonExtra.homeExpected,
+          awayExpected: poissonExtra.awayExpected,
+          over2_5Prob: poissonExtra.over25Prob,
+        } : undefined,
+        leagueOver25Pct: poissonExtra?.leagueOver25Pct,
       },
     });
 

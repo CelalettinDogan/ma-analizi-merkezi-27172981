@@ -12,6 +12,8 @@ interface AnalysisInput {
   h2hMatches: Match[];
   league: string;
   matchDate: string;
+  poissonOver25Prob?: number; // 0-1 range
+  leagueOver25Pct?: number; // 0-100 range
 }
 
 // Form string'ini puan olarak hesapla (son 5 maç)
@@ -153,6 +155,8 @@ export function generatePrediction(input: AnalysisInput): MatchAnalysis {
     awayTeamName: awayTeam.standing.team.name,
     homePosition: homeTeam.standing.position,
     awayPosition: awayTeam.standing.position,
+    poissonOver25Prob: input.poissonOver25Prob,
+    leagueOver25Pct: input.leagueOver25Pct,
   });
 
   // Taktik analiz oluştur
@@ -200,6 +204,8 @@ interface PredictionInput {
   awayTeamName: string;
   homePosition: number;
   awayPosition: number;
+  poissonOver25Prob?: number; // 0-1 range from Poisson model
+  leagueOver25Pct?: number; // league average over 2.5 percentage (0-100)
 }
 
 function generatePredictions(input: PredictionInput): Prediction[] {
@@ -255,29 +261,60 @@ function generatePredictions(input: PredictionInput): Prediction[] {
     reasoning: matchReasoning,
   });
 
-  // 2. Toplam Gol Tahmini (Alt/Üst 2.5)
+  // 2. Toplam Gol Tahmini (Alt/Üst 2.5) - Poisson tabanlı
   const expectedGoals = (homeGoalAvg.scored + awayGoalAvg.scored + homeGoalAvg.conceded + awayGoalAvg.conceded) / 2;
+  const over25Prob = input.poissonOver25Prob; // 0-1 range
   
   let goalPrediction: string;
   let goalConfidence: 'düşük' | 'orta' | 'yüksek';
   let goalReasoning: string;
 
-  if (expectedGoals > 3.0) {
-    goalPrediction = '2.5 Üst';
-    goalConfidence = 'yüksek';
-    goalReasoning = `Her iki takımın da gol ortalaması yüksek (Ev: ${homeGoalAvg.scored.toFixed(2)}, Dep: ${awayGoalAvg.scored.toFixed(2)}). Beklenen toplam gol: ${expectedGoals.toFixed(1)}.`;
-  } else if (expectedGoals > 2.5) {
-    goalPrediction = '2.5 Üst';
-    goalConfidence = 'orta';
-    goalReasoning = `Gol ortalamaları 2.5 üstü gösteriyor. ${homeTeamName} maç başı ${homeGoalAvg.scored.toFixed(2)}, ${awayTeamName} ${awayGoalAvg.scored.toFixed(2)} gol atıyor.`;
-  } else if (expectedGoals > 2.0) {
-    goalPrediction = '2.5 Alt';
-    goalConfidence = 'düşük';
-    goalReasoning = `Gol ortalamaları sınırda. Her iki takımın savunma performansı sonucu belirleyecek.`;
+  if (over25Prob !== undefined) {
+    // Poisson tabanlı karar (daha güvenilir)
+    const probPct = (over25Prob * 100).toFixed(0);
+    const leagueInfo = input.leagueOver25Pct ? ` Lig ortalaması: %${input.leagueOver25Pct.toFixed(0)}.` : '';
+    
+    if (over25Prob > 0.60) {
+      goalPrediction = '2.5 Üst';
+      goalConfidence = 'yüksek';
+      goalReasoning = `Poisson modeli %${probPct} olasılıkla 2.5 üstü gösteriyor.${leagueInfo} Beklenen toplam: ${expectedGoals.toFixed(1)} gol.`;
+    } else if (over25Prob > 0.55) {
+      goalPrediction = '2.5 Üst';
+      goalConfidence = 'orta';
+      goalReasoning = `Poisson modeli %${probPct} olasılıkla hafif üst yönde.${leagueInfo} ${homeTeamName} ${homeGoalAvg.scored.toFixed(2)}, ${awayTeamName} ${awayGoalAvg.scored.toFixed(2)} gol ortalamasına sahip.`;
+    } else if (over25Prob < 0.40) {
+      goalPrediction = '2.5 Alt';
+      goalConfidence = 'yüksek';
+      goalReasoning = `Poisson modeli %${(100 - over25Prob * 100).toFixed(0)} olasılıkla alt gösteriyor.${leagueInfo} Düşük gol beklentisi: ${expectedGoals.toFixed(1)}.`;
+    } else if (over25Prob < 0.45) {
+      goalPrediction = '2.5 Alt';
+      goalConfidence = 'orta';
+      goalReasoning = `Poisson modeli %${(100 - over25Prob * 100).toFixed(0)} olasılıkla alt yönünde.${leagueInfo} Savunma ağırlıklı maç bekleniyor.`;
+    } else {
+      // %45-55 SINIR BÖLGESİ - temkinli ol
+      goalPrediction = over25Prob >= 0.50 ? '2.5 Üst' : '2.5 Alt';
+      goalConfidence = 'düşük';
+      goalReasoning = `⚠️ Sınır bölge: Poisson modeli %${probPct} olasılık hesapladı.${leagueInfo} Belirsiz durum, düşük güven.`;
+    }
   } else {
-    goalPrediction = '2.5 Alt';
-    goalConfidence = 'orta';
-    goalReasoning = `Düşük gol beklentisi. Her iki takım da defansif oynuyor, maç başı ortalama ${expectedGoals.toFixed(1)} gol.`;
+    // Poisson yoksa eski basit mantık (fallback)
+    if (expectedGoals > 3.0) {
+      goalPrediction = '2.5 Üst';
+      goalConfidence = 'yüksek';
+      goalReasoning = `Her iki takımın da gol ortalaması yüksek (Ev: ${homeGoalAvg.scored.toFixed(2)}, Dep: ${awayGoalAvg.scored.toFixed(2)}). Beklenen toplam gol: ${expectedGoals.toFixed(1)}.`;
+    } else if (expectedGoals > 2.5) {
+      goalPrediction = '2.5 Üst';
+      goalConfidence = 'orta';
+      goalReasoning = `Gol ortalamaları 2.5 üstü gösteriyor. ${homeTeamName} maç başı ${homeGoalAvg.scored.toFixed(2)}, ${awayTeamName} ${awayGoalAvg.scored.toFixed(2)} gol atıyor.`;
+    } else if (expectedGoals > 2.0) {
+      goalPrediction = '2.5 Alt';
+      goalConfidence = 'düşük';
+      goalReasoning = `Gol ortalamaları sınırda. Her iki takımın savunma performansı sonucu belirleyecek.`;
+    } else {
+      goalPrediction = '2.5 Alt';
+      goalConfidence = 'orta';
+      goalReasoning = `Düşük gol beklentisi. Her iki takım da defansif oynuyor, maç başı ortalama ${expectedGoals.toFixed(1)} gol.`;
+    }
   }
 
   predictions.push({
