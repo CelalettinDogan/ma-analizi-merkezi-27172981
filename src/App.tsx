@@ -28,12 +28,13 @@ import AnalysisHistory from "./pages/AnalysisHistory";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import DeleteAccount from "./pages/DeleteAccount";
+import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
 import BottomNav from "@/components/navigation/BottomNav";
 
 const queryClient = new QueryClient();
 
-const HIDE_BOTTOM_NAV_ROUTES = ['/auth', '/reset-password', '/terms', '/privacy', '/delete-account', '/admin'];
+const HIDE_BOTTOM_NAV_ROUTES = ['/auth', '/reset-password', '/terms', '/privacy', '/delete-account', '/admin', '/callback'];
 
 const GlobalBottomNav = () => {
   const location = useLocation();
@@ -129,6 +130,7 @@ const AppContent = () => {
           
           {/* Açık Sayfalar - Giriş gerektirmeyen */}
           <Route path="/auth" element={<Auth />} />
+          <Route path="/callback" element={<AuthCallback />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
