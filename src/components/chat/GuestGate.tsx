@@ -28,7 +28,7 @@ const GuestGate: React.FC<GuestGateProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="h-dvh flex flex-col bg-background overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border/50 pt-safe">
         <div className="container max-w-4xl mx-auto px-4 py-3">
@@ -101,7 +101,7 @@ const GuestGate: React.FC<GuestGateProps> = ({ onClose }) => {
           <div className="space-y-3">
             <Button
               onClick={handleLogin}
-              className="w-full h-14 text-lg touch-manipulation"
+              className="w-full h-14 text-lg"
               size="lg"
             >
               <LogIn className="w-5 h-5 mr-2" />
@@ -111,7 +111,7 @@ const GuestGate: React.FC<GuestGateProps> = ({ onClose }) => {
             <Button
               variant="outline"
               onClick={handleSignup}
-              className="w-full h-12 touch-manipulation"
+              className="w-full h-12"
               size="lg"
             >
               <UserPlus className="w-5 h-5 mr-2" />

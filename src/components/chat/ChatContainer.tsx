@@ -64,15 +64,14 @@ interface WelcomeMessageProps {
 }
 
 // Minimalist Welcome Message - 2026 Design
-const WelcomeMessage = React.forwardRef<HTMLDivElement, WelcomeMessageProps>(({ onQuickPrompt }, ref) => {
+const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ onQuickPrompt }) => {
   const { prompts, isLoading: promptsLoading } = useSmartPrompts(4);
 
   return (
     <motion.div
-      ref={ref}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center justify-end flex-1 p-5 pb-8 text-center"
+      className="flex flex-col items-center justify-center h-full p-5 text-center"
     >
       {/* Compact Bot Avatar */}
       <motion.div
@@ -164,8 +163,7 @@ const WelcomeMessage = React.forwardRef<HTMLDivElement, WelcomeMessageProps>(({ 
       </motion.div>
     </motion.div>
   );
-});
-WelcomeMessage.displayName = 'WelcomeMessage';
+};
 
 // History loading skeleton - forwardRef for AnimatePresence compatibility
 const HistoryLoadingSkeleton = React.forwardRef<HTMLDivElement>((_, ref) => (
@@ -343,7 +341,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
           );
         })}
         {/* Scroll anchor */}
-        <div aria-hidden="true" className="h-0 flex-shrink-0" />
+        <div aria-hidden="true" style={{ height: 1 }} />
       </div>
 
       {/* Scroll to bottom button */}
