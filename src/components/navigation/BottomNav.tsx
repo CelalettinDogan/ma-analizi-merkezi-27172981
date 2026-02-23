@@ -1,5 +1,5 @@
-import React, { useMemo, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useMemo, useRef, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, Zap, Bot, Crown, Trophy, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -27,6 +27,7 @@ interface NavItem {
  */
 const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(({ onSearchClick }, ref) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { isAdmin, isPremium, isLoading } = useAccessLevel();
   const stableItemsRef = useRef<NavItem[] | null>(null);
 
@@ -70,12 +71,14 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
     return stableItemsRef.current ?? computedItems;
   }, [isLoading, computedItems]);
 
-  const handleClick = (item: NavItem, e: React.MouseEvent) => {
+  const handleClick = useCallback((item: NavItem, e: React.MouseEvent) => {
+    e.preventDefault();
     if (item.isAction && onSearchClick) {
-      e.preventDefault();
       onSearchClick();
+      return;
     }
-  };
+    navigate(item.path);
+  }, [onSearchClick, navigate]);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden" ref={ref}>
@@ -93,15 +96,14 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
             const Icon = item.icon;
 
             return (
-              <Link
+              <button
                 key={item.path}
-                to={item.isAction ? '#' : item.path}
                 onClick={(e) => handleClick(item, e)}
                 aria-label={item.label}
                 aria-current={isActive ? 'page' : undefined}
                 className={cn(
                   "relative flex flex-col items-center justify-center gap-0.5 py-1.5 px-2",
-                  "min-w-[56px] min-h-[48px]", // WCAG touch target for 6 items
+                  "min-w-[56px] min-h-[48px]",
                   "touch-manipulation rounded-lg transition-all duration-200",
                   isActive && "scale-105"
                 )}
@@ -140,7 +142,7 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                 )}>
                   {item.label}
                 </span>
-              </Link>
+              </button>
             );
           })}
         </div>
