@@ -130,7 +130,8 @@ export function createFeatureRecord(
   features: MatchFeatures,
   aiConfidence: number,
   aiReasoning: string,
-  mathConfidence: number
+  mathConfidence: number,
+  poissonData?: { homeExpected: number; awayExpected: number }
 ) {
   return {
     home_form_score: features.homeTeam.formScore,
@@ -146,6 +147,8 @@ export function createFeatureRecord(
     ai_confidence: aiConfidence,
     ai_reasoning: aiReasoning,
     mathematical_confidence: mathConfidence,
-    hybrid_confidence: (aiConfidence * 0.4 + mathConfidence * 0.4 + 0.5 * 0.2), // 40% AI, 40% Math, 20% baseline
+    hybrid_confidence: (aiConfidence * 0.4 + mathConfidence * 0.4 + 0.5 * 0.2),
+    poisson_home_expected: poissonData?.homeExpected ?? null,
+    poisson_away_expected: poissonData?.awayExpected ?? null,
   };
 }

@@ -17,7 +17,7 @@ import {
   convertBTTSPrediction,
   savePredictionFeatures
 } from '@/services/mlPredictionService';
-import { calculatePoissonExpectedGoals, generateScoreProbabilities, calculateMatchResultProbabilities, calculateGoalLineProbabilities as calcGoalLines, calculateBTTSProbability, calculatePowerIndexes } from '@/utils/poissonCalculator';
+import { calculatePoissonExpectedGoals, generateScoreProbabilities, calculateMatchResultProbabilities, calculateGoalLineProbabilities as calcGoalLines, calculateBTTSProbability, calculatePowerIndexes, getMostLikelyScores } from '@/utils/poissonCalculator';
 import { calculateMatchImportance, calculateMomentum, calculateCleanSheetRatio } from '@/utils/contextAnalyzer';
 import { isDerbyMatch } from '@/utils/derbyDetector';
 
@@ -196,7 +196,7 @@ export function useMatchAnalysis() {
       if (predictionId) {
         const aiConf = result.predictions[0]?.aiConfidence || 0.5;
         const mathConf = result.predictions[0]?.mathConfidence || 0.5;
-        const featureRecord = createFeatureRecord(features, aiConf, result.predictions[0]?.reasoning || '', mathConf);
+        const featureRecord = createFeatureRecord(features, aiConf, result.predictions[0]?.reasoning || '', mathConf, { homeExpected: expectedGoals.homeExpected, awayExpected: expectedGoals.awayExpected });
         await savePredictionFeatures(predictionId, featureRecord);
       }
     } catch (saveError) { console.error('[limitedAnalysis] Save error:', saveError); }
@@ -367,9 +367,28 @@ export function useMatchAnalysis() {
 
       // === ADVANCED FEATURES (Poisson hesaplamaları - generatePrediction'dan önce lazım) ===
       
-      // Lig ortalamaları (varsayılan değerler)
-      const leagueAvgScored = standings.reduce((sum, s) => sum + s.goalsFor / s.playedGames, 0) / standings.length || 1.3;
-      const leagueAvgConceded = standings.reduce((sum, s) => sum + s.goalsAgainst / s.playedGames, 0) / standings.length || 1.3;
+      // Lig ortalamaları - veritabanından ev/deplasman ayrımlı çek
+      let leagueAvgHomeGoals = 1.5;
+      let leagueAvgAwayGoals = 1.1;
+      let leagueOver25Pct: number | undefined;
+      
+      try {
+        const { data: leagueAvg } = await supabase
+          .from('league_averages')
+          .select('avg_home_goals, avg_away_goals, over_2_5_percentage')
+          .eq('league', competitionCode)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (leagueAvg) {
+          if (leagueAvg.avg_home_goals) leagueAvgHomeGoals = Number(leagueAvg.avg_home_goals);
+          if (leagueAvg.avg_away_goals) leagueAvgAwayGoals = Number(leagueAvg.avg_away_goals);
+          if (leagueAvg.over_2_5_percentage) leagueOver25Pct = Number(leagueAvg.over_2_5_percentage);
+        }
+      } catch (e) { console.warn('[useMatchAnalysis] League avg fetch failed:', e); }
+
+      const leagueAvgScored = (leagueAvgHomeGoals + leagueAvgAwayGoals) / 2;
+      const leagueAvgConceded = leagueAvgScored;
 
       // Poisson hesaplamaları
       const homeAttackStrength = (homeStanding.goalsFor / homeStanding.playedGames) / leagueAvgScored;
@@ -382,8 +401,8 @@ export function useMatchAnalysis() {
         homeDefenseStrength,
         awayAttackStrength,
         awayDefenseStrength,
-        leagueAvgScored,
-        leagueAvgConceded
+        leagueAvgHomeGoals,
+        leagueAvgAwayGoals
       );
 
       const scoreProbabilities = generateScoreProbabilities(
@@ -393,23 +412,14 @@ export function useMatchAnalysis() {
 
       const rawGoalLines = calcGoalLines(scoreProbabilities);
       const bttsProbability = calculateBTTSProbability(scoreProbabilities);
+      const matchResultProbs = calculateMatchResultProbabilities(scoreProbabilities);
+      const mostLikelyScores = getMostLikelyScores(scoreProbabilities, 1);
 
       const poissonOver25Prob = rawGoalLines.over2_5 / 100; // 0-1 range
       
-      // Lig ortalaması over2.5 yüzdesini al
-      let leagueOver25Pct: number | undefined;
-      try {
-        const { data: leagueAvg } = await supabase
-          .from('league_averages')
-          .select('over_2_5_percentage')
-          .eq('league', competitionCode)
-          .order('updated_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (leagueAvg?.over_2_5_percentage) {
-          leagueOver25Pct = leagueAvg.over_2_5_percentage;
-        }
-      } catch (e) { console.warn('[useMatchAnalysis] League avg fetch failed:', e); }
+      // İlk yarı beklenen golleri (%42 kuralı)
+      const poissonFirstHalfHome = expectedGoals.homeExpected * 0.42;
+      const poissonFirstHalfAway = expectedGoals.awayExpected * 0.42;
 
       // Matematiksel tahmin motorunu çalıştır (Poisson verileriyle)
       const mathResult = generatePrediction({
@@ -426,6 +436,15 @@ export function useMatchAnalysis() {
         matchDate: data.matchDate,
         poissonOver25Prob,
         leagueOver25Pct,
+        poissonHomeWinProb: matchResultProbs.homeWin,
+        poissonDrawProb: matchResultProbs.draw,
+        poissonAwayWinProb: matchResultProbs.awayWin,
+        poissonBttsProb: bttsProbability,
+        poissonMostLikelyScore: mostLikelyScores.length > 0 
+          ? { home: mostLikelyScores[0].homeGoals, away: mostLikelyScores[0].awayGoals }
+          : undefined,
+        poissonFirstHalfHome,
+        poissonFirstHalfAway,
       });
 
       // Feature'ları çıkar
@@ -657,7 +676,8 @@ export function useMatchAnalysis() {
             features,
             aiConf,
             result.predictions[0]?.reasoning || '',
-            mathConf
+            mathConf,
+            { homeExpected: expectedGoals.homeExpected, awayExpected: expectedGoals.awayExpected }
           );
           
           await savePredictionFeatures(predictionId, featureRecord);
