@@ -236,6 +236,8 @@ export async function savePredictionFeatures(
     ai_reasoning: string;
     mathematical_confidence: number;
     hybrid_confidence: number;
+    poisson_home_expected?: number | null;
+    poisson_away_expected?: number | null;
   }
 ): Promise<void> {
   try {
