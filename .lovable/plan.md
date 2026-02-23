@@ -1,63 +1,57 @@
 
-# VARio - AI Asistan: Kapsamli Chatbot Yenileme Plani
+# Chat Scroll Fix + Onboarding Tekrar Gosterme Sorunu
 
-## Degisiklikler Ozeti
+## Sorun 1: Chat Ekrani Asagidan Baslamiyor
 
-### 1. Isim ve Marka Guncelleme
-Tum "AI Asistan", "Gol Asistan", "GolMetrik AI Asistani" referanslari **"VARio - AI Asistan"** olarak guncellenecek.
+**Sebep:** `ChatContainer.tsx` satir 246-257'deki scroll mekanizmasi `scrollIntoView({ block: 'end' })` kullaniyor. Bu, son mesaji gorunur alana getiriyor ama konteynerin tam altina scroll etmiyor. Ayrica `hasScrolledRef` kontrolu bazi durumlarda ilk scroll'u engelleyebiliyor.
 
-Etkilenen dosyalar:
-- `src/pages/Chat.tsx` -- Header basligi
-- `src/components/chat/ChatContainer.tsx` -- Welcome mesaji ("Merhaba! Ben VARio, AI asistanin!")
-- `src/components/chat/ChatMessage.tsx` -- Bot avatar'i (ikon yerine VARio gorseli)
-- `src/components/chat/TypingIndicator.tsx` -- Bot avatar'i
-- `src/components/chat/GuestGate.tsx` -- Basliklarda VARio
-- `src/components/chat/PremiumGate.tsx` -- Basliklarda VARio
-- `src/components/chat/ChatLimitSheet.tsx` -- Limit mesajinda VARio
-- `src/components/chat/UsageMeter.tsx` -- Degisiklik gerekmeyebilir
-- `supabase/functions/ai-chatbot/index.ts` -- System prompt: `Adin "VARio"`
+**Cozum (`src/components/chat/ChatContainer.tsx`):**
+- `scrollToLastMessage` fonksiyonunu degistir: `scrollIntoView` yerine `containerRef.current.scrollTop = containerRef.current.scrollHeight` kullan (daha guvenilir)
+- Mesajlar yüklendiginde ve her yeni mesajda container'in tam altina scroll et
+- Initial scroll icin ek bir `useEffect` ekle: component mount oldugunda ve messages degistiginde her zaman alta scroll etsin
+- `lastMessageRef` sonrasi bos bir `div` (spacer/anchor) ekle, ona scroll yap
 
-### 2. Profil Fotografi (VARio Avatar)
-- Kullanicinin yuklediyi robot gorseli `src/assets/vario-avatar.png` olarak kopyalanacak
-- Tum `Bot` ikonu kullanan yerlerde (header, welcome, ChatMessage, TypingIndicator, GuestGate, PremiumGate) bu gorsel kullanilacak
-- Gorsel `rounded-full` ve `object-cover` ile gosterilecek
-- Bot avatar boyutlari mevcut boyutlarda korunacak (w-7 h-7, w-8 h-8, w-16 h-16 vb.)
+**Detay:**
+```text
+// Mevcut (sorunlu):
+lastMessageRef.current.scrollIntoView({ block: 'end', behavior })
 
-### 3. Welcome Ekrani Guncelleme
-`ChatContainer.tsx` icindeki `WelcomeMessage`:
-- "Merhaba!" yerine "Merhaba! Ben VARio, AI asistanin!" 
-- "Futbol analizleri icin buradayim" alt baslik korunacak
-- Bot ikonu yerine VARio avatar gorseli
+// Yeni (guvenilir):
+containerRef.current.scrollTop = containerRef.current.scrollHeight
+```
 
-### 4. UI/UX Ince Ayarlar
-- `ChatMessage.tsx`: Bot avatar'inda `Bot` ikonu yerine VARio gorseli
-- `TypingIndicator.tsx`: Bot avatar'inda VARio gorseli
-- `Chat.tsx` header: Bot avatar'inda VARio gorseli, baslik "VARio - AI Asistan"
-- `GuestGate.tsx`: Baslik "VARio - AI Asistan'a Hos Geldin", ikon yerine VARio avatar
-- `PremiumGate.tsx`: Baslik "VARio - AI Asistan", ikon yerine VARio avatar
-- `ChatLimitSheet.tsx`: "Gunluk VARio mesaj hakkın doldu"
+## Sorun 2: Onboarding Her Giriste Gozukuyor
 
-### 5. Edge Function System Prompt
-`supabase/functions/ai-chatbot/index.ts` satir 162:
-- `Adın "Gol Asistan"` -> `Adın "VARio"`
-- Merhaba mesajlarinda "Merhaba ben VARio, AI asistanin" seklinde karsilik vermesi saglanacak
+**Sebep:** `useOnboarding` hook'u `localStorage` kullaniyor. Bu, tarayici oturumu kapandiginda (veya preview ortaminda) sifirlanabiliyor. Kullanici giris yaptiginda bile localStorage bosalabilir.
+
+**Cozum:** Onboarding durumunu veritabanina (profiles tablosuna) bagla. Kullanici hesap olusturdugunda `onboarding_completed = false`, onboarding tamamlandiginda `true` olarak guncelle. Boylece hangi cihazdan veya tarayicidan girerse girsin, onboarding sadece bir kez gosterilir.
+
+**Degisiklikler:**
+
+### Dosya 1: Veritabani Migration
+- `profiles` tablosuna `onboarding_completed BOOLEAN DEFAULT false` kolonu ekle
+
+### Dosya 2: `src/hooks/useOnboarding.ts`
+- `useAuth` hook'unu import et
+- Giris yapilmissa: `profiles` tablosundan `onboarding_completed` degerini oku
+- `completeOnboarding`: hem `profiles` tablosunu guncelle hem localStorage'a yaz (offline fallback)
+- Giris yapilmamissa: localStorage fallback'i kullan (mevcut davranis)
+- Her iki kaynagi da kontrol et: eger biri `true` ise onboarding gosterme
+
+### Dosya 3: `src/components/chat/ChatContainer.tsx`
+- `scrollToLastMessage` fonksiyonunu `scrollTop = scrollHeight` ile degistir
+- Son mesajin altina bos anchor div ekle
+- Initial scroll effect'ini daha agresif hale getir
 
 ## Degisecek Dosyalar
 
 | Dosya | Degisiklik |
 |-------|-----------|
-| `src/assets/vario-avatar.png` | Yeni dosya - robot gorseli kopyasi |
-| `src/pages/Chat.tsx` | Header: VARio avatar + "VARio - AI Asistan" basligi |
-| `src/components/chat/ChatContainer.tsx` | Welcome: VARio avatar + "Merhaba! Ben VARio" |
-| `src/components/chat/ChatMessage.tsx` | Bot mesaj avatar: VARio gorseli |
-| `src/components/chat/TypingIndicator.tsx` | Typing avatar: VARio gorseli |
-| `src/components/chat/GuestGate.tsx` | VARio avatar + basliklarda VARio |
-| `src/components/chat/PremiumGate.tsx` | VARio avatar + basliklarda VARio |
-| `src/components/chat/ChatLimitSheet.tsx` | Limit mesajinda VARio ismi |
-| `supabase/functions/ai-chatbot/index.ts` | System prompt: Adin "VARio" |
+| Migration (yeni) | `profiles` tablosuna `onboarding_completed` kolonu |
+| `src/hooks/useOnboarding.ts` | DB-backed onboarding durumu + localStorage fallback |
+| `src/components/chat/ChatContainer.tsx` | Scroll mekanizmasi duzeltmesi |
 
-## Teknik Notlar
-- Gorsel `src/assets/` altina kopyalanacak ve ES6 import ile kullanilacak (bundling optimizasyonu)
-- Tum avatar kullanim noktalari `<img>` ile degistirilecek, `Bot` ikonu kaldirilacak
-- Cloud yuku: Sadece edge function'da tek satirlik prompt degisikligi, ek sorgu yok
-- Responsive: Mevcut boyutlar korunacak, gorsel `object-cover` ile her boyutta duzgun gorunecek
+## Cloud Etkisi
+- Tek bir boolean kolon ekleniyor (minimal)
+- Onboarding durumu profil sorgusuyla birlikte geliyor (ek sorgu yok)
+- Chat scroll degisikligi tamamen client-side
