@@ -37,7 +37,7 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ className }) => {
             <motion.div
               key={i}
               animate={{
-                y: [0, -4, 0],
+                y: [0, -3, 0],
                 scale: [1, 1.15, 1],
               }}
               transition={{
@@ -47,6 +47,7 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ className }) => {
                 ease: "easeInOut",
               }}
               className="w-1.5 h-1.5 rounded-full bg-primary"
+              style={{ willChange: 'transform' }}
             />
           ))}
         </div>
