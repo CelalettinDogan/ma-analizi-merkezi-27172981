@@ -101,17 +101,17 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
 
         {/* Message bubble */}
         <div className={cn(
-          "flex flex-col relative min-w-0",
+          "flex flex-col relative min-w-0 flex-1",
           isUser ? "items-end" : "items-start"
         )}>
           <div
             className={cn(
-              "rounded-[20px] px-4 py-3 relative leading-[1.5]",
+              "w-fit max-w-[75%] min-w-[80px] rounded-[20px] px-4 py-3 relative leading-[1.5]",
               isUser 
                 ? "bg-gradient-to-br from-primary via-primary/95 to-emerald-600/90 text-primary-foreground rounded-tr-md shadow-md shadow-primary/[0.08]" 
                 : "bg-muted/60 backdrop-blur-xl border border-border/30 rounded-tl-md shadow-sm shadow-black/5"
             )}
-            style={{ width: 'fit-content', maxWidth: '75%', minWidth: '80px', wordBreak: 'normal', overflowWrap: 'break-word' }}
+            style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}
           >
             {isUser ? (
               <p className="text-sm whitespace-pre-wrap leading-[1.5]">{content}</p>
