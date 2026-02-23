@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlatformPremium } from './usePlatformPremium';
+import { useUserRole } from './useUserRole';
 import { 
   PLAN_ACCESS_LEVELS, 
   hasUnlimitedAnalysis 
@@ -24,15 +25,16 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
     planType, 
     isLoading: premiumLoading 
   } = usePlatformPremium();
+  const { isAdmin, isLoading: roleLoading } = useUserRole();
   
   const [usageCount, setUsageCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   // Get daily limit from centralized access levels
-  const dailyLimit = PLAN_ACCESS_LEVELS[planType].dailyAnalysis;
+  const dailyLimit = isAdmin ? 999 : PLAN_ACCESS_LEVELS[planType].dailyAnalysis;
   
   const remaining = Math.max(0, dailyLimit - usageCount);
-  const canAnalyze = remaining > 0 || hasUnlimitedAnalysis(planType);
+  const canAnalyze = remaining > 0 || hasUnlimitedAnalysis(planType, isAdmin);
 
   const fetchUsage = useCallback(async () => {
     if (!user) {
@@ -59,16 +61,16 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
   }, [user]);
 
   useEffect(() => {
-    if (!premiumLoading) {
+    if (!premiumLoading && !roleLoading) {
       fetchUsage();
     }
-  }, [fetchUsage, premiumLoading]);
+  }, [fetchUsage, premiumLoading, roleLoading]);
 
   const incrementUsage = useCallback(async (): Promise<boolean> => {
     if (!user) return false;
 
     // Users with unlimited analysis don't need to track usage
-    if (hasUnlimitedAnalysis(planType)) {
+    if (hasUnlimitedAnalysis(planType, isAdmin)) {
       return true;
     }
 
@@ -86,24 +88,24 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
       console.error('Error incrementing analysis usage:', e);
       return false;
     }
-  }, [user, planType, usageCount]);
+  }, [user, planType, isAdmin, usageCount]);
 
   const checkLimit = useCallback(async (): Promise<boolean> => {
     // Users with unlimited analysis always can analyze
-    if (hasUnlimitedAnalysis(planType)) {
+    if (hasUnlimitedAnalysis(planType, isAdmin)) {
       return true;
     }
 
     await fetchUsage();
     return usageCount < dailyLimit;
-  }, [planType, fetchUsage, usageCount, dailyLimit]);
+  }, [planType, isAdmin, fetchUsage, usageCount, dailyLimit]);
 
   return {
     canAnalyze,
     usageCount,
     dailyLimit,
     remaining,
-    isLoading: isLoading || premiumLoading,
+    isLoading: isLoading || premiumLoading || roleLoading,
     incrementUsage,
     checkLimit,
     refetch: fetchUsage,
