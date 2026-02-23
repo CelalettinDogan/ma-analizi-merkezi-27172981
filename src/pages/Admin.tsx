@@ -25,6 +25,7 @@ const AdminPage: React.FC = () => {
     isLoading,
     dashboardData,
     refreshDashboard,
+    triggerAnalyticsRefresh,
     users,
     usersCount,
     usersPage,
@@ -120,6 +121,7 @@ const AdminPage: React.FC = () => {
           <DashboardStats 
             data={dashboardData} 
             isLoading={isLoading} 
+            onRefreshAnalytics={triggerAnalyticsRefresh}
           />
         );
       

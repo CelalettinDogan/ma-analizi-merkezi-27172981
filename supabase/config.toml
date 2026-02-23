@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.sync-match-history]
 verify_jwt = false
+
+[functions.compute-admin-analytics]
+verify_jwt = false

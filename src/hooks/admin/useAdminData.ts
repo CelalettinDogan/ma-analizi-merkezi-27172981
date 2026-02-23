@@ -13,6 +13,7 @@ interface DashboardData {
   aiAccuracy: number;
   liveMatches: number;
   activeUsers24h: number;
+  lastUpdated: string | null;
 }
 
 interface User {
@@ -100,15 +101,50 @@ export const useAdminData = () => {
   // League Stats
   const [leagueStats, setLeagueStats] = useState<LeagueStats[]>([]);
 
-  // Fetch dashboard data
+  // ========== ANALYTICS-BASED FETCHERS ==========
+
+  // Fetch dashboard from admin_daily_analytics (cached) with live fallback
   const fetchDashboard = useCallback(async () => {
     try {
-      // Total users from profiles
+      // Try cached analytics first
+      const { data: analytics } = await supabase
+        .from('admin_daily_analytics' as any)
+        .select('*')
+        .order('report_date', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (analytics) {
+        const a = analytics as any;
+        setDashboardData({
+          totalUsers: a.total_users,
+          premiumUsers: a.premium_users,
+          premiumRate: a.premium_rate,
+          todayChats: a.today_chats,
+          todayAnalysis: a.today_analysis,
+          aiAccuracy: a.ai_accuracy,
+          liveMatches: a.live_matches,
+          activeUsers24h: a.active_users_24h,
+          lastUpdated: a.created_at,
+        });
+        return;
+      }
+
+      // Fallback to live calculation
+      await fetchDashboardLive();
+    } catch (e) {
+      console.error('Dashboard fetch error, falling back to live:', e);
+      await fetchDashboardLive();
+    }
+  }, []);
+
+  // Live fallback for dashboard
+  const fetchDashboardLive = useCallback(async () => {
+    try {
       const { count: totalUsers } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true });
 
-      // Premium users
       const { data: premiumData } = await supabase
         .from('premium_subscriptions')
         .select('plan_type, user_id')
@@ -117,7 +153,6 @@ export const useAdminData = () => {
 
       const premiumUsers = premiumData?.length || 0;
 
-      // Today's chat usage
       const today = new Date().toISOString().split('T')[0];
       const { data: chatData } = await supabase
         .from('chatbot_usage')
@@ -125,14 +160,12 @@ export const useAdminData = () => {
         .eq('usage_date', today);
       const todayChats = chatData?.reduce((sum, r) => sum + r.usage_count, 0) || 0;
 
-      // Today's analysis usage
       const { data: analysisData } = await supabase
         .from('analysis_usage')
         .select('usage_count')
         .eq('usage_date', today);
       const todayAnalysis = analysisData?.reduce((sum, r) => sum + r.usage_count, 0) || 0;
 
-      // AI accuracy from ml_model_stats
       const { data: mlStats } = await supabase
         .from('ml_model_stats')
         .select('accuracy_percentage')
@@ -140,12 +173,10 @@ export const useAdminData = () => {
         .limit(1)
         .single();
 
-      // Live matches
       const { count: liveMatches } = await supabase
         .from('cached_live_matches')
         .select('*', { count: 'exact', head: true });
 
-      // Active users (approximation from chat usage last 24h)
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const { data: activeData } = await supabase
         .from('chatbot_usage')
@@ -162,140 +193,37 @@ export const useAdminData = () => {
         aiAccuracy: mlStats?.accuracy_percentage || 0,
         liveMatches: liveMatches || 0,
         activeUsers24h,
+        lastUpdated: null,
       });
     } catch (e) {
-      console.error('Dashboard fetch error:', e);
+      console.error('Dashboard live fetch error:', e);
     }
   }, []);
 
-  // Fetch users with pagination
-  const fetchUsers = useCallback(async () => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const offset = (usersPage - 1) * pageSize;
-
-      // Get profiles
-      const { data: profiles, count } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(offset, offset + pageSize - 1);
-
-      if (!profiles) return;
-
-      // Get additional data for these users
-      const userIds = profiles.map(p => p.user_id);
-
-      // Get roles
-      const { data: rolesData } = await supabase
-        .from('user_roles')
-        .select('user_id, role')
-        .in('user_id', userIds);
-
-      // Get premium status
-      const { data: premiumData } = await supabase
-        .from('premium_subscriptions')
-        .select('user_id, plan_type, is_active, expires_at')
-        .in('user_id', userIds)
-        .eq('is_active', true);
-
-      // Get chat usage
-      const { data: chatUsage } = await supabase
-        .from('chatbot_usage')
-        .select('user_id, usage_count')
-        .in('user_id', userIds)
-        .eq('usage_date', today);
-
-      // Get analysis usage
-      const { data: analysisUsage } = await supabase
-        .from('analysis_usage')
-        .select('user_id, usage_count')
-        .in('user_id', userIds)
-        .eq('usage_date', today);
-
-      const userList: User[] = profiles.map(profile => {
-        const roles = rolesData?.filter(r => r.user_id === profile.user_id).map(r => r.role) || [];
-        const premium = premiumData?.find(p => p.user_id === profile.user_id && new Date(p.expires_at) > new Date());
-        const chat = chatUsage?.find(c => c.user_id === profile.user_id);
-        const analysis = analysisUsage?.find(a => a.user_id === profile.user_id);
-
-        return {
-          id: profile.user_id,
-          email: profile.user_id, // We don't have email in profiles, would need auth.users
-          displayName: profile.display_name || '',
-          createdAt: profile.created_at,
-          lastSignIn: null,
-          isPremium: !!premium,
-          planType: premium?.plan_type || null,
-          roles,
-          chatUsageToday: chat?.usage_count || 0,
-          analysisUsageToday: analysis?.usage_count || 0,
-          isBanned: (profile as any).is_banned || false,
-        };
-      });
-
-      setUsers(userList);
-      setUsersCount(count || 0);
-    } catch (e) {
-      console.error('Users fetch error:', e);
-    }
-  }, [usersPage]);
-
-  // Fetch plan stats
-  const fetchPlanStats = useCallback(async () => {
-    try {
-      const { data } = await supabase
-        .from('premium_subscriptions')
-        .select('plan_type')
-        .eq('is_active', true)
-        .gt('expires_at', new Date().toISOString());
-
-      const counts: Record<string, number> = {};
-      data?.forEach(sub => {
-        counts[sub.plan_type] = (counts[sub.plan_type] || 0) + 1;
-      });
-
-      const priceMap: Record<string, number> = {
-        premium_basic: PLAN_PRICES.premium_basic.monthly,
-        premium_plus: PLAN_PRICES.premium_plus.monthly,
-        premium_pro: PLAN_PRICES.premium_pro.monthly,
-      };
-
-      const stats: PlanStats[] = Object.entries(counts).map(([planType, count]) => ({
-        planType,
-        count,
-        revenue: count * (priceMap[planType] || 0),
-      }));
-
-      setPlanStats(stats);
-    } catch (e) {
-      console.error('Plan stats fetch error:', e);
-    }
-  }, []);
-
-  // Fetch prediction stats
-  const fetchPredictionStats = useCallback(async () => {
-    try {
-      const { data } = await supabase
-        .from('prediction_stats')
-        .select('*');
-
-      if (data) {
-        const stats: PredictionStats[] = data.map(row => ({
-          type: row.prediction_type || 'Unknown',
-          total: row.total_predictions || 0,
-          correct: row.correct_predictions || 0,
-          accuracy: row.accuracy_percentage || 0,
-        }));
-        setPredictionStats(stats);
-      }
-    } catch (e) {
-      console.error('Prediction stats fetch error:', e);
-    }
-  }, []);
-
-  // Fetch league stats
+  // Fetch league stats from analytics or fallback
   const fetchLeagueStats = useCallback(async () => {
+    try {
+      // Try cached
+      const { data: analytics } = await supabase
+        .from('admin_daily_analytics' as any)
+        .select('league_stats')
+        .order('report_date', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (analytics && (analytics as any).league_stats) {
+        setLeagueStats((analytics as any).league_stats as LeagueStats[]);
+        return;
+      }
+
+      // Fallback
+      await fetchLeagueStatsLive();
+    } catch {
+      await fetchLeagueStatsLive();
+    }
+  }, []);
+
+  const fetchLeagueStatsLive = useCallback(async () => {
     try {
       const { data } = await supabase
         .from('predictions')
@@ -323,7 +251,205 @@ export const useAdminData = () => {
         setLeagueStats(stats);
       }
     } catch (e) {
-      console.error('League stats fetch error:', e);
+      console.error('League stats live fetch error:', e);
+    }
+  }, []);
+
+  // Fetch plan stats from analytics or fallback
+  const fetchPlanStats = useCallback(async () => {
+    try {
+      const { data: analytics } = await supabase
+        .from('admin_daily_analytics' as any)
+        .select('premium_by_plan, premium_revenue')
+        .order('report_date', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (analytics && (analytics as any).premium_by_plan) {
+        const byPlan = (analytics as any).premium_by_plan as Record<string, number>;
+        const priceMap: Record<string, number> = {
+          premium_basic: PLAN_PRICES.premium_basic.monthly,
+          premium_plus: PLAN_PRICES.premium_plus.monthly,
+          premium_pro: PLAN_PRICES.premium_pro.monthly,
+        };
+
+        const stats: PlanStats[] = Object.entries(byPlan).map(([planType, count]) => ({
+          planType,
+          count,
+          revenue: count * (priceMap[planType] || 0),
+        }));
+
+        setPlanStats(stats);
+        return;
+      }
+
+      await fetchPlanStatsLive();
+    } catch {
+      await fetchPlanStatsLive();
+    }
+  }, []);
+
+  const fetchPlanStatsLive = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from('premium_subscriptions')
+        .select('plan_type')
+        .eq('is_active', true)
+        .gt('expires_at', new Date().toISOString());
+
+      const counts: Record<string, number> = {};
+      data?.forEach(sub => {
+        counts[sub.plan_type] = (counts[sub.plan_type] || 0) + 1;
+      });
+
+      const priceMap: Record<string, number> = {
+        premium_basic: PLAN_PRICES.premium_basic.monthly,
+        premium_plus: PLAN_PRICES.premium_plus.monthly,
+        premium_pro: PLAN_PRICES.premium_pro.monthly,
+      };
+
+      const stats: PlanStats[] = Object.entries(counts).map(([planType, count]) => ({
+        planType,
+        count,
+        revenue: count * (priceMap[planType] || 0),
+      }));
+
+      setPlanStats(stats);
+    } catch (e) {
+      console.error('Plan stats live fetch error:', e);
+    }
+  }, []);
+
+  // Trigger edge function to refresh analytics now
+  const triggerAnalyticsRefresh = useCallback(async () => {
+    try {
+      toast.info('Analytics hesaplanıyor...');
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/compute-admin-analytics`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${anonKey}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error('Analytics hesaplama başarısız');
+
+      toast.success('Analytics güncellendi');
+      // Re-fetch from cache
+      await Promise.all([fetchDashboard(), fetchLeagueStats(), fetchPlanStats()]);
+    } catch (e) {
+      console.error('Analytics refresh error:', e);
+      toast.error('Analytics güncellenemedi');
+    }
+  }, [fetchDashboard, fetchLeagueStats, fetchPlanStats]);
+
+  // ========== NON-CACHED FETCHERS (unchanged) ==========
+
+  // Fetch users with pagination
+  const fetchUsers = useCallback(async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const offset = (usersPage - 1) * pageSize;
+
+      const { data: profiles, count } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(offset, offset + pageSize - 1);
+
+      if (!profiles) return;
+
+      const userIds = profiles.map(p => p.user_id);
+
+      const { data: rolesData } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('user_id', userIds);
+
+      const { data: premiumData } = await supabase
+        .from('premium_subscriptions')
+        .select('user_id, plan_type, is_active, expires_at')
+        .in('user_id', userIds)
+        .eq('is_active', true);
+
+      const { data: chatUsage } = await supabase
+        .from('chatbot_usage')
+        .select('user_id, usage_count')
+        .in('user_id', userIds)
+        .eq('usage_date', today);
+
+      const { data: analysisUsage } = await supabase
+        .from('analysis_usage')
+        .select('user_id, usage_count')
+        .in('user_id', userIds)
+        .eq('usage_date', today);
+
+      const userList: User[] = profiles.map(profile => {
+        const roles = rolesData?.filter(r => r.user_id === profile.user_id).map(r => r.role) || [];
+        const premium = premiumData?.find(p => p.user_id === profile.user_id && new Date(p.expires_at) > new Date());
+        const chat = chatUsage?.find(c => c.user_id === profile.user_id);
+        const analysis = analysisUsage?.find(a => a.user_id === profile.user_id);
+
+        return {
+          id: profile.user_id,
+          email: profile.user_id,
+          displayName: profile.display_name || '',
+          createdAt: profile.created_at,
+          lastSignIn: null,
+          isPremium: !!premium,
+          planType: premium?.plan_type || null,
+          roles,
+          chatUsageToday: chat?.usage_count || 0,
+          analysisUsageToday: analysis?.usage_count || 0,
+          isBanned: (profile as any).is_banned || false,
+        };
+      });
+
+      setUsers(userList);
+      setUsersCount(count || 0);
+    } catch (e) {
+      console.error('Users fetch error:', e);
+    }
+  }, [usersPage]);
+
+  // Fetch prediction stats
+  const fetchPredictionStats = useCallback(async () => {
+    try {
+      // Try cached first
+      const { data: analytics } = await supabase
+        .from('admin_daily_analytics' as any)
+        .select('prediction_stats')
+        .order('report_date', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (analytics && (analytics as any).prediction_stats) {
+        setPredictionStats((analytics as any).prediction_stats as PredictionStats[]);
+        return;
+      }
+
+      // Fallback
+      const { data } = await supabase
+        .from('prediction_stats')
+        .select('*');
+
+      if (data) {
+        const stats: PredictionStats[] = data.map(row => ({
+          type: row.prediction_type || 'Unknown',
+          total: row.total_predictions || 0,
+          correct: row.correct_predictions || 0,
+          accuracy: row.accuracy_percentage || 0,
+        }));
+        setPredictionStats(stats);
+      }
+    } catch (e) {
+      console.error('Prediction stats fetch error:', e);
     }
   }, []);
 
@@ -341,7 +467,6 @@ export const useAdminData = () => {
         setSystemPrompt(data.prompt);
       }
     } catch (e) {
-      // Prompt may not exist yet
       console.log('No system prompt found');
     }
   }, []);
@@ -367,7 +492,6 @@ export const useAdminData = () => {
         })));
       }
 
-      // Token count
       const { count } = await supabase
         .from('push_tokens')
         .select('*', { count: 'exact', head: true });
@@ -545,6 +669,7 @@ export const useAdminData = () => {
     // Dashboard
     dashboardData,
     refreshDashboard: fetchDashboard,
+    triggerAnalyticsRefresh,
 
     // Users
     users,
