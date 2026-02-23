@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { toast as sonnerToast } from 'sonner';
 import { MatchInput, MatchAnalysis, Prediction, MatchInsights, MatchContext, TeamPower, PoissonData, GoalLineProbabilities } from '@/types/match';
+import { supabase } from '@/integrations/supabase/client';
 import { CompetitionCode, Standing, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
 import { getStandings, getFinishedMatches, getHeadToHead } from '@/services/footballApiService';
 import { generatePrediction, generateMockPrediction } from '@/utils/predictionEngine';
@@ -364,25 +365,7 @@ export function useMatchAnalysis() {
         .filter(m => m.homeTeam.id === awayStanding.team.id || m.awayTeam.id === awayStanding.team.id)
         .slice(0, 5);
 
-      // Matematiksel tahmin motorunu çalıştır
-      const mathResult = generatePrediction({
-        homeTeam: {
-          standing: homeStanding,
-          recentMatches: homeRecentMatches,
-        },
-        awayTeam: {
-          standing: awayStanding,
-          recentMatches: awayRecentMatches,
-        },
-        h2hMatches: h2hFilteredMatches,
-        league: data.league,
-        matchDate: data.matchDate,
-      });
-
-      // Feature'ları çıkar
-      const features = extractMatchFeatures(homeStanding, awayStanding, mathResult.headToHead);
-
-      // === ADVANCED FEATURES ===
+      // === ADVANCED FEATURES (Poisson hesaplamaları - generatePrediction'dan önce lazım) ===
       
       // Lig ortalamaları (varsayılan değerler)
       const leagueAvgScored = standings.reduce((sum, s) => sum + s.goalsFor / s.playedGames, 0) / standings.length || 1.3;
@@ -411,7 +394,44 @@ export function useMatchAnalysis() {
       const rawGoalLines = calcGoalLines(scoreProbabilities);
       const bttsProbability = calculateBTTSProbability(scoreProbabilities);
 
-      // Convert to our type format (underscores to camelCase-like, but with numbers)
+      const poissonOver25Prob = rawGoalLines.over2_5 / 100; // 0-1 range
+      
+      // Lig ortalaması over2.5 yüzdesini al
+      let leagueOver25Pct: number | undefined;
+      try {
+        const { data: leagueAvg } = await supabase
+          .from('league_averages')
+          .select('over_2_5_percentage')
+          .eq('league', competitionCode)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (leagueAvg?.over_2_5_percentage) {
+          leagueOver25Pct = leagueAvg.over_2_5_percentage;
+        }
+      } catch (e) { console.warn('[useMatchAnalysis] League avg fetch failed:', e); }
+
+      // Matematiksel tahmin motorunu çalıştır (Poisson verileriyle)
+      const mathResult = generatePrediction({
+        homeTeam: {
+          standing: homeStanding,
+          recentMatches: homeRecentMatches,
+        },
+        awayTeam: {
+          standing: awayStanding,
+          recentMatches: awayRecentMatches,
+        },
+        h2hMatches: h2hFilteredMatches,
+        league: data.league,
+        matchDate: data.matchDate,
+        poissonOver25Prob,
+        leagueOver25Pct,
+      });
+
+      // Feature'ları çıkar
+      const features = extractMatchFeatures(homeStanding, awayStanding, mathResult.headToHead);
+
+      // Convert to our type format
       const goalLineProbabilities: GoalLineProbabilities = {
         over05: rawGoalLines.over0_5 / 100,
         over15: rawGoalLines.over1_5 / 100,
@@ -427,10 +447,10 @@ export function useMatchAnalysis() {
         scoreProbabilities: scoreProbabilities.map(sp => ({
           homeGoals: sp.homeGoals,
           awayGoals: sp.awayGoals,
-          probability: sp.probability / 100, // Convert to 0-1 range
+          probability: sp.probability / 100,
         })),
         goalLineProbabilities,
-        bttsProbability: bttsProbability / 100, // Convert to 0-1 range
+        bttsProbability: bttsProbability / 100,
         expectedHomeGoals: expectedGoals.homeExpected,
         expectedAwayGoals: expectedGoals.awayExpected,
       };
@@ -453,8 +473,8 @@ export function useMatchAnalysis() {
       );
 
       const homePower: TeamPower = {
-        attackIndex: homePowerIndexes.attackStrength * 100, // Convert to 0-200 scale (100 = average)
-        defenseIndex: (2 - homePowerIndexes.defenseStrength) * 100, // Invert: lower is better
+        attackIndex: homePowerIndexes.attackStrength * 100,
+        defenseIndex: (2 - homePowerIndexes.defenseStrength) * 100,
         overallPower: homePowerIndexes.overallPower * 100,
         formScore: calculateFormScore(homeStanding.form),
       };
@@ -502,7 +522,13 @@ export function useMatchAnalysis() {
           features.homeTeam,
           features.awayTeam,
           features.h2h,
-          data.league
+          data.league,
+          {
+            over25Prob: rawGoalLines.over2_5,
+            leagueOver25Pct,
+            homeExpected: expectedGoals.homeExpected,
+            awayExpected: expectedGoals.awayExpected,
+          }
         );
 
         if (mlResult?.success && mlResult.predictions) {
@@ -526,10 +552,26 @@ export function useMatchAnalysis() {
             {
               type: 'Toplam Gol Alt/Üst',
               prediction: convertGoalsPrediction(ai.totalGoals.prediction),
-              confidence: calculateHybridConfidence(
-                ai.totalGoals.confidence,
-                mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Toplam Gol Alt/Üst')?.confidence || 'orta')
-              ),
+              confidence: (() => {
+                const poissonProb = rawGoalLines.over2_5 / 100;
+                const isBorderZone = poissonProb >= 0.45 && poissonProb <= 0.55;
+                const mathPred = mathResult.predictions.find(p => p.type === 'Toplam Gol Alt/Üst');
+                const aiDirection = ai.totalGoals.prediction === 'OVER_2_5' ? 'Üst' : 'Alt';
+                const mathDirection = mathPred?.prediction?.includes('Üst') ? 'Üst' : 'Alt';
+                
+                if (isBorderZone) {
+                  // Sınır bölgede güveni düşür
+                  return 'düşük' as const;
+                }
+                if (aiDirection !== mathDirection) {
+                  // AI ve matematik ters yönde - Poisson'a öncelik ver, güveni düşür
+                  return 'düşük' as const;
+                }
+                return calculateHybridConfidence(
+                  ai.totalGoals.confidence,
+                  mathConfidenceToNumber(mathPred?.confidence || 'orta')
+                );
+              })(),
               reasoning: ai.totalGoals.reasoning,
               isAIPowered: true,
               aiConfidence: ai.totalGoals.confidence,
