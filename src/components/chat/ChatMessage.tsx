@@ -13,6 +13,7 @@ interface ChatMessageProps {
   isLoading?: boolean;
   timestamp?: Date;
   onFeedback?: (positive: boolean) => void;
+  skipAnimation?: boolean;
 }
 
 // Format timestamp to relative time
@@ -33,7 +34,7 @@ const formatRelativeTime = (date: Date): string => {
 };
 
 const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
-  ({ role, content, isLoading, timestamp, onFeedback }, ref) => {
+  ({ role, content, isLoading, timestamp, onFeedback, skipAnimation }, ref) => {
     const isUser = role === 'user';
     const [copied, setCopied] = useState(false);
     const [feedback, setFeedback] = useState<'positive' | 'negative' | null>(null);
@@ -61,14 +62,21 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
       return <TypingIndicator />;
     }
 
+    const Wrapper = skipAnimation ? 'div' : motion.div;
+    const wrapperProps = skipAnimation
+      ? {}
+      : {
+          initial: { opacity: 0, x: isUser ? 15 : -15, scale: 0.98 },
+          animate: { opacity: 1, x: 0, scale: 1 },
+          transition: { type: "spring" as const, stiffness: 350, damping: 30 },
+        };
+
     return (
-      <motion.div
+      <Wrapper
         ref={ref}
-        initial={{ opacity: 0, x: isUser ? 15 : -15, scale: 0.98 }}
-        animate={{ opacity: 1, x: 0, scale: 1 }}
-        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+        {...wrapperProps}
         className={cn(
-          "flex gap-2.5 px-3 py-2 group",
+          "flex gap-2.5 px-3 py-2 group min-w-0",
           isUser ? "flex-row-reverse" : "flex-row"
         )}
         onMouseEnter={() => setShowActions(true)}
@@ -76,10 +84,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
         onTouchStart={() => setShowActions(true)}
       >
         {/* Compact Avatar */}
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 400, damping: 15, delay: 0.05 }}
+        <div
           className={cn(
             "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center shadow-md overflow-hidden",
             isUser 
@@ -92,23 +97,21 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
           ) : (
             <img src={varioAvatar} alt="VARio" className="w-full h-full rounded-full object-cover" />
           )}
-        </motion.div>
+        </div>
 
         {/* Message bubble */}
         <div className={cn(
-          "flex flex-col relative",
+          "flex flex-col relative min-w-0",
           isUser ? "items-end" : "items-start"
         )}>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.1 }}
+          <div
             className={cn(
-              "max-w-[85%] rounded-2xl px-3.5 py-2.5 relative",
+              "max-w-[min(85%,400px)] rounded-2xl px-3.5 py-2.5 relative break-words",
               isUser 
                 ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-tr-sm shadow-sm shadow-primary/10" 
                 : "bg-card/70 backdrop-blur-lg border border-border/40 rounded-tl-sm"
             )}
+            style={{ wordBreak: 'break-word' }}
           >
             {isUser ? (
               <p className="text-sm whitespace-pre-wrap leading-relaxed">{content}</p>
@@ -158,7 +161,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                 </ReactMarkdown>
               </div>
             )}
-          </motion.div>
+          </div>
           
           {/* Actions & Timestamp Row */}
           <div className={cn(
@@ -233,7 +236,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
             </AnimatePresence>
           </div>
         </div>
-      </motion.div>
+      </Wrapper>
     );
   }
 );

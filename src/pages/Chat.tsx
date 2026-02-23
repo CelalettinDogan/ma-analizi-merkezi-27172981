@@ -21,7 +21,7 @@ import PremiumGate from '@/components/chat/PremiumGate';
 import GuestGate from '@/components/chat/GuestGate';
 import ChatLimitSheet from '@/components/chat/ChatLimitSheet';
 
-import { fadeInUp } from '@/lib/animations';
+
 import { MatchAnalysis } from '@/types/match';
 import { cn } from '@/lib/utils';
 
@@ -213,8 +213,7 @@ const Chat: React.FC = () => {
       />
 
       {/* Minimal Header */}
-      <motion.header
-        {...fadeInUp}
+      <header
         className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 pt-safe"
       >
         <div className="flex items-center justify-between px-3 py-2.5">
@@ -329,7 +328,7 @@ const Chat: React.FC = () => {
             </div>
           </motion.div>
         )}
-      </motion.header>
+      </header>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden pb-24 md:pb-0">
