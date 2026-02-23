@@ -1208,10 +1208,12 @@ serve(async (req) => {
     
     console.log(`User ${userId} new usage: ${isAdmin ? "∞ (admin)" : `${newUsageCount}/${dailyLimit}`}`);
 
-    // Save messages to chat history
+    // Save messages to chat history with explicit timestamps to preserve order
+    const userTimestamp = new Date().toISOString();
+    const assistantTimestamp = new Date(Date.now() + 1000).toISOString();
     await supabaseAdmin.from("chat_history").insert([
-      { user_id: userId, role: "user", content: message, metadata: { intent: intent.type, teams: intent.teams, hasContext: !!context, dataSource, cacheHit: !!cachedResponse } },
-      { user_id: userId, role: "assistant", content: assistantMessage, metadata: { cacheHit: !!cachedResponse, dataAvailability } }
+      { user_id: userId, role: "user", content: message, created_at: userTimestamp, metadata: { intent: intent.type, teams: intent.teams, hasContext: !!context, dataSource, cacheHit: !!cachedResponse } },
+      { user_id: userId, role: "assistant", content: assistantMessage, created_at: assistantTimestamp, metadata: { cacheHit: !!cachedResponse, dataAvailability } }
     ]);
 
     // Return response
