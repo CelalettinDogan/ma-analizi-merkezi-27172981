@@ -1,45 +1,43 @@
 
-# Native Google Giris Hatasi Duzeltme
+# Google OAuth Callback 404 Hatasi Duzeltme
 
 ## Sorun
 
-Native Android'de Google ile giris "Unsupported provider: missing OAuth secret" hatasi veriyor. Sebep: `AuthContext.tsx` icindeki native dal, `supabase.auth.signInWithOAuth` fonksiyonunu dogrudan cagiriyor. Ancak Google OAuth secret'i Supabase seviyesinde degil, Lovable Cloud tarafinda yonetiliyor. Bu yuzden Supabase "secret yok" diyor.
+Google ile giris sonrasi Lovable Cloud OAuth, kullaniciyi `https://golmetrik.app/callback` adresine yonlendiriyor. Capacitor bu URL'yi web app icinde acmaya calisiyor. Ancak React Router'da `/callback` route'u tanimli degil, bu yuzden catch-all `*` route devreye giriyor ve 404 sayfasi gosteriliyor.
 
-Web'de calisan kod `lovable.auth.signInWithOAuth` kullaniyor ve bu fonksiyon Lovable Cloud uzerinden OAuth URL'sini alip yonlendirme yapiyor.
+`DeepLinkHandler` yalnizca Capacitor'in `appUrlOpen` event'ini dinliyor. Ama OAuth redirect web view icinde gerceklesiyor, bu yuzden `appUrlOpen` tetiklenmiyor.
 
 ## Cozum
 
-Native platformda da `lovable.auth.signInWithOAuth` kullanilacak. Ancak native'de otomatik browser redirect yerine, donen OAuth URL'sini `@capacitor/browser` ile acmamiz gerekiyor.
+### Dosya 1: `src/pages/AuthCallback.tsx` (yeni dosya)
 
-### Dosya: `src/contexts/AuthContext.tsx`
+OAuth callback sayfasi olustur:
+- URL hash ve search params'dan `access_token` ve `refresh_token` cikart
+- `supabase.auth.setSession()` ile oturumu baslat
+- Basarili ise ana sayfaya (`/`) yonlendir
+- Hata durumunda `/auth` sayfasina yonlendir
+- Yukleme sirasinda spinner goster
 
-`signInWithGoogle` fonksiyonundaki native dalini degistir:
+### Dosya 2: `src/App.tsx`
+
+- `AuthCallback` bilesenini import et
+- Routes icine `/callback` route'u ekle (acik sayfa olarak, AuthGuard olmadan)
+- `HIDE_BOTTOM_NAV_ROUTES` listesine `/callback` ekle
+
+## Teknik Detaylar
 
 ```text
-// ONCEKI (hatali):
-const { data, error } = await supabase.auth.signInWithOAuth({
-  provider: 'google',
-  options: { redirectTo: 'https://golmetrik.app/callback', skipBrowserRedirect: true }
-});
-if (data?.url) await Browser.open({ url: data.url });
-
-// SONRAKI (duzeltilmis):
-// Lovable Cloud managed OAuth kullan
-// redirect_uri olarak golmetrik.app/callback ver (deep link icin)
-const result = await lovable.auth.signInWithOAuth("google", {
-  redirect_uri: "https://golmetrik.app/callback",
-});
-if (result.error) return { error: result.error as Error };
-return { error: null };
+OAuth akisi (duzeltilmis):
+1. Kullanici "Google ile Giris" tiklar
+2. lovable.auth.signInWithOAuth -> Google consent ekrani acilir
+3. Basarili giris -> https://golmetrik.app/callback#access_token=...&refresh_token=...
+4. Capacitor web view /callback route'unu render eder
+5. AuthCallback bileseni token'lari parse eder
+6. supabase.auth.setSession() cagirilir
+7. Kullanici ana sayfaya yonlendirilir
 ```
-
-Bu degisiklikle:
-- Native'de de Lovable Cloud'un yonetilen Google OAuth kimlik bilgileri kullanilacak
-- "missing OAuth secret" hatasi ortadan kalkacak
-- Deep link callback mekanizmasi (`DeepLinkHandler` in App.tsx) ayni sekilde calisacak cunku redirect URI degismiyor
-
-## Degisecek Dosya
 
 | Dosya | Degisiklik |
 |-------|-----------|
-| `src/contexts/AuthContext.tsx` | Native dalinda `supabase.auth.signInWithOAuth` yerine `lovable.auth.signInWithOAuth` kullan |
+| `src/pages/AuthCallback.tsx` | Yeni: OAuth token'larini isleme ve session baslama |
+| `src/App.tsx` | `/callback` route ekleme, BottomNav gizleme listesine ekleme |
