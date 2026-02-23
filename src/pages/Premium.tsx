@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate, Link, Navigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Crown, Check, Sparkles, Zap, Shield, Brain, MessageSquare, Ban, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -121,7 +121,22 @@ const Premium = () => {
     );
   }
 
-  if (isPremium || isAdmin) return <Navigate to="/profile" replace />;
+  if (isPremium || isAdmin) {
+    return (
+      <div className="min-h-[100dvh] bg-background flex flex-col">
+        <AppHeader />
+        <main className="flex-1 flex items-center justify-center px-4">
+          <div className="w-full max-w-sm text-center p-6 rounded-xl border border-border bg-card">
+            <Crown className="h-10 w-10 text-amber-500 mx-auto mb-3" />
+            <h2 className="text-lg font-bold mb-1">Zaten Premium</h2>
+            <p className="text-sm text-muted-foreground">
+              {isAdmin ? 'Admin olarak tüm özelliklere erişebilirsiniz.' : 'Premium aboneliğiniz aktif.'}
+            </p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
