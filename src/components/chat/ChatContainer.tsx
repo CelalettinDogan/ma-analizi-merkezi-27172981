@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useCallback, useState, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, ArrowDown } from 'lucide-react';
 import varioAvatar from '@/assets/vario-avatar.png';
@@ -215,6 +215,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   const prevMessageCountRef = useRef(0);
   const lastContentRef = useRef('');
   const lastLoadingRef = useRef(false);
+  const knownMessageCountRef = useRef(0);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
 
@@ -269,8 +270,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     // Also force immediate scroll
     contentEl.scrollTop = contentEl.scrollHeight;
     
-    // Retry a few times for good measure
-    const timers = [50, 150, 400, 800, 1500].map(delay =>
+    // Retry with fewer timers
+    const timers = [50, 150].map(delay =>
       setTimeout(() => {
         contentEl.scrollTop = contentEl.scrollHeight;
       }, delay)
@@ -288,6 +289,12 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     if (!lastMsg) return;
     const contentChanged = lastMsg.content !== lastContentRef.current;
     const wasLoading = lastLoadingRef.current;
+    
+    // When a new message is added (count increased), mark previous messages as known
+    if (messages.length > prevMessageCountRef.current && prevMessageCountRef.current > 0) {
+      knownMessageCountRef.current = messages.length - 1;
+    }
+    prevMessageCountRef.current = messages.length;
     
     // Scroll when: new message added, or content changed (loading -> real content)
     if (contentChanged || (wasLoading && !lastMsg.isLoading)) {
@@ -310,10 +317,15 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   const prevLoadingHistory = useRef(isLoadingHistory);
   useEffect(() => {
     if (prevLoadingHistory.current && !isLoadingHistory && messages.length > 0) {
-      queueMicrotask(() => {
-        if (containerRef.current) {
-          containerRef.current.scrollTop = containerRef.current.scrollHeight;
-        }
+      // Mark all loaded messages as "known" so they get skipAnimation
+      knownMessageCountRef.current = messages.length;
+      // Use rAF + small timeout to ensure DOM has rendered
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          if (containerRef.current) {
+            containerRef.current.scrollTop = containerRef.current.scrollHeight;
+          }
+        }, 50);
       });
     }
     prevLoadingHistory.current = isLoadingHistory;
@@ -362,6 +374,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
                   content={message.content}
                   isLoading={message.isLoading}
                   timestamp={message.createdAt}
+                  skipAnimation={index < knownMessageCountRef.current}
                 />
               </div>
             </React.Fragment>
