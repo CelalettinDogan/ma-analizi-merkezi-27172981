@@ -3,7 +3,9 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 
+const LOVABLE_CLOUD_URL = 'https://id-preview--a043c351-80f7-4404-bfb0-4355af0b4d37.lovable.app';
 
 interface AuthContextType {
   user: User | null;
@@ -67,12 +69,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     if (Capacitor.isNativePlatform()) {
-      // Native: Lovable Cloud managed OAuth + deep link callback
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: "https://golmetrik.app/callback",
-      });
-      if (result.error) return { error: result.error as Error };
-      return { error: null };
+      // Native: Manuel OAuth URL + harici tarayıcı
+      try {
+        const state = crypto.getRandomValues(new Uint8Array(16))
+          .reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
+
+        const params = new URLSearchParams({
+          provider: 'google',
+          redirect_uri: 'https://golmetrik.app/callback',
+          state,
+        });
+
+        const oauthUrl = `${LOVABLE_CLOUD_URL}/~oauth/initiate?${params}`;
+        await Browser.open({ url: oauthUrl });
+        return { error: null };
+      } catch (e) {
+        return { error: e instanceof Error ? e : new Error(String(e)) };
+      }
     } else {
       // Web: Lovable Cloud managed OAuth
       const redirectUri = window.location.origin;
