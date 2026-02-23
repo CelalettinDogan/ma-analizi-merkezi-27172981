@@ -106,7 +106,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
         )}>
           <div
             className={cn(
-              "max-w-[80%] rounded-[20px] px-4 py-3 relative break-words leading-[1.5]",
+              "w-fit max-w-[80%] rounded-[20px] px-4 py-3 relative leading-[1.5]",
               isUser 
                 ? "bg-gradient-to-br from-primary via-primary/95 to-emerald-600/90 text-primary-foreground rounded-tr-md shadow-md shadow-primary/[0.08]" 
                 : "bg-muted/60 backdrop-blur-xl border border-border/30 rounded-tl-md shadow-sm shadow-black/5"
