@@ -106,12 +106,12 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
         )}>
           <div
             className={cn(
-              "w-fit max-w-[80%] rounded-[20px] px-4 py-3 relative leading-[1.5]",
+              "rounded-[20px] px-4 py-3 relative leading-[1.5]",
               isUser 
                 ? "bg-gradient-to-br from-primary via-primary/95 to-emerald-600/90 text-primary-foreground rounded-tr-md shadow-md shadow-primary/[0.08]" 
                 : "bg-muted/60 backdrop-blur-xl border border-border/30 rounded-tl-md shadow-sm shadow-black/5"
             )}
-            style={{ wordBreak: 'normal', overflowWrap: 'anywhere' }}
+            style={{ width: 'fit-content', maxWidth: '75%', minWidth: '80px', wordBreak: 'normal', overflowWrap: 'break-word' }}
           >
             {isUser ? (
               <p className="text-sm whitespace-pre-wrap leading-[1.5]">{content}</p>
