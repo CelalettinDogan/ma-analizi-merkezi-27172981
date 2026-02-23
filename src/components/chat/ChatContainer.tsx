@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useLayoutEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, ArrowDown } from 'lucide-react';
 import varioAvatar from '@/assets/vario-avatar.png';
@@ -215,11 +215,6 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   const prevMessageCountRef = useRef(0);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
-  const forceScrollToBottom = useCallback(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight;
-    }
-  }, []);
 
   // Scroll to bottom of container
   const scrollToLastMessage = useCallback((behavior: ScrollBehavior = 'auto') => {
@@ -241,22 +236,49 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     setShowScrollButton(!isNearBottom && messages.length > 0);
   }, [messages.length]);
 
-  // Synchronous scroll after every render with messages
-  useLayoutEffect(() => {
-    if (messages.length > 0) {
-      forceScrollToBottom();
-    }
-  }, [messages, forceScrollToBottom]);
-
-  // Aggressive retry when history finishes loading
+  // Use ResizeObserver to scroll to bottom when content size changes (e.g. markdown renders)
   useEffect(() => {
-    if (!isLoadingHistory && messages.length > 0) {
-      const timers = [0, 100, 300, 600].map(delay =>
-        setTimeout(forceScrollToBottom, delay)
-      );
-      return () => timers.forEach(clearTimeout);
+    if (messages.length === 0 || !containerRef.current) return;
+    
+    let initialScrollDone = false;
+    const contentEl = containerRef.current;
+    
+    const observer = new ResizeObserver(() => {
+      // Only auto-scroll if user hasn't scrolled up manually
+      if (!initialScrollDone) {
+        contentEl.scrollTop = contentEl.scrollHeight;
+        initialScrollDone = true;
+        return;
+      }
+      
+      const { scrollTop, scrollHeight, clientHeight } = contentEl;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+      if (isNearBottom) {
+        contentEl.scrollTop = contentEl.scrollHeight;
+      }
+    });
+    
+    // Observe the inner content wrapper for size changes
+    const innerEl = contentEl.firstElementChild;
+    if (innerEl) {
+      observer.observe(innerEl);
     }
-  }, [isLoadingHistory, messages.length, forceScrollToBottom]);
+    
+    // Also force immediate scroll
+    contentEl.scrollTop = contentEl.scrollHeight;
+    
+    // Retry a few times for good measure
+    const timers = [50, 150, 400, 800, 1500].map(delay =>
+      setTimeout(() => {
+        contentEl.scrollTop = contentEl.scrollHeight;
+      }, delay)
+    );
+    
+    return () => {
+      observer.disconnect();
+      timers.forEach(clearTimeout);
+    };
+  }, [isLoadingHistory, messages.length]);
 
   // Smooth scroll on new messages
   useEffect(() => {
@@ -294,7 +316,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   return (
     <div 
       ref={containerRef}
-      className="flex-1 overflow-y-auto scroll-smooth relative"
+      className="flex-1 overflow-y-auto relative"
       onScroll={handleScroll}
     >
       <div className="py-3">
