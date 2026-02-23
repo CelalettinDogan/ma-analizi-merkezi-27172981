@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useLayoutEffect, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, ArrowDown } from 'lucide-react';
 import varioAvatar from '@/assets/vario-avatar.png';
@@ -212,20 +212,23 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const lastMessageRef = useRef<HTMLDivElement>(null);
-  const hasScrolledRef = useRef(false);
   const prevMessageCountRef = useRef(0);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
+  const forceScrollToBottom = useCallback(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, []);
+
   // Scroll to bottom of container
   const scrollToLastMessage = useCallback((behavior: ScrollBehavior = 'auto') => {
-    requestAnimationFrame(() => {
-      if (containerRef.current) {
-        containerRef.current.scrollTo({
-          top: containerRef.current.scrollHeight,
-          behavior,
-        });
-      }
-    });
+    if (containerRef.current) {
+      containerRef.current.scrollTo({
+        top: containerRef.current.scrollHeight,
+        behavior,
+      });
+    }
   }, []);
 
   // Handle scroll events
@@ -238,39 +241,34 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     setShowScrollButton(!isNearBottom && messages.length > 0);
   }, [messages.length]);
 
-  // Initial scroll when history finishes loading
+  // Synchronous scroll after every render with messages
+  useLayoutEffect(() => {
+    if (messages.length > 0) {
+      forceScrollToBottom();
+    }
+  }, [messages, forceScrollToBottom]);
+
+  // Aggressive retry when history finishes loading
   useEffect(() => {
-    if (!isLoadingHistory && messages.length > 0 && !hasScrolledRef.current) {
-      const timers = [0, 50, 150, 300, 500].map(delay => 
-        setTimeout(() => {
-          scrollToLastMessage('auto');
-        }, delay)
+    if (!isLoadingHistory && messages.length > 0) {
+      const timers = [0, 100, 300, 600].map(delay =>
+        setTimeout(forceScrollToBottom, delay)
       );
-      
-      hasScrolledRef.current = true;
       return () => timers.forEach(clearTimeout);
     }
-  }, [isLoadingHistory, messages.length, scrollToLastMessage]);
+  }, [isLoadingHistory, messages.length, forceScrollToBottom]);
 
-  // Scroll on new messages
+  // Smooth scroll on new messages
   useEffect(() => {
     const currentCount = messages.length;
     const prevCount = prevMessageCountRef.current;
     
-    if (hasScrolledRef.current && currentCount > prevCount && prevCount > 0) {
+    if (currentCount > prevCount && prevCount > 0) {
       scrollToLastMessage('smooth');
     }
     
     prevMessageCountRef.current = currentCount;
   }, [messages.length, scrollToLastMessage]);
-
-  // Reset scroll flag when messages are cleared
-  useEffect(() => {
-    if (messages.length === 0) {
-      hasScrolledRef.current = false;
-      prevMessageCountRef.current = 0;
-    }
-  }, [messages.length]);
 
   // Show history loading skeleton
   if (isLoadingHistory && messages.length === 0) {
