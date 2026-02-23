@@ -1,42 +1,24 @@
 
-
-# Poisson Veri Kaydetme Bugfix ve Yayın Oncesi Son Duzeltme
+# Admin Kullanicilara Sinirsiz Analiz Hakki
 
 ## Sorun
 
-`savePredictionFeatures` fonksiyonunun TypeScript tip tanimi (satir 224-239, `mlPredictionService.ts`) `poisson_home_expected` ve `poisson_away_expected` alanlarini icermiyor. `createFeatureRecord` bu alanlari uretiyor ama tip uyusmazligi nedeniyle veritabanina yazilmiyor. Sonuc: 73 kayitta 0 Poisson verisi.
+`useAnalysisLimit.ts` hook'u admin kontrolu yapmiyor. `hasUnlimitedAnalysis(planType)` fonksiyonunu `isAdmin` parametresi olmadan cagiriyor, bu yuzden admin kullanicilar premium abonelikleri yoksa gunluk 2 analiz limitine takiliyorlar.
 
 ## Cozum
 
-Tek dosyada tek degisiklik:
+`useAnalysisLimit.ts` dosyasina `useUserRole` hook'unu ekleyip `isAdmin` bilgisini `hasUnlimitedAnalysis` fonksiyonuna iletmek.
 
-### `src/services/mlPredictionService.ts` (satir 224-239)
-
-`savePredictionFeatures` fonksiyonunun features parametre tipine iki alan ekle:
-
-```text
-// ONCE (satir 238):
-    hybrid_confidence: number;
-  }
-
-// SONRA:
-    hybrid_confidence: number;
-    poisson_home_expected?: number | null;
-    poisson_away_expected?: number | null;
-  }
-```
-
-Bu degisiklikle `createFeatureRecord`'un urettigi `poisson_home_expected` ve `poisson_away_expected` alanlari artik `...features` spread ile veritabanina yazilacak.
-
-## Dosya Degisiklikleri
+## Teknik Degisiklik
 
 | Dosya | Degisiklik |
 |-------|-----------|
-| `src/services/mlPredictionService.ts` | `savePredictionFeatures` tip tanimina `poisson_home_expected` ve `poisson_away_expected` ekle |
+| `src/hooks/useAnalysisLimit.ts` | `useUserRole` import et, `isAdmin` bilgisini `hasUnlimitedAnalysis` ve limit hesaplamalarina ekle |
 
-## Etki
+### Detay
 
-- Yeni tahminlerde Poisson beklenen gol degerleri `prediction_features` tablosuna kaydedilecek
-- ML ogrenme dongusu Poisson verilerine erisebilecek
-- Mevcut 73 kayit degismez (zaten NULL), yeni kayitlardan itibaren duzgun calisir
-
+1. `useUserRole` hook'unu import et
+2. `isAdmin` degerini al
+3. `hasUnlimitedAnalysis(planType, isAdmin)` olarak guncelle (3 yerde kullaniliyor)
+4. `dailyLimit` hesaplamasinda admin icin 999 dondur
+5. `isLoading`'e `roleLoading` ekle
