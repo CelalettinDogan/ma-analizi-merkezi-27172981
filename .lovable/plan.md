@@ -1,84 +1,57 @@
 
 
-# Native Google OAuth - redirect_uri Hatasi Cozumu
+# Chatbot Otomatik Scroll Duzeltmesi
 
-## Sorun
+## Sorunlar
 
-Lovable Cloud OAuth sistemi, yalnizca projenin kendi preview domain'ini (`id-preview--...lovable.app`) redirect_uri olarak kabul ediyor. Kodda `https://golmetrik.app/callback` kullaniliyor, bu yuzden "redirect_uri is not allowed" hatasi aliyor.
+1. **Gecmis yuklendiginde scroll en alta gitmiyor**: Kullanici sohbet ekranina girdiginde en ustteki mesajlari goruyor, en alttaki (son) mesajlari gormesi gerekirken.
 
-## Zorluk
-
-Harici tarayicida (Chrome) OAuth tamamlandiktan sonra token'larin native uygulamaya geri donmesi gerekiyor. Bunun icin iki asamali bir yaklasim gerekli:
-
-1. OAuth sonrasi preview domain'e yonlendir (izin verilen URI)
-2. Preview domain'deki sayfa, token'lari native uygulamaya aktarsin
+2. **Asistan yanit verdiginde scroll takip etmiyor**: Asistanin loading mesaji gercek icerikle degistirildiginde `messages.length` degismiyor. Bu yuzden satir 284-293'teki smooth scroll tetiklenmiyor. ResizeObserver yakalasa bile `isNearBottom` kontrolu basarisiz olabiliyor.
 
 ## Cozum
 
-### Dosya 1: `src/contexts/AuthContext.tsx`
+### Dosya: `src/components/chat/ChatContainer.tsx`
 
-redirect_uri'yi preview domain olarak degistir:
+**Degisiklik 1 - ResizeObserver isNearBottom esigini artir (satir 255)**
 
-```text
-// Eski:
-redirect_uri: 'https://golmetrik.app/callback'
+`isNearBottom` icin esik degerini 150'den 300'e cikar. Boylece icerik buyudugunde (ornegin markdown renderlandiginda) scroll takibi daha guvenilir olur.
 
-// Yeni:
-redirect_uri: `${LOVABLE_CLOUD_URL}/callback?platform=native`
-```
+**Degisiklik 2 - Mesaj icerik degisikligini takip et (satir 283-293)**
 
-`?platform=native` parametresi, callback sayfasinin native uygulama icin calistigini belirtir.
+Mevcut `messages.length` bazli scroll yerine, son mesajin `content` ve `isLoading` durumunu da izle. Boylece asistan yaniti geldiginde (loading -> icerik) smooth scroll tetiklenir.
 
-### Dosya 2: `src/pages/AuthCallback.tsx`
+Yeni yaklaşim:
+- Son mesajin `content` uzunlugunu ve `isLoading` durumunu bir ref'te tut
+- Her render'da bunlari karsilastir
+- Degisiklik varsa ve kullanici scroll'u yukari cekmemisse, otomatik olarak alta kaydir
 
-Callback sayfasina native platform yonlendirmesi ekle:
+**Degisiklik 3 - Gecmis yuklendiginde kesin scroll (satir 240-281)**
 
-- `platform=native` query parametresi var mi kontrol et
-- Varsa: Token'lari URL'ye ekleyerek `golmetrik://callback?access_token=X&refresh_token=Y` adresine yonlendir (custom URL scheme)
-- Yoksa: Mevcut davranis (session olustur, ana sayfaya git)
+`isLoadingHistory` false oldugunda ve mesajlar varken, `queueMicrotask` veya `requestAnimationFrame` ile scroll'u DOM renderindan sonra garanti et.
 
-Bu sayfa Lovable preview domain'inde deploy edildiginde calisacak, yani harici tarayici bu sayfayi yukleyip native uygulamaya yonlendirecek.
-
-### Kullanici Tarafinda Yapilacak (Android Studio)
-
-Native uygulamanin `golmetrik://` custom URL scheme'ini dinlemesi gerekiyor. `android/app/src/main/AndroidManifest.xml` dosyasina su intent-filter eklenmelidir:
+## Teknik Detay
 
 ```text
-<intent-filter>
-  <action android:name="android.intent.action.VIEW" />
-  <category android:name="android.intent.category.DEFAULT" />
-  <category android:name="android.intent.category.BROWSABLE" />
-  <data android:scheme="golmetrik" android:host="callback" />
-</intent-filter>
+// Son mesajin durumunu izle
+const lastMsg = messages[messages.length - 1];
+const lastContentRef = useRef('');
+
+useEffect(() => {
+  if (!lastMsg) return;
+  const contentChanged = lastMsg.content !== lastContentRef.current;
+  const loadingFinished = !lastMsg.isLoading;
+  
+  if (contentChanged && loadingFinished) {
+    scrollToLastMessage('smooth');
+  }
+  
+  lastContentRef.current = lastMsg.content;
+}, [lastMsg?.content, lastMsg?.isLoading]);
 ```
 
-### Dosya 3: `src/App.tsx` (DeepLinkHandler)
-
-DeepLinkHandler'a `golmetrik://` scheme'ini de yakalama destegi ekle. Mevcut host kontrolune `golmetrik` scheme'ini ekle.
-
-## Akis
-
-```text
-1. Kullanici "Google ile Giris" tiklar
-2. Browser.open() ile harici tarayici acilir:
-   -> LOVABLE_CLOUD_URL/~oauth/initiate?provider=google&redirect_uri=LOVABLE_CLOUD_URL/callback?platform=native
-3. Google giris -> Lovable Cloud -> preview-domain/callback?platform=native#access_token=...
-4. AuthCallback sayfasi (preview domain'de) calisir
-5. platform=native algilanir -> window.location.href = golmetrik://callback?access_token=X&refresh_token=Y
-6. Android intent-filter tetiklenir -> appUrlOpen event
-7. DeepLinkHandler token'lari alir -> supabase.auth.setSession()
-8. Browser kapanir, ana sayfaya yonlendirilir
-```
-
-## Degisecek Dosyalar
+## Degisecek Dosya
 
 | Dosya | Degisiklik |
 |-------|-----------|
-| `src/contexts/AuthContext.tsx` | redirect_uri'yi preview domain + platform=native olarak degistir |
-| `src/pages/AuthCallback.tsx` | Native platform algilama ve custom scheme yonlendirmesi ekle |
-| `src/App.tsx` | DeepLinkHandler'da golmetrik:// scheme destegi ekle |
-
-## Kullanici Aksiyonu
-
-Android Studio'da `AndroidManifest.xml`'e intent-filter eklenmesi gerekecek. Bu adim icin talimatlar verilecek.
+| `src/components/chat/ChatContainer.tsx` | Scroll mantigi iyilestirilecek: icerik degisikligi izleme, gecmis yukleme sonrasi scroll garantisi, isNearBottom esigi artirimi |
 
