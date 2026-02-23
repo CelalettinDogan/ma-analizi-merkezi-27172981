@@ -1,84 +1,113 @@
 
 
-# Toplam Gol Alt/Ust Tahmin Basarisini Iyilestirme
+# ML Model ve Matematik Hesaplamasi Iyilestirme Plani
 
-## Mevcut Sorun Analizi
+## Tespit Edilen Sorunlar
 
-Veritabani verilerine gore:
-- **35 tahmin yapildi, sadece 17 dogru** (%48.57 basari)
-- "Alt" tahminlerinde %30 basari (10 tahminde 3 dogru)
-- "Ust" tahminlerinde %43 basari (7 tahminde 3 dogru)
-- Premium tahminlerde de dusuk: %47
+### 1. Poisson Verisi Veritabanina Kaydedilmiyor (Kritik)
+`prediction_features` tablosundaki `poisson_home_expected` ve `poisson_away_expected` sutunlari tamamen NULL. `createFeatureRecord` (featureExtractor.ts) fonksiyonu bu alanlari icermiyor, sadece `createAdvancedFeatureRecord` (advancedFeatureExtractor.ts) iceriyor -- ama `useMatchAnalysis.ts` eski `createFeatureRecord`'u kullaniyor.
 
-### Kok Nedenler
+**Cozum:** `useMatchAnalysis.ts`'de Poisson degerlerini feature record'a ekle.
 
-1. **Matematiksel model cok basit**: Sadece gol ortalamalarinin toplamindan basit bir esik degeri kullaniliyor (`expectedGoals > 2.5` ise Ust). Poisson olasiliklari, takim guc endeksleri ve lig ortalamalari hesaba katilmiyor.
+### 2. Mac Sonucu Tahmini Cok Basit (%51.72)
+Mevcut mantik sadece `formScore + homeAdvantage - awayFormScore` farkina bakiyor (basit lineer esik). Poisson modelinin hesapladigi mac sonucu olasiliklari (`homeWin%`, `draw%`, `awayWin%`) hic kullanilmiyor.
 
-2. **Poisson verisi AI'a yeterince iletilmiyor**: Poisson modeli over2.5 olasiliklarini hesapliyor ama bu deger `prediction_features` tablosunda NULL olarak kaliyior. AI'in gercek matematiksel olasiliklari gormesi gerekiyor.
+**Cozum:** `predictionEngine.ts`'de mac sonucu tahminine Poisson olasilik verilerini parametre olarak ekle. Poisson homeWin > %50 ise yuksek guvenle ev sahibi, %40-50 ise orta guven, %30-40 ise dusuk guven. Beraberlik icin drawProb > %30 kontrolu ekle.
 
-3. **"Alt" yanilgisi**: Model, beklenen gol 2.0-2.5 arasindayken "Alt" tahmin ediyor. Ancak bu aralik tam sinir noktasi - gercek maclar genellikle 3+ golle bitiyor (Atletico Madrid 4-2, Mallorca 4-1, Real Sociedad 3-3).
+### 3. Karsillikli Gol Basit Boolean Kontrolu (%65.96)
+Mevcut `bothTeamsScoreProb` sadece gol ortalamalarinin belirli esikleri gecip gecmedigine bakiyor. Poisson BTTS olasiligi (`bttsProbability`) hesaplaniyor ama predictionEngine'e iletilmiyor.
 
-4. **Hibrit model dengesizligi**: AI ve matematik tahmini cakistiginda hibrit guven skoru artiriliyor ama her ikisi de ayni yanlis yonde olunca basari dusuk.
+**Cozum:** Poisson BTTS olasiligini parametre olarak al. bttsProb > %60 ise "Evet" yuksek guven, < %40 ise "Hayir" yuksek guven, %40-60 arasi ise sinir bolgesi.
 
-## Cozum Plani
+### 4. Ilk Yari Tahmini Cok Kaba
+Sadece `scoreDiff > 15` kontrolu var. Hicbir istatistiksel model yok.
 
-### 1. Matematiksel Modeli Guclendir (predictionEngine.ts)
+**Cozum:** Ilk yari icin yarim Poisson modeli uygula: beklenen gollerin %40-45'i ilk yarisinda atilir. `expectedHomeGoals * 0.42` ve `expectedAwayGoals * 0.42` ile ilk yari Poisson hesapla.
 
-Mevcut basit esik yerine Poisson olasiliklarini dogrudan kullan:
+### 5. Dogru Skor Basit Yuvarlama (%0)
+`Math.round(homeExpectedGoals)` yapiliyor. Poisson'un en olasilikli skorlarini kullanmiyor.
 
-```text
-MEVCUT (basit):
-  expectedGoals > 2.5 → "Üst"
-  expectedGoals <= 2.5 → "Alt"
+**Cozum:** Poisson `mostLikelyScores` verisini predictionEngine'e ilet, ilk skoru tahmin olarak kullan.
 
-YENI (Poisson tabanli):
-  poissonOver25Prob > %55 → "Üst" (yüksek güven)
-  poissonOver25Prob > %50 → "Üst" (orta güven)  
-  poissonOver25Prob < %40 → "Alt" (yüksek güven)
-  poissonOver25Prob < %45 → "Alt" (orta güven)
-  %45-50 arasi → "Alt" (düşük güven) - sinir bolgesinde temkinli ol
-```
+### 6. Poisson Modeline Dixon-Coles Duzeltmesi Eksik
+Standart Poisson modeli dusuk skorlu sonuclari (0-0, 1-0, 0-1, 1-1) hafife aliyor. Dixon-Coles duzeltme faktoru bu sorunlu bolgede daha dogru olasiliklar uretir.
 
-Buna ek olarak:
-- Lig bazli over2.5 yuzdesini kontrol et (league_averages tablosu)
-- Takim bazli hucum/savunma guc endekslerini dahil et
-- Son 5 macta over2.5 olma oranini hesapla
+**Cozum:** `poissonCalculator.ts`'e Dixon-Coles rho duzeltmesi ekle (toplam gol <= 1 olan sonuclarda).
 
-### 2. AI Prompt'unu Over/Under Icin Zenginlestir (ml-prediction Edge Function)
+### 7. Ev/Deplasman Ayrimli Veri Kullanilmiyor
+Lig ortalamalari `leagueAvgScored` olarak tek bir deger kullaniliyor. Oysa `league_averages` tablosunda `avg_home_goals` ve `avg_away_goals` ayri tutulur.
 
-AI'a gonderilen prompt'a su verileri ekle:
-- Poisson modelinin hesapladigi **kesin over2.5 olasiligi** (orn: "%62")
-- Lig ortalamasi over2.5 orani
-- Her iki takimin son 5 mactaki over2.5 orani
-- Ozel talimat: "Poisson over2.5 olasiligi %45-55 arasindaysa SINIR BOLGE - guven seviyesini dusur"
-
-### 3. Sinir Bolgesi Korumasi (useMatchAnalysis.ts)
-
-Poisson over2.5 olasiligi %45-55 arasindayken:
-- Guven seviyesini otomatik olarak "dusuk" yap
-- AI ve matematik farkli yonde tahmin ediyorsa, Poisson'a oncelik ver
-- Hibrit guven skorunu dusurmek icin "belirsiz bolge" flagi ekle
-
-### 4. Tarihsel Dogruluk Geri Bildirimi
-
-AI prompt'una gecmis "Toplam Gol Alt/Ust" basari oranini (%48.57) ekle ve sunu soyle:
-"Bu kategoride basarin dusuk. Sinir durumlarda daha temkinli ol ve guven seviyesini dusur."
-
-Bu zaten kismen yapiliyor ama deger AI'a direkt olarak verilecek.
+**Cozum:** `useMatchAnalysis.ts`'de `league_averages` tablosundan `avg_home_goals` ve `avg_away_goals` degerlerini cek, Poisson modeline ilet.
 
 ## Teknik Degisiklikler
 
 | Dosya | Degisiklik |
 |-------|-----------|
-| `src/utils/predictionEngine.ts` | Toplam Gol tahmini icin Poisson olasiligini parametre olarak al, esik degerlerini Poisson tabanliya cevir |
-| `src/hooks/useMatchAnalysis.ts` | Poisson over2.5 olasiliklarini predictionEngine'e ilet, sinir bolgesi korumasi ekle |
-| `supabase/functions/ml-prediction/index.ts` | AI prompt'una over2.5 olasiligi, lig ortalamasi ve son mac over2.5 oranlari ekle |
-| `src/services/mlPredictionService.ts` | getMLPrediction fonksiyonuna over2.5 olasiligini ve lig verisini parametre olarak ekle |
+| `src/utils/poissonCalculator.ts` | Dixon-Coles rho duzeltmesi ekle |
+| `src/utils/predictionEngine.ts` | Mac sonucu, BTTS, ilk yari ve dogru skor icin Poisson verilerini parametre olarak al ve karar mantigini guncelle |
+| `src/hooks/useMatchAnalysis.ts` | (1) Poisson verilerini predictionEngine'e ilet (2) Feature record'a Poisson degerlerini kaydet (3) league_averages'dan home/away ortalamalarini cek |
+| `src/utils/featureExtractor.ts` | `createFeatureRecord`'a Poisson alanlari ekle |
 
-## Beklenen Sonuc
+## Detayli Degisiklikler
 
-- Sinir bolgesindeki yanlis tahminler azalacak (mevcut yanlis tahminlerin cogu %45-55 arasinda)
-- Poisson matematik modelinin kesin olasiliklari AI kararini yonlendirecek
-- Guven seviyeleri daha gercekci olacak - "orta" yerine belirsiz durumlarda "dusuk" verilecek
-- Hedef: %48 basaridan en az %55-60 arasina cikmak
+### poissonCalculator.ts - Dixon-Coles Duzeltmesi
+
+Dixon-Coles, dusuk gol senaryolarinda (0-0, 1-0, 0-1, 1-1) bir duzeltme faktoru (rho) uygular:
+- 0-0: olasilik *= 1 + rho * lambda * mu  
+- 1-0: olasilik *= 1 - rho * mu
+- 0-1: olasilik *= 1 - rho * lambda
+- 1-1: olasilik *= 1 + rho
+
+rho genelde -0.05 ile -0.15 arasinda. Varsayilan -0.1 kullanilacak.
+
+### predictionEngine.ts - Genisletilmis Parametreler
+
+`AnalysisInput` arayuzune yeni alanlar:
+```text
+poissonHomeWinProb?: number   // 0-100
+poissonDrawProb?: number      // 0-100
+poissonAwayWinProb?: number   // 0-100
+poissonBttsProb?: number      // 0-100
+poissonMostLikelyScore?: { home: number, away: number }
+poissonFirstHalfHome?: number // ilk yari beklenen ev golu
+poissonFirstHalfAway?: number // ilk yari beklenen dep golu
+```
+
+**Mac Sonucu yeni mantik:**
+```text
+poissonHomeWin > 55 → Ev Kazanir (yuksek)
+poissonHomeWin > 45 → Ev Kazanir (orta)
+poissonDraw > 30 ve en yuksek → Beraberlik (orta)
+poissonAwayWin > 55 → Dep Kazanir (yuksek)
+poissonAwayWin > 45 → Dep Kazanir (orta)
+Hicbiri net degil → en yuksek olasilikli sonuc (dusuk guven)
+```
+
+**BTTS yeni mantik:**
+```text
+bttsProb > 65 → Evet (yuksek)
+bttsProb > 55 → Evet (orta)
+bttsProb < 35 → Hayir (yuksek)
+bttsProb < 45 → Hayir (orta)
+%45-55 → sinir bolgesi (dusuk)
+```
+
+**Dogru Skor:** Poisson'un en olasilikli skoru kullanilacak.
+
+**Ilk Yari:** Beklenen gollerin %42'si ile yari-Poisson hesap. Fark > 0.3 ise o takim, degilse beraberlik.
+
+### useMatchAnalysis.ts - Veri Akisi
+
+1. `league_averages` tablosundan `avg_home_goals` ve `avg_away_goals` cek
+2. Poisson sonuclarini (matchResultProbs, bttsProb, mostLikelyScores) `generatePrediction`'a ilet
+3. Feature record'a `poisson_home_expected` ve `poisson_away_expected` degerlerini ekle
+
+## Beklenen Iyilesmeler
+
+- **Mac Sonucu:** %51 → %55-60 (Poisson olasiliklari form skorundan daha guvenilir)
+- **Toplam Gol:** %48 → %55-60 (zaten son degisiklikle Poisson eklendi, sinir bolgesi korumasi var)
+- **Karsillikli Gol:** %65 → %68-72 (Poisson BTTS olasiligi daha hassas)
+- **Dogru Skor:** %0 → %8-12 (Poisson en olasilikli skor, ama bu kategori dogasi geregi dusuk kalir)
+- **Ilk Yari:** Yeterli veri yok ama yari-Poisson mantik daha saglikli
+- **Ogrenme dongusu:** Poisson verileri artik kaydedilecek, ileride model kalibrasyonu yapilabilir
 
