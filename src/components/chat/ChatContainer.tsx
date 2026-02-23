@@ -213,6 +213,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const lastMessageRef = useRef<HTMLDivElement>(null);
   const prevMessageCountRef = useRef(0);
+  const lastContentRef = useRef('');
+  const lastLoadingRef = useRef(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
 
@@ -252,7 +254,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       }
       
       const { scrollTop, scrollHeight, clientHeight } = contentEl;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 300;
       if (isNearBottom) {
         contentEl.scrollTop = contentEl.scrollHeight;
       }
@@ -280,17 +282,42 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     };
   }, [isLoadingHistory, messages.length]);
 
-  // Smooth scroll on new messages
+  // Track last message content/loading changes (assistant reply replaces loading)
+  const lastMsg = messages[messages.length - 1];
   useEffect(() => {
-    const currentCount = messages.length;
-    const prevCount = prevMessageCountRef.current;
+    if (!lastMsg) return;
+    const contentChanged = lastMsg.content !== lastContentRef.current;
+    const wasLoading = lastLoadingRef.current;
     
-    if (currentCount > prevCount && prevCount > 0) {
-      scrollToLastMessage('smooth');
+    // Scroll when: new message added, or content changed (loading -> real content)
+    if (contentChanged || (wasLoading && !lastMsg.isLoading)) {
+      const isNearBottom = (() => {
+        if (!containerRef.current) return true;
+        const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+        return scrollHeight - scrollTop - clientHeight < 300;
+      })();
+      
+      if (isNearBottom) {
+        scrollToLastMessage('smooth');
+      }
     }
     
-    prevMessageCountRef.current = currentCount;
-  }, [messages.length, scrollToLastMessage]);
+    lastContentRef.current = lastMsg.content;
+    lastLoadingRef.current = !!lastMsg.isLoading;
+  }, [lastMsg?.content, lastMsg?.isLoading, messages.length, scrollToLastMessage]);
+
+  // Guarantee scroll to bottom when history finishes loading
+  const prevLoadingHistory = useRef(isLoadingHistory);
+  useEffect(() => {
+    if (prevLoadingHistory.current && !isLoadingHistory && messages.length > 0) {
+      queueMicrotask(() => {
+        if (containerRef.current) {
+          containerRef.current.scrollTop = containerRef.current.scrollHeight;
+        }
+      });
+    }
+    prevLoadingHistory.current = isLoadingHistory;
+  }, [isLoadingHistory, messages.length]);
 
   // Show history loading skeleton
   if (isLoadingHistory && messages.length === 0) {
