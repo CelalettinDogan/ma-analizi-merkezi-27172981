@@ -44,6 +44,60 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_daily_analytics: {
+        Row: {
+          active_users_24h: number
+          ai_accuracy: number
+          created_at: string
+          id: string
+          league_stats: Json | null
+          live_matches: number
+          prediction_stats: Json | null
+          premium_by_plan: Json | null
+          premium_rate: number
+          premium_revenue: number
+          premium_users: number
+          report_date: string
+          today_analysis: number
+          today_chats: number
+          total_users: number
+        }
+        Insert: {
+          active_users_24h?: number
+          ai_accuracy?: number
+          created_at?: string
+          id?: string
+          league_stats?: Json | null
+          live_matches?: number
+          prediction_stats?: Json | null
+          premium_by_plan?: Json | null
+          premium_rate?: number
+          premium_revenue?: number
+          premium_users?: number
+          report_date: string
+          today_analysis?: number
+          today_chats?: number
+          total_users?: number
+        }
+        Update: {
+          active_users_24h?: number
+          ai_accuracy?: number
+          created_at?: string
+          id?: string
+          league_stats?: Json | null
+          live_matches?: number
+          prediction_stats?: Json | null
+          premium_by_plan?: Json | null
+          premium_rate?: number
+          premium_revenue?: number
+          premium_users?: number
+          report_date?: string
+          today_analysis?: number
+          today_chats?: number
+          total_users?: number
+        }
+        Relationships: []
+      }
       ai_prompts: {
         Row: {
           id: string

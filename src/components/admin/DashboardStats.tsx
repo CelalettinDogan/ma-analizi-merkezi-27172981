@@ -9,11 +9,14 @@ import {
   Activity,
   Target,
   Calendar,
-  Loader2
+  Loader2,
+  RefreshCw,
+  Clock
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import { staggerContainer, staggerItem } from '@/lib/animations';
 
 interface DashboardData {
@@ -25,14 +28,16 @@ interface DashboardData {
   aiAccuracy: number;
   liveMatches: number;
   activeUsers24h: number;
+  lastUpdated: string | null;
 }
 
 interface DashboardStatsProps {
   data: DashboardData | null;
   isLoading: boolean;
+  onRefreshAnalytics?: () => void;
 }
 
-const DashboardStats: React.FC<DashboardStatsProps> = ({ data, isLoading }) => {
+const DashboardStats: React.FC<DashboardStatsProps> = ({ data, isLoading, onRefreshAnalytics }) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -48,6 +53,20 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ data, isLoading }) => {
       </div>
     );
   }
+
+  const formatLastUpdated = (dateStr: string | null) => {
+    if (!dateStr) return 'Canlı veri';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+
+    if (diffMins < 1) return 'Az önce';
+    if (diffMins < 60) return `${diffMins} dk önce`;
+    if (diffHours < 24) return `${diffHours} saat önce`;
+    return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  };
 
   const stats = [
     {
@@ -102,9 +121,23 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ data, isLoading }) => {
       animate="animate"
       className="space-y-6"
     >
+      {/* Last Updated + Refresh */}
+      <motion.div variants={staggerItem} className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Clock className="w-4 h-4" />
+          <span>Son güncelleme: {formatLastUpdated(data.lastUpdated)}</span>
+        </div>
+        {onRefreshAnalytics && (
+          <Button variant="outline" size="sm" onClick={onRefreshAnalytics} className="gap-2">
+            <RefreshCw className="w-4 h-4" />
+            Yenile
+          </Button>
+        )}
+      </motion.div>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {stats.map((stat, index) => {
+        {stats.map((stat) => {
           const Icon = stat.icon;
           return (
             <motion.div key={stat.title} variants={staggerItem}>
