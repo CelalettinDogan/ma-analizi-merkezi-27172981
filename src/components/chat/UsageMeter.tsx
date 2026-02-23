@@ -44,7 +44,7 @@ const UsageMeter: React.FC<UsageMeterProps> = ({ current, limit, isAdmin, classN
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className={cn(
-        "flex items-center gap-3 px-4 py-2 bg-card/50 border-t border-border/50",
+        "flex items-center gap-3 px-4 py-2 bg-card/50 border-t border-border/50 shrink-0",
         isExhausted && "bg-destructive/5 border-destructive/20",
         className
       )}

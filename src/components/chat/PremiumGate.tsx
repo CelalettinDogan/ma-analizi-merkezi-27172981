@@ -22,7 +22,7 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' 
   const navigate = useNavigate();
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background overflow-hidden">
       {/* Header */}
       <header className="flex items-center gap-3 px-4 py-3 pt-safe">
         <Button
@@ -37,7 +37,7 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' 
       </header>
 
       {/* Main — scroll-free, centered */}
-      <main className="flex-1 flex flex-col justify-center px-5 gap-4 xs:gap-5 pb-32">
+      <main className="flex-1 flex flex-col justify-center px-5 gap-4 xs:gap-5 pb-28">
         {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}

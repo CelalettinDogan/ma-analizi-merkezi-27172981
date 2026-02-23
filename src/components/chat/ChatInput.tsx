@@ -73,7 +73,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="border-t border-border/50 bg-card/50 backdrop-blur-xl p-3 space-y-2.5">
+    <div className="border-t border-border/50 bg-card/50 backdrop-blur-xl p-3 pb-safe space-y-2.5 shrink-0">
       {/* Quick Prompts - Minimal design */}
       <AnimatePresence>
         {showQuickPrompts && !disabled && !promptsLoading && (
@@ -95,7 +95,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   onClick={() => handleQuickPrompt(prompt.text)}
                   disabled={isLoading}
                   className={cn(
-                    "px-2.5 py-1.5 text-[11px] rounded-full transition-all flex items-center gap-1 shrink-0",
+                    "px-2.5 py-1.5 text-[11px] rounded-full transition-all flex items-center gap-1 shrink-0 touch-manipulation",
                     "bg-muted/50 border hover:bg-muted hover:border-primary/30",
                     getPromptBorderColor(prompt.text)
                   )}
@@ -125,7 +125,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       <div className="flex items-end gap-2">
         <div 
           className={cn(
-            "flex-1 relative rounded-3xl transition-all duration-200",
+            "flex-1 min-w-0 relative rounded-3xl transition-all duration-200",
             isFocused && "ring-1 ring-primary/20"
           )}
         >
