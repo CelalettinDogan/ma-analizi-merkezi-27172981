@@ -216,19 +216,15 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   const prevMessageCountRef = useRef(0);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
-  // Scroll to last message
+  // Scroll to bottom of container
   const scrollToLastMessage = useCallback((behavior: ScrollBehavior = 'auto') => {
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (lastMessageRef.current) {
-          lastMessageRef.current.scrollIntoView({ 
-            block: 'end', 
-            behavior 
-          });
-        } else if (containerRef.current) {
-          containerRef.current.scrollTop = containerRef.current.scrollHeight;
-        }
-      });
+      if (containerRef.current) {
+        containerRef.current.scrollTo({
+          top: containerRef.current.scrollHeight,
+          behavior,
+        });
+      }
     });
   }, []);
 
@@ -324,6 +320,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
             </React.Fragment>
           );
         })}
+        {/* Scroll anchor */}
+        <div aria-hidden="true" style={{ height: 1 }} />
       </div>
 
       {/* Scroll to bottom button */}
