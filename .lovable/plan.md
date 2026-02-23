@@ -1,24 +1,28 @@
 
-# Admin Kullanicilara Sinirsiz Analiz Hakki
+# Capacitor Splash Ekrani Gorseli Ayarlama
 
-## Sorun
+## Yapilacaklar
 
-`useAnalysisLimit.ts` hook'u admin kontrolu yapmiyor. `hasUnlimitedAnalysis(planType)` fonksiyonunu `isAdmin` parametresi olmadan cagiriyor, bu yuzden admin kullanicilar premium abonelikleri yoksa gunluk 2 analiz limitine takiliyorlar.
+### 1. Gorseli projeye kopyala
+Yuklenen `splash.png` dosyasini `public/splash.png` olarak kopyala. Bu dosya build sirasinda `dist/` klasorune dahil edilecek.
 
-## Cozum
+### 2. Capacitor config guncelle
+`capacitor.config.ts` dosyasindaki SplashScreen yapilandirmasini guncelle:
+- `launchAutoHide: false` kalacak (uygulama hazir olunca gizlenecek)
+- `androidScaleType: 'CENTER'` olarak degistir (gorsel ortalansin, kirpilmasin)
+- `backgroundColor: '#0f172a'` kalacak (koyu arka plan, seffaf gorsel uzerinde guzel gorunur)
+- `launchShowDuration: 2500` olarak artir (logo gorunurlugunu uzat)
 
-`useAnalysisLimit.ts` dosyasina `useUserRole` hook'unu ekleyip `isAdmin` bilgisini `hasUnlimitedAnalysis` fonksiyonuna iletmek.
+### 3. Kullanici icin yerel adimlar (Android tarafinda)
+Capacitor splash screen gorseli Android tarafinda `android/app/src/main/res/drawable/` klasorune yerlestirilmelidir. Kullaniciya sunlar anlatilacak:
 
-## Teknik Degisiklik
+1. `public/splash.png` dosyasini Android projede `android/app/src/main/res/drawable/splash.png` olarak kopyala
+2. Farkli ekran boyutlari icin `drawable-mdpi`, `drawable-hdpi`, `drawable-xhdpi`, `drawable-xxhdpi`, `drawable-xxxhdpi` klasorlerine farkli boyutlarda yerlestirebilirsin
+3. `npx cap sync` calistir
+
+## Dosya Degisiklikleri
 
 | Dosya | Degisiklik |
 |-------|-----------|
-| `src/hooks/useAnalysisLimit.ts` | `useUserRole` import et, `isAdmin` bilgisini `hasUnlimitedAnalysis` ve limit hesaplamalarina ekle |
-
-### Detay
-
-1. `useUserRole` hook'unu import et
-2. `isAdmin` degerini al
-3. `hasUnlimitedAnalysis(planType, isAdmin)` olarak guncelle (3 yerde kullaniliyor)
-4. `dailyLimit` hesaplamasinda admin icin 999 dondur
-5. `isLoading`'e `roleLoading` ekle
+| `public/splash.png` | Yuklenen gorseli kopyala |
+| `capacitor.config.ts` | SplashScreen ayarlarini guncelle (scaleType, duration) |
