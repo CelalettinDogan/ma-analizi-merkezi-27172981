@@ -245,8 +245,14 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   // Initial scroll when history finishes loading
   useEffect(() => {
     if (!isLoadingHistory && messages.length > 0 && !hasScrolledRef.current) {
-      scrollToLastMessage('auto');
+      const timers = [0, 50, 150, 300, 500].map(delay => 
+        setTimeout(() => {
+          scrollToLastMessage('auto');
+        }, delay)
+      );
+      
       hasScrolledRef.current = true;
+      return () => timers.forEach(clearTimeout);
     }
   }, [isLoadingHistory, messages.length, scrollToLastMessage]);
 
@@ -297,7 +303,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       className="flex-1 overflow-y-auto scroll-smooth relative"
       onScroll={handleScroll}
     >
-      <div className="py-3 pb-4">
+      <div className="py-3">
         {messages.map((message, index) => {
           const prevMessage = index > 0 ? messages[index - 1] : null;
           const showDivider = needsDateDivider(message.createdAt, prevMessage?.createdAt);
