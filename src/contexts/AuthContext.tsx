@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const params = new URLSearchParams({
           provider: 'google',
-          redirect_uri: 'https://golmetrik.app/callback',
+          redirect_uri: `${LOVABLE_CLOUD_URL}/callback?platform=native`,
           state,
         });
 
