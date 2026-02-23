@@ -1,28 +1,33 @@
 
-# Capacitor Splash Ekrani Gorseli Ayarlama
 
-## Yapilacaklar
+# Uygulama Logosunu Guncelleme
+
+Yuklenen gorseli (tac takili futbol topu) uygulamanin tum logo noktalarinda kullanilacak sekilde ayarlayacagiz.
+
+## Yapilacak Degisiklikler
 
 ### 1. Gorseli projeye kopyala
-Yuklenen `splash.png` dosyasini `public/splash.png` olarak kopyala. Bu dosya build sirasinda `dist/` klasorune dahil edilecek.
+- `src/assets/logo.png` -- React bilesenlerinde kullanilmak uzere (header, onboarding vb.)
+- `public/logo-192.png` -- PWA manifest 192x192 ikon
+- `public/logo-512.png` -- PWA manifest 512x512 ikon
+- `public/favicon.png` -- Tarayici favicon
+- `public/apple-touch-icon.png` -- iOS ana ekran ikonu
+- `public/logo.png` -- OG/Twitter meta gorsel
 
-### 2. Capacitor config guncelle
-`capacitor.config.ts` dosyasindaki SplashScreen yapilandirmasini guncelle:
-- `launchAutoHide: false` kalacak (uygulama hazir olunca gizlenecek)
-- `androidScaleType: 'CENTER'` olarak degistir (gorsel ortalansin, kirpilmasin)
-- `backgroundColor: '#0f172a'` kalacak (koyu arka plan, seffaf gorsel uzerinde guzel gorunur)
-- `launchShowDuration: 2500` olarak artir (logo gorunurlugunu uzat)
+### 2. Capacitor Android Launcher Ikonu
+Android launcher ikonlari icin kullaniciya yerel talimatlar verilecek:
+- Gorseli Android Studio'da `Image Asset` araci ile ic_launcher olarak ayarla
+- `android/app/src/main/res/mipmap-*` klasorlerine farkli boyutlarda yerlestir
 
-### 3. Kullanici icin yerel adimlar (Android tarafinda)
-Capacitor splash screen gorseli Android tarafinda `android/app/src/main/res/drawable/` klasorune yerlestirilmelidir. Kullaniciya sunlar anlatilacak:
+### 3. Kod Degisikligi Gerekmiyor
+- `src/assets/logo.png` zaten header ve diger bilesenlerden import ediliyor
+- `public/` altindaki dosyalar manifest.json ve index.html'den referans aliniyor
+- Dosya adlari ayni kaldigi icin kod degisikligi gerekmez
 
-1. `public/splash.png` dosyasini Android projede `android/app/src/main/res/drawable/splash.png` olarak kopyala
-2. Farkli ekran boyutlari icin `drawable-mdpi`, `drawable-hdpi`, `drawable-xhdpi`, `drawable-xxhdpi`, `drawable-xxxhdpi` klasorlerine farkli boyutlarda yerlestirebilirsin
+## Kullanici Icin Android Adimlari
+Gorseller guncellendikten sonra:
+1. `git pull` ile projeyi cek
+2. Android Studio'da `Image Asset` araci ile `ic_launcher` olustur
 3. `npx cap sync` calistir
+4. Uygulamayi derle
 
-## Dosya Degisiklikleri
-
-| Dosya | Degisiklik |
-|-------|-----------|
-| `public/splash.png` | Yuklenen gorseli kopyala |
-| `capacitor.config.ts` | SplashScreen ayarlarini guncelle (scaleType, duration) |
