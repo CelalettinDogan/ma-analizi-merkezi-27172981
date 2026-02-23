@@ -80,16 +80,40 @@ export interface ScoreProbability {
   probability: number;
 }
 
+// Dixon-Coles düzeltme faktörü: düşük skorlu sonuçlarda (0-0, 1-0, 0-1, 1-1) daha doğru olasılık
+function dixonColesAdjustment(
+  homeGoals: number,
+  awayGoals: number,
+  lambda: number, // home expected
+  mu: number,     // away expected
+  rho: number = -0.1
+): number {
+  if (homeGoals === 0 && awayGoals === 0) {
+    return 1 + rho * lambda * mu;
+  } else if (homeGoals === 1 && awayGoals === 0) {
+    return 1 - rho * mu;
+  } else if (homeGoals === 0 && awayGoals === 1) {
+    return 1 - rho * lambda;
+  } else if (homeGoals === 1 && awayGoals === 1) {
+    return 1 + rho;
+  }
+  return 1.0; // Diğer skorlar için düzeltme yok
+}
+
 export function generateScoreProbabilities(
   homeExpected: number,
   awayExpected: number,
-  maxGoals: number = 6
+  maxGoals: number = 6,
+  rho: number = -0.1
 ): ScoreProbability[] {
   const probabilities: ScoreProbability[] = [];
   
   for (let h = 0; h <= maxGoals; h++) {
     for (let a = 0; a <= maxGoals; a++) {
-      const prob = poissonProbability(homeExpected, h) * poissonProbability(awayExpected, a);
+      let prob = poissonProbability(homeExpected, h) * poissonProbability(awayExpected, a);
+      // Dixon-Coles düzeltmesi uygula (düşük skorlu sonuçlar için)
+      const adjustment = dixonColesAdjustment(h, a, homeExpected, awayExpected, rho);
+      prob *= Math.max(0, adjustment); // Negatif olasılık önle
       probabilities.push({
         homeGoals: h,
         awayGoals: a,
