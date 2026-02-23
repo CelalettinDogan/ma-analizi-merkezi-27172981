@@ -1,76 +1,63 @@
 
+# VARio - AI Asistan: Kapsamli Chatbot Yenileme Plani
 
-# Kapsamli Uygulama Guncelleme Plani
+## Degisiklikler Ozeti
 
-## Tespit Edilen Sorunlar
+### 1. Isim ve Marka Guncelleme
+Tum "AI Asistan", "Gol Asistan", "GolMetrik AI Asistani" referanslari **"VARio - AI Asistan"** olarak guncellenecek.
 
-### 1. YANLIS BILGILER - PremiumManagement (Kritik)
-`PremiumManagement.tsx` icinde **hardcoded yanlis fiyatlar ve plan key'leri** var:
-- Satir 31-49: `basic: 29.99`, `plus: 49.99`, `pro: 79.99` -- Gercek fiyatlar 49, 79, 99 TL
-- Plan key'leri `basic`, `plus`, `pro` ama veritabaninda `premium_basic`, `premium_plus`, `premium_pro` -- eslesmez, 0 abone gosterir
-- Feature listeleri yanlis: "10 Gunluk Chat" yerine "3 Chat/Gun" olmali
+Etkilenen dosyalar:
+- `src/pages/Chat.tsx` -- Header basligi
+- `src/components/chat/ChatContainer.tsx` -- Welcome mesaji ("Merhaba! Ben VARio, AI asistanin!")
+- `src/components/chat/ChatMessage.tsx` -- Bot avatar'i (ikon yerine VARio gorseli)
+- `src/components/chat/TypingIndicator.tsx` -- Bot avatar'i
+- `src/components/chat/GuestGate.tsx` -- Basliklarda VARio
+- `src/components/chat/PremiumGate.tsx` -- Basliklarda VARio
+- `src/components/chat/ChatLimitSheet.tsx` -- Limit mesajinda VARio
+- `src/components/chat/UsageMeter.tsx` -- Degisiklik gerekmeyebilir
+- `supabase/functions/ai-chatbot/index.ts` -- System prompt: `Adin "VARio"`
 
-### 2. YANLIS BILGILER - Chatbot Baslik
-`Chat.tsx` satir 241: Chatbot header'da **"Gol Asistan"** yaziyor ama memory'ye gore isim **"GolMetrik AI Asistani"** olmali (ai-chatbot edge function'daki system prompt ile uyumlu)
+### 2. Profil Fotografi (VARio Avatar)
+- Kullanicinin yuklediyi robot gorseli `src/assets/vario-avatar.png` olarak kopyalanacak
+- Tum `Bot` ikonu kullanan yerlerde (header, welcome, ChatMessage, TypingIndicator, GuestGate, PremiumGate) bu gorsel kullanilacak
+- Gorsel `rounded-full` ve `object-cover` ile gosterilecek
+- Bot avatar boyutlari mevcut boyutlarda korunacak (w-7 h-7, w-8 h-8, w-16 h-16 vb.)
 
-### 3. Admin Paneline Erisim Yok (UserMenu)
-Admin kullanicilari profil menusunden admin paneline erisemiyor. `UserMenu.tsx`'te admin linki yok. Plana gore admin, profil ikonuna tikladiginda admin paneline erisebilmeli.
+### 3. Welcome Ekrani Guncelleme
+`ChatContainer.tsx` icindeki `WelcomeMessage`:
+- "Merhaba!" yerine "Merhaba! Ben VARio, AI asistanin!" 
+- "Futbol analizleri icin buradayim" alt baslik korunacak
+- Bot ikonu yerine VARio avatar gorseli
 
-### 4. Admin Paneli Responsive/Native Degil
-- `AdminLayout.tsx` sidebar yapisi masaustu odakli, mobilde hamburger menu ile calisiyor ama native Android deneyimi sunmuyor
-- Admin sayfasi BottomNav ile cakisiyor (`/admin` route'u `HIDE_BOTTOM_NAV_ROUTES`'a ekli degil)
-- Maçlar ve Istatistikler sekmeleri "yakinda" placeholder gosteriyor -- bos sekmeler yerine gizlenmeli
+### 4. UI/UX Ince Ayarlar
+- `ChatMessage.tsx`: Bot avatar'inda `Bot` ikonu yerine VARio gorseli
+- `TypingIndicator.tsx`: Bot avatar'inda VARio gorseli
+- `Chat.tsx` header: Bot avatar'inda VARio gorseli, baslik "VARio - AI Asistan"
+- `GuestGate.tsx`: Baslik "VARio - AI Asistan'a Hos Geldin", ikon yerine VARio avatar
+- `PremiumGate.tsx`: Baslik "VARio - AI Asistan", ikon yerine VARio avatar
+- `ChatLimitSheet.tsx`: "Gunluk VARio mesaj hakkın doldu"
 
-### 5. Chatbot Ekrani Degerlendirmesi
-- Chatbot UI genel olarak iyi durumda (native hissiyat, markdown, typing indicator)
-- Chatbot cevaplari duzgun calisiyor (test edildi, 200 OK)
-- Kucuk iyilestirme: Chat header'daki "Gol Asistan" ismi tutarsiz
+### 5. Edge Function System Prompt
+`supabase/functions/ai-chatbot/index.ts` satir 162:
+- `Adın "Gol Asistan"` -> `Adın "VARio"`
+- Merhaba mesajlarinda "Merhaba ben VARio, AI asistanin" seklinde karsilik vermesi saglanacak
 
-### 6. Guvenlik
-- RLS politikalari genel olarak saglam (incelendi)
-- Admin rol kontrolu `has_role()` SECURITY DEFINER fonksiyonu ile yapiliyor (dogru)
-- `profiles` tablosunda admin SELECT politikasi yok -- admin panelinde kullanici listesi gorunmuyor olabilir (RLS "Users can view their own profile" sadece kendi profilini gosteriyor)
+## Degisecek Dosyalar
 
----
+| Dosya | Degisiklik |
+|-------|-----------|
+| `src/assets/vario-avatar.png` | Yeni dosya - robot gorseli kopyasi |
+| `src/pages/Chat.tsx` | Header: VARio avatar + "VARio - AI Asistan" basligi |
+| `src/components/chat/ChatContainer.tsx` | Welcome: VARio avatar + "Merhaba! Ben VARio" |
+| `src/components/chat/ChatMessage.tsx` | Bot mesaj avatar: VARio gorseli |
+| `src/components/chat/TypingIndicator.tsx` | Typing avatar: VARio gorseli |
+| `src/components/chat/GuestGate.tsx` | VARio avatar + basliklarda VARio |
+| `src/components/chat/PremiumGate.tsx` | VARio avatar + basliklarda VARio |
+| `src/components/chat/ChatLimitSheet.tsx` | Limit mesajinda VARio ismi |
+| `supabase/functions/ai-chatbot/index.ts` | System prompt: Adin "VARio" |
 
-## Uygulama Plani
-
-### Dosya 1: `src/components/admin/PremiumManagement.tsx`
-- `PLAN_PRICES` import edilecek (`accessLevels.ts`'den)
-- `planDetails` objesi dogru key'ler (`premium_basic`, `premium_plus`, `premium_pro`) ve dogru fiyatlarla (49, 79, 99 TL) guncellenecek
-- Feature listeleri gercek plan bilgileriyle eslestirilecek:
-  - Basic: 3 Chat/Gun, Sinirsiz Analiz
-  - Plus: 5 Chat/Gun, Sinirsiz Analiz, Oncelikli Destek
-  - Pro: 10 Chat/Gun, Sinirsiz Analiz, Oncelikli Destek
-
-### Dosya 2: `src/components/UserMenu.tsx`
-- `useUserRole` hook'u import edilecek
-- Admin kullanicilari icin "Admin Panel" menu ogesi eklenecek (Shield ikonu ile)
-- Sadece `isAdmin === true` oldugunda gorunur olacak
-
-### Dosya 3: `src/App.tsx`
-- `/admin` route'unu `HIDE_BOTTOM_NAV_ROUTES` dizisine eklemek (BottomNav cakismasini onlemek)
-
-### Dosya 4: `src/components/admin/AdminLayout.tsx`
-- Mobil deneyimi iyilestirmek: sidebar yerine mobilde tab-bazli navigasyon (BottomNav benzeri) kullanmak
-- Bos sekmeler (`matches`, `statistics`) kaldirmak veya gizlemek -- navItems dizisinden cikarilacak
-- `pt-safe` ve `pb-safe` eklemek
-
-### Dosya 5: `src/pages/Chat.tsx`
-- "Gol Asistan" -> "AI Asistan" olarak guncellemek (tutarlilik)
-
-### Dosya 6: `src/pages/Admin.tsx`
-- `matches` ve `statistics` case'lerini kaldirmak (bos placeholder yerine temiz yapi)
-
----
-
-## Degismeyecekler
-- Chatbot edge function (`ai-chatbot/index.ts`) -- duzgun calisiyor, dokunulmayacak
-- RLS politikalari -- guvenlik saglam, ek migration gerekmiyor (profiles tablosunda admin SELECT icin `has_role` fonksiyonu zaten kullanilabilir, `useAdminData` service_role degil client kullandigina dikkat; ancak profiles tablosu kendi verisini cekiyor `count` ile -- bu calisiyor)
-- BottomNav, AuthGuard, AuthContext -- mevcut yapi dogru
-
-## Guvenlik Notu
-- Tum admin islemleri RLS + `has_role()` SECURITY DEFINER ile korunuyor
-- Admin paneline erisim hem client-side (`useUserRole`) hem de server-side (RLS) kontrolleriyle saglanir
-- Yeni tablo veya migration gerekmiyor
-
+## Teknik Notlar
+- Gorsel `src/assets/` altina kopyalanacak ve ES6 import ile kullanilacak (bundling optimizasyonu)
+- Tum avatar kullanim noktalari `<img>` ile degistirilecek, `Bot` ikonu kaldirilacak
+- Cloud yuku: Sadece edge function'da tek satirlik prompt degisikligi, ek sorgu yok
+- Responsive: Mevcut boyutlar korunacak, gorsel `object-cover` ile her boyutta duzgun gorunecek
