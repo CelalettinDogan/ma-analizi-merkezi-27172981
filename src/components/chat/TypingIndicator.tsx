@@ -22,14 +22,14 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ className }) => {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
-      className={`flex gap-2.5 px-3 py-2 ${className}`}
+      className={`flex gap-2 px-3 py-[5px] items-end ${className}`}
     >
-      {/* Compact Avatar */}
-      <img src={varioAvatar} alt="VARio" className="flex-shrink-0 w-7 h-7 rounded-full object-cover shadow-md shadow-emerald-500/15" />
+      {/* Avatar */}
+      <img src={varioAvatar} alt="VARio" className="flex-shrink-0 w-8 h-8 rounded-full object-cover shadow-md shadow-emerald-500/15" />
 
-      {/* Typing bubble - minimal */}
+      {/* Typing bubble */}
       <motion.div 
-        className="flex items-center gap-2 px-3 py-2 rounded-2xl rounded-tl-sm bg-card/70 backdrop-blur-lg border border-border/40"
+        className="flex items-center gap-2 px-4 py-3 rounded-[20px] rounded-tl-md bg-muted/60 backdrop-blur-xl border border-border/30 shadow-sm shadow-black/5"
       >
         {/* Animated dots */}
         <div className="flex gap-0.5">
