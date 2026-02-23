@@ -74,7 +74,7 @@ export const usePremiumStatus = (): UsePremiumStatusReturn => {
         .gte('expires_at', new Date().toISOString())
         .order('expires_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching premium status:', error);
