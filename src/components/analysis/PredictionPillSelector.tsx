@@ -5,27 +5,12 @@ import { Prediction, MatchInput } from '@/types/match';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useAnalysisSet } from '@/contexts/AnalysisSetContext';
-import { cn } from '@/lib/utils';
-import { CONFIDENCE_THRESHOLDS } from '@/constants/predictions';
+import { cn, getHybridConfidence, getConfidenceLevel } from '@/lib/utils';
 
 interface PredictionPillSelectorProps {
   predictions: Prediction[];
   matchInput: MatchInput;
 }
-
-// Helper to calculate hybrid confidence value
-const getHybridConfidence = (prediction: Prediction): number => {
-  const ai = prediction.aiConfidence || 0;
-  const math = prediction.mathConfidence || 0;
-  return ((ai + math) / 2) * 100;
-};
-
-// Helper to get confidence level
-const getConfidenceLevel = (percentage: number): 'yüksek' | 'orta' | 'düşük' => {
-  if (percentage >= CONFIDENCE_THRESHOLDS.HIGH) return 'yüksek';
-  if (percentage >= CONFIDENCE_THRESHOLDS.MEDIUM) return 'orta';
-  return 'düşük';
-};
 
 // Confidence level config - simplified
 const confidenceConfig = {

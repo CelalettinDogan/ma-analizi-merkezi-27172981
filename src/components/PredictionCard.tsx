@@ -4,6 +4,7 @@ import { Prediction, MatchInput } from '@/types/match';
 import { AddToSetButton } from '@/components/analysis-set';
 import { Progress } from '@/components/ui/progress';
 import { CONFIDENCE_LEVELS } from '@/constants/predictions';
+import { getHybridConfidence, getConfidenceLevel, cn } from '@/lib/utils';
 
 interface PredictionCardProps {
   prediction: Prediction;
@@ -20,6 +21,8 @@ const confidenceColors: Record<string, string> = {
 const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matchInput }) => {
   const aiPercentage = prediction.aiConfidence ? Math.round(prediction.aiConfidence * 100) : 0;
   const mathPercentage = prediction.mathConfidence ? Math.round(prediction.mathConfidence * 100) : 0;
+  const hybridPercentage = Math.round(getHybridConfidence(prediction));
+  const hybridLevel = getConfidenceLevel(hybridPercentage);
 
   return (
     <div 
@@ -49,22 +52,39 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matc
         </span>
       </div>
 
-      {/* AI & Math Confidence Bars */}
+      {/* Hybrid + AI & Math Confidence Bars */}
       {prediction.isAIPowered && (prediction.aiConfidence || prediction.mathConfidence) && (
         <div className="mb-4 space-y-2 p-3 rounded-lg bg-muted/30">
+          {/* Hybrid Confidence Summary */}
           <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground flex items-center gap-1">
-              <Sparkles className="w-3 h-3" /> AI Güveni
+            <span className={cn(
+              "font-semibold flex items-center gap-1",
+              hybridLevel === 'yüksek' ? 'text-win' : hybridLevel === 'orta' ? 'text-draw' : 'text-loss'
+            )}>
+              ⚡ Hibrit Güven
             </span>
-            <span className="font-medium text-foreground">{aiPercentage}%</span>
+            <span className={cn(
+              "font-bold",
+              hybridLevel === 'yüksek' ? 'text-win' : hybridLevel === 'orta' ? 'text-draw' : 'text-loss'
+            )}>%{hybridPercentage}</span>
           </div>
-          <Progress value={aiPercentage} className="h-1.5" />
+          <Progress value={hybridPercentage} className="h-2" />
           
-          <div className="flex items-center justify-between text-xs mt-2">
-            <span className="text-muted-foreground">📊 Matematik</span>
-            <span className="font-medium text-foreground">{mathPercentage}%</span>
+          <div className="border-t border-border/50 pt-2 mt-2 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground flex items-center gap-1">
+                <Sparkles className="w-3 h-3" /> AI Güveni
+              </span>
+              <span className="font-medium text-foreground">{aiPercentage}%</span>
+            </div>
+            <Progress value={aiPercentage} className="h-1.5" />
+            
+            <div className="flex items-center justify-between text-xs mt-2">
+              <span className="text-muted-foreground">📊 Matematik</span>
+              <span className="font-medium text-foreground">{mathPercentage}%</span>
+            </div>
+            <Progress value={mathPercentage} className="h-1.5" />
           </div>
-          <Progress value={mathPercentage} className="h-1.5" />
         </div>
       )}
 

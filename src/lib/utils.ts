@@ -137,3 +137,39 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
     timeout = setTimeout(() => func(...args), wait);
   };
 }
+
+/**
+ * Calculates hybrid confidence from AI and math confidence values.
+ * Returns a percentage (0-100).
+ * Falls back to string-based confidence if no numerical values exist.
+ * @param prediction - Object with optional aiConfidence, mathConfidence, and confidence fields
+ * @returns Hybrid confidence percentage (0-100)
+ */
+export function getHybridConfidence(prediction: {
+  aiConfidence?: number;
+  mathConfidence?: number;
+  confidence?: string;
+}): number {
+  const ai = prediction.aiConfidence || 0;
+  const math = prediction.mathConfidence || 0;
+  
+  // If we have at least one numerical confidence, compute hybrid
+  if (ai > 0 || math > 0) {
+    const count = (ai > 0 ? 1 : 0) + (math > 0 ? 1 : 0);
+    return ((ai + math) / count) * 100;
+  }
+  
+  // Fallback to string-based confidence
+  return confidenceToNumber(prediction.confidence || 'düşük');
+}
+
+/**
+ * Returns the confidence level string based on a percentage value.
+ * @param percentage - Confidence percentage (0-100)
+ * @returns Confidence level string
+ */
+export function getConfidenceLevel(percentage: number): 'yüksek' | 'orta' | 'düşük' {
+  if (percentage >= CONFIDENCE_THRESHOLDS.HIGH) return 'yüksek';
+  if (percentage >= CONFIDENCE_THRESHOLDS.MEDIUM) return 'orta';
+  return 'düşük';
+}
