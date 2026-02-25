@@ -5,7 +5,7 @@ import { MatchAnalysis } from '@/types/match';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import ScorePredictionChart from '@/components/charts/ScorePredictionChart';
 import SimilarMatchesSection from '@/components/SimilarMatchesSection';
-import { cn } from '@/lib/utils';
+import { cn, getHybridConfidence } from '@/lib/utils';
 
 interface CollapsibleAnalysisProps {
   analysis: MatchAnalysis;
@@ -80,6 +80,12 @@ const CollapsibleAnalysis: React.FC<CollapsibleAnalysisProps> = ({ analysis }) =
   const hasPoisson = analysis.poissonData;
   const hasSimilar = analysis.similarMatches && analysis.similarMatches.length > 0;
 
+  const bttsHybridConfidence = React.useMemo(() => {
+    const bttsPred = analysis.predictions.find(p => p.type === 'Karşılıklı Gol');
+    if (!bttsPred) return undefined;
+    return getHybridConfidence(bttsPred);
+  }, [analysis.predictions]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -100,6 +106,7 @@ const CollapsibleAnalysis: React.FC<CollapsibleAnalysisProps> = ({ analysis }) =
             bttsProbability={analysis.poissonData!.bttsProbability}
             expectedHomeGoals={analysis.poissonData!.expectedHomeGoals}
             expectedAwayGoals={analysis.poissonData!.expectedAwayGoals}
+            bttsHybridConfidence={bttsHybridConfidence}
           />
         </CollapsibleSection>
       )}
