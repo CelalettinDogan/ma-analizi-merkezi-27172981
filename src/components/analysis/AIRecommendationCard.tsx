@@ -5,30 +5,14 @@ import { Prediction, MatchInput } from '@/types/match';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useAnalysisSet } from '@/contexts/AnalysisSetContext';
-import { cn } from '@/lib/utils';
+import { cn, getHybridConfidence, getConfidenceLevel } from '@/lib/utils';
 import ShareCard from '@/components/ShareCard';
 import { formatMatchDate } from '@/lib/utils';
-import { CONFIDENCE_THRESHOLDS } from '@/constants/predictions';
 
 interface AIRecommendationCardProps {
   predictions: Prediction[];
   matchInput: MatchInput;
 }
-
-// Helper to calculate hybrid confidence value
-const getHybridConfidence = (prediction: Prediction): number => {
-  const ai = prediction.aiConfidence || 0;
-  const math = prediction.mathConfidence || 0;
-  return (ai + math) / 2;
-};
-
-// Helper to get confidence level
-const getConfidenceLevel = (value: number): 'yüksek' | 'orta' | 'düşük' => {
-  const percentage = value * 100;
-  if (percentage >= CONFIDENCE_THRESHOLDS.HIGH) return 'yüksek';
-  if (percentage >= CONFIDENCE_THRESHOLDS.MEDIUM) return 'orta';
-  return 'düşük';
-};
 
 const confidenceConfig = {
   'yüksek': { icon: Star, label: 'Yüksek Güven', color: 'text-emerald-400', bg: 'bg-emerald-500/20' },
@@ -52,8 +36,8 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
   
   if (!mainPrediction) return null;
 
-  const hybridConfidence = getHybridConfidence(mainPrediction) * 100;
-  const confidenceLevel = getConfidenceLevel(getHybridConfidence(mainPrediction));
+  const hybridConfidence = getHybridConfidence(mainPrediction);
+  const confidenceLevel = getConfidenceLevel(hybridConfidence);
   const { icon: ConfidenceIcon, label: confidenceLabel, color, bg } = confidenceConfig[confidenceLevel];
 
   const isInSet = items.some(

@@ -3,24 +3,19 @@ import { Prediction } from '@/types/match';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Target, TrendingUp, CheckCircle2, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, getHybridConfidence, getConfidenceLevel } from '@/lib/utils';
 
 interface ConfidenceVisualizerProps {
   predictions: Prediction[];
 }
 
 const ConfidenceVisualizer: React.FC<ConfidenceVisualizerProps> = ({ predictions }) => {
-  const getConfidenceValue = (confidence: string): number => {
-    switch (confidence.toLowerCase()) {
-      case 'yüksek': return 85;
-      case 'orta': return 55;
-      case 'düşük': return 25;
-      default: return 50;
-    }
+  const getConfidenceValue = (prediction: Prediction): number => {
+    return getHybridConfidence(prediction);
   };
 
-  const getConfidenceColor = (confidence: string) => {
-    switch (confidence.toLowerCase()) {
+  const getConfidenceColor = (level: string) => {
+    switch (level) {
       case 'yüksek': return 'bg-win';
       case 'orta': return 'bg-draw';
       case 'düşük': return 'bg-loss';
@@ -28,8 +23,8 @@ const ConfidenceVisualizer: React.FC<ConfidenceVisualizerProps> = ({ predictions
     }
   };
 
-  const getConfidenceTextColor = (confidence: string) => {
-    switch (confidence.toLowerCase()) {
+  const getConfidenceTextColor = (level: string) => {
+    switch (level) {
       case 'yüksek': return 'text-win';
       case 'orta': return 'text-draw';
       case 'düşük': return 'text-loss';
@@ -37,8 +32,8 @@ const ConfidenceVisualizer: React.FC<ConfidenceVisualizerProps> = ({ predictions
     }
   };
 
-  const getConfidenceIcon = (confidence: string) => {
-    switch (confidence.toLowerCase()) {
+  const getConfidenceIcon = (level: string) => {
+    switch (level) {
       case 'yüksek': return <CheckCircle2 className="w-4 h-4 text-win" />;
       case 'orta': return <Target className="w-4 h-4 text-draw" />;
       case 'düşük': return <AlertCircle className="w-4 h-4 text-loss" />;
@@ -47,11 +42,11 @@ const ConfidenceVisualizer: React.FC<ConfidenceVisualizerProps> = ({ predictions
   };
 
   // Calculate overall confidence
-  const avgConfidence = predictions.reduce((acc, p) => acc + getConfidenceValue(p.confidence), 0) / predictions.length;
+  const avgConfidence = predictions.reduce((acc, p) => acc + getConfidenceValue(p), 0) / predictions.length;
   
-  // Count by confidence level
+  // Count by confidence level using hybrid values
   const confidenceCounts = predictions.reduce((acc, p) => {
-    const level = p.confidence.toLowerCase();
+    const level = getConfidenceLevel(getConfidenceValue(p));
     acc[level] = (acc[level] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
@@ -126,30 +121,39 @@ const ConfidenceVisualizer: React.FC<ConfidenceVisualizerProps> = ({ predictions
       {/* Individual Predictions */}
       <div className="space-y-3">
         <h4 className="text-sm font-medium text-muted-foreground mb-3">Tahmin Detayları</h4>
-        {predictions.map((prediction, index) => (
-          <div key={index} className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {getConfidenceIcon(prediction.confidence)}
-                <span className="text-sm font-medium truncate max-w-[150px]">
-                  {prediction.type}
-                </span>
+        {predictions.map((prediction, index) => {
+          const confValue = getConfidenceValue(prediction);
+          const confLevel = getConfidenceLevel(confValue);
+          return (
+            <div key={index} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {getConfidenceIcon(confLevel)}
+                  <span className="text-sm font-medium truncate max-w-[150px]">
+                    {prediction.type}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={cn("text-xs font-medium", getConfidenceTextColor(confLevel))}>
+                    %{Math.round(confValue)}
+                  </span>
+                  <span className={cn("text-sm font-bold", getConfidenceTextColor(confLevel))}>
+                    {prediction.prediction}
+                  </span>
+                </div>
               </div>
-              <span className={cn("text-sm font-bold", getConfidenceTextColor(prediction.confidence))}>
-                {prediction.prediction}
-              </span>
+              <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    "h-full transition-all duration-500 rounded-full",
+                    getConfidenceColor(confLevel)
+                  )}
+                  style={{ width: `${confValue}%` }}
+                />
+              </div>
             </div>
-            <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className={cn(
-                  "h-full transition-all duration-500 rounded-full",
-                  getConfidenceColor(prediction.confidence)
-                )}
-                style={{ width: `${getConfidenceValue(prediction.confidence)}%` }}
-              />
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </Card>
   );
