@@ -314,13 +314,30 @@ const AIManagement: React.FC<AIManagementProps> = ({
                 <CardDescription>Her tahmin türü için AI ve Matematik doğruluk oranları</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {aiVsMathStats.map((stat) => (
+                {aiVsMathStats.map((stat) => {
+                  const aiAcc = stat.aiAccuracy;
+                  const mathAcc = stat.mathAccuracy;
+                  const sum = aiAcc + mathAcc;
+                  const hasPerTypeWeight = stat.aiTotal >= 20 && stat.mathTotal >= 20 && sum > 0;
+                  const perTypeAiW = hasPerTypeWeight ? (aiAcc / sum) * 100 : null;
+                  const perTypeMathW = hasPerTypeWeight ? (mathAcc / sum) * 100 : null;
+
+                  return (
                   <div key={stat.type} className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{stat.type}</span>
-                      <Badge variant="outline" className="text-xs">
-                        AI: {stat.aiTotal} | Math: {stat.mathTotal}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        {perTypeAiW !== null && perTypeMathW !== null ? (
+                          <Badge variant="secondary" className="text-xs">
+                            AI %{perTypeAiW.toFixed(0)} | Math %{perTypeMathW.toFixed(0)}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs text-muted-foreground">50/50</Badge>
+                        )}
+                        <Badge variant="outline" className="text-xs">
+                          AI: {stat.aiTotal} | Math: {stat.mathTotal}
+                        </Badge>
+                      </div>
                     </div>
                     
                     {/* AI Bar */}
@@ -351,7 +368,8 @@ const AIManagement: React.FC<AIManagementProps> = ({
                       <Progress value={stat.mathAccuracy} className="h-2" />
                     </div>
                   </div>
-                ))}
+                  );
+                })}
 
                 {aiVsMathStats.length === 0 && (
                   <p className="text-center text-muted-foreground py-8">

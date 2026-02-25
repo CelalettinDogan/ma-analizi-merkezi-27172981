@@ -344,20 +344,42 @@ export async function updateMLModelStats(
 }
 
 // Get AI vs Math accuracy weights for dynamic hybrid scoring
-export async function getAIMathWeights(): Promise<{ aiWeight: number; mathWeight: number } | null> {
+// If predictionType is provided, returns weights for that specific type (per-type weighting)
+// Falls back to global weighted average if per-type data is insufficient
+export async function getAIMathWeights(predictionType?: string): Promise<{ aiWeight: number; mathWeight: number } | null> {
   try {
     const { data, error } = await supabase
       .from('ml_model_stats')
-      .select('ai_total, ai_accuracy, math_total, math_accuracy');
+      .select('prediction_type, ai_total, ai_accuracy, math_total, math_accuracy');
 
     if (error || !data || data.length === 0) return null;
 
+    // If predictionType specified, try per-type first
+    if (predictionType) {
+      const typeRow = (data as any[]).find((s: any) => s.prediction_type === predictionType);
+      if (typeRow) {
+        const aiT = typeRow.ai_total || 0;
+        const mathT = typeRow.math_total || 0;
+        const aiAcc = typeRow.ai_accuracy || 0;
+        const mathAcc = typeRow.math_accuracy || 0;
+
+        if (aiT >= 20 && mathT >= 20 && (aiAcc + mathAcc) > 0) {
+          return {
+            aiWeight: aiAcc / (aiAcc + mathAcc),
+            mathWeight: mathAcc / (aiAcc + mathAcc),
+          };
+        }
+      }
+      // Per-type data insufficient — fall through to global
+    }
+
+    // Global weighted average fallback
     let totalAiTotal = 0;
     let totalMathTotal = 0;
     let weightedAiAccuracy = 0;
     let weightedMathAccuracy = 0;
 
-    data.forEach((stat: any) => {
+    (data as any[]).forEach((stat: any) => {
       const aiT = stat.ai_total || 0;
       const mathT = stat.math_total || 0;
       totalAiTotal += aiT;
@@ -366,7 +388,6 @@ export async function getAIMathWeights(): Promise<{ aiWeight: number; mathWeight
       weightedMathAccuracy += (stat.math_accuracy || 0) * mathT;
     });
 
-    // Need minimum 20 samples from each to use dynamic weights
     if (totalAiTotal < 20 || totalMathTotal < 20) return null;
 
     const avgAiAccuracy = weightedAiAccuracy / totalAiTotal;

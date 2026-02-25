@@ -217,13 +217,19 @@ export function useMatchAnalysis() {
   const analyzeMatch = async (data: MatchInput) => {
     setIsLoading(true);
 
-    // Fetch dynamic AI vs Math weights
-    let dynamicWeights: { aiWeight: number; mathWeight: number } | null = null;
+    // Fetch per-type dynamic AI vs Math weights
+    const predictionTypes = ['Maç Sonucu', 'Toplam Gol Alt/Üst', 'Karşılıklı Gol', 'İlk Yarı Sonucu'];
+    const perTypeWeights: Record<string, { aiWeight: number; mathWeight: number } | null> = {};
     try {
-      dynamicWeights = await getAIMathWeights();
-      if (dynamicWeights) {
-        console.log(`[useMatchAnalysis] Dynamic weights: AI=${(dynamicWeights.aiWeight * 100).toFixed(1)}%, Math=${(dynamicWeights.mathWeight * 100).toFixed(1)}%`);
-      }
+      const weightResults = await Promise.all(
+        predictionTypes.map(type => getAIMathWeights(type))
+      );
+      predictionTypes.forEach((type, i) => {
+        perTypeWeights[type] = weightResults[i];
+        if (weightResults[i]) {
+          console.log(`[useMatchAnalysis] ${type} weights: AI=${(weightResults[i]!.aiWeight * 100).toFixed(1)}%, Math=${(weightResults[i]!.mathWeight * 100).toFixed(1)}%`);
+        }
+      });
     } catch (e) { console.warn('[useMatchAnalysis] Failed to fetch dynamic weights:', e); }
     try {
       // Lig kodunu bul
@@ -580,7 +586,7 @@ export function useMatchAnalysis() {
               confidence: calculateHybridConfidence(
                 ai.matchResult.confidence,
                 mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Maç Sonucu')?.confidence || 'orta'),
-                dynamicWeights
+                perTypeWeights['Maç Sonucu']
               ),
               reasoning: ai.matchResult.reasoning,
               isAIPowered: true,
@@ -608,7 +614,7 @@ export function useMatchAnalysis() {
                 return calculateHybridConfidence(
                   ai.totalGoals.confidence,
                   mathConfidenceToNumber(mathPred?.confidence || 'orta'),
-                  dynamicWeights
+                  perTypeWeights['Toplam Gol Alt/Üst']
                 );
               })(),
               reasoning: ai.totalGoals.reasoning,
@@ -622,7 +628,7 @@ export function useMatchAnalysis() {
               confidence: calculateHybridConfidence(
                 ai.bothTeamsScore.confidence,
                 mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Karşılıklı Gol')?.confidence || 'orta'),
-                dynamicWeights
+                perTypeWeights['Karşılıklı Gol']
               ),
               reasoning: ai.bothTeamsScore.reasoning,
               isAIPowered: true,
@@ -644,7 +650,7 @@ export function useMatchAnalysis() {
               confidence: calculateHybridConfidence(
                 ai.firstHalf.confidence,
                 mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'İlk Yarı Sonucu')?.confidence || 'orta'),
-                dynamicWeights
+                perTypeWeights['İlk Yarı Sonucu']
               ),
               reasoning: ai.firstHalf.reasoning,
               isAIPowered: true,
