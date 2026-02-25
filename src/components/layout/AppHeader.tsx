@@ -13,20 +13,20 @@ interface AppHeaderProps {
   rightContent?: React.ReactNode;
 }
 
-const AppHeader: React.FC<AppHeaderProps> = ({ 
-  showSearch = false, 
+const AppHeader: React.FC<AppHeaderProps> = ({
+  showSearch = false,
   onSearchClick,
-  rightContent 
+  rightContent
 }) => {
   const location = useLocation();
-  
+
   const isActive = (path: string) => location.pathname === path;
 
   const navItems = [
-    { path: '/', label: 'Anasayfa' },
-    { path: '/live', label: 'Canlı', icon: <Zap className="w-4 h-4 text-amber-500" /> },
-    { path: '/standings', label: 'Sıralama', icon: <Trophy className="w-4 h-4" /> },
-  ];
+  { path: '/', label: 'Anasayfa' },
+  { path: '/live', label: 'Canlı', icon: <Zap className="w-4 h-4 text-amber-500" /> },
+  { path: '/standings', label: 'Sıralama', icon: <Trophy className="w-4 h-4" /> }];
+
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border/40 pt-safe">
@@ -34,11 +34,11 @@ const AppHeader: React.FC<AppHeaderProps> = ({
         {/* Logo - compact native style */}
         <Link to="/" className="flex items-center gap-2.5 group flex-shrink-0">
           <div className="relative">
-            <img 
-              src={logoImage} 
-              alt="GolMetrik AI" 
-              className="w-10 h-10 sm:w-11 sm:h-11 aspect-square object-cover rounded-xl shadow-sm transition-transform duration-200 group-hover:scale-105 bg-white"
-            />
+            <img
+
+              alt="GolMetrik AI"
+              className="w-10 h-10 sm:w-11 sm:h-11 aspect-square object-cover rounded-xl shadow-sm transition-transform duration-200 group-hover:scale-105 bg-white" src="/lovable-uploads/d341d88c-e544-4d38-81ab-b4d5ad1f21e9.png" />
+
             <div className="absolute -inset-1 rounded-xl bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity -z-10" />
           </div>
           <span className="font-display font-bold text-base sm:text-lg tracking-tight text-foreground">
@@ -48,21 +48,21 @@ const AppHeader: React.FC<AppHeaderProps> = ({
         
         {/* Desktop Nav */}
         <nav className="hidden lg:flex items-center gap-0.5 bg-muted/50 rounded-xl p-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-                isActive(item.path)
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
+          {navItems.map((item) =>
+          <Link
+            key={item.path}
+            to={item.path}
+            className={cn(
+              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+              isActive(item.path) ?
+              "bg-background text-foreground shadow-sm" :
+              "text-muted-foreground hover:text-foreground"
+            )}>
+
               {item.icon}
               {item.label}
             </Link>
-          ))}
+          )}
         </nav>
 
         {/* Right Side - tighter spacing */}
@@ -71,8 +71,8 @@ const AppHeader: React.FC<AppHeaderProps> = ({
           <UserMenu />
         </div>
       </div>
-    </header>
-  );
+    </header>);
+
 };
 
 export default AppHeader;
