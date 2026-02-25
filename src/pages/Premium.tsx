@@ -168,7 +168,7 @@ const Premium = () => {
                 GolMetrik AI Premium
               </h1>
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-micro text-muted-foreground">
               Gelişmiş analiz ve AI destekli içgörüler
             </p>
           </motion.div>
@@ -205,7 +205,7 @@ const Premium = () => {
                 }`}
               >
                 Yıllık
-                <span className="text-[9px] font-bold text-emerald-500">2 ay🎁</span>
+                <span className="text-micro font-bold text-emerald-500">2 ay🎁</span>
               </button>
             </div>
           </motion.div>
@@ -239,7 +239,7 @@ const Premium = () => {
                 >
                   {/* Popüler banner - inside card, no overflow */}
                   {plan.popular && (
-                    <div className="w-full bg-primary text-primary-foreground text-[9px] xs:text-[10px] font-bold py-1 flex items-center justify-center gap-0.5">
+                    <div className="w-full bg-primary text-primary-foreground text-micro font-bold py-1 flex items-center justify-center gap-0.5">
                       <Sparkles className="w-2.5 h-2.5" />
                       Popüler
                     </div>
@@ -257,21 +257,21 @@ const Premium = () => {
                     <p className="font-bold text-xs">{plan.name}</p>
 
                     {/* Price */}
-                    <p className="text-lg xs:text-xl font-extrabold tracking-tight mt-0.5">
+                    <p className="text-lg font-extrabold tracking-tight mt-0.5">
                       ₺{dp}
                     </p>
-                    <p className="text-[9px] text-muted-foreground -mt-0.5">
+                    <p className="text-micro text-muted-foreground -mt-0.5">
                       {isYearly ? '/yıl' : '/ay'}
                     </p>
 
                     {isYearly && (
-                      <p className="text-[8px] xs:text-[9px] text-emerald-500 font-medium mt-0.5">
+                      <p className="text-micro text-emerald-500 font-medium mt-0.5">
                         aylık ₺{Math.round(dp / 12)}
                       </p>
                     )}
 
                     {/* Key differentiator */}
-                    <p className="text-[9px] xs:text-[10px] text-muted-foreground mt-1.5">
+                    <p className="text-micro text-muted-foreground mt-1.5">
                       {plan.tagline}
                     </p>
 
@@ -297,7 +297,7 @@ const Premium = () => {
             {includedFeatures.map(f => (
               <div key={f.label} className="flex items-center gap-1">
                 <Check className="w-3 h-3 text-emerald-500" />
-                <span className="text-[10px] text-muted-foreground">{f.label}</span>
+                <span className="text-micro text-muted-foreground">{f.label}</span>
               </div>
             ))}
           </motion.div>
@@ -335,14 +335,14 @@ const Premium = () => {
             </Button>
           </motion.div>
 
-          <div className="flex items-center justify-center gap-1 text-[9px] text-muted-foreground leading-tight">
+          <div className="flex items-center justify-center gap-1 text-micro text-muted-foreground leading-tight">
             <Shield className="w-3 h-3 text-emerald-500/70 shrink-0" />
             <span>Google Play güvencesiyle • İstediğin zaman iptal</span>
             <span className="mx-0.5">•</span>
             <button onClick={handleRestore} className="underline">Geri yükle</button>
           </div>
 
-          <p className="text-[9px] text-muted-foreground/60 text-center leading-tight">
+          <p className="text-micro text-muted-foreground/60 text-center leading-tight">
             Abonelik otomatik yenilenir.{' '}
             <Link to="/terms" className="underline">Şartlar</Link> ve{' '}
             <Link to="/privacy" className="underline">Gizlilik</Link>

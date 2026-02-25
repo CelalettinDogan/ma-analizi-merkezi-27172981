@@ -25,6 +25,22 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['Space Grotesk', 'system-ui', 'sans-serif'],
       },
+      fontSize: {
+        'micro': ['0.6875rem', { lineHeight: '1rem' }],    // 11px - smallest allowed
+        'xs':    ['0.8125rem', { lineHeight: '1.125rem' }], // 13px
+        'sm':    ['0.9375rem', { lineHeight: '1.375rem' }], // 15px
+        'base':  ['1.0625rem', { lineHeight: '1.5rem' }],   // 17px
+        'lg':    ['1.25rem',   { lineHeight: '1.75rem' }],   // 20px
+        'xl':    ['1.5rem',    { lineHeight: '2rem' }],      // 24px
+        '2xl':   ['1.75rem',   { lineHeight: '2.25rem' }],   // 28px
+        '3xl':   ['2rem',      { lineHeight: '2.5rem' }],    // 32px
+      },
+      spacing: {
+        '4.5': '1.125rem',  // 18px
+        '13': '3.25rem',    // 52px
+        '15': '3.75rem',    // 60px
+        '18': '4.5rem',     // 72px
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -69,9 +85,17 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        '2xl': '1rem',    // 16px - cards, modals
+        'xl': '0.75rem',  // 12px - buttons, inputs (native standard)
+        'lg': '0.5rem',   // 8px - badges, small elements
+        'md': '0.375rem', // 6px
+        'sm': '0.25rem',  // 4px
+      },
+      boxShadow: {
+        'subtle': '0 1px 3px 0 hsl(0 0% 0% / 0.06)',
+        'card': '0 2px 8px -2px hsl(0 0% 0% / 0.08)',
+        'elevated': '0 4px 16px -4px hsl(0 0% 0% / 0.12)',
+        'glow': '0 0 24px -4px hsl(var(--primary) / 0.15)',
       },
       keyframes: {
         "accordion-down": {

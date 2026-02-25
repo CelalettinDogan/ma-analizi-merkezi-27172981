@@ -39,14 +39,14 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
             <span className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-50" />
             <span className="relative w-2 h-2 sm:w-2.5 sm:h-2.5 bg-red-500 rounded-full block" />
           </motion.div>
-          <span className="text-[10px] sm:text-xs font-semibold text-red-500 uppercase tracking-wider">
+          <span className="text-micro sm:text-xs font-semibold text-red-500 uppercase tracking-wider">
             Canlı
           </span>
         </div>
         
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
           <span className="text-base sm:text-lg flex-shrink-0">{match.competition.area?.flag || '🏆'}</span>
-          <span className="text-[10px] sm:text-xs text-muted-foreground max-w-[70px] sm:max-w-[100px] truncate">
+          <span className="text-micro sm:text-xs text-muted-foreground max-w-[70px] sm:max-w-[100px] truncate">
             {match.competition.name}
           </span>
         </div>
@@ -63,7 +63,7 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
               <span className="text-xs sm:text-sm font-bold">{match.homeTeam.tla || 'H'}</span>
             )}
           </div>
-          <p className="text-[11px] sm:text-sm font-medium truncate px-1">
+          <p className="text-micro sm:text-sm font-medium truncate px-1">
             {match.homeTeam.shortName || match.homeTeam.name}
           </p>
         </div>
@@ -93,7 +93,7 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
           {/* Match Time */}
           <div className="flex items-center gap-1 mt-0.5 sm:mt-1">
             <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-red-500" />
-            <span className="text-[10px] sm:text-xs font-medium text-red-500">{minute}</span>
+            <span className="text-micro sm:text-xs font-medium text-red-500">{minute}</span>
           </div>
         </div>
 
@@ -106,7 +106,7 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
               <span className="text-xs sm:text-sm font-bold">{match.awayTeam.tla || 'A'}</span>
             )}
           </div>
-          <p className="text-[11px] sm:text-sm font-medium truncate px-1">
+          <p className="text-micro sm:text-sm font-medium truncate px-1">
             {match.awayTeam.shortName || match.awayTeam.name}
           </p>
         </div>
@@ -114,7 +114,7 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
 
       {/* Half Time Score */}
       {match.score.halfTime.home !== null && (
-        <div className="text-center text-[10px] sm:text-xs text-muted-foreground mb-2 sm:mb-3">
+        <div className="text-center text-micro sm:text-xs text-muted-foreground mb-2 sm:mb-3">
           İY: {match.score.halfTime.home} - {match.score.halfTime.away}
         </div>
       )}

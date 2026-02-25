@@ -238,25 +238,25 @@ const Chat: React.FC = () => {
               <div className="flex items-center gap-1.5">
                 <h1 className="font-semibold text-sm">VARio - AI Asistan</h1>
                 {isAdmin && (
-                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5 bg-amber-500/20 text-amber-600 border-0">
+                  <Badge variant="secondary" className="text-micro h-4 px-1.5 bg-amber-500/20 text-amber-600 border-0">
                     <Crown className="w-2.5 h-2.5 mr-0.5" />
                     Admin
                   </Badge>
                 )}
                 {isPremiumPro && !isAdmin && (
-                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600 border-0">
+                  <Badge variant="secondary" className="text-micro h-4 px-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600 border-0">
                     <Star className="w-2.5 h-2.5 mr-0.5" />
                     Pro
                   </Badge>
                 )}
                 {isPremiumPlus && !isAdmin && (
-                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5 bg-primary/20 text-primary border-0">
+                  <Badge variant="secondary" className="text-micro h-4 px-1.5 bg-primary/20 text-primary border-0">
                     <Sparkles className="w-2.5 h-2.5 mr-0.5" />
                     Plus
                   </Badge>
                 )}
                 {isPremiumBasic && !isAdmin && (
-                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5 bg-emerald-500/20 text-emerald-600 border-0">
+                  <Badge variant="secondary" className="text-micro h-4 px-1.5 bg-emerald-500/20 text-emerald-600 border-0">
                     Basic
                   </Badge>
                 )}
@@ -270,7 +270,7 @@ const Chat: React.FC = () => {
               <motion.span
                 animate={{ opacity: [1, 0.5, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
-                className="text-[10px] text-emerald-500 font-medium mr-1"
+                className="text-micro text-emerald-500 font-medium mr-1"
               >
                 Yazıyor...
               </motion.span>
@@ -312,7 +312,7 @@ const Chat: React.FC = () => {
                 <p className="text-xs font-medium truncate">
                   {matchContext.homeTeam} vs {matchContext.awayTeam}
                 </p>
-                <p className="text-[10px] text-muted-foreground">{matchContext.league}</p>
+                <p className="text-micro text-muted-foreground">{matchContext.league}</p>
               </div>
               <Button
                 variant="ghost"

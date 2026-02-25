@@ -138,7 +138,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                       <em className="italic text-muted-foreground">{children}</em>
                     ),
                     code: ({ children }) => (
-                      <code className="px-1 py-0.5 bg-muted rounded text-[11px] font-mono text-primary">{children}</code>
+                      <code className="px-1 py-0.5 bg-muted rounded text-micro font-mono text-primary">{children}</code>
                     ),
                     h1: ({ children }) => (
                       <h1 className="text-[15px] font-bold mb-2 mt-2.5 first:mt-0 text-foreground leading-[1.5]">{children}</h1>
@@ -170,7 +170,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
           )}>
             {/* Timestamp - more subtle */}
             {timestamp && (
-              <span className="text-[10px] text-muted-foreground/60">
+              <span className="text-micro text-muted-foreground/60">
                 {formatRelativeTime(timestamp)}
               </span>
             )}

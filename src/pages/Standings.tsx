@@ -122,10 +122,10 @@ const StandingsPage: React.FC = () => {
 
   const getFormIcon = (result: string) => {
     switch (result.trim().toUpperCase()) {
-      case 'W': return <span className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] md:text-xs font-bold border border-primary/30">G</span>;
-      case 'D': return <span className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-secondary/20 text-secondary flex items-center justify-center text-[10px] md:text-xs font-bold border border-secondary/30">B</span>;
-      case 'L': return <span className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-destructive/20 text-destructive flex items-center justify-center text-[10px] md:text-xs font-bold border border-destructive/30">M</span>;
-      default: return <span className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] md:text-xs">-</span>;
+      case 'W': return <span className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-micro md:text-xs font-bold border border-primary/30">G</span>;
+      case 'D': return <span className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-secondary/20 text-secondary flex items-center justify-center text-micro md:text-xs font-bold border border-secondary/30">B</span>;
+      case 'L': return <span className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-destructive/20 text-destructive flex items-center justify-center text-micro md:text-xs font-bold border border-destructive/30">M</span>;
+      default: return <span className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-micro md:text-xs">-</span>;
     }
   };
 
@@ -155,7 +155,7 @@ const StandingsPage: React.FC = () => {
               <p className="text-xs md:text-sm text-muted-foreground">
                 2024/25 Sezonu
                 {lastUpdated && (
-                  <span className="ml-2 text-[10px] md:text-xs">
+                  <span className="ml-2 text-micro md:text-xs">
                     • Son güncelleme: {new Date(lastUpdated).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 )}
@@ -276,7 +276,7 @@ const StandingsPage: React.FC = () => {
                   </ScrollArea>
 
                   {/* Legend */}
-                  <div className="p-3 md:p-4 border-t border-border/50 flex flex-wrap gap-2 md:gap-4 text-[10px] md:text-xs text-muted-foreground">
+                  <div className="p-3 md:p-4 border-t border-border/50 flex flex-wrap gap-2 md:gap-4 text-micro md:text-xs text-muted-foreground">
                     <div className="flex items-center gap-1.5 md:gap-2">
                       <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-primary/50 border border-primary/50" />
                       <span>Şampiyonlar Ligi</span>

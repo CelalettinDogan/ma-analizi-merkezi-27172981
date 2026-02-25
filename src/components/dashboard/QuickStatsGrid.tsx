@@ -81,7 +81,7 @@ export const QuickStatsGrid = ({ stats, isLoading }: QuickStatsGridProps) => {
                 <p className="text-2xl font-bold text-foreground">{item.value}</p>
                 <p className="text-xs text-muted-foreground">{item.label}</p>
                 {item.subtext && (
-                  <p className="text-[10px] text-muted-foreground/70">{item.subtext}</p>
+                  <p className="text-micro text-muted-foreground/70">{item.subtext}</p>
                 )}
               </div>
             </div>

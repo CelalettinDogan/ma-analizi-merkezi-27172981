@@ -139,7 +139,7 @@ const SimilarMatchesSection: React.FC<SimilarMatchesSectionProps> = ({ matches, 
                 )}>
                   {match.similarityScore.toFixed(0)}%
                 </div>
-                <div className="text-[10px] text-muted-foreground">benzerlik</div>
+                <div className="text-micro text-muted-foreground">benzerlik</div>
               </div>
 
               {/* Match Info */}

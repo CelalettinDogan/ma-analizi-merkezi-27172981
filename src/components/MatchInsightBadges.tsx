@@ -43,7 +43,7 @@ const Badge: React.FC<BadgeProps> = ({ icon, label, variant, team }) => (
     {icon}
     <span>{label}</span>
     {team && (
-      <span className="opacity-60 text-[10px]">({team === 'home' ? 'Ev' : 'Dep'})</span>
+      <span className="opacity-60 text-micro">({team === 'home' ? 'Ev' : 'Dep'})</span>
     )}
   </div>
 );

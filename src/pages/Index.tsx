@@ -272,7 +272,7 @@ const Index: React.FC = () => {
     >
       <Search className="w-4 h-4" />
       <span>Ara...</span>
-      <kbd className="ml-2 px-1.5 py-0.5 text-[10px] bg-muted rounded">⌘K</kbd>
+      <kbd className="ml-2 px-1.5 py-0.5 text-micro bg-muted rounded">⌘K</kbd>
     </Button>
   );
 

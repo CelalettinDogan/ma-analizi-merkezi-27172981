@@ -56,7 +56,7 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ className }) => {
           key={statusIndex}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-[10px] text-muted-foreground"
+          className="text-micro text-muted-foreground"
         >
           {statuses[statusIndex]}...
         </motion.span>
