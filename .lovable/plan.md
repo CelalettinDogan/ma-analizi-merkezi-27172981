@@ -1,17 +1,22 @@
 
 
-# Logo Arka Plan Düzeltmesi
+# Logo Kareli Arka Plan Düzeltmesi
 
-## Sorun
-Logo görseli (`src/assets/logo.png`) şeffaf arka plana sahip ve bu nedenle kareli (checkered) bir görüntü oluşuyor.
+## Mevcut Durum
+`bg-white` class'ı `<img>` elementine eklenmiş ama kareli görüntü hâlâ devam ediyor. Bu muhtemelen PNG dosyasının şeffaf alanlarının `object-cover` ile düzgün render edilmemesinden kaynaklanıyor.
 
 ## Çözüm
 
 **Dosya:** `src/components/layout/AppHeader.tsx`
 
-Logo `<img>` elementine beyaz/solid arka plan rengi eklenecek:
-- `bg-white` class'ı eklenerek şeffaf bölgeler beyaz ile doldurulacak
-- Mevcut `rounded-xl` stili korunacak, böylece köşeler yuvarlak kalır
+Daha güçlü bir yaklaşım uygulayacağız:
+1. Logo'nun sarmalayıcı `<div>`'ine de `bg-white rounded-xl overflow-hidden` ekle
+2. `<img>` elementinde `object-cover` yerine `object-contain` kullan (logonun kesilmesini önler)
+3. `<img>` üzerindeki `bg-white` korunsun
 
-Tek satırlık değişiklik: `className`'e `bg-white` eklenmesi.
+Bu şekilde hem container hem image seviyesinde beyaz arka plan sağlanarak şeffaflık tamamen kapatılır.
+
+| Dosya | Değişiklik |
+|-------|-----------|
+| `src/components/layout/AppHeader.tsx` | Container div'e bg-white, img'de object-contain |
 
