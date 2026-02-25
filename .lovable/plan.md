@@ -1,51 +1,37 @@
 
 
-# Tahmin Türüne Göre Dinamik Ağırlıklandırma
+# BTTS Bölümüne "Hibrit Güven" Etiketi Ekleme
 
-## Mevcut Durum
+## Sorun
+Gol analizi bölümündeki Karşılıklı Gol (KG) yüzdesi (%47) sadece Poisson istatistiksel olasılığı gösteriyor. Kullanıcı bunu da "Hibrit" olarak etiketlememizi istiyor, böylece üstteki tahmin kartındaki %74 hibrit güvenle tutarlı bir dil kullanılmış olacak.
 
-`getAIMathWeights()` tüm tahmin türlerini tek bir havuzda toplayarak genel bir AI/Math ağırlık çifti döndürüyor. Bu, örneğin AI'ın "Alt/Üst" tahmininde çok başarılı ama "KG"de zayıf olduğu durumda her ikisine de aynı ağırlığı veriyor.
+## Önemli Not
+Bu %47 değeri aslında saf Poisson istatistiksel olasılığıdır, hibrit güven skoru değildir. İki seçenek var:
 
-## Değişiklik
+1. **Sadece etiketi "Hibrit" yap** — Görsel tutarlılık sağlanır ama teknik olarak yanlış olur
+2. **Gerçek hibrit değeri hesaplayıp göster** — `ScorePredictionChart`'a KG tahmininin hibrit güven skorunu da geçir ve onu göster
 
-### 1. `getAIMathWeights` fonksiyonunu per-type yapıya çevir
+## Plan
 
-**Dosya:** `src/services/mlPredictionService.ts`
+### Yaklaşım: Gerçek hibrit KG güvenini BTTS bölümünde göster
 
-Mevcut fonksiyonun imzasını ve mantığını değiştir:
-- Yeni imza: `getAIMathWeights(predictionType?: string)` 
-- `predictionType` verilirse sadece o satırdan ağırlık hesapla
-- Verilmezse mevcut genel ortalama davranışını koru (fallback)
-- Minimum 20 sample kuralı per-type bazında uygulanır; yeterli veri yoksa `null` döner ve 50/50 kullanılır
+**Dosya:** `src/components/charts/ScorePredictionChart.tsx`
+- Props'a `bttsHybridConfidence?: number` ekle
+- BTTS bölümünde iki satır göster:
+  - **Poisson Olasılığı**: %47 (mevcut değer)
+  - **Hibrit Güven**: %74 (yeni prop'tan gelen değer)
+- Hibrit güven varsa onu da progress bar ile göster
 
-### 2. `useMatchAnalysis.ts`'de her tahmin için ayrı ağırlık çek
-
-**Dosya:** `src/hooks/useMatchAnalysis.ts`
-
-Analiz başlangıcında tek bir `getAIMathWeights()` çağrısı yerine, her tahmin türü için ayrı çağrı:
-- `getAIMathWeights('Maç Sonucu')` → Maç sonucu tahmini için
-- `getAIMathWeights('Toplam Gol Alt/Üst')` → Üst/Alt tahmini için
-- `getAIMathWeights('Karşılıklı Gol')` → KG tahmini için
-- vb.
-
-Her `calculateHybridConfidence` çağrısına ilgili tahmin türünün ağırlığı geçilir. Yeterli veri yoksa o tür için 50/50 kullanılır.
-
-### 3. Admin panelde per-type ağırlık gösterimi
-
-**Dosya:** `src/components/admin/AIManagement.tsx`
-
-"AI vs Matematik" tab'ında her tahmin türü için aktif ağırlıkları göster:
-```
-Maç Sonucu:     AI %49 | Math %51
-Alt/Üst:        AI %56 | Math %44
-Karşılıklı Gol: AI %44 | Math %56
-```
+**Dosya:** `src/components/analysis/AdvancedAnalysisTabs.tsx`, `src/components/AnalysisSection.tsx`, `src/components/analysis/CollapsibleAnalysis.tsx`
+- `ScorePredictionChart` çağrılarına `bttsHybridConfidence` prop'unu ekle
+- Bu değeri `analysis.predictions` içinden KG tahmininin hibrit güveninden hesapla
 
 ### Değişecek Dosyalar
 
 | Dosya | Değişiklik |
 |-------|-----------|
-| `src/services/mlPredictionService.ts` | `getAIMathWeights` fonksiyonuna opsiyonel `predictionType` parametresi ekle |
-| `src/hooks/useMatchAnalysis.ts` | Her tahmin türü için ayrı ağırlık çekip `calculateHybridConfidence`'a geç |
-| `src/components/admin/AIManagement.tsx` | Per-type aktif ağırlıkları göster |
+| `src/components/charts/ScorePredictionChart.tsx` | `bttsHybridConfidence` prop ekle, BTTS bölümünde hibrit güveni de göster |
+| `src/components/analysis/AdvancedAnalysisTabs.tsx` | KG tahmininden hibrit güveni hesaplayıp prop olarak geç |
+| `src/components/AnalysisSection.tsx` | Aynı şekilde hibrit güveni geç |
+| `src/components/analysis/CollapsibleAnalysis.tsx` | Aynı şekilde hibrit güveni geç |
 
