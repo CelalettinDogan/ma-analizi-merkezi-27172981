@@ -796,12 +796,18 @@ export type Database = {
       ml_model_stats: {
         Row: {
           accuracy_percentage: number | null
+          ai_accuracy: number | null
+          ai_correct: number | null
+          ai_total: number | null
           avg_confidence: number | null
           correct_predictions: number | null
           created_at: string
           high_confidence_accuracy: number | null
           id: string
           last_updated: string | null
+          math_accuracy: number | null
+          math_correct: number | null
+          math_total: number | null
           prediction_type: string
           premium_accuracy: number | null
           premium_correct: number | null
@@ -810,12 +816,18 @@ export type Database = {
         }
         Insert: {
           accuracy_percentage?: number | null
+          ai_accuracy?: number | null
+          ai_correct?: number | null
+          ai_total?: number | null
           avg_confidence?: number | null
           correct_predictions?: number | null
           created_at?: string
           high_confidence_accuracy?: number | null
           id?: string
           last_updated?: string | null
+          math_accuracy?: number | null
+          math_correct?: number | null
+          math_total?: number | null
           prediction_type: string
           premium_accuracy?: number | null
           premium_correct?: number | null
@@ -824,12 +836,18 @@ export type Database = {
         }
         Update: {
           accuracy_percentage?: number | null
+          ai_accuracy?: number | null
+          ai_correct?: number | null
+          ai_total?: number | null
           avg_confidence?: number | null
           correct_predictions?: number | null
           created_at?: string
           high_confidence_accuracy?: number | null
           id?: string
           last_updated?: string | null
+          math_accuracy?: number | null
+          math_correct?: number | null
+          math_total?: number | null
           prediction_type?: string
           premium_accuracy?: number | null
           premium_correct?: number | null
@@ -842,7 +860,9 @@ export type Database = {
         Row: {
           actual_result: string | null
           ai_confidence: number | null
+          ai_prediction_value: string | null
           ai_reasoning: string | null
+          ai_was_correct: boolean | null
           away_attack_index: number | null
           away_defense_index: number | null
           away_form_score: number | null
@@ -863,6 +883,8 @@ export type Database = {
           id: string
           is_derby: boolean | null
           match_importance: string | null
+          math_prediction_value: string | null
+          math_was_correct: boolean | null
           mathematical_confidence: number | null
           poisson_away_expected: number | null
           poisson_home_expected: number | null
@@ -877,7 +899,9 @@ export type Database = {
         Insert: {
           actual_result?: string | null
           ai_confidence?: number | null
+          ai_prediction_value?: string | null
           ai_reasoning?: string | null
+          ai_was_correct?: boolean | null
           away_attack_index?: number | null
           away_defense_index?: number | null
           away_form_score?: number | null
@@ -898,6 +922,8 @@ export type Database = {
           id?: string
           is_derby?: boolean | null
           match_importance?: string | null
+          math_prediction_value?: string | null
+          math_was_correct?: boolean | null
           mathematical_confidence?: number | null
           poisson_away_expected?: number | null
           poisson_home_expected?: number | null
@@ -912,7 +938,9 @@ export type Database = {
         Update: {
           actual_result?: string | null
           ai_confidence?: number | null
+          ai_prediction_value?: string | null
           ai_reasoning?: string | null
+          ai_was_correct?: boolean | null
           away_attack_index?: number | null
           away_defense_index?: number | null
           away_form_score?: number | null
@@ -933,6 +961,8 @@ export type Database = {
           id?: string
           is_derby?: boolean | null
           match_importance?: string | null
+          math_prediction_value?: string | null
+          math_was_correct?: boolean | null
           mathematical_confidence?: number | null
           poisson_away_expected?: number | null
           poisson_home_expected?: number | null

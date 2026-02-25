@@ -149,12 +149,15 @@ export function getHybridConfidence(prediction: {
   aiConfidence?: number;
   mathConfidence?: number;
   confidence?: string;
-}): number {
+}, weights?: { aiWeight?: number; mathWeight?: number }): number {
   const ai = prediction.aiConfidence || 0;
   const math = prediction.mathConfidence || 0;
   
   // If we have at least one numerical confidence, compute hybrid
   if (ai > 0 || math > 0) {
+    if (weights?.aiWeight !== undefined && weights?.mathWeight !== undefined && ai > 0 && math > 0) {
+      return (ai * weights.aiWeight + math * weights.mathWeight) * 100;
+    }
     const count = (ai > 0 ? 1 : 0) + (math > 0 ? 1 : 0);
     return ((ai + math) / count) * 100;
   }

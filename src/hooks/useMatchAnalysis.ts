@@ -15,16 +15,26 @@ import {
   convertAIResultToDisplay, 
   convertGoalsPrediction, 
   convertBTTSPrediction,
-  savePredictionFeatures
+  savePredictionFeatures,
+  getAIMathWeights
 } from '@/services/mlPredictionService';
 import { calculatePoissonExpectedGoals, generateScoreProbabilities, calculateMatchResultProbabilities, calculateGoalLineProbabilities as calcGoalLines, calculateBTTSProbability, calculatePowerIndexes, getMostLikelyScores } from '@/utils/poissonCalculator';
 import { calculateMatchImportance, calculateMomentum, calculateCleanSheetRatio } from '@/utils/contextAnalyzer';
 import { isDerbyMatch } from '@/utils/derbyDetector';
 
-// Hibrit güven hesaplama
-function calculateHybridConfidence(aiConfidence: number, mathConfidence: number): 'düşük' | 'orta' | 'yüksek' {
-  // 40% AI, 40% Math, 20% baseline
-  const hybrid = aiConfidence * 0.4 + mathConfidence * 0.4 + 0.5 * 0.2;
+// Hibrit güven hesaplama - dinamik ağırlıklarla
+function calculateHybridConfidence(
+  aiConfidence: number,
+  mathConfidence: number,
+  dynamicWeights?: { aiWeight: number; mathWeight: number } | null
+): 'düşük' | 'orta' | 'yüksek' {
+  let hybrid: number;
+  if (dynamicWeights) {
+    hybrid = aiConfidence * dynamicWeights.aiWeight + mathConfidence * dynamicWeights.mathWeight;
+  } else {
+    // Varsayılan: 40% AI, 40% Math, 20% baseline
+    hybrid = aiConfidence * 0.4 + mathConfidence * 0.4 + 0.5 * 0.2;
+  }
   if (hybrid >= 0.7) return 'yüksek';
   if (hybrid >= 0.5) return 'orta';
   return 'düşük';
@@ -164,11 +174,11 @@ export function useMatchAnalysis() {
         isAIEnhanced = true;
         const ai = mlResult.predictions;
         finalPredictions = [
-          { type: 'Maç Sonucu', prediction: convertAIResultToDisplay(ai.matchResult.prediction, effectiveHome.team.name, effectiveAway.team.name), confidence: calculateHybridConfidence(ai.matchResult.confidence, mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Maç Sonucu')?.confidence || 'orta')), reasoning: ai.matchResult.reasoning, isAIPowered: true, aiConfidence: ai.matchResult.confidence, mathConfidence: mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Maç Sonucu')?.confidence || 'orta') },
-          { type: 'Toplam Gol Alt/Üst', prediction: convertGoalsPrediction(ai.totalGoals.prediction), confidence: calculateHybridConfidence(ai.totalGoals.confidence, mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Toplam Gol Alt/Üst')?.confidence || 'orta')), reasoning: ai.totalGoals.reasoning, isAIPowered: true, aiConfidence: ai.totalGoals.confidence, mathConfidence: mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Toplam Gol Alt/Üst')?.confidence || 'orta') },
-          { type: 'Karşılıklı Gol', prediction: convertBTTSPrediction(ai.bothTeamsScore.prediction), confidence: calculateHybridConfidence(ai.bothTeamsScore.confidence, mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Karşılıklı Gol')?.confidence || 'orta')), reasoning: ai.bothTeamsScore.reasoning, isAIPowered: true, aiConfidence: ai.bothTeamsScore.confidence, mathConfidence: mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Karşılıklı Gol')?.confidence || 'orta') },
+          { type: 'Maç Sonucu', prediction: convertAIResultToDisplay(ai.matchResult.prediction, effectiveHome.team.name, effectiveAway.team.name), confidence: calculateHybridConfidence(ai.matchResult.confidence, mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Maç Sonucu')?.confidence || 'orta'), null), reasoning: ai.matchResult.reasoning, isAIPowered: true, aiConfidence: ai.matchResult.confidence, mathConfidence: mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Maç Sonucu')?.confidence || 'orta') },
+          { type: 'Toplam Gol Alt/Üst', prediction: convertGoalsPrediction(ai.totalGoals.prediction), confidence: calculateHybridConfidence(ai.totalGoals.confidence, mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Toplam Gol Alt/Üst')?.confidence || 'orta'), null), reasoning: ai.totalGoals.reasoning, isAIPowered: true, aiConfidence: ai.totalGoals.confidence, mathConfidence: mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Toplam Gol Alt/Üst')?.confidence || 'orta') },
+          { type: 'Karşılıklı Gol', prediction: convertBTTSPrediction(ai.bothTeamsScore.prediction), confidence: calculateHybridConfidence(ai.bothTeamsScore.confidence, mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Karşılıklı Gol')?.confidence || 'orta'), null), reasoning: ai.bothTeamsScore.reasoning, isAIPowered: true, aiConfidence: ai.bothTeamsScore.confidence, mathConfidence: mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Karşılıklı Gol')?.confidence || 'orta') },
           { type: 'Doğru Skor', prediction: ai.correctScore.prediction, confidence: aiConfidenceToString(ai.correctScore.confidence), reasoning: ai.correctScore.reasoning, isAIPowered: true, aiConfidence: ai.correctScore.confidence, mathConfidence: 0.3 },
-          { type: 'İlk Yarı Sonucu', prediction: convertAIResultToDisplay(ai.firstHalf.prediction, effectiveHome.team.name, effectiveAway.team.name), confidence: calculateHybridConfidence(ai.firstHalf.confidence, mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'İlk Yarı Sonucu')?.confidence || 'orta')), reasoning: ai.firstHalf.reasoning, isAIPowered: true, aiConfidence: ai.firstHalf.confidence, mathConfidence: mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'İlk Yarı Sonucu')?.confidence || 'orta') },
+          { type: 'İlk Yarı Sonucu', prediction: convertAIResultToDisplay(ai.firstHalf.prediction, effectiveHome.team.name, effectiveAway.team.name), confidence: calculateHybridConfidence(ai.firstHalf.confidence, mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'İlk Yarı Sonucu')?.confidence || 'orta'), null), reasoning: ai.firstHalf.reasoning, isAIPowered: true, aiConfidence: ai.firstHalf.confidence, mathConfidence: mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'İlk Yarı Sonucu')?.confidence || 'orta') },
         ];
       }
     } catch (aiError) {
@@ -207,6 +217,14 @@ export function useMatchAnalysis() {
   const analyzeMatch = async (data: MatchInput) => {
     setIsLoading(true);
 
+    // Fetch dynamic AI vs Math weights
+    let dynamicWeights: { aiWeight: number; mathWeight: number } | null = null;
+    try {
+      dynamicWeights = await getAIMathWeights();
+      if (dynamicWeights) {
+        console.log(`[useMatchAnalysis] Dynamic weights: AI=${(dynamicWeights.aiWeight * 100).toFixed(1)}%, Math=${(dynamicWeights.mathWeight * 100).toFixed(1)}%`);
+      }
+    } catch (e) { console.warn('[useMatchAnalysis] Failed to fetch dynamic weights:', e); }
     try {
       // Lig kodunu bul
       const competition = SUPPORTED_COMPETITIONS.find(
@@ -561,7 +579,8 @@ export function useMatchAnalysis() {
               prediction: convertAIResultToDisplay(ai.matchResult.prediction, homeStanding.team.name, awayStanding.team.name),
               confidence: calculateHybridConfidence(
                 ai.matchResult.confidence,
-                mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Maç Sonucu')?.confidence || 'orta')
+                mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Maç Sonucu')?.confidence || 'orta'),
+                dynamicWeights
               ),
               reasoning: ai.matchResult.reasoning,
               isAIPowered: true,
@@ -588,7 +607,8 @@ export function useMatchAnalysis() {
                 }
                 return calculateHybridConfidence(
                   ai.totalGoals.confidence,
-                  mathConfidenceToNumber(mathPred?.confidence || 'orta')
+                  mathConfidenceToNumber(mathPred?.confidence || 'orta'),
+                  dynamicWeights
                 );
               })(),
               reasoning: ai.totalGoals.reasoning,
@@ -601,7 +621,8 @@ export function useMatchAnalysis() {
               prediction: convertBTTSPrediction(ai.bothTeamsScore.prediction),
               confidence: calculateHybridConfidence(
                 ai.bothTeamsScore.confidence,
-                mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Karşılıklı Gol')?.confidence || 'orta')
+                mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Karşılıklı Gol')?.confidence || 'orta'),
+                dynamicWeights
               ),
               reasoning: ai.bothTeamsScore.reasoning,
               isAIPowered: true,
@@ -622,7 +643,8 @@ export function useMatchAnalysis() {
               prediction: convertAIResultToDisplay(ai.firstHalf.prediction, homeStanding.team.name, awayStanding.team.name),
               confidence: calculateHybridConfidence(
                 ai.firstHalf.confidence,
-                mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'İlk Yarı Sonucu')?.confidence || 'orta')
+                mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'İlk Yarı Sonucu')?.confidence || 'orta'),
+                dynamicWeights
               ),
               reasoning: ai.firstHalf.reasoning,
               isAIPowered: true,
@@ -679,6 +701,16 @@ export function useMatchAnalysis() {
             mathConf,
             { homeExpected: expectedGoals.homeExpected, awayExpected: expectedGoals.awayExpected }
           );
+          
+          // Add AI and Math prediction values for separate tracking
+          const primaryPred = result.predictions[0];
+          if (primaryPred && isAIEnhanced) {
+            (featureRecord as any).ai_prediction_value = primaryPred.prediction;
+            const mathPred = mathResult.predictions.find(p => p.type === primaryPred.type);
+            if (mathPred) {
+              (featureRecord as any).math_prediction_value = mathPred.prediction;
+            }
+          }
           
           await savePredictionFeatures(predictionId, featureRecord);
           console.log('[ML] Prediction features saved for learning loop');

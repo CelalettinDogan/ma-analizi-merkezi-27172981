@@ -238,15 +238,20 @@ export async function savePredictionFeatures(
     hybrid_confidence: number;
     poisson_home_expected?: number | null;
     poisson_away_expected?: number | null;
+    ai_prediction_value?: string | null;
+    math_prediction_value?: string | null;
   }
 ): Promise<void> {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const insertData: any = {
+      prediction_id: predictionId,
+      ...features,
+    };
+
     const { error } = await supabase
       .from('prediction_features')
-      .insert({
-        prediction_id: predictionId,
-        ...features,
-      });
+      .insert(insertData);
 
     if (error) {
       console.error('Error saving prediction features:', error);
@@ -259,7 +264,9 @@ export async function savePredictionFeatures(
 // Update ML model stats after verification
 export async function updateMLModelStats(
   predictionType: string,
-  wasCorrect: boolean
+  wasCorrect: boolean,
+  aiWasCorrect?: boolean | null,
+  mathWasCorrect?: boolean | null
 ): Promise<void> {
   try {
     // First, try to get existing stats
@@ -275,27 +282,105 @@ export async function updateMLModelStats(
       const newCorrect = (existing.correct_predictions || 0) + (wasCorrect ? 1 : 0);
       const accuracy = Math.round((newCorrect / newTotal) * 100 * 100) / 100;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updateData: any = {
+        total_predictions: newTotal,
+        correct_predictions: newCorrect,
+        accuracy_percentage: accuracy,
+        last_updated: new Date().toISOString(),
+      };
+
+      // Update AI-specific stats
+      if (aiWasCorrect !== undefined && aiWasCorrect !== null) {
+        const aiTotal = ((existing as any).ai_total || 0) + 1;
+        const aiCorrect = ((existing as any).ai_correct || 0) + (aiWasCorrect ? 1 : 0);
+        updateData.ai_total = aiTotal;
+        updateData.ai_correct = aiCorrect;
+        updateData.ai_accuracy = Math.round((aiCorrect / aiTotal) * 100 * 100) / 100;
+      }
+
+      // Update Math-specific stats
+      if (mathWasCorrect !== undefined && mathWasCorrect !== null) {
+        const mathTotal = ((existing as any).math_total || 0) + 1;
+        const mathCorrect = ((existing as any).math_correct || 0) + (mathWasCorrect ? 1 : 0);
+        updateData.math_total = mathTotal;
+        updateData.math_correct = mathCorrect;
+        updateData.math_accuracy = Math.round((mathCorrect / mathTotal) * 100 * 100) / 100;
+      }
+
       await supabase
         .from('ml_model_stats')
-        .update({
-          total_predictions: newTotal,
-          correct_predictions: newCorrect,
-          accuracy_percentage: accuracy,
-          last_updated: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq('prediction_type', predictionType);
     } else {
       // Create new record
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const insertData: any = {
+        prediction_type: predictionType,
+        total_predictions: 1,
+        correct_predictions: wasCorrect ? 1 : 0,
+        accuracy_percentage: wasCorrect ? 100 : 0,
+      };
+
+      if (aiWasCorrect !== undefined && aiWasCorrect !== null) {
+        insertData.ai_total = 1;
+        insertData.ai_correct = aiWasCorrect ? 1 : 0;
+        insertData.ai_accuracy = aiWasCorrect ? 100 : 0;
+      }
+
+      if (mathWasCorrect !== undefined && mathWasCorrect !== null) {
+        insertData.math_total = 1;
+        insertData.math_correct = mathWasCorrect ? 1 : 0;
+        insertData.math_accuracy = mathWasCorrect ? 100 : 0;
+      }
+
       await supabase
         .from('ml_model_stats')
-        .insert({
-          prediction_type: predictionType,
-          total_predictions: 1,
-          correct_predictions: wasCorrect ? 1 : 0,
-          accuracy_percentage: wasCorrect ? 100 : 0,
-        });
+        .insert(insertData);
     }
   } catch (error) {
     console.error('Error updating ML model stats:', error);
+  }
+}
+
+// Get AI vs Math accuracy weights for dynamic hybrid scoring
+export async function getAIMathWeights(): Promise<{ aiWeight: number; mathWeight: number } | null> {
+  try {
+    const { data, error } = await supabase
+      .from('ml_model_stats')
+      .select('ai_total, ai_accuracy, math_total, math_accuracy');
+
+    if (error || !data || data.length === 0) return null;
+
+    let totalAiTotal = 0;
+    let totalMathTotal = 0;
+    let weightedAiAccuracy = 0;
+    let weightedMathAccuracy = 0;
+
+    data.forEach((stat: any) => {
+      const aiT = stat.ai_total || 0;
+      const mathT = stat.math_total || 0;
+      totalAiTotal += aiT;
+      totalMathTotal += mathT;
+      weightedAiAccuracy += (stat.ai_accuracy || 0) * aiT;
+      weightedMathAccuracy += (stat.math_accuracy || 0) * mathT;
+    });
+
+    // Need minimum 20 samples from each to use dynamic weights
+    if (totalAiTotal < 20 || totalMathTotal < 20) return null;
+
+    const avgAiAccuracy = weightedAiAccuracy / totalAiTotal;
+    const avgMathAccuracy = weightedMathAccuracy / totalMathTotal;
+
+    const total = avgAiAccuracy + avgMathAccuracy;
+    if (total === 0) return null;
+
+    return {
+      aiWeight: avgAiAccuracy / total,
+      mathWeight: avgMathAccuracy / total,
+    };
+  } catch (error) {
+    console.error('Error fetching AI/Math weights:', error);
+    return null;
   }
 }
