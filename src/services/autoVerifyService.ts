@@ -206,19 +206,56 @@ async function verifyPredictionWithMatch(
     return null;
   }
 
-  // Update ML model stats for learning loop
+  // Check AI and Math predictions separately from prediction_features
+  let aiWasCorrect: boolean | null = null;
+  let mathWasCorrect: boolean | null = null;
+
   try {
-    await updateMLModelStats(prediction.prediction_type, isCorrect);
-    console.log(`ML stats updated for ${prediction.prediction_type}: ${isCorrect ? 'correct' : 'incorrect'}`);
-  } catch (mlError) {
-    console.error('Error updating ML stats:', mlError);
+    const { data: features } = await supabase
+      .from('prediction_features')
+      .select('ai_prediction_value, math_prediction_value')
+      .eq('prediction_id', prediction.id)
+      .single();
+
+    if (features) {
+      const aiPredValue = (features as any).ai_prediction_value;
+      const mathPredValue = (features as any).math_prediction_value;
+
+      if (aiPredValue) {
+        aiWasCorrect = checkPredictionCorrect(
+          prediction.prediction_type, aiPredValue, homeScore, awayScore, prediction.home_team, prediction.away_team
+        );
+      }
+      if (mathPredValue) {
+        mathWasCorrect = checkPredictionCorrect(
+          prediction.prediction_type, mathPredValue, homeScore, awayScore, prediction.home_team, prediction.away_team
+        );
+      }
+
+      // Update ai_was_correct and math_was_correct
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updateData: any = {
+        was_correct: isCorrect,
+        actual_result: actualResult,
+      };
+      if (aiWasCorrect !== null) updateData.ai_was_correct = aiWasCorrect;
+      if (mathWasCorrect !== null) updateData.math_was_correct = mathWasCorrect;
+
+      await supabase
+        .from('prediction_features')
+        .update(updateData)
+        .eq('prediction_id', prediction.id);
+    }
+  } catch (featError) {
+    console.error('Error checking AI/Math individual correctness:', featError);
   }
 
-  // Update prediction features for learning feedback
+  // Update ML model stats for learning loop (with AI/Math separate tracking)
   try {
-    await updatePredictionFeatures(prediction.id, isCorrect, actualResult);
-  } catch (featError) {
-    console.error('Error updating features:', featError);
+    await updateMLModelStats(prediction.prediction_type, isCorrect, aiWasCorrect, mathWasCorrect);
+    console.log(`ML stats updated for ${prediction.prediction_type}: hybrid=${isCorrect}, ai=${aiWasCorrect}, math=${mathWasCorrect}`);
+  } catch (mlError) {
+    console.error('Error updating ML stats:', mlError);
   }
 
   return {

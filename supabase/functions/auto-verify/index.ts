@@ -572,9 +572,37 @@ serve(async (req) => {
               continue;
             }
 
-            // Update ML model stats
+            // Update ML model stats - with AI vs Math separate tracking
             const isPremium = prediction.is_premium === true;
             
+            // Fetch AI and Math prediction values for separate verification
+            let aiWasCorrect: boolean | null = null;
+            let mathWasCorrect: boolean | null = null;
+            
+            const { data: featureData } = await supabase
+              .from('prediction_features')
+              .select('ai_prediction_value, math_prediction_value')
+              .eq('prediction_id', prediction.id)
+              .single();
+
+            if (featureData) {
+              const aiPredValue = featureData.ai_prediction_value;
+              const mathPredValue = featureData.math_prediction_value;
+
+              if (aiPredValue) {
+                aiWasCorrect = checkPredictionCorrect(
+                  prediction.prediction_type, aiPredValue, homeScore, awayScore,
+                  prediction.home_team, prediction.away_team, halfTimeHome, halfTimeAway
+                );
+              }
+              if (mathPredValue) {
+                mathWasCorrect = checkPredictionCorrect(
+                  prediction.prediction_type, mathPredValue, homeScore, awayScore,
+                  prediction.home_team, prediction.away_team, halfTimeHome, halfTimeAway
+                );
+              }
+            }
+
             const { error: mlError } = await supabase.rpc('increment_ml_stats', {
               p_prediction_type: prediction.prediction_type,
               p_is_correct: isCorrect,
@@ -597,41 +625,76 @@ serve(async (req) => {
                 const premiumCorrect = isPremium ? (existing.premium_correct || 0) + (isCorrect ? 1 : 0) : (existing.premium_correct || 0);
                 const premiumAccuracy = premiumTotal > 0 ? (premiumCorrect / premiumTotal) * 100 : 0;
 
+                const updateData: any = {
+                  total_predictions: newTotal,
+                  correct_predictions: newCorrect,
+                  accuracy_percentage: newAccuracy,
+                  premium_total: premiumTotal,
+                  premium_correct: premiumCorrect,
+                  premium_accuracy: premiumAccuracy,
+                  last_updated: new Date().toISOString(),
+                };
+
+                // AI separate stats
+                if (aiWasCorrect !== null) {
+                  const aiTotal = (existing.ai_total || 0) + 1;
+                  const aiCorrect = (existing.ai_correct || 0) + (aiWasCorrect ? 1 : 0);
+                  updateData.ai_total = aiTotal;
+                  updateData.ai_correct = aiCorrect;
+                  updateData.ai_accuracy = (aiCorrect / aiTotal) * 100;
+                }
+
+                // Math separate stats
+                if (mathWasCorrect !== null) {
+                  const mathTotal = (existing.math_total || 0) + 1;
+                  const mathCorrect = (existing.math_correct || 0) + (mathWasCorrect ? 1 : 0);
+                  updateData.math_total = mathTotal;
+                  updateData.math_correct = mathCorrect;
+                  updateData.math_accuracy = (mathCorrect / mathTotal) * 100;
+                }
+
                 await supabase
                   .from('ml_model_stats')
-                  .update({
-                    total_predictions: newTotal,
-                    correct_predictions: newCorrect,
-                    accuracy_percentage: newAccuracy,
-                    premium_total: premiumTotal,
-                    premium_correct: premiumCorrect,
-                    premium_accuracy: premiumAccuracy,
-                    last_updated: new Date().toISOString(),
-                  })
+                  .update(updateData)
                   .eq('prediction_type', prediction.prediction_type);
               } else {
+                const insertData: any = {
+                  prediction_type: prediction.prediction_type,
+                  total_predictions: 1,
+                  correct_predictions: isCorrect ? 1 : 0,
+                  accuracy_percentage: isCorrect ? 100 : 0,
+                  premium_total: isPremium ? 1 : 0,
+                  premium_correct: isPremium && isCorrect ? 1 : 0,
+                  premium_accuracy: isPremium ? (isCorrect ? 100 : 0) : 0,
+                  last_updated: new Date().toISOString(),
+                };
+                if (aiWasCorrect !== null) {
+                  insertData.ai_total = 1;
+                  insertData.ai_correct = aiWasCorrect ? 1 : 0;
+                  insertData.ai_accuracy = aiWasCorrect ? 100 : 0;
+                }
+                if (mathWasCorrect !== null) {
+                  insertData.math_total = 1;
+                  insertData.math_correct = mathWasCorrect ? 1 : 0;
+                  insertData.math_accuracy = mathWasCorrect ? 100 : 0;
+                }
                 await supabase
                   .from('ml_model_stats')
-                  .insert({
-                    prediction_type: prediction.prediction_type,
-                    total_predictions: 1,
-                    correct_predictions: isCorrect ? 1 : 0,
-                    accuracy_percentage: isCorrect ? 100 : 0,
-                    premium_total: isPremium ? 1 : 0,
-                    premium_correct: isPremium && isCorrect ? 1 : 0,
-                    premium_accuracy: isPremium ? (isCorrect ? 100 : 0) : 0,
-                    last_updated: new Date().toISOString(),
-                  });
+                  .insert(insertData);
               }
             }
 
-            // Update prediction_features table
+            // Update prediction_features table with AI/Math correctness
+            const featureUpdateData: any = {
+              was_correct: isCorrect,
+              actual_result: actualResult,
+            };
+            if (aiWasCorrect !== null) featureUpdateData.ai_was_correct = aiWasCorrect;
+            if (mathWasCorrect !== null) featureUpdateData.math_was_correct = mathWasCorrect;
+
             await supabase
               .from('prediction_features')
-              .update({
-                was_correct: isCorrect,
-                actual_result: actualResult,
-              })
+              .update(featureUpdateData)
               .eq('prediction_id', prediction.id);
 
             // === BET SLIP ITEMS VERIFICATION ===
