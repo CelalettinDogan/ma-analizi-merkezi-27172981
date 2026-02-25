@@ -9,12 +9,6 @@ import { format, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/contexts/AuthContext';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 interface MatchCarouselProps {
   matches: Match[];
@@ -22,21 +16,13 @@ interface MatchCarouselProps {
   isLoading?: boolean;
 }
 
-interface MatchSlideProps {
+const MatchSlide: React.FC<{
   match: Match;
   onSelect: () => void;
   isFavorite: (type: 'team' | 'league', id: string) => boolean;
   onToggleFavorite: (type: 'team' | 'league', id: string, name: string) => void;
   isLoggedIn: boolean;
-}
-
-const MatchSlide: React.FC<MatchSlideProps> = ({ 
-  match, 
-  onSelect, 
-  isFavorite, 
-  onToggleFavorite,
-  isLoggedIn 
-}) => {
+}> = ({ match, onSelect, isFavorite, onToggleFavorite, isLoggedIn }) => {
   const matchDate = parseISO(match.utcDate);
   const isLive = match.status === 'IN_PLAY' || match.status === 'PAUSED';
   const isFinished = match.status === 'FINISHED';
@@ -53,133 +39,102 @@ const MatchSlide: React.FC<MatchSlideProps> = ({
 
   return (
     <motion.div
-      whileHover={{ scale: 1.02, y: -4 }}
-      whileTap={{ scale: 0.98 }}
-      className="flex-shrink-0 w-[280px] md:w-[320px]"
+      whileTap={{ scale: 0.97 }}
+      className="flex-shrink-0 w-[260px] md:w-[300px]"
     >
       <button
         onClick={onSelect}
         className={cn(
-          "w-full p-4 rounded-2xl text-left transition-all duration-300",
-          "bg-gradient-to-br from-card to-card/80 border border-border/50",
-          "hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5",
-          "focus:outline-none focus:ring-2 focus:ring-primary/50"
+          "w-full p-4 rounded-2xl text-left transition-all",
+          "bg-card/50 backdrop-blur-sm border border-border/20",
+          "active:bg-card/70",
+          "focus:outline-none focus:ring-2 focus:ring-primary/30"
         )}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">{match.competition.area?.flag || '🏆'}</span>
-            <span className="text-xs text-muted-foreground truncate max-w-[120px]">
+        {/* Header — league + status */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-1.5">
+            <span className="text-base">{match.competition.area?.flag || '🏆'}</span>
+            <span className="text-micro text-muted-foreground/60 truncate max-w-[100px]">
               {match.competition.name}
             </span>
           </div>
           {isLive ? (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-500/20 text-red-500 text-xs font-medium">
-              <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-destructive/10 text-destructive text-micro font-medium">
+              <span className="w-1.5 h-1.5 bg-destructive rounded-full animate-pulse" />
               CANLI
             </span>
           ) : isFinished ? (
-            <span className="text-xs text-muted-foreground">Bitti</span>
+            <span className="text-micro text-muted-foreground/40">Bitti</span>
           ) : (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-micro text-muted-foreground/60 tabular-nums">
               {format(matchDate, 'HH:mm', { locale: tr })}
             </span>
           )}
         </div>
 
         {/* Teams */}
-        <div className="space-y-3">
-          {/* Home Team */}
+        <div className="space-y-2.5">
+          {/* Home */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center overflow-hidden">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className="w-7 h-7 rounded-lg bg-muted/30 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {match.homeTeam.crest ? (
-                  <img src={match.homeTeam.crest} alt="" className="w-6 h-6 object-contain" />
+                  <img src={match.homeTeam.crest} alt="" className="w-5 h-5 object-contain" />
                 ) : (
-                  <span className="text-xs font-bold">{match.homeTeam.tla || 'H'}</span>
+                  <span className="text-micro font-bold text-muted-foreground">{match.homeTeam.tla || 'H'}</span>
                 )}
               </div>
-              <span className="font-medium text-sm truncate max-w-[120px]">
+              <span className="text-sm truncate">
                 {match.homeTeam.shortName || match.homeTeam.name}
               </span>
               {isLoggedIn && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={(e) => handleFavoriteClick(e, homeTeamId, match.homeTeam.name)}
-                        className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-muted/50 transition-colors touch-manipulation"
-                      >
-                        <Heart 
-                          className={cn(
-                            "w-4 h-4 transition-colors",
-                            isHomeFavorite 
-                              ? "fill-red-500 text-red-500" 
-                              : "text-muted-foreground hover:text-red-400"
-                          )} 
-                        />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      <p className="text-xs">
-                        {isHomeFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle'}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <button
+                  onClick={(e) => handleFavoriteClick(e, homeTeamId, match.homeTeam.name)}
+                  className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full touch-manipulation shrink-0"
+                >
+                  <Heart className={cn(
+                    "w-3.5 h-3.5 transition-colors",
+                    isHomeFavorite ? "fill-destructive text-destructive" : "text-muted-foreground/30"
+                  )} />
+                </button>
               )}
             </div>
             <span className={cn(
-              "text-lg font-bold tabular-nums",
+              "text-base font-semibold tabular-nums",
               isLive && "text-primary"
             )}>
               {match.score.fullTime.home ?? '-'}
             </span>
           </div>
 
-          {/* Away Team */}
+          {/* Away */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center overflow-hidden">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className="w-7 h-7 rounded-lg bg-muted/30 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {match.awayTeam.crest ? (
-                  <img src={match.awayTeam.crest} alt="" className="w-6 h-6 object-contain" />
+                  <img src={match.awayTeam.crest} alt="" className="w-5 h-5 object-contain" />
                 ) : (
-                  <span className="text-xs font-bold">{match.awayTeam.tla || 'A'}</span>
+                  <span className="text-micro font-bold text-muted-foreground">{match.awayTeam.tla || 'A'}</span>
                 )}
               </div>
-              <span className="font-medium text-sm truncate max-w-[120px]">
+              <span className="text-sm truncate">
                 {match.awayTeam.shortName || match.awayTeam.name}
               </span>
               {isLoggedIn && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={(e) => handleFavoriteClick(e, awayTeamId, match.awayTeam.name)}
-                        className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-muted/50 transition-colors touch-manipulation"
-                      >
-                        <Heart 
-                          className={cn(
-                            "w-4 h-4 transition-colors",
-                            isAwayFavorite 
-                              ? "fill-red-500 text-red-500" 
-                              : "text-muted-foreground hover:text-red-400"
-                          )} 
-                        />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      <p className="text-xs">
-                        {isAwayFavorite ? 'Favorilerden çıkar' : 'Favorilere ekle'}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <button
+                  onClick={(e) => handleFavoriteClick(e, awayTeamId, match.awayTeam.name)}
+                  className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-full touch-manipulation shrink-0"
+                >
+                  <Heart className={cn(
+                    "w-3.5 h-3.5 transition-colors",
+                    isAwayFavorite ? "fill-destructive text-destructive" : "text-muted-foreground/30"
+                  )} />
+                </button>
               )}
             </div>
             <span className={cn(
-              "text-lg font-bold tabular-nums",
+              "text-base font-semibold tabular-nums",
               isLive && "text-primary"
             )}>
               {match.score.fullTime.away ?? '-'}
@@ -188,12 +143,11 @@ const MatchSlide: React.FC<MatchSlideProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="mt-4 pt-3 border-t border-border/30 flex items-center justify-between">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Calendar className="w-3 h-3" />
-            <span>{format(matchDate, 'd MMM', { locale: tr })}</span>
-          </div>
-          <span className="text-xs text-primary font-medium">Analiz Et →</span>
+        <div className="mt-3 pt-2.5 border-t border-border/10 flex items-center justify-between">
+          <span className="text-micro text-muted-foreground/40 tabular-nums">
+            {format(matchDate, 'd MMM', { locale: tr })}
+          </span>
+          <span className="text-micro text-primary font-medium">Analiz Et →</span>
         </div>
       </button>
     </motion.div>
@@ -214,11 +168,11 @@ const MatchCarousel: React.FC<MatchCarouselProps> = ({ matches, onMatchSelect, i
 
   if (isLoading) {
     return (
-      <div className="flex gap-4 overflow-hidden">
+      <div className="flex gap-3 overflow-hidden">
         {Array.from({ length: 3 }).map((_, i) => (
           <div 
             key={i}
-            className="flex-shrink-0 w-[280px] md:w-[320px] h-[180px] rounded-2xl bg-muted/30 animate-pulse"
+            className="flex-shrink-0 w-[260px] md:w-[300px] h-[160px] rounded-2xl bg-muted/10 animate-pulse"
           />
         ))}
       </div>
@@ -227,8 +181,8 @@ const MatchCarousel: React.FC<MatchCarouselProps> = ({ matches, onMatchSelect, i
 
   if (matches.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50" />
+      <div className="text-center py-8 text-muted-foreground/50">
+        <Calendar className="w-8 h-8 mx-auto mb-2 opacity-30" />
         <p className="text-sm">Yaklaşan maç bulunamadı</p>
       </div>
     );
@@ -236,7 +190,7 @@ const MatchCarousel: React.FC<MatchCarouselProps> = ({ matches, onMatchSelect, i
 
   return (
     <div className="relative group">
-      {/* Navigation Buttons */}
+      {/* Nav buttons — desktop only */}
       <Button
         variant="ghost"
         size="icon"
@@ -254,9 +208,8 @@ const MatchCarousel: React.FC<MatchCarouselProps> = ({ matches, onMatchSelect, i
         <ChevronRight className="w-5 h-5" />
       </Button>
 
-      {/* Carousel */}
       <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           {matches.map((match) => (
             <MatchSlide
               key={match.id}
@@ -270,8 +223,8 @@ const MatchCarousel: React.FC<MatchCarouselProps> = ({ matches, onMatchSelect, i
         </div>
       </div>
 
-      {/* Gradient Fade */}
-      <div className="absolute top-0 right-0 bottom-0 w-12 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+      {/* Fade edge */}
+      <div className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none" />
     </div>
   );
 };
