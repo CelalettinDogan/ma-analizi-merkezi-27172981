@@ -108,7 +108,7 @@ const AdvancedAnalysisTabs: React.FC<AdvancedAnalysisTabsProps> = ({ analysis })
                 {tab.icon}
                 <span className="text-sm">{tab.label}</span>
                 {tab.badge && (
-                  <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-muted text-muted-foreground">
+                  <span className="px-1.5 py-0.5 text-micro rounded-full bg-muted text-muted-foreground">
                     {tab.badge}
                   </span>
                 )}

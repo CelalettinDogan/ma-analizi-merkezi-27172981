@@ -28,7 +28,7 @@ const FormBadge = memo<FormBadgeProps>(({ result }) => {
   
   return (
     <span className={cn(
-      "w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-[10px] md:text-xs font-bold border",
+      "w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-micro md:text-xs font-bold border",
       c.bg, c.text, c.border
     )}>
       {c.label}

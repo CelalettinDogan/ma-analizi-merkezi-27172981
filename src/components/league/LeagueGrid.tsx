@@ -104,7 +104,7 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
                     {hasLive && (
                       <Badge 
                         variant="destructive" 
-                        className="text-[10px] px-1.5 py-0 h-4 ml-0.5 sm:ml-1 animate-pulse"
+                        className="text-micro px-1.5 py-0 h-4 ml-0.5 sm:ml-1 animate-pulse"
                       >
                         {matchCounts[league.code]}
                       </Badge>

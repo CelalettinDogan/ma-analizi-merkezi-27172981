@@ -27,7 +27,6 @@ import { useAnalysisLimit } from '@/hooks/useAnalysisLimit';
 import { useChatbot } from '@/hooks/useChatbot';
 import { useTheme } from 'next-themes';
 import AppHeader from '@/components/layout/AppHeader';
-import AppFooter from '@/components/layout/AppFooter';
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -209,7 +208,7 @@ const Profile = () => {
             </CardContent>
           </Card>
         </main>
-        <AppFooter />
+        
       </div>
     );
   }
@@ -234,309 +233,245 @@ const Profile = () => {
           variants={containerVariants}
           className="space-y-3 max-w-lg mx-auto"
         >
-          {/* Profile Header - Compact */}
+          {/* Profile + Status — Single unified card */}
           <motion.div variants={itemVariants}>
             <Card className="glass-card">
-              <CardContent className="py-4 px-4">
+              <CardContent className="p-4 space-y-4">
+                {/* User info row */}
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12 xs:h-14 xs:w-14 border-2 border-primary/30 flex-shrink-0">
-                    <AvatarFallback className="bg-primary/10 text-primary text-base xs:text-lg font-bold">{initials}</AvatarFallback>
+                    <AvatarFallback className="bg-primary/10 text-primary text-base font-bold">{initials}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <h1 className="text-base xs:text-lg font-bold truncate">{displayName}</h1>
+                      <h1 className="text-base font-bold truncate font-display">{displayName}</h1>
                       {(isPremium || isAdmin) && <Crown className="h-4 w-4 text-amber-500 flex-shrink-0" />}
                     </div>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                    {memberSince && <p className="text-[11px] text-muted-foreground mt-0.5">Üye: {memberSince}</p>}
+                    {memberSince && <p className="text-micro text-muted-foreground mt-0.5">Üye: {memberSince}</p>}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
 
-          {/* User Status Card - Compact */}
-          <motion.div variants={itemVariants}>
-            <Card className="glass-card border-primary/20">
-              <CardContent className="py-3 px-4">
-                <div className="space-y-3">
-                  {/* Plan Badge */}
-                  <div className="flex items-center">
-                    {isAdmin ? (
-                      <Badge variant="outline" className={`text-xs ${getPlanBadgeStyle()}`}>
-                        <Crown className="w-3 h-3 mr-1" /> Admin
-                      </Badge>
-                    ) : isPremium ? (
-                      <Badge variant="outline" className={`text-xs ${getPlanBadgeStyle()}`}>
-                        <Crown className="w-3 h-3 mr-1" /> {planDisplayName}
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className={`text-xs ${getPlanBadgeStyle()}`}>
-                        <User className="w-3 h-3 mr-1" /> Ücretsiz Kullanıcı
-                      </Badge>
-                    )}
+                {/* Plan badge */}
+                <div className="flex items-center">
+                  {isAdmin ? (
+                    <Badge variant="outline" className={`text-xs ${getPlanBadgeStyle()}`}>
+                      <Crown className="w-3 h-3 mr-1" /> Admin
+                    </Badge>
+                  ) : isPremium ? (
+                    <Badge variant="outline" className={`text-xs ${getPlanBadgeStyle()}`}>
+                      <Crown className="w-3 h-3 mr-1" /> {planDisplayName}
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className={`text-xs ${getPlanBadgeStyle()}`}>
+                      <User className="w-3 h-3 mr-1" /> Ücretsiz Kullanıcı
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Usage stats grid */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2.5 p-3 rounded-xl bg-muted/30">
+                    <div className="p-1.5 rounded-xl bg-primary/10">
+                      <Zap className="w-3.5 h-3.5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-micro text-muted-foreground leading-tight">Günlük Analiz</p>
+                      <p className="text-sm font-semibold leading-tight">
+                        {hasUnlimitedAnalyses ? (
+                          <span className="text-emerald-500">Sınırsız</span>
+                        ) : (
+                          <span>{analysisRemaining}/{dailyAnalysisLimit}</span>
+                        )}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Usage Stats */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-muted/30">
-                      <div className="p-1.5 rounded-md bg-primary/10">
-                        <Zap className="w-3.5 h-3.5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-[11px] text-muted-foreground leading-tight">Günlük Analiz</p>
-                        <p className="text-sm font-semibold leading-tight">
-                          {hasUnlimitedAnalyses ? (
-                            <span className="text-emerald-500">Sınırsız</span>
-                          ) : (
-                            <span>{analysisRemaining}/{dailyAnalysisLimit}</span>
-                          )}
-                        </p>
-                      </div>
+                  <div className="flex items-center gap-2.5 p-3 rounded-xl bg-muted/30">
+                    <div className="p-1.5 rounded-xl bg-primary/10">
+                      <MessageCircle className="w-3.5 h-3.5 text-primary" />
                     </div>
-
-                    <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-muted/30">
-                      <div className="p-1.5 rounded-md bg-primary/10">
-                        <MessageCircle className="w-3.5 h-3.5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-[11px] text-muted-foreground leading-tight">AI Asistan</p>
-                        <p className="text-sm font-semibold leading-tight">
-                          {!canUseAIChat ? (
-                            <span className="text-muted-foreground">Kapalı</span>
-                          ) : dailyChatLimit >= 999 ? (
-                            <span className="text-emerald-500">Sınırsız</span>
-                          ) : (
-                            <span>{chatRemaining}/{dailyChatLimit}</span>
-                          )}
-                        </p>
-                      </div>
+                    <div>
+                      <p className="text-micro text-muted-foreground leading-tight">AI Asistan</p>
+                      <p className="text-sm font-semibold leading-tight">
+                        {!canUseAIChat ? (
+                          <span className="text-muted-foreground">Kapalı</span>
+                        ) : dailyChatLimit >= 999 ? (
+                          <span className="text-emerald-500">Sınırsız</span>
+                        ) : (
+                          <span>{chatRemaining}/{dailyChatLimit}</span>
+                        )}
+                      </p>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
 
-          {/* Analysis Engine Info */}
-          <motion.div variants={itemVariants}>
-            <Card className="glass-card border-primary/20">
-              <CardContent className="py-3 px-4">
-                <div className="flex items-center gap-2.5">
+                {/* Analysis engine info inline */}
+                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-muted/20 border border-border/30">
                   <Brain className="w-4 h-4 text-primary flex-shrink-0" />
                   <div>
                     <p className="text-sm font-semibold">Analiz Motoru</p>
-                    <p className="text-xs text-muted-foreground">En güncel maç verileriyle düzenli olarak iyileştirilmektedir.</p>
+                    <p className="text-micro text-muted-foreground">En güncel verilerle düzenli olarak iyileştirilmektedir.</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* Recent Analyses */}
+          {/* Recent Analyses + Favorites — Combined card */}
           <motion.div variants={itemVariants}>
             <Card className="glass-card">
-              <CardHeader className="pb-2 pt-4 px-4">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-primary" />
-                  Son Analizler
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-4 pb-4">
-                {analysesLoading ? (
-                  <div className="space-y-2">
-                    {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
-                  </div>
-                ) : recentAnalyses && recentAnalyses.length > 0 ? (
-                  <div className="space-y-1.5">
-                    {recentAnalyses.map((analysis: any) => {
-                      const resultBadge = getResultBadge(analysis.is_correct, analysis.verified_at);
-                      const hasScore = analysis.home_score !== null && analysis.away_score !== null;
-                      return (
-                        <div key={analysis.id} className="p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <p className="text-xs xs:text-sm font-medium truncate">
-                                  {analysis.home_team} vs {analysis.away_team}
+              <CardContent className="p-4 space-y-4">
+                {/* Recent Analyses section */}
+                <div>
+                  <h2 className="text-sm font-semibold font-display flex items-center gap-2 mb-3">
+                    <TrendingUp className="w-4 h-4 text-primary" />
+                    Son Analizler
+                  </h2>
+                  {analysesLoading ? (
+                    <div className="space-y-2">
+                      {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full rounded-xl" />)}
+                    </div>
+                  ) : recentAnalyses && recentAnalyses.length > 0 ? (
+                    <div className="space-y-1.5">
+                      {recentAnalyses.map((analysis: any) => {
+                        const resultBadge = getResultBadge(analysis.is_correct, analysis.verified_at);
+                        const hasScore = analysis.home_score !== null && analysis.away_score !== null;
+                        return (
+                          <div key={analysis.id} className="p-2.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <p className="text-xs font-medium truncate">
+                                    {analysis.home_team} vs {analysis.away_team}
+                                  </p>
+                                  {hasScore && (
+                                    <span className="text-micro text-muted-foreground flex-shrink-0">
+                                      ({analysis.home_score}-{analysis.away_score})
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-micro text-muted-foreground mt-0.5">
+                                  {analysis.prediction_type}: {analysis.prediction_value}
                                 </p>
-                                {hasScore && (
-                                  <span className="text-[11px] text-muted-foreground flex-shrink-0">
-                                    ({analysis.home_score}-{analysis.away_score})
-                                  </span>
-                                )}
                               </div>
-                              <p className="text-[11px] text-muted-foreground mt-0.5">
-                                {analysis.prediction_type}: {analysis.prediction_value}
-                              </p>
+                              <Badge variant="outline" className={`text-micro flex-shrink-0 ${resultBadge.className}`}>
+                                {resultBadge.text}
+                              </Badge>
                             </div>
-                            <Badge variant="outline" className={`text-[10px] flex-shrink-0 ${resultBadge.className}`}>
-                              {resultBadge.text}
-                            </Badge>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4">
+                      <Sparkles className="w-7 h-7 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground">Henüz analiz yapılmamış</p>
+                      <Button variant="outline" size="sm" onClick={() => navigate('/')} className="mt-2 text-xs h-8">
+                        Analiz Yap
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Favorites section */}
+                <div className="border-t border-border/50 pt-4">
+                  <h2 className="text-sm font-semibold font-display flex items-center gap-2 mb-3">
+                    <Heart className="h-4 w-4 text-primary" />
+                    Favorilerim
+                  </h2>
+                  {favorites.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-3">Henüz favori eklenmedi</p>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {favoriteLeagues.length > 0 && (
+                        <div>
+                          <p className="text-micro text-muted-foreground mb-1.5">Ligler</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {favoriteLeagues.map((fav) => (
+                              <Badge key={fav.id} variant="outline" className="gap-1 text-xs">
+                                <Star className="h-2.5 w-2.5 text-primary" />
+                                {fav.favorite_name}
+                              </Badge>
+                            ))}
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <Sparkles className="w-7 h-7 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">Henüz analiz yapılmamış</p>
-                    <Button variant="outline" size="sm" onClick={() => navigate('/')} className="mt-2 text-xs h-8">
-                      Analiz Yap
-                    </Button>
-                  </div>
-                )}
+                      )}
+                      {favoriteTeams.length > 0 && (
+                        <div>
+                          <p className="text-micro text-muted-foreground mb-1.5">Takımlar</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {favoriteTeams.map((fav) => (
+                              <Badge key={fav.id} variant="outline" className="gap-1 text-xs">
+                                <Star className="h-2.5 w-2.5 text-primary" />
+                                {fav.favorite_name}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* Favorites */}
+          {/* Settings + About — Combined card */}
           <motion.div variants={itemVariants}>
             <Card className="glass-card">
-              <CardHeader className="pb-2 pt-4 px-4">
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <Heart className="h-4 w-4 text-primary" />
-                  Favorilerim
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-4 pb-4">
-                {favorites.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-3">Henüz favori eklenmedi</p>
-                ) : (
-                  <div className="space-y-2.5">
-                    {favoriteLeagues.length > 0 && (
-                      <div>
-                        <p className="text-[11px] text-muted-foreground mb-1.5">Ligler</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {favoriteLeagues.map((fav) => (
-                            <Badge key={fav.id} variant="outline" className="gap-1 text-xs">
-                              <Star className="h-2.5 w-2.5 text-primary" />
-                              {fav.favorite_name}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {favoriteTeams.length > 0 && (
-                      <div>
-                        <p className="text-[11px] text-muted-foreground mb-1.5">Takımlar</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {favoriteTeams.map((fav) => (
-                            <Badge key={fav.id} variant="outline" className="gap-1 text-xs">
-                              <Star className="h-2.5 w-2.5 text-primary" />
-                              {fav.favorite_name}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Settings */}
-          <motion.div variants={itemVariants}>
-            <Card className="glass-card">
-              <CardHeader className="pb-2 pt-4 px-4">
-                <CardTitle className="flex items-center gap-2 text-sm">
+              <CardContent className="p-4 space-y-1">
+                <h2 className="text-sm font-semibold font-display flex items-center gap-2 mb-2">
                   <Settings className="h-4 w-4 text-primary" />
                   Ayarlar
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-4 pb-4 space-y-0.5">
-                <Button variant="ghost" className="w-full justify-between h-10 text-sm" onClick={() => setShowNotificationSheet(true)}>
-                  <span className="flex items-center gap-2.5">
-                    <Bell className="h-4 w-4 text-muted-foreground" />
-                    Bildirim Ayarları
-                  </span>
+                </h2>
+
+                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl" onClick={() => setShowNotificationSheet(true)}>
+                  <span className="flex items-center gap-2.5"><Bell className="h-4 w-4 text-muted-foreground" />Bildirim Ayarları</span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Button>
+                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl" onClick={() => setShowThemeSheet(true)}>
+                  <span className="flex items-center gap-2.5"><Palette className="h-4 w-4 text-muted-foreground" />Tema</span>
+                  <span className="text-xs text-muted-foreground capitalize">{theme === 'dark' ? 'Koyu' : theme === 'light' ? 'Açık' : 'Sistem'}</span>
+                </Button>
+                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl" onClick={() => setShowAIInfoSheet(true)}>
+                  <span className="flex items-center gap-2.5"><HelpCircle className="h-4 w-4 text-muted-foreground" />AI Nasıl Çalışır?</span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
 
-                <Button variant="ghost" className="w-full justify-between h-10 text-sm" onClick={() => setShowThemeSheet(true)}>
-                  <span className="flex items-center gap-2.5">
-                    <Palette className="h-4 w-4 text-muted-foreground" />
-                    Tema
-                  </span>
-                  <span className="text-xs text-muted-foreground capitalize">
-                    {theme === 'dark' ? 'Koyu' : theme === 'light' ? 'Açık' : 'Sistem'}
-                  </span>
-                </Button>
+                <div className="border-t border-border/50 my-2" />
 
-                <Button variant="ghost" className="w-full justify-between h-10 text-sm" onClick={() => setShowAIInfoSheet(true)}>
-                  <span className="flex items-center gap-2.5">
-                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                    AI Nasıl Çalışır?
-                  </span>
+                <div className="text-center pb-2">
+                  <p className="font-semibold text-sm font-display">GolMetrik AI</p>
+                  <p className="text-micro text-muted-foreground">v1.0.0 • İstatistik destekli futbol analiz platformu</p>
+                </div>
+                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl" onClick={() => setShowPrivacySheet(true)}>
+                  <span className="flex items-center gap-2.5"><Shield className="h-4 w-4 text-muted-foreground" />Gizlilik Politikası</span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Button>
+                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl" onClick={() => setShowTermsSheet(true)}>
+                  <span className="flex items-center gap-2.5"><FileText className="h-4 w-4 text-muted-foreground" />Kullanım Şartları</span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
 
-                <Button variant="ghost" className="w-full justify-between h-10 text-sm text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setShowDeleteAccountSheet(true)}>
-                  <span className="flex items-center gap-2.5">
-                    <Trash2 className="h-4 w-4" />
-                    Hesabı Sil
-                  </span>
+                <div className="border-t border-border/50 my-2" />
+
+                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setShowDeleteAccountSheet(true)}>
+                  <span className="flex items-center gap-2.5"><Trash2 className="h-4 w-4" />Hesabı Sil</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
-
-                <Button variant="ghost" className="w-full justify-start gap-2.5 h-10 text-sm text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4" />
-                  <span>Çıkış Yap</span>
+                <Button variant="ghost" className="w-full justify-start gap-2.5 h-11 text-sm rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4" /><span>Çıkış Yap</span>
                 </Button>
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* About Section */}
-          <motion.div variants={itemVariants}>
-            <Card className="glass-card">
-              <CardHeader className="pb-2 pt-4 px-4">
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <Info className="h-4 w-4 text-primary" />
-                  Hakkında
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-4 pb-4 space-y-2.5">
-                <div className="text-center pb-1">
-                  <p className="font-semibold text-sm">GolMetrik AI</p>
-                  <p className="text-[11px] text-muted-foreground">Versiyon 1.0.0</p>
-                  <p className="text-[11px] text-muted-foreground">İstatistik destekli futbol analiz platformu</p>
-                </div>
-                
-                <div className="space-y-0.5">
-                  <Button variant="ghost" className="w-full justify-between h-10 text-sm" onClick={() => setShowPrivacySheet(true)}>
-                    <span className="flex items-center gap-2.5">
-                      <Shield className="h-4 w-4 text-muted-foreground" />
-                      Gizlilik Politikası
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                  <Button variant="ghost" className="w-full justify-between h-10 text-sm" onClick={() => setShowTermsSheet(true)}>
-                    <span className="flex items-center gap-2.5">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      Kullanım Şartları
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                </div>
-                
-                <div className="pt-1.5 border-t border-border">
-                  <p className="text-[11px] text-muted-foreground text-center">
-                    ⚠️ Sunulan analizler bilgilendirme amaçlıdır ve kesin kazanç garantisi vermez.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <p className="text-[11px] text-muted-foreground text-center px-4 pb-2">
-            📊 Tüm içerikler istatistiksel analiz amaçlıdır ve tavsiye niteliği taşımaz.
+          <p className="text-micro text-muted-foreground text-center px-4 pb-2">
+            ⚠️ Tüm içerikler istatistiksel analiz amaçlıdır ve tavsiye niteliği taşımaz.
           </p>
         </motion.div>
       </main>
-      <AppFooter />
 
       {/* Notification Settings Sheet */}
       <Sheet open={showNotificationSheet} onOpenChange={setShowNotificationSheet}>
@@ -570,7 +505,7 @@ const Profile = () => {
               </div>
               <Switch checked={notificationSettings.premiumOffers} onCheckedChange={(checked) => updateNotificationSetting('premiumOffers', checked)} />
             </div>
-            <p className="text-[11px] text-muted-foreground pt-2">📱 Bildirim ayarları cihaz ayarlarınızdan da yönetilebilir.</p>
+            <p className="text-micro text-muted-foreground pt-2">📱 Bildirim ayarları cihaz ayarlarınızdan da yönetilebilir.</p>
           </div>
         </SheetContent>
       </Sheet>
@@ -709,7 +644,7 @@ const Profile = () => {
                 {isDeleting ? 'Siliniyor...' : 'Hesabı Sil'}
               </Button>
             </div>
-            <p className="text-[11px] text-muted-foreground text-center">KVKK/GDPR kapsamında verileriniz kalıcı olarak silinecektir.</p>
+            <p className="text-micro text-muted-foreground text-center">KVKK/GDPR kapsamında verileriniz kalıcı olarak silinecektir.</p>
           </div>
         </SheetContent>
       </Sheet>

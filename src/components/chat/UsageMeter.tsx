@@ -81,7 +81,7 @@ const UsageMeter: React.FC<UsageMeterProps> = ({ current, limit, isAdmin, classN
       </div>
       
       {/* Counter */}
-      <span className="text-[10px] text-muted-foreground shrink-0">
+      <span className="text-micro text-muted-foreground shrink-0">
         {numericCurrent}/{numericLimit}
       </span>
     </motion.div>

@@ -326,7 +326,7 @@ const Auth: React.FC = () => {
           </TabsContent>
         </Tabs>
 
-        <p className="text-[10px] text-muted-foreground text-center mt-2 pb-0">
+        <p className="text-micro text-muted-foreground text-center mt-2 pb-0">
           İçerikler bilgilendirme amaçlıdır ve tavsiye niteliği taşımaz.
         </p>
       </div>

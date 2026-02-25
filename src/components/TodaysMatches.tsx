@@ -199,7 +199,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
           <div className="w-1.5 h-5 rounded-full bg-primary" />
           <div>
             <h2 className="font-semibold text-sm md:text-base">{title}</h2>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-micro text-muted-foreground">
               Maça tıklayarak analiz alabilirsiniz
             </p>
           </div>
@@ -238,7 +238,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
           <div className="absolute top-2 left-2 right-2">
             {/* İlk satır: Badge + H2H */}
             <div className="flex items-center justify-between gap-2">
-              <Badge className="bg-secondary text-secondary-foreground text-[10px] shrink-0">
+              <Badge className="bg-secondary text-secondary-foreground text-micro shrink-0">
                 {featuredReason === 'Büyük Maç' ? (
                   <Sparkles className="w-3 h-3 mr-1" />
                 ) : featuredReason === 'En Yakın' ? (
@@ -254,7 +254,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
             
             {/* İkinci satır: Tarih (sadece bugün değilse) */}
             {!hasMatchesToday && (
-              <span className="text-[10px] text-muted-foreground mt-1 block">
+              <span className="text-micro text-muted-foreground mt-1 block">
                 {getDateLabel(featuredMatch.utcDate)}
               </span>
             )}
@@ -285,7 +285,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
               <div className="text-base md:text-lg font-bold text-primary">
                 {format(new Date(featuredMatch.utcDate), 'HH:mm')}
               </div>
-              <div className="text-[10px] md:text-xs text-muted-foreground">
+              <div className="text-micro md:text-xs text-muted-foreground">
                 {featuredMatch.competition.code}
               </div>
             </div>
@@ -404,7 +404,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                         {match.homeTeam.shortName || match.homeTeam.name}
                       </span>
                     </div>
-                    <span className="text-muted-foreground text-[10px] md:text-xs">vs</span>
+                    <span className="text-muted-foreground text-micro md:text-xs">vs</span>
                     <div className="flex items-center gap-1 md:gap-1.5 flex-1 min-w-0 justify-end">
                       <span className={cn("text-xs md:text-sm truncate text-right", isThisLoading && "font-medium")}>
                         {match.awayTeam.shortName || match.awayTeam.name}
@@ -416,13 +416,13 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                   </div>
 
                   {/* League badge shown for all items */}
-                  <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 shrink-0">
+                  <Badge variant="outline" className="text-micro px-1.5 py-0.5 shrink-0">
                     {match.competition.code}
                   </Badge>
 
                   {/* Arrow or Loading */}
                   {isThisLoading ? (
-                    <span className="text-[10px] md:text-xs text-primary font-medium hidden sm:block">Analiz ediliyor...</span>
+                    <span className="text-micro md:text-xs text-primary font-medium hidden sm:block">Analiz ediliyor...</span>
                   ) : (
                     <ChevronRight className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground/50" />
                   )}
