@@ -33,12 +33,13 @@ const AppHeader: React.FC<AppHeaderProps> = ({
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
         {/* Logo - compact native style */}
         <Link to="/" className="flex items-center gap-2.5 group flex-shrink-0">
-          <div className="flex items-center justify-center">
+          <div className="relative">
             <img 
               src={logoImage} 
               alt="GolMetrik AI" 
-              className="w-10 h-10 sm:w-11 sm:h-11 aspect-square object-contain"
+              className="w-10 h-10 sm:w-11 sm:h-11 aspect-square object-cover rounded-xl shadow-sm transition-transform duration-200 group-hover:scale-105 bg-white"
             />
+            <div className="absolute -inset-1 rounded-xl bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity -z-10" />
           </div>
           <span className="font-display font-bold text-base sm:text-lg tracking-tight text-foreground">
             GolMetrik AI
