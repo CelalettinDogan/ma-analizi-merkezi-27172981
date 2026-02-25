@@ -1,10 +1,10 @@
-import React, { useState, lazy, Suspense } from 'react';
+import React, { useState, lazy, Suspense, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Crosshair, History, Brain, AlertCircle, Users } from 'lucide-react';
 import { MatchAnalysis } from '@/types/match';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { cn, getHybridConfidence } from '@/lib/utils';
 
 // Lazy load heavy components
 const ScorePredictionChart = lazy(() => import('@/components/charts/ScorePredictionChart'));
@@ -29,6 +29,12 @@ const AdvancedAnalysisTabs: React.FC<AdvancedAnalysisTabsProps> = ({ analysis })
   const hasPoisson = !!analysis.poissonData;
   const hasSimilar = analysis.similarMatches && analysis.similarMatches.length > 0;
   const hasInjuries = analysis.injuries.home.length > 0 || analysis.injuries.away.length > 0;
+
+  const bttsHybridConfidence = useMemo(() => {
+    const bttsPred = analysis.predictions.find(p => p.type === 'Karşılıklı Gol');
+    if (!bttsPred) return undefined;
+    return getHybridConfidence(bttsPred);
+  }, [analysis.predictions]);
 
   // Determine default tab
   const defaultTab = hasPoisson ? 'poisson' : hasSimilar ? 'similar' : 'tactical';
@@ -123,6 +129,7 @@ const AdvancedAnalysisTabs: React.FC<AdvancedAnalysisTabsProps> = ({ analysis })
                   bttsProbability={analysis.poissonData!.bttsProbability}
                   expectedHomeGoals={analysis.poissonData!.expectedHomeGoals}
                   expectedAwayGoals={analysis.poissonData!.expectedAwayGoals}
+                  bttsHybridConfidence={bttsHybridConfidence}
                 />
               </Suspense>
             </TabsContent>

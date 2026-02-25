@@ -25,6 +25,7 @@ interface ScorePredictionChartProps {
   bttsProbability?: number;
   expectedHomeGoals?: number;
   expectedAwayGoals?: number;
+  bttsHybridConfidence?: number;
 }
 
 const ScorePredictionChart: React.FC<ScorePredictionChartProps> = ({
@@ -33,6 +34,7 @@ const ScorePredictionChart: React.FC<ScorePredictionChartProps> = ({
   bttsProbability,
   expectedHomeGoals,
   expectedAwayGoals,
+  bttsHybridConfidence,
 }) => {
   // Create 6x6 grid (0-5 goals each)
   const maxGoals = 5;
@@ -261,10 +263,13 @@ const ScorePredictionChart: React.FC<ScorePredictionChartProps> = ({
 
       {/* BTTS - Cleaner */}
       {bttsProbability !== undefined && (
-        <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-xl">
+        <div className="p-4 bg-muted/30 rounded-xl space-y-3">
+          {/* Poisson Olasılığı */}
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-foreground">Karşılıklı Gol (KG)</span>
+              <span className="text-sm font-medium text-foreground">
+                Karşılıklı Gol (KG) — <span className="text-muted-foreground">Poisson</span>
+              </span>
               <span className="text-lg font-bold text-primary">
                 {(bttsProbability * 100).toFixed(0)}%
               </span>
@@ -276,6 +281,26 @@ const ScorePredictionChart: React.FC<ScorePredictionChartProps> = ({
               />
             </div>
           </div>
+
+          {/* Hibrit Güven */}
+          {bttsHybridConfidence !== undefined && bttsHybridConfidence > 0 && (
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-foreground">
+                  Karşılıklı Gol (KG) — <span className="px-1.5 py-0.5 text-xs rounded-full bg-primary/20 text-primary">Hibrit</span>
+                </span>
+                <span className="text-lg font-bold text-primary">
+                  {Math.round(bttsHybridConfidence)}%
+                </span>
+              </div>
+              <div className="h-2 bg-muted/50 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-primary to-accent transition-all rounded-full"
+                  style={{ width: `${bttsHybridConfidence}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

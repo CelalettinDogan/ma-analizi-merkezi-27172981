@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AlertCircle, Users, Brain, BarChart3, TrendingUp, Target, Sparkles, History, Activity, Crosshair } from 'lucide-react';
 import { MatchAnalysis } from '@/types/match';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,6 +13,7 @@ import MatchContextCard from '@/components/MatchContextCard';
 import PowerComparisonCard from '@/components/PowerComparisonCard';
 import SimilarMatchesSection from '@/components/SimilarMatchesSection';
 import { Progress } from '@/components/ui/progress';
+import { getHybridConfidence } from '@/lib/utils';
 
 interface AnalysisSectionProps {
   analysis: MatchAnalysis;
@@ -28,6 +29,13 @@ const AnalysisSection: React.FC<AnalysisSectionProps> = ({ analysis }) => {
     : 0;
 
   const hasAdvancedData = analysis.poissonData || analysis.context || analysis.homePower;
+
+  // KG tahmininin hibrit güvenini hesapla
+  const bttsHybridConfidence = useMemo(() => {
+    const bttsPred = analysis.predictions.find(p => p.type === 'Karşılıklı Gol');
+    if (!bttsPred) return undefined;
+    return getHybridConfidence(bttsPred);
+  }, [analysis.predictions]);
 
   return (
     <div className="space-y-6">
@@ -265,6 +273,7 @@ const AnalysisSection: React.FC<AnalysisSectionProps> = ({ analysis }) => {
                   bttsProbability={analysis.poissonData.bttsProbability}
                   expectedHomeGoals={analysis.poissonData.expectedHomeGoals}
                   expectedAwayGoals={analysis.poissonData.expectedAwayGoals}
+                  bttsHybridConfidence={bttsHybridConfidence}
                 />
               </div>
             )}
