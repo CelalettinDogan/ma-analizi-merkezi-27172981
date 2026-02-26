@@ -18,15 +18,10 @@ import PremiumPromotionModal from '@/components/premium/PremiumPromotionModal';
 import AnalysisLimitBanner from '@/components/premium/AnalysisLimitBanner';
 import AnalysisLimitSheet, { useAnalysisLimitSheet } from '@/components/premium/AnalysisLimitSheet';
 import {
-  MatchHeroCard,
-  AIRecommendationCard,
-  PredictionPillSelector,
-  H2HTimeline,
   AnalysisLoadingState,
-  TeamComparisonCard,
-  AdvancedAnalysisTabs,
 } from '@/components/analysis';
-import { MatchInput, Prediction } from '@/types/match';
+import AnalysisDrawer from '@/components/analysis/AnalysisDrawer';
+import { MatchInput } from '@/types/match';
 import { Match as ApiMatch, SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { useMatchAnalysis } from '@/hooks/useMatchAnalysis';
 import { useOnboarding } from '@/hooks/useOnboarding';
@@ -75,6 +70,7 @@ const Index: React.FC = () => {
   const [upcomingMatches, setUpcomingMatches] = useState<ApiMatch[]>([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+  const [analysisDrawerOpen, setAnalysisDrawerOpen] = useState(false);
 
   // Footer stats - derived from useHomeData
   const footerStats = {
@@ -153,26 +149,11 @@ const Index: React.FC = () => {
     };
   }, []);
 
-  // Scroll to AI recommendation after analysis completes
+  // Open analysis drawer when analysis completes
   useEffect(() => {
     if (analysis && !analysisLoading && pendingAnalysisScrollRef.current) {
       pendingAnalysisScrollRef.current = false;
-      
-      // Wait for Framer Motion animation to complete (300ms) + buffer
-      const scrollTimeout = setTimeout(() => {
-        const anchor = document.getElementById('ai-recommendation-anchor');
-        if (anchor) {
-          anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-          // Fallback to analysis section
-          document.getElementById('analysis-section')?.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-          });
-        }
-      }, 350);
-      
-      return () => clearTimeout(scrollTimeout);
+      setAnalysisDrawerOpen(true);
     }
   }, [analysis, analysisLoading]);
 
@@ -282,7 +263,7 @@ const Index: React.FC = () => {
       <AppHeader rightContent={searchButton} />
 
       {/* Hero Section - Simplified with count-up */}
-      <HeroSection stats={stats} />
+      <HeroSection stats={stats} onAnalyzeClick={() => setCommandOpen(true)} />
 
       {/* Main Content - Clean Single Column Flow */}
       <main className="container mx-auto px-4 py-8 space-y-8">
@@ -376,77 +357,16 @@ const Index: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Stable Scroll Anchor - Outside AnimatePresence for reliable targeting */}
-        {analysis && !analysisLoading && (
-          <div id="ai-recommendation-anchor" style={{ scrollMarginTop: '80px' }} />
-        )}
 
-        {/* Analysis Section */}
-        <AnimatePresence>
-          {analysis && !analysisLoading && (
-            <motion.section 
-              id="analysis-section"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-6 pb-24"
-              style={{ scrollMarginTop: '80px' }}
-            >
-              {/* Match Hero Card - Team vs Team Header */}
-              <div id="match-hero-section">
-                <MatchHeroCard 
-                  match={analysis.input} 
-                  insights={analysis.insights}
-                  homeTeamCrest={analysis.input.homeTeamCrest}
-                  awayTeamCrest={analysis.input.awayTeamCrest}
-                />
-              </div>
-
-              {/* AI Recommendation */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <AIRecommendationCard 
-                  predictions={analysis.predictions} 
-                  matchInput={analysis.input}
-                />
-                <div className="space-y-4">
-                  <div className="p-4 rounded-xl bg-card border border-border">
-                    <PredictionPillSelector 
-                      predictions={analysis.predictions} 
-                      matchInput={analysis.input} 
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Team Comparison Card - Merged Stats + Power */}
-              <TeamComparisonCard
-                homeTeam={analysis.input.homeTeam}
-                awayTeam={analysis.input.awayTeam}
-                homeStats={analysis.homeTeamStats}
-                awayStats={analysis.awayTeamStats}
-                homePower={analysis.homePower}
-                awayPower={analysis.awayPower}
-              />
-
-              {/* H2H Timeline */}
-              <H2HTimeline
-                h2h={analysis.headToHead}
-                homeTeam={analysis.input.homeTeam}
-                awayTeam={analysis.input.awayTeam}
-              />
-
-              {/* Advanced Analysis Tabs */}
-              <AdvancedAnalysisTabs analysis={analysis} />
-
-              {/* Legal Disclaimer - Collapsible with extra bottom padding */}
-              <div className="pb-4">
-                <LegalDisclaimer />
-              </div>
-            </motion.section>
-          )}
-        </AnimatePresence>
 
       </main>
+
+      {/* Analysis Drawer — full-screen overlay */}
+      <AnalysisDrawer
+        analysis={analysis}
+        isOpen={analysisDrawerOpen}
+        onClose={() => setAnalysisDrawerOpen(false)}
+      />
 
 
       {/* Analysis Set Floating Button */}

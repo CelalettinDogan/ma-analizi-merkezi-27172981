@@ -95,7 +95,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   onClick={() => handleQuickPrompt(prompt.text)}
                   disabled={isLoading}
                   className={cn(
-                    "px-2.5 py-1.5 text-[11px] rounded-full transition-all flex items-center gap-1 shrink-0",
+                    "px-2.5 py-1.5 text-micro rounded-full transition-all flex items-center gap-1 shrink-0",
                     "bg-muted/50 border hover:bg-muted hover:border-primary/30",
                     getPromptBorderColor(prompt.text)
                   )}
@@ -159,7 +159,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 className={cn(
-                  "absolute bottom-2.5 right-14 text-[9px] px-1.5 py-0.5 rounded-full",
+                  "absolute bottom-2.5 right-14 text-micro px-1.5 py-0.5 rounded-full",
                   isOverLimit 
                     ? "bg-destructive/20 text-destructive" 
                     : isNearLimit 
@@ -201,7 +201,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center text-[11px] text-muted-foreground"
+          className="text-center text-micro text-muted-foreground"
         >
           {disabledReason}
         </motion.p>

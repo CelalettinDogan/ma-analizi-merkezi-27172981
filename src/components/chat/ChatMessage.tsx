@@ -129,7 +129,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                       <ol className="list-decimal list-inside mb-2 space-y-0.5 text-[13.5px]">{children}</ol>
                     ),
                     li: ({ children }) => (
-                      <li className="text-[13.5px] leading-[1.5]">{children}</li>
+                      <li className="text-sm leading-relaxed">{children}</li>
                     ),
                     strong: ({ children }) => (
                       <strong className="font-semibold text-foreground">{children}</strong>
@@ -141,16 +141,16 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                       <code className="px-1 py-0.5 bg-muted rounded text-micro font-mono text-primary">{children}</code>
                     ),
                     h1: ({ children }) => (
-                      <h1 className="text-[15px] font-bold mb-2 mt-2.5 first:mt-0 text-foreground leading-[1.5]">{children}</h1>
+                      <h1 className="text-base font-bold mb-2 mt-2.5 first:mt-0 text-foreground leading-relaxed">{children}</h1>
                     ),
                     h2: ({ children }) => (
-                      <h2 className="text-[14px] font-bold mb-1.5 mt-2 first:mt-0 text-foreground leading-[1.5]">{children}</h2>
+                      <h2 className="text-sm font-bold mb-1.5 mt-2 first:mt-0 text-foreground leading-relaxed">{children}</h2>
                     ),
                     h3: ({ children }) => (
-                      <h3 className="text-[13.5px] font-semibold mb-1 mt-1.5 first:mt-0 text-foreground leading-[1.5]">{children}</h3>
+                      <h3 className="text-sm font-semibold mb-1 mt-1.5 first:mt-0 text-foreground leading-relaxed">{children}</h3>
                     ),
                     blockquote: ({ children }) => (
-                      <blockquote className="border-l-2 border-primary/50 pl-2.5 italic text-muted-foreground my-2 text-[13.5px]">{children}</blockquote>
+                      <blockquote className="border-l-2 border-primary/50 pl-2.5 italic text-muted-foreground my-2 text-sm">{children}</blockquote>
                     ),
                     hr: () => (
                       <hr className="border-border my-2" />

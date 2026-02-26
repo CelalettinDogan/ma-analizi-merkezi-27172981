@@ -68,10 +68,9 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-card to-secondary/10 border border-primary/20"
+      className="relative overflow-hidden rounded-2xl bg-primary/5 border border-primary/20"
     >
-      {/* Subtle glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+      {/* Removed excessive gradient overlays */}
 
       <div className="relative z-10 p-4 md:p-5">
         {/* Compact Header */}

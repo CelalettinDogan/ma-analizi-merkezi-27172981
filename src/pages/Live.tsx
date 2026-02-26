@@ -282,7 +282,7 @@ const LivePage: React.FC = () => {
             </div>
 
             <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border/30 bg-muted/10">
-              <div className="flex items-center justify-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
+              <div className="flex items-center justify-center gap-2 text-micro sm:text-xs text-muted-foreground">
                 <motion.div
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
@@ -318,7 +318,7 @@ const LivePage: React.FC = () => {
         {!isLoading && liveMatches.length > 0 && (
           <motion.div 
             {...fadeInUp}
-            className="flex items-center justify-center gap-2 text-[10px] sm:text-xs text-muted-foreground"
+            className="flex items-center justify-center gap-2 text-micro sm:text-xs text-muted-foreground"
           >
             <motion.div
               animate={{ scale: [1, 1.2, 1] }}

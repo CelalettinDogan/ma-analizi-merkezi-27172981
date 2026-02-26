@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Zap, TrendingUp, Shield } from 'lucide-react';
+import { ArrowRight, Search, TrendingUp, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface HeroStats {
@@ -13,6 +13,7 @@ interface HeroStats {
 
 interface HeroSectionProps {
   stats?: HeroStats;
+  onAnalyzeClick?: () => void;
 }
 
 // Count-up animation hook
@@ -46,18 +47,11 @@ const useCountUp = (target: number, duration: number = 1500) => {
 };
 
 const HeroSection: React.FC<HeroSectionProps> = ({ 
-  stats = { liveCount: 0, totalPredictions: 0, accuracy: 0, premiumAccuracy: 0 } 
+  stats = { liveCount: 0, totalPredictions: 0, accuracy: 0, premiumAccuracy: 0 },
+  onAnalyzeClick
 }) => {
   const animatedAccuracy = useCountUp(stats.accuracy);
   const animatedPredictions = useCountUp(stats.totalPredictions);
-
-  // Scroll to leagues section
-  const scrollToLeagues = () => {
-    const leaguesSection = document.getElementById('leagues');
-    if (leaguesSection) {
-      leaguesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
 
   return (
     <section className="relative pt-6 pb-10 md:py-16 overflow-hidden">
@@ -120,12 +114,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             className="flex flex-col items-center gap-3"
           >
             <Button
-              onClick={scrollToLeagues}
+              onClick={onAnalyzeClick}
               size="lg"
               className="gap-2 text-base px-8 py-6 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all group"
             >
-              <Zap className="w-5 h-5" />
-              Hemen Analiz Al
+              <Search className="w-5 h-5" />
+              Maç Ara & Analiz Et
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
             

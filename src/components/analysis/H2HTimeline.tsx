@@ -110,7 +110,7 @@ const DonutChart: React.FC<{
         >
           {total}
         </motion.span>
-        <span className="text-[10px] text-muted-foreground">maç</span>
+        <span className="text-micro text-muted-foreground">maç</span>
       </div>
     </div>
   );
@@ -173,7 +173,7 @@ const StatsLegend: React.FC<{
                 <span className={cn("text-sm font-bold", stat.textColor)}>
                   {stat.value}
                 </span>
-                <span className="text-[10px] text-muted-foreground/70">
+                <span className="text-micro text-muted-foreground/70">
                   ({stat.percentage}%)
                 </span>
               </div>
@@ -231,7 +231,7 @@ const MatchBubble: React.FC<{
       {/* Result indicator */}
       <motion.div
         className={cn(
-          "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mb-1 transition-transform group-hover:scale-110",
+          "w-5 h-5 rounded-full flex items-center justify-center text-micro font-bold mb-1 transition-transform group-hover:scale-110",
           result === 'home' && "bg-emerald-500/20 text-emerald-500",
           result === 'away' && "bg-rose-500/20 text-rose-500",
           result === 'draw' && "bg-amber-500/20 text-amber-500"
@@ -251,13 +251,13 @@ const MatchBubble: React.FC<{
       </div>
       
       {/* Date */}
-      <span className="text-[10px] text-muted-foreground mt-1.5 whitespace-nowrap">
+      <span className="text-micro text-muted-foreground mt-1.5 whitespace-nowrap">
         {formatDate(match.date)}
       </span>
       
       {/* Home/Away indicator */}
       <span className={cn(
-        "text-[9px] mt-0.5 px-1.5 py-0.5 rounded-full",
+        "text-micro mt-0.5 px-1.5 py-0.5 rounded-full",
         wasHome ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary"
       )}>
         {wasHome ? 'Ev' : 'Deplasman'}
@@ -366,7 +366,7 @@ const H2HTimeline: React.FC<H2HTimelineProps> = ({ h2h, homeTeam, awayTeam }) =>
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.8 }}
             className={cn(
-              "flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium",
+              "flex items-center gap-1 px-2 py-1 rounded-full text-micro font-medium",
               streak.type === 'home' && "bg-emerald-500/10 text-emerald-500",
               streak.type === 'away' && "bg-rose-500/10 text-rose-500",
               streak.type === 'draw' && "bg-amber-500/10 text-amber-500"
@@ -402,7 +402,7 @@ const H2HTimeline: React.FC<H2HTimelineProps> = ({ h2h, homeTeam, awayTeam }) =>
           {/* Section title */}
           <div className="flex items-center gap-2 mb-3">
             <div className="h-px flex-1 bg-border/50" />
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Son {Math.min(lastMatches.length, 5)} Maç</span>
+            <span className="text-micro text-muted-foreground uppercase tracking-wider">Son {Math.min(lastMatches.length, 5)} Maç</span>
             <div className="h-px flex-1 bg-border/50" />
           </div>
           
