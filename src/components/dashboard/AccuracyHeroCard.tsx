@@ -180,7 +180,7 @@ export const AccuracyHeroCard = ({
           {/* Info tooltip */}
           <div className="flex items-center justify-center gap-1 mt-2">
             <Info className="w-3 h-3 text-muted-foreground/50" />
-            <p className="text-[10px] text-muted-foreground/50 text-center">
+            <p className="text-micro text-muted-foreground/50 text-center">
               {hasPremiumData 
                 ? "Premium: Sadece yüksek güvenli tahminler" 
                 : "AI Tahmin Başarı Oranı"

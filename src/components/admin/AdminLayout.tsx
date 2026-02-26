@@ -156,7 +156,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
               <Shield className="w-4 h-4 text-primary" />
               <span className="font-bold text-sm">Admin</span>
             </div>
-            <Badge variant="outline" className="text-green-500 border-green-500/30 text-[10px]">
+            <Badge variant="outline" className="text-green-500 border-green-500/30 text-micro">
               Online
             </Badge>
           </div>

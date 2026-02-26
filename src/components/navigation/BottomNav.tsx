@@ -129,7 +129,7 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                   )}
                   {item.badge === 'premium' && (
                     <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-sm">
-                      <span className="text-[7px] text-white font-bold">★</span>
+                      <span className="text-micro text-white font-bold leading-none" style={{ fontSize: '7px' }}>★</span>
                     </span>
                   )}
                   {item.badge === 'active' && (
@@ -137,7 +137,7 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                   )}
                 </div>
                 <span className={cn(
-                  "text-[10px] font-medium transition-colors relative z-10",
+                  "text-micro font-medium transition-colors relative z-10",
                   isActive ? "text-primary" : "text-muted-foreground"
                 )}>
                   {item.label}

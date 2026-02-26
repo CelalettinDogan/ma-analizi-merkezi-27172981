@@ -161,7 +161,7 @@ const ChatLimitSheet: React.FC<ChatLimitSheetProps> = ({
         <div className="px-4 py-2">
           <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50">
             <AlertCircle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
+            <p className="text-micro text-muted-foreground leading-relaxed">
               Abonelik otomatik yenilenir. İstediğiniz zaman Google Play Store 
               &gt; Abonelikler bölümünden iptal edebilirsiniz.
             </p>

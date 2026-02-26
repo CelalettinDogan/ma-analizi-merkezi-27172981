@@ -23,9 +23,8 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
       onClick={onClick}
       className={cn(
         "w-full max-w-full p-3 sm:p-4 rounded-2xl text-left transition-all duration-300 overflow-hidden",
-        "bg-gradient-to-br from-card via-card to-red-950/20",
-        "border border-red-500/30 hover:border-red-500/50",
-        "shadow-lg shadow-red-500/5 hover:shadow-red-500/10"
+        "bg-card border border-border/50",
+        "hover:border-border"
       )}
     >
       {/* Live Header */}

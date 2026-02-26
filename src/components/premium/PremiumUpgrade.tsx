@@ -167,7 +167,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
                 Yıllık
               </Label>
               {isYearly && (
-                <Badge variant="secondary" className="text-[10px] bg-green-500/10 text-green-600">
+                <Badge variant="secondary" className="text-micro bg-green-500/10 text-green-600">
                   2 ay bedava
                 </Badge>
               )}
@@ -191,7 +191,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
                   }`}
                 >
                   {plan.popular && (
-                    <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] px-2">
+                    <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 text-micro px-2">
                       <Sparkles className="w-3 h-3 mr-1" />
                       Popüler
                     </Badge>
@@ -208,13 +208,13 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
                   <p className="text-lg font-bold text-primary mt-1">
                     ₺{displayPrice}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-micro text-muted-foreground">
                     {isYearly ? '/yıl' : '/ay'}
                   </p>
                   
                   <div className="flex items-center justify-center gap-1 mt-2">
                     <MessageSquare className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-micro text-muted-foreground">
                       {plan.chatLimit}/gün
                     </span>
                   </div>
@@ -244,7 +244,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
                 </div>
                 <div>
                   <p className="font-medium text-xs">{feature.label}</p>
-                  <p className="text-[10px] text-muted-foreground leading-tight">{feature.description}</p>
+                  <p className="text-micro text-muted-foreground leading-tight">{feature.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -313,12 +313,12 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
 
           {/* Legal Terms - Play Store compliant */}
           <div className="space-y-2 text-center">
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
+            <p className="text-micro text-muted-foreground leading-relaxed">
               Abonelik dönem sonunda otomatik olarak yenilenir. 
               İstediğiniz zaman Google Play Store &gt; Abonelikler bölümünden iptal edebilirsiniz. 
               İptal, mevcut dönem sonunda geçerli olur.
             </p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-micro text-muted-foreground">
               Satın alarak{' '}
               <Link to="/terms" className="underline hover:text-foreground">Kullanım Şartları</Link> ve{' '}
               <Link to="/privacy" className="underline hover:text-foreground">Gizlilik Politikası</Link>'nı kabul etmiş olursunuz.

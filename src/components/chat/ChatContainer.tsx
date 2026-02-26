@@ -28,7 +28,7 @@ const SUPPORTED_LEAGUES = [
 const DateDivider: React.FC<{ date: string }> = ({ date }) => (
   <div className="flex items-center gap-3 py-3 px-4">
     <div className="flex-1 h-px bg-border/50" />
-    <span className="text-[10px] text-muted-foreground px-2 py-0.5 rounded-full bg-muted/50 font-medium">
+    <span className="text-micro text-muted-foreground px-2 py-0.5 rounded-full bg-muted/50 font-medium">
       {date}
     </span>
     <div className="flex-1 h-px bg-border/50" />
@@ -138,7 +138,7 @@ const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ onQuickPrompt }) => {
                 )}
               >
                 <span className="text-lg">{prompt.icon}</span>
-                <span className="text-[11px] font-medium line-clamp-2 leading-tight">{prompt.text}</span>
+                <span className="text-micro font-medium line-clamp-2 leading-tight">{prompt.text}</span>
               </motion.button>
             ))
           )}

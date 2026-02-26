@@ -88,7 +88,7 @@ const H2HSummaryBadge = forwardRef<HTMLDivElement, H2HSummaryBadgeProps>(({
                 <Swords className="w-3 h-3" />
                 <span>Son {recentMatches.length} H2H</span>
               </div>
-              <div className="flex items-center gap-2 text-[10px]">
+              <div className="flex items-center gap-2 text-micro">
                 <span className="text-emerald-500">{homeWins}G</span>
                 <span className="text-amber-500">{draws}B</span>
                 <span className="text-rose-500">{awayWins}M</span>
@@ -142,15 +142,15 @@ const H2HSummaryBadge = forwardRef<HTMLDivElement, H2HSummaryBadgeProps>(({
             <div className="grid grid-cols-3 gap-3 text-center">
               <div>
                 <div className="text-sm font-bold text-emerald-500">{homeWins}</div>
-                <div className="text-[10px] text-muted-foreground truncate max-w-[60px]">{homeTeam}</div>
+                <div className="text-micro text-muted-foreground truncate max-w-[60px]">{homeTeam}</div>
               </div>
               <div>
                 <div className="text-sm font-bold text-amber-500">{draws}</div>
-                <div className="text-[10px] text-muted-foreground">Beraberlik</div>
+                <div className="text-micro text-muted-foreground">Beraberlik</div>
               </div>
               <div>
                 <div className="text-sm font-bold text-rose-500">{awayWins}</div>
-                <div className="text-[10px] text-muted-foreground truncate max-w-[60px]">{awayTeam}</div>
+                <div className="text-micro text-muted-foreground truncate max-w-[60px]">{awayTeam}</div>
               </div>
             </div>
 
@@ -162,7 +162,7 @@ const H2HSummaryBadge = forwardRef<HTMLDivElement, H2HSummaryBadgeProps>(({
                   <div
                     key={i}
                     className={cn(
-                      "text-[10px] font-medium px-1.5 py-0.5 rounded",
+                      "text-micro font-medium px-1.5 py-0.5 rounded",
                       result === 'home' && "bg-emerald-500/10 text-emerald-500",
                       result === 'away' && "bg-rose-500/10 text-rose-500",
                       result === 'draw' && "bg-amber-500/10 text-amber-500"

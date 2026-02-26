@@ -86,7 +86,7 @@ export const PredictionTypePills = ({ stats, isLoading }: PredictionTypePillsPro
                 >
                   <div className="flex items-center justify-between text-sm mb-1">
                     <span className="text-muted-foreground truncate">
-                      {label} <span className="text-[10px] opacity-70">({stat.total_predictions})</span>
+                      {label} <span className="text-micro opacity-70">({stat.total_predictions})</span>
                     </span>
                     <span className="font-medium text-foreground ml-2">%{Math.round(percentage)}</span>
                   </div>
