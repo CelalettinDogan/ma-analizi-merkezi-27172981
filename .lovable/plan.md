@@ -1,158 +1,164 @@
 
 
-# GolMetrik AI — Profesyonel UI/UX Denetim Raporu
+# GolMetrik AI — Güncel UI/UX Denetim Raporu (v2)
+
+Son yapılan iyileştirmelerden sonra (design token sistemi, Profile konsolidasyonu, TodaysMatches/MatchCarousel modernizasyonu) uygulamanın güncel durumunu değerlendiriyorum.
 
 ---
 
-## 1️⃣ Görsel Tasarım (Visual Design) — 6.5/10
+## 1️⃣ Görsel Tasarım — 7/10 (önceki: 6.5)
 
-**Olumlu:**
-- Renk paleti tutarlı: emerald/primary + amber/secondary + dark background. Semantik kullanım doğru (win=green, loss=red, draw=amber).
-- Glassmorphism efektleri (`glass-card`, `backdrop-blur-xl`) doğru yerlerde kullanılmış.
-- Gradient sistemi CSS custom properties ile merkezi yönetiliyor — iyi mühendislik.
+**İyileşen:**
+- TodaysMatches ve MatchCarousel artık surface-based yaklaşımla temiz. Gereksiz kart sarmaları kaldırılmış.
+- Featured match kartı `bg-card/60 backdrop-blur-sm` ile sade ve modern.
+- Design token sistemi `tailwind.config.ts`'e yerleşmiş: 8px spacing, 6 kademeli font scale, standart radius.
 
-**Sorunlar:**
+**Kalan sorunlar:**
 
-1. **Kart enflasyonu**: Profile sayfasında 7+ ayrı `Card` üst üste yığılmış. Her bölüm ayrı bir kart — bu "card soup" anti-pattern'i. Premium uygulamalarda (Spotify, Nike) bölümler doğrudan yüzeye yerleşir, her satır kart olmaz.
+1. **AIRecommendationCard hala "overdesigned"**: `bg-gradient-to-br from-primary/10 via-card to-secondary/10` + `border border-primary/20` + içeride ikinci bir gradient overlay. Üç katman efekt hala fazla. Tek bir subtle border veya tek bir gradient yeterli.
 
-2. **Border + shadow + gradient üçlüsü aşırı kullanılıyor**: `AIRecommendationCard` hem `border border-primary/20`, hem `bg-gradient-to-br`, hem `shadow-lg shadow-primary/10` kullanıyor. Bu üç efekt bir arada "trying too hard" hissi veriyor. Premium uygulamalar tek bir efektle yetinir.
+2. **LiveMatchCard2 ağır**: `bg-gradient-to-br from-card via-card to-red-950/20` + `border border-red-500/30` + `shadow-lg shadow-red-500/5` — canlı maç kartı her açıdan kırmızı. Sadece live indicator + bir subtle border yeter.
 
-3. **Spacing tutarsızlığı**: 
-   - `gap-2`, `gap-2.5`, `gap-3`, `space-y-3`, `space-y-4` karışık kullanılıyor. Bir 8px grid sistemi yok.
-   - Profile'da `py-3 px-4`, `py-4 px-4`, `pt-4 px-4` gibi farklı padding değerleri aynı ekranda. 
-   - `text-[10px]`, `text-[11px]`, `text-[9px]`, `text-[8px]` — bu kadar granüler font boyutu arbitrarity gösteriyor.
+3. **Premium sayfası kart borderleri**: `border-2` kullanımı — native uygulamalarda kalın border nadir kullanılır. `border` (1px) yeterli.
 
-4. **Boş alan yetersiz**: Ana sayfa `space-y-8` kullanıyor ama içerideki bileşenler sıkışık. Hero ile LeagueGrid arası yeterli breath yok. Premium uygulamalarda sectionlar arası 32-48px boşluk olur.
+4. **Spacing hala %100 tutarlı değil**: `space-y-4`, `space-y-0.5`, `gap-2`, `gap-3`, `gap-1.5` karışık. Token sistemi var ama tam uygulanmamış. `gap-2` (8px) ve `gap-4` (16px) ikisine sadık kalmak lazım.
 
-5. **Kontrast sorunları**: `text-muted-foreground` üzerine `text-[9px]` font — küçük ekranlarda WCAG AA'yı geçmez. Premium sayfasında `text-[8px]` bile var.
+5. **Boşluk iyileşmiş ama Hero → LeagueGrid arası hala sıkışık**: `py-8 space-y-8` (32px) var ama hero `pb-10` ile bitiyor, arası yetersiz.
 
 ---
 
-## 2️⃣ Tipografi — 5.5/10
+## 2️⃣ Tipografi — 6.5/10 (önceki: 5.5)
 
-**Sorunlar:**
+**İyileşen:**
+- Ana sayfa ve profil sayfasındaki arbitrary font boyutları büyük ölçüde temizlenmiş.
+- Token scale (micro, xs, sm, base, lg, xl, 2xl) tanımlanmış.
 
-1. **Font scale kaotik**: `text-[8px]`, `text-[9px]`, `text-[10px]`, `text-[11px]`, `text-xs`, `text-sm`, `text-base`, `text-lg`, `text-xl`, `text-2xl`, `text-3xl` — 11 farklı boyut tek ekranda. Profesyonel bir type scale 5-6 boyutla çalışır.
+**Kalan sorunlar:**
 
-2. **Font weight tutarsız**: `font-medium`, `font-semibold`, `font-bold`, `font-extrabold` aynı sayfalarda karışık. Premium kartlarında `font-extrabold` fiyat için kullanılıyor ama aynı ekranda başlık `font-bold` — hiyerarşi bozuk.
+1. **166 arbitrary font kullanımı hala mevcut** — 12 dosyada `text-[Xpx]` pattern'leri var. Özellikle:
+   - `ChatInput.tsx`: `text-[11px]`, `text-[9px]`
+   - `Live.tsx`: `text-[10px]`
+   - `PremiumUpgrade.tsx`: `text-[10px]`, `text-[11px]` (6 yerde)
+   - `BottomNav.tsx`: `text-[10px]`, `text-[7px]`
+   - `PredictionTypePills.tsx`: `text-[10px]`
+   - `AdminLayout.tsx`: `text-[10px]`
 
-3. **Display font (Space Grotesk) az kullanılıyor**: Sadece bazı `font-display` class'ları var. Çoğu başlık Inter ile render ediliyor. İki font ailesi varsa net bir ayrım olmalı: tüm h1-h3 Space Grotesk, body Inter.
+2. **BottomNav label font**: `text-[10px]` — bu token scale'in dışında. `text-micro` (11px) olmalı.
 
-4. **Line-height kontrolsüz**: `leading-tight` sadece birkaç yerde. Çoğu metin default line-height ile — özellikle küçük fontlarda okunabilirlik düşük.
+3. **Font weight hiyerarşisi**: HeroSection'da `font-bold` başlık, Premium'da `font-extrabold` fiyat, AIRecommendationCard'da `font-bold` prediction — weight hiyerarşisi belirsiz. Kural: `font-bold` başlıklar, `font-semibold` alt başlıklar, `font-medium` vurgu, `font-normal` body.
 
----
-
-## 3️⃣ Native Hissiyat — 7/10
-
-**Olumlu:**
-- Bottom tab bar doğru implementasyon: `layoutId` ile aktif tab animasyonu, `touch-manipulation`, safe area desteği.
-- `pt-safe`, `pb-safe` utility'leri mevcut.
-- Capacitor entegrasyonu, back button handling, deep link desteği var.
-
-**Sorunlar:**
-
-1. **Header web kalıntısı**: Sticky header `bg-background/95 backdrop-blur-lg` ile blur efekti var ama `h-14` (56px) yüksekliği iOS'un 44px ve Android'in 56px standartlarına tam uymuyor. Ayrıca desktop navigation linkleri (`nav.hidden.lg:flex`) native bir uygulamada olmamalı — bu web düşüncesi.
-
-2. **Scroll davranışı**: `overflow-x-auto` ile horizontal scroll yapan LeagueGrid ve PredictionPills native'de swipe gesture ile çalışır ama scroll indicator (chevron animasyonu) web pattern'i. Native'de bu gereksiz.
-
-3. **Button radius değerleri karışık**: `rounded-xl` (12px), `rounded-2xl` (16px), `rounded-full`, `rounded-lg` (8px) aynı ekranda. iOS 18px, Android Material 12-16px kullanır. Bir standart yok.
-
-4. **Gesture desteği eksik**: Pull-to-refresh yok. Live sayfasında `setInterval` ile auto-refresh var ama kullanıcı manuel çekemez. Bu native'de beklenen bir davranış.
+4. **Space Grotesk hala yetersiz kullanılıyor**: Sadece section başlıklarında `font-display` var. Kart başlıkları, modal başlıkları Inter ile render ediliyor.
 
 ---
 
-## 4️⃣ Kullanıcı Deneyimi (UX) — 6/10
+## 3️⃣ Native Hissiyat — 7.5/10 (önceki: 7)
 
-**Sorunlar:**
+**İyileşen:**
+- Desktop nav linkleri header'dan kaldırılmış.
+- Touch states (`whileTap={{ scale: 0.98 }}`) yaygın.
+- BottomNav spring animasyonu doğru.
 
-1. **Ana sayfada bilgi aşırı yükleme**: Hero → LeagueGrid → TodaysMatches → UpcomingMatches → Analysis → AdvancedTabs → LegalDisclaimer. Tek sayfada 7+ bölüm var. Kullanıcı scroll yorgunluğu yaşar.
+**Kalan sorunlar:**
 
-2. **CTA belirsizliği**: Hero'da "Hemen Analiz Al" butonu aşağıya scroll ettiriyor (leagues section'a). Bu bir CTA değil, bir scroll action. Kullanıcı butona basınca bir şey olmasını bekler, sayfanın kaymasını değil.
+1. **Pull-to-refresh hala yok**: Ana sayfa ve Live'da manuel yenileme gesture'ı eksik.
 
-3. **Analiz akışı kırık**: Kullanıcı lig seçer → maç seçer → analiz başlar → sayfa scroll eder → sonuç çıkar. Bu 4 adımlık flow tek sayfada gerçekleşiyor. Analiz sonucu ayrı bir view/modal olmalı.
+2. **BottomNav label font**: `text-[10px]` — iOS tab bar'da label 10pt, Android'de 12sp. 10px çok küçük, `text-micro` (11px) daha uygun.
 
-4. **Empty state'ler zayıf**: Live sayfasında "Şu an canlı maç yok" büyük bir boş alan. Alternatif içerik (yaklaşan maçlar, son sonuçlar) gösterilmiyor.
+3. **Hero CTA "Hemen Analiz Al" davranışı**: Hala `scrollToLeagues()` yapıyor — sayfa scroll ettirmek native'de beklenen bir CTA değil. Kullanıcı "bir şey olmasını" bekler.
 
-5. **Profile sayfası settings dump'ı**: Profil, kullanıcı bilgileri, son analizler, favoriler, yaklaşan maçlar, tema ayarı, bildirim ayarı, yasal linkler, hesap silme — hepsi tek sayfada. Bu ayarlar + profil karışımı. Settings ayrı bir section olmalı.
+4. **Segmented control (Premium)**: `rounded-xl` container + `rounded-[10px]` segments — radius değerleri farklı. Aynı bileşenin iç/dış radius'u tutarlı olmalı.
 
-6. **Onboarding 3 adım ama değer göstermiyor hemen**: Onboarding bittikten sonra kullanıcı boş bir ana sayfayla karşılaşıyor (maç verisi yüklenene kadar). İlk değerli etkileşim 3-4 tap sonra.
-
----
-
-## 5️⃣ Premium Algı — 6/10
-
-**Mevcut durum: İyi bir startup MVP'si, yatırım almış ürün değil.**
-
-**Neden MVP hissi veriyor:**
-
-1. **Typography discipline eksik** — Pixel-level font boyutları (`text-[9px]`) profesyonel bir design system'de olmaz.
-2. **Kart spam'ı** — Her bilgi parçası ayrı bir kart. Bu Dribbble estetiği, production değil.
-3. **Micro-interactions az** — Butonlarda `whileTap={{ scale: 0.96 }}` var ama page transitions, skeleton-to-content morphing, meaningful loading states eksik.
-4. **Boilerplate hissi** — Shadcn/ui default componentları çok fazla "out of the box" kullanılmış. Card, Badge, Progress hepsi default styling'de.
-5. **Çok fazla bilgi, az odak** — Premium uygulamalar bir ekranda 1-2 şey söyler. Bu uygulama her ekranda 5-6 şey söylemeye çalışıyor.
+5. **Scroll edge fade**: MatchCarousel'da `bg-gradient-to-l from-background` sağ kenar fade — iOS'ta bu yok, sadece overflow clip kullanılır.
 
 ---
 
-## 6️⃣ Teknik UI Kalitesi — 7/10
+## 4️⃣ Kullanıcı Deneyimi (UX) — 6.5/10 (önceki: 6)
 
-**Olumlu:**
-- Component sistemi mantıklı ayrılmış (analysis/, charts/, chat/, premium/).
-- `cn()` utility ile class merging tutarlı.
-- Framer Motion animasyonları doğru kullanılmış (AnimatePresence, layoutId).
-- CSS custom properties ile tema sistemi merkezi.
+**İyileşen:**
+- Profile kart konsolidasyonu yapılmış (3 gruba indirilmiş).
+- TodaysMatches temizlenmiş, bilgi hiyerarşisi net.
 
-**Sorunlar:**
+**Kalan sorunlar:**
 
-1. **Border-radius tutarsız**: Uygulama genelinde `rounded-lg`, `rounded-xl`, `rounded-2xl`, `rounded-full` karışık. Bir design token yok. Aynı seviye kartlar farklı radius kullanıyor.
+1. **Analiz sonuçları hala ana sayfada**: Kullanıcı maça tıklıyor → sayfa scroll → analiz aşağıda açılıyor. Bu en büyük UX sorunu. Ayrı bir route veya full-screen overlay olmalı.
 
-2. **Shadow kullanımı dengesiz**: `shadow-sm`, `shadow-md`, `shadow-lg`, custom `shadow-lg shadow-primary/25` — aynı hiyerarşideki elementler farklı shadow'lar alıyor.
+2. **Ana sayfada 7+ section hala var**: Hero → LeagueGrid → TodaysMatches → UpcomingMatches → AnalysisLoading → Analysis (6 sub-section) → LegalDisclaimer. İlk yüklemede kullanıcı sadece Hero + Matches görmeli.
 
-3. **Aynı tip kartlar farklı tasarlanmış**: 
-   - Profile'da `glass-card` kullanılıyor
-   - TodaysMatches'da düz `Card` 
-   - AIRecommendationCard'da custom gradient card
-   - Premium'da `border-2 rounded-2xl` custom card
-   - 4 farklı kart stili = görsel tutarsızlık
+3. **CTA belirsizliği devam ediyor**: "Hemen Analiz Al" butonu hala scroll action.
 
-4. **Hardcoded değerler fazla**: `min-w-[56px]`, `min-h-[48px]`, `w-[280px]`, `bottom-[4.5rem]` — bunlar design token olmalı.
+4. **Empty state zayıflığı devam ediyor**: Live'da "canlı maç yok" — alternatif içerik yok. TodaysMatches'da "Lig seçerek maçları görüntüleyin" — bu yönlendirme çok pasif.
+
+5. **İlk açılış değer gecikmesi**: Onboarding → boş sayfa → veri yüklenmesi. İlk anlamlı etkileşim 2-3 saniye sonra.
 
 ---
 
-## Genel Puan: 6/10
+## 5️⃣ Premium Algı — 6.5/10 (önceki: 6)
 
-İyi bir teknik temel var ama tasarım disiplini eksik. Kod kalitesi UI kalitesinin önünde.
+**İyileşen:**
+- Premium sayfası segmented control, plan kartları ve fixed CTA ile native premium sayfası gibi.
+- Profile konsolidasyonu daha temiz bir görünüm sağlıyor.
 
----
+**Kalan sorunlar:**
 
-## En Kritik 5 İyileştirme Önerisi
-
-### 1. Design Token Sistemi Oluştur
-Tüm spacing (4, 8, 12, 16, 24, 32, 48), border-radius (8, 12, 16), shadow (sm, md, lg), ve font-size (11, 13, 15, 17, 20, 24, 32) değerlerini token'lara bağla. `text-[9px]` gibi arbitrary değerleri kaldır.
-
-### 2. Kart Enflasyonunu Azalt
-Profile, Premium ve Index sayfalarındaki kart sayısını yarıya indir. Aynı bağlamdaki bilgileri tek yüzeyde grupla. Her bilgi parçasına ayrı kart vermeyi bırak.
-
-### 3. Analiz Sonuçlarını Ayrı View'a Taşı
-Şu an analiz sonucu ana sayfanın altına ekleniyor. Bunu ayrı bir full-screen modal veya route (`/analysis/:id`) yap. Kullanıcı maça tıkladığında doğrudan analiz ekranına gitsin.
-
-### 4. Type Scale'i 6 Kademeye İndir
-`xs` (11px), `sm` (13px), `base` (15px), `lg` (17px), `xl` (20px), `2xl` (28px) — bu kadar yeter. `text-[8px]`, `text-[9px]`, `text-[10px]`, `text-[11px]` hepsini kaldır.
-
-### 5. Spacing Grid'i 8px'e Sabitle
-Tüm padding ve margin değerlerini 8px katları yap: 8, 16, 24, 32, 48. `py-3 px-4` (12px/16px) gibi karışık değerleri `p-4` (16px) ile standartlaştır.
+1. **Hala 166 arbitrary pixel değeri** — tek başına bu "design system eksik" sinyali veriyor.
+2. **Analiz akışının kırıklığı** — maç analizi ana sayfanın altına ekleniyor, ayrı bir deneyim değil. Bu MVP pattern'i.
+3. **Micro-interaction eksikliği**: Page transition yok, skeleton→content morph yok. Sadece `fade-in` var.
+4. **Shadcn/ui default styling**: Progress, Badge, Card hala out-of-the-box. Özelleştirme az.
+5. **LiveMatchCard2 aşırı kırmızı**: Canlı maç = her yer kırmızı. Premium uygulamalarda (FotMob, OneFootball) live indicator küçük ve sade, kart kendisi normal.
 
 ---
 
-## Premium Seviyeye Çıkarmak İçin Yapılması Gerekenler
+## 6️⃣ Teknik UI Kalitesi — 7.5/10 (önceki: 7)
 
-| Alan | Aksiyon |
-|------|---------|
-| **Kart sistemi** | Tek bir `Surface` component'i oluştur, 3 variant: `flat`, `elevated`, `highlighted`. Tüm kartları bununla değiştir. |
-| **Tipografi** | Modular type scale implement et. Space Grotesk'i tüm başlıklara, Inter'i tüm body'ye zorla. |
-| **Spacing** | 4px base unit ile spacing scale: `--space-1` (4px) → `--space-12` (48px). Tailwind config'e ekle. |
-| **Analiz UX** | Analiz sonuçlarını bottom sheet veya full-screen overlay'a taşı. Ana sayfayı temiz tut. |
-| **Micro-interactions** | Page transition animasyonları, skeleton→content morph, success/error haptic feedback ekle. |
-| **Information density** | Her ekranda max 3 bilgi bloğu göster. Geri kalanını "Daha fazla" ile gizle veya ayrı sekmeye taşı. |
-| **Empty states** | Her boş state'e alternatif içerik veya onboarding CTA'sı ekle. |
-| **Pull-to-refresh** | Live ve ana sayfa için native pull-to-refresh gesture'ı ekle. |
+**İyileşen:**
+- Design token sistemi tailwind.config.ts'de tanımlı.
+- Profile 718 satır ama mantıksal gruplamalar yapılmış.
+
+**Kalan sorunlar:**
+
+1. **Token adoption eksik**: Token tanımlı ama 12 dosyada 166 arbitrary değer hala kullanılıyor.
+2. **Kart stili hala tutarsız**: TodaysMatches `bg-card/60`, MatchCarousel `bg-card/50`, LiveMatchCard2 `bg-gradient-to-br from-card via-card to-red-950/20`, AIRecommendationCard `bg-gradient-to-br from-primary/10 via-card to-secondary/10` — 4 farklı kart arka planı.
+3. **Border-radius**: Token'da `2xl=16px`, `xl=12px` tanımlı ama `rounded-[10px]` (Premium segmented control) gibi hardcoded değerler var.
+4. **Shadow**: Token'da `subtle`, `card`, `elevated` tanımlı ama `shadow-lg shadow-red-500/5`, `shadow-lg shadow-primary/25` gibi bileşen-spesifik shadow'lar var.
+
+---
+
+## Genel Puan: 7/10 (önceki: 6)
+
+Önceki 6/10'dan 7/10'a yükselmiş. Design token altyapısı kurulmuş ama tam uygulanmamış. Ana sayfa match bileşenleri modernleşmiş, Profile konsolide edilmiş. Ama analiz akışı hala kırık ve 166 arbitrary font değeri hala mevcut.
+
+---
+
+## En Kritik 5 İyileştirme
+
+### 1. Kalan 166 Arbitrary Font Değerini Temizle
+12 dosyada `text-[7px]` ile `text-[11px]` arası değerler var. Hepsini token'larla değiştir: `text-[10px]` → `text-micro`, `text-[11px]` → `text-micro`, `text-[9px]` → `text-micro`, `text-[7px]` → kaldır veya SVG'ye taşı.
+
+### 2. Analiz Sonuçlarını Ayrı Ekrana Taşı
+Ana sayfada inline analiz yerine `/analysis` route'u veya full-screen bottom sheet. Kullanıcı maça tıkladığında ayrı bir ekran açılsın, ana sayfa scroll edilmesin.
+
+### 3. LiveMatchCard2 ve AIRecommendationCard Efektlerini Sadeleştir
+- LiveMatchCard2: Gradient + border + shadow + animated ping → sadece border + indicator
+- AIRecommendationCard: 3 gradient katmanı → tek subtle background
+
+### 4. Kart Arka Plan Stilini Standartlaştır
+4 farklı kart arka planı var. Bir `Surface` component'i oluştur: `default` (bg-card), `elevated` (bg-card/80 + shadow), `highlighted` (bg-primary/5). Tüm kartları buna geçir.
+
+### 5. Hero CTA'yı Gerçek Bir Aksiyona Dönüştür
+"Hemen Analiz Al" butonu scroll yerine CommandPalette'i (`setCommandOpen(true)`) açsın. Kullanıcı doğrudan takım/maç arasın. Bu gerçek bir CTA olur.
+
+---
+
+## Premium Seviyeye Çıkarmak İçin
+
+| Alan | Aksiyon | Öncelik |
+|------|---------|---------|
+| **Arbitrary değerler** | 166 `text-[Xpx]` → token | Yüksek |
+| **Analiz UX** | Ayrı ekrana taşı | Yüksek |
+| **Kart sistemi** | Surface component (3 variant) | Orta |
+| **Live kart** | Efekt sadeleştirme | Orta |
+| **Page transitions** | Framer Motion AnimatePresence route transitions | Orta |
+| **Pull-to-refresh** | Ana sayfa + Live | Orta |
+| **Empty states** | Alternatif içerik + CTA | Düşük |
+| **Hero CTA** | CommandPalette tetikle | Düşük |
 
