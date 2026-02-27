@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, Zap, Bot, Crown, Trophy, User } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -9,70 +9,88 @@ interface NavItem {
   icon: React.ElementType;
   label: string;
   path: string;
-  badge?: 'premium' | 'live';
+  isAction?: boolean;
+  badge?: 'premium' | 'live' | 'active';
 }
 
 /**
- * Bottom Navigation Bar — Floating Pill Design
+ * Bottom Navigation Bar (6 items)
  * 
- * Flicker fix: Uses useState for stable role, only updates when isLoading becomes false.
- * This prevents the Premium tab from flickering on first render for Admin/Premium users.
+ * Navigation Order: Ana Sayfa | Canlı | AI Asistan | Sıralama | Premium | Profil
+ * 
+ * Badge Logic:
+ * - Admin: Hiç badge gösterme
+ * - Premium: Premium sekmesinde 'active' badge, AI Asistan badge yok
+ * - Free: AI Asistan'da premium badge, Premium sekmesinde premium badge
+ * - Live: Her zaman live badge göster
+ * - Sıralama: Badge yok
  */
 const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(({ onSearchClick }, ref) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAdmin, isPremium, isLoading } = useAccessLevel();
-  
-  // Stable role state — prevents flicker by only updating when loading completes
-  const [stableRole, setStableRole] = useState<'admin' | 'premium' | 'free' | null>(null);
+  const stableItemsRef = useRef<NavItem[] | null>(null);
 
-  useEffect(() => {
-    if (!isLoading) {
-      setStableRole(isAdmin ? 'admin' : isPremium ? 'premium' : 'free');
-    }
-  }, [isLoading, isAdmin, isPremium]);
-
-  const navItems = useMemo((): NavItem[] => {
-    const items: NavItem[] = [
+  // Dynamic nav items with badges based on user role
+  // Premium/Admin kullanıcılar için Premium sekmesi GİZLİ
+  const computedItems = useMemo((): NavItem[] => {
+    const baseItems: NavItem[] = [
       { icon: Home, label: 'Ana Sayfa', path: '/' },
-      { icon: Zap, label: 'Canlı', path: '/live', badge: 'live' },
+      { icon: Zap, label: 'Canlı', path: '/live', badge: 'live' as const },
       { icon: Bot, label: 'AI Asistan', path: '/chat' },
       { icon: Trophy, label: 'Sıralama', path: '/standings' },
+      { icon: Crown, label: 'Premium', path: '/premium' },
+      { icon: User, label: 'Profil', path: '/profile' },
     ];
 
-    const role = stableRole;
+    // Premium veya Admin kullanıcılar için Premium sekmesini filtrele
+    const filteredItems = (isPremium || isAdmin) 
+      ? baseItems.filter(item => item.path !== '/premium')
+      : baseItems;
 
-    // Only show Premium tab for free users
-    if (role === null || role === 'free') {
-      items.push({ icon: Crown, label: 'Premium', path: '/premium', badge: 'premium' });
+    return filteredItems.map(item => {
+      if (item.path === '/live') return item;
+      if (item.path === '/chat') {
+        if (isAdmin) return item;
+        if (isPremium) return item;
+        return { ...item, badge: 'premium' as const };
+      }
+      if (item.path === '/premium') {
+        return { ...item, badge: 'premium' as const };
+      }
+      return item;
+    });
+  }, [isAdmin, isPremium]);
+
+  // isLoading true iken önceki stabil listeyi koru, titreme önle
+  const navItems = useMemo(() => {
+    if (!isLoading) {
+      stableItemsRef.current = computedItems;
+      return computedItems;
     }
-
-    items.push({ icon: User, label: 'Profil', path: '/profile' });
-
-    // Add premium badge to AI chat for free users
-    if (role === 'free') {
-      const chatItem = items.find(i => i.path === '/chat');
-      if (chatItem) chatItem.badge = 'premium';
-    }
-
-    return items;
-  }, [stableRole]);
+    return stableItemsRef.current ?? computedItems;
+  }, [isLoading, computedItems]);
 
   const handleClick = useCallback((item: NavItem, e: React.MouseEvent) => {
     e.preventDefault();
+    if (item.isAction && onSearchClick) {
+      onSearchClick();
+      return;
+    }
     navigate(item.path);
-  }, [navigate]);
+  }, [onSearchClick, navigate]);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden px-4" ref={ref}
-      style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}
-    >
-      {/* Floating pill container */}
-      <div className="bg-card/80 backdrop-blur-2xl border border-border/30 rounded-[20px] shadow-elevated max-w-md mx-auto overflow-hidden">
-        {/* Top shine line */}
-        <div className="h-px bg-gradient-to-r from-transparent via-foreground/[0.06] to-transparent" />
-        
-        <div className="flex items-center justify-evenly py-2 px-1">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden" ref={ref}>
+      {/* Gradient fade effect */}
+      <div className="absolute inset-x-0 -top-6 h-6 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+      
+      {/* Navigation bar */}
+      <div className="bg-card/98 backdrop-blur-xl border-t border-border/60 shadow-lg shadow-black/10">
+        <div 
+          className="flex items-center justify-evenly py-2"
+          style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
+        >
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
@@ -84,26 +102,22 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                 aria-label={item.label}
                 aria-current={isActive ? 'page' : undefined}
                 className={cn(
-                  "relative flex flex-col items-center justify-center gap-0.5 py-1.5 px-3",
-                  "min-h-[48px]",
-                  "touch-manipulation rounded-2xl transition-all duration-200"
+                  "relative flex flex-col items-center justify-center gap-0.5 py-1.5 px-2",
+                  "min-w-[56px] min-h-[48px]",
+                  "touch-manipulation rounded-lg transition-all duration-200",
+                  isActive && "scale-105"
                 )}
               >
-                {/* Active background glow */}
+                {/* Active background */}
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute inset-0 bg-primary/12 rounded-2xl"
-                    style={{ boxShadow: '0 0 16px -2px hsl(var(--primary) / 0.2)' }}
+                    className="absolute inset-0 bg-primary/12 rounded-xl"
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
                 
-                <motion.div 
-                  className="relative z-10"
-                  animate={isActive ? { scale: 1.1 } : { scale: 1 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                >
+                <div className="relative z-10">
                   <Icon 
                     className={cn(
                       "w-5 h-5 transition-colors",
@@ -114,9 +128,14 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                     <span className="absolute -top-0.5 -right-1 w-2 h-2 bg-destructive rounded-full animate-pulse" />
                   )}
                   {item.badge === 'premium' && (
-                    <span className="absolute -top-0.5 -right-1 w-2.5 h-2.5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full" />
+                    <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-sm">
+                      <span className="text-micro text-white font-bold leading-none" style={{ fontSize: '7px' }}>★</span>
+                    </span>
                   )}
-                </motion.div>
+                  {item.badge === 'active' && (
+                    <span className="absolute -top-0.5 -right-1 w-2 h-2 bg-emerald-500 rounded-full" />
+                  )}
+                </div>
                 <span className={cn(
                   "text-micro font-medium transition-colors relative z-10",
                   isActive ? "text-primary" : "text-muted-foreground"
