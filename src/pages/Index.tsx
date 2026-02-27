@@ -260,7 +260,7 @@ const Index: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-8">
+    <div className="min-h-screen bg-background pb-28 md:pb-8">
       {/* Header */}
       <AppHeader rightContent={searchButton} />
 
