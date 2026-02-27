@@ -19,11 +19,9 @@ interface AnalysisDrawerProps {
 }
 
 const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClose }) => {
-  if (!analysis) return null;
-
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isOpen && analysis && (
         <>
           {/* Backdrop */}
           <motion.div

@@ -73,6 +73,13 @@ const TabShell: React.FC = () => {
     tabRefs.current.set(path, el);
   }, []);
 
+  // Auth guard — redirect to login (must be before early returns)
+  useEffect(() => {
+    if (!isLoading && !user) {
+      navigate('/auth', { replace: true });
+    }
+  }, [isLoading, user, navigate]);
+
   // Auth guard — loading
   if (isLoading) {
     return (
@@ -85,9 +92,7 @@ const TabShell: React.FC = () => {
     );
   }
 
-  // Auth guard — redirect
   if (!user) {
-    // Don't render tabs if not logged in; non-tab routes handle themselves
     return null;
   }
 

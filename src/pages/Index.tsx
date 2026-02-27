@@ -193,6 +193,8 @@ const Index: React.FC = () => {
       matchId: match.id,
       homeTeamId: match.homeTeam.id,
       awayTeamId: match.awayTeam.id,
+      homeTeamCrest: match.homeTeam.crest,
+      awayTeamCrest: match.awayTeam.crest,
     };
     
     // Mark scroll request for after analysis completes
