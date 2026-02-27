@@ -122,10 +122,30 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
           <div className="w-1 h-5 rounded-full bg-primary" />
           <h2 className="font-display font-semibold text-sm">Bugünün Maçları</h2>
         </div>
-        <div className="h-40 rounded-2xl bg-muted/20 animate-pulse" />
-        <div className="space-y-2">
+        <div className="rounded-2xl bg-card/50 backdrop-blur-md border border-border/20 p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="h-5 w-20 rounded-lg bg-muted/30 animate-pulse" />
+            <div className="h-5 w-16 rounded-lg bg-muted/20 animate-pulse" />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex-1 flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-muted/30 animate-pulse" />
+              <div className="h-4 w-24 rounded bg-muted/20 animate-pulse" />
+            </div>
+            <div className="h-8 w-14 rounded-lg bg-muted/20 animate-pulse" />
+            <div className="flex-1 flex items-center gap-3 justify-end">
+              <div className="h-4 w-24 rounded bg-muted/20 animate-pulse" />
+              <div className="w-12 h-12 rounded-2xl bg-muted/30 animate-pulse" />
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl bg-card/30 backdrop-blur-sm border border-border/10 divide-y divide-border/10 overflow-hidden">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-14 rounded-xl bg-muted/10 animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
+            <div key={i} className="flex items-center gap-3 px-4 py-3.5">
+              <div className="h-4 w-10 rounded bg-muted/20 animate-pulse" />
+              <div className="flex-1 h-4 rounded bg-muted/15 animate-pulse" />
+              <div className="h-4 w-8 rounded bg-muted/10 animate-pulse" />
+            </div>
           ))}
         </div>
       </div>
@@ -150,7 +170,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Section Header — minimal */}
+      {/* Section Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-1 h-5 rounded-full bg-primary" />
@@ -159,7 +179,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
         </div>
       </div>
 
-      {/* Featured Match — Clean, borderless surface */}
+      {/* Featured Match — Premium glass surface */}
       {featuredMatch && (
         <motion.button
           initial={{ opacity: 0, y: 8 }}
@@ -169,31 +189,35 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
           disabled={!!loadingMatchId}
           className={cn(
             "relative w-full text-left rounded-2xl p-4 transition-all",
-            "bg-card/60 backdrop-blur-sm",
-            "border border-border/30",
+            "bg-card/50 backdrop-blur-md",
+            "border border-border/20",
+            "shadow-card",
             loadingMatchId === featuredMatch.id && "opacity-80",
             loadingMatchId && loadingMatchId !== featuredMatch.id && "opacity-40"
           )}
         >
-          {/* Loading Overlay */}
+          {/* Inner shine gradient */}
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/[0.03] via-transparent to-transparent pointer-events-none" />
+
+          {/* Loading Overlay — glass pill */}
           {loadingMatchId === featuredMatch.id && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="absolute inset-0 bg-background/50 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10"
+              className="absolute inset-0 bg-background/60 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10"
             >
-              <div className="flex items-center gap-2">
-                <Loader2 className="w-5 h-5 text-primary animate-spin" />
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 backdrop-blur-md border border-border/30">
+                <Loader2 className="w-4 h-4 text-primary animate-spin" />
                 <span className="text-xs font-medium">Analiz ediliyor...</span>
               </div>
             </motion.div>
           )}
 
-          {/* Top row: reason tag + H2H */}
-          <div className="flex items-center justify-between mb-4">
+          {/* Top row */}
+          <div className="flex items-center justify-between mb-4 relative z-[1]">
             <div className="flex items-center gap-2">
               <span className={cn(
-                "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-micro font-medium",
+                "inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-micro font-medium",
                 featuredReason === 'Büyük Maç' 
                   ? "bg-secondary/10 text-secondary" 
                   : "bg-primary/10 text-primary"
@@ -216,13 +240,13 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
             <FeaturedMatchH2H match={featuredMatch} />
           </div>
 
-          {/* Teams row */}
-          <div className="flex items-center gap-3">
+          {/* Teams row — larger crests */}
+          <div className="flex items-center gap-3 relative z-[1]">
             {/* Home */}
             <div className="flex-1 flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-muted/30 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {featuredMatch.homeTeam.crest ? (
-                  <img src={featuredMatch.homeTeam.crest} alt="" className="w-7 h-7 object-contain" />
+                  <img src={featuredMatch.homeTeam.crest} alt="" className="w-8 h-8 object-contain" />
                 ) : (
                   <span className="text-sm font-bold text-muted-foreground">
                     {featuredMatch.homeTeam.shortName?.[0] || 'H'}
@@ -234,9 +258,9 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
               </span>
             </div>
 
-            {/* Center: Time */}
+            {/* Center: Time — display font, bold */}
             <div className="flex flex-col items-center flex-shrink-0 px-2">
-              <span className="text-lg font-bold text-primary tabular-nums">
+              <span className="text-xl font-display font-bold text-primary tabular-nums">
                 {format(new Date(featuredMatch.utcDate), 'HH:mm')}
               </span>
               <span className="text-micro text-muted-foreground/50">
@@ -249,9 +273,9 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
               <span className="font-medium text-sm truncate text-right">
                 {featuredMatch.awayTeam.shortName || featuredMatch.awayTeam.name}
               </span>
-              <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-muted/30 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {featuredMatch.awayTeam.crest ? (
-                  <img src={featuredMatch.awayTeam.crest} alt="" className="w-7 h-7 object-contain" />
+                  <img src={featuredMatch.awayTeam.crest} alt="" className="w-8 h-8 object-contain" />
                 ) : (
                   <span className="text-sm font-bold text-muted-foreground">
                     {featuredMatch.awayTeam.shortName?.[0] || 'A'}
@@ -262,7 +286,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
           </div>
 
           {/* CTA row */}
-          <div className="flex items-center justify-center gap-1.5 mt-4 pt-3 border-t border-border/20">
+          <div className="flex items-center justify-center gap-1.5 mt-4 pt-3 border-t border-border/20 relative z-[1]">
             <Sparkles className="w-3.5 h-3.5 text-primary" />
             <span className="text-xs font-medium text-primary">Analiz Et</span>
             <ChevronRight className="w-3.5 h-3.5 text-primary" />
@@ -270,85 +294,87 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
         </motion.button>
       )}
 
-      {/* Match List — minimal rows */}
-      <div className="space-y-0.5">
-        {!hasMatchesToday && displayedMatches.length > 0 && (
-          <div className="text-micro text-muted-foreground/50 font-medium px-3 py-1.5">
-            {getDateLabel(displayedMatches[0].utcDate)}
-          </div>
-        )}
-        
-        {displayedMatches.map((match, index) => {
-          const matchTime = format(new Date(match.utcDate), 'HH:mm');
-          const isThisLoading = loadingMatchId === match.id;
-          const isAnyLoading = !!loadingMatchId;
-          const prevMatch = displayedMatches[index - 1];
-          const showDateSeparator = !hasMatchesToday && prevMatch && 
-            match.utcDate.split('T')[0] !== prevMatch.utcDate.split('T')[0];
+      {/* Match List — unified container */}
+      {displayedMatches.length > 0 && (
+        <div className="rounded-2xl bg-card/30 backdrop-blur-sm border border-border/10 divide-y divide-border/10 overflow-hidden">
+          {!hasMatchesToday && (
+            <div className="text-micro text-muted-foreground/50 font-medium px-4 py-2 bg-muted/5">
+              {getDateLabel(displayedMatches[0].utcDate)}
+            </div>
+          )}
+          
+          {displayedMatches.map((match, index) => {
+            const matchTime = format(new Date(match.utcDate), 'HH:mm');
+            const isThisLoading = loadingMatchId === match.id;
+            const isAnyLoading = !!loadingMatchId;
+            const prevMatch = displayedMatches[index - 1];
+            const showDateSeparator = !hasMatchesToday && prevMatch && 
+              match.utcDate.split('T')[0] !== prevMatch.utcDate.split('T')[0];
 
-          return (
-            <React.Fragment key={match.id}>
-              {showDateSeparator && (
-                <div className="text-micro text-muted-foreground/50 font-medium px-3 py-2 mt-2">
-                  {getDateLabel(match.utcDate)}
-                </div>
-              )}
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: index * 0.03 }}
-                whileTap={!isAnyLoading ? { scale: 0.98 } : {}}
-                onClick={() => !isAnyLoading && onMatchSelect(match)}
-                disabled={isAnyLoading}
-                className={cn(
-                  "w-full flex items-center gap-2 px-3 py-3 rounded-xl transition-colors text-left",
-                  "min-h-[48px]",
-                  isAnyLoading && !isThisLoading && "opacity-40",
-                  isThisLoading && "bg-primary/5",
-                  !isAnyLoading && "active:bg-muted/30"
+            return (
+              <React.Fragment key={match.id}>
+                {showDateSeparator && (
+                  <div className="text-micro text-muted-foreground/50 font-medium px-4 py-2 bg-muted/5">
+                    {getDateLabel(match.utcDate)}
+                  </div>
                 )}
-              >
-                {/* Time */}
-                <span className={cn(
-                  "text-xs font-medium w-10 shrink-0 tabular-nums",
-                  isThisLoading ? "text-primary" : "text-muted-foreground/70"
-                )}>
-                  {matchTime}
-                </span>
-
-                {/* Teams */}
-                <div className="flex-1 min-w-0 flex items-center gap-1.5">
-                  {match.homeTeam.crest && (
-                    <img src={match.homeTeam.crest} alt="" className="w-4 h-4 object-contain shrink-0" />
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: index * 0.03 }}
+                  whileTap={!isAnyLoading ? { scale: 0.98 } : {}}
+                  onClick={() => !isAnyLoading && onMatchSelect(match)}
+                  disabled={isAnyLoading}
+                  className={cn(
+                    "w-full flex items-center gap-2 px-4 py-3.5 transition-colors text-left",
+                    "min-h-[48px]",
+                    isAnyLoading && !isThisLoading && "opacity-40",
+                    isThisLoading && "bg-primary/5",
+                    !isAnyLoading && "active:bg-muted/20"
                   )}
-                  <span className="text-xs truncate">
-                    {match.homeTeam.shortName || match.homeTeam.name}
+                >
+                  {/* Time */}
+                  <span className={cn(
+                    "text-xs font-display font-medium w-10 shrink-0 tabular-nums",
+                    isThisLoading ? "text-primary" : "text-muted-foreground/70"
+                  )}>
+                    {matchTime}
                   </span>
-                  <span className="text-muted-foreground/30 text-micro">–</span>
-                  <span className="text-xs truncate">
-                    {match.awayTeam.shortName || match.awayTeam.name}
+
+                  {/* Teams */}
+                  <div className="flex-1 min-w-0 flex items-center gap-1.5">
+                    {match.homeTeam.crest && (
+                      <img src={match.homeTeam.crest} alt="" className="w-4 h-4 object-contain shrink-0" />
+                    )}
+                    <span className="text-xs truncate">
+                      {match.homeTeam.shortName || match.homeTeam.name}
+                    </span>
+                    <span className="text-muted-foreground/30 text-micro">–</span>
+                    <span className="text-xs truncate">
+                      {match.awayTeam.shortName || match.awayTeam.name}
+                    </span>
+                    {match.awayTeam.crest && (
+                      <img src={match.awayTeam.crest} alt="" className="w-4 h-4 object-contain shrink-0" />
+                    )}
+                  </div>
+
+                  {/* League code */}
+                  <span className="text-micro text-muted-foreground/40 shrink-0">
+                    {match.competition.code}
                   </span>
-                  {match.awayTeam.crest && (
-                    <img src={match.awayTeam.crest} alt="" className="w-4 h-4 object-contain shrink-0" />
+
+                  {/* Loading or chevron */}
+                  {isThisLoading ? (
+                    <Loader2 className="w-3.5 h-3.5 text-primary animate-spin shrink-0" />
+                  ) : (
+                    <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/20 shrink-0" />
                   )}
-                </div>
-
-                {/* League code */}
-                <span className="text-micro text-muted-foreground/40 shrink-0">
-                  {match.competition.code}
-                </span>
-
-                {/* Loading or chevron */}
-                {isThisLoading ? (
-                  <Loader2 className="w-3.5 h-3.5 text-primary animate-spin shrink-0" />
-                ) : (
-                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/20 shrink-0" />
-                )}
-              </motion.button>
-            </React.Fragment>
-          );
-        })}
-      </div>
+                </motion.button>
+              </React.Fragment>
+            );
+          })}
+        </div>
+      )}
 
       {/* Show More */}
       {otherMatches.length > 5 && !showAll && (

@@ -46,12 +46,13 @@ const MatchSlide: React.FC<{
         onClick={onSelect}
         className={cn(
           "w-full p-4 rounded-2xl text-left transition-all",
-          "bg-card/50 backdrop-blur-sm border border-border/20",
-          "active:bg-card/70",
+          "bg-card/40 backdrop-blur-md border border-border/15",
+          "shadow-subtle hover:shadow-card",
+          "active:bg-card/60",
           "focus:outline-none focus:ring-2 focus:ring-primary/30"
         )}
       >
-        {/* Header — league + status */}
+        {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1.5">
             <span className="text-base">{match.competition.area?.flag || '🏆'}</span>
@@ -60,14 +61,14 @@ const MatchSlide: React.FC<{
             </span>
           </div>
           {isLive ? (
-            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-destructive/10 text-destructive text-micro font-medium">
+            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-destructive/10 text-destructive text-micro font-medium">
               <span className="w-1.5 h-1.5 bg-destructive rounded-full animate-pulse" />
               CANLI
             </span>
           ) : isFinished ? (
             <span className="text-micro text-muted-foreground/40">Bitti</span>
           ) : (
-            <span className="text-micro text-muted-foreground/60 tabular-nums">
+            <span className="text-micro font-display font-medium text-muted-foreground/60 tabular-nums">
               {format(matchDate, 'HH:mm', { locale: tr })}
             </span>
           )}
@@ -158,7 +159,7 @@ const MatchCarousel: React.FC<MatchCarouselProps> = ({ matches, onMatchSelect, i
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'start',
     containScroll: 'trimSnaps',
-    dragFree: true,
+    dragFree: false,
   });
   const { user } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -172,7 +173,7 @@ const MatchCarousel: React.FC<MatchCarouselProps> = ({ matches, onMatchSelect, i
         {Array.from({ length: 3 }).map((_, i) => (
           <div 
             key={i}
-            className="flex-shrink-0 w-[260px] md:w-[300px] h-[160px] rounded-2xl bg-muted/10 animate-pulse"
+            className="flex-shrink-0 w-[260px] md:w-[300px] h-[160px] rounded-2xl bg-card/40 backdrop-blur-sm border border-border/10 animate-pulse"
           />
         ))}
       </div>
@@ -222,9 +223,6 @@ const MatchCarousel: React.FC<MatchCarouselProps> = ({ matches, onMatchSelect, i
           ))}
         </div>
       </div>
-
-      {/* Fade edge */}
-      <div className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none" />
     </div>
   );
 };
