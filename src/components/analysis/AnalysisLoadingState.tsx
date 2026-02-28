@@ -75,15 +75,16 @@ const AnalysisLoadingState: React.FC<AnalysisLoadingStateProps> = ({
     if (isComplete) return;
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 92) return prev;
-        if (prev >= 85) return prev + Math.random() * 0.5 + 0.2; // very slow after 85%
+        if (prev >= 98) return prev;
+        if (prev >= 92) return prev + 0.1;
+        if (prev >= 85) return prev + Math.random() * 0.5 + 0.2;
         return prev + Math.random() * 2 + 1; // slower: +1-3
       });
     }, 500);
     return () => clearInterval(progressInterval);
   }, [isComplete]);
 
-  const displayProgress = Math.min(Math.round(progress), isComplete ? 100 : 92);
+  const displayProgress = Math.min(Math.round(progress), isComplete ? 100 : 98);
 
   return (
     <motion.div
