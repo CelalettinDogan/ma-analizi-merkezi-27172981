@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,35 +18,58 @@ interface AnalysisDrawerProps {
 }
 
 const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClose }) => {
-  const shouldShow = isOpen && !!analysis;
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
 
-  // Lock body scroll when drawer is open
+  // Two-phase mount: mount → next rAF → animate in
   useEffect(() => {
-    if (shouldShow) {
+    if (isOpen && analysis) {
+      setMounted(true);
+      // Phase 2: next frame, trigger CSS transition
+      const raf1 = requestAnimationFrame(() => {
+        const raf2 = requestAnimationFrame(() => {
+          setVisible(true);
+        });
+        return () => cancelAnimationFrame(raf2);
+      });
+      return () => cancelAnimationFrame(raf1);
+    } else {
+      setVisible(false);
+      // Wait for transition to finish before unmounting
+      const timeout = setTimeout(() => setMounted(false), 350);
+      return () => clearTimeout(timeout);
+    }
+  }, [isOpen, analysis]);
+
+  // Lock body scroll
+  useEffect(() => {
+    if (visible) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [shouldShow]);
+    return () => { document.body.style.overflow = ''; };
+  }, [visible]);
+
+  if (!mounted) return null;
 
   return (
     <>
       {/* Backdrop */}
       <div
         className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity duration-300 ${
-          shouldShow ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          visible ? 'opacity-100' : 'opacity-0'
         }`}
+        style={{ touchAction: 'none' }}
         onClick={onClose}
       />
 
       {/* Drawer */}
       <div
         className={`fixed inset-x-0 bottom-0 top-8 z-50 bg-background rounded-t-2xl overflow-hidden flex flex-col transition-transform duration-300 ease-out ${
-          shouldShow ? 'translate-y-0' : 'translate-y-full'
+          visible ? 'translate-y-0' : 'translate-y-full'
         }`}
+        style={{ willChange: 'transform' }}
       >
         {/* Handle bar + Close */}
         <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-border/50 shrink-0">

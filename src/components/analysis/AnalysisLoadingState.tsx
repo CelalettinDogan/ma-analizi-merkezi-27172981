@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Loader2, Brain, BarChart3, Users, TrendingUp, Check, Sparkles } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
 
 interface AnalysisLoadingStateProps {
   homeTeam: string;
   awayTeam: string;
   homeTeamCrest?: string;
   awayTeamCrest?: string;
+  isComplete?: boolean;
 }
 
 const LOADING_STEPS = [
@@ -18,252 +18,206 @@ const LOADING_STEPS = [
   { id: 5, message: 'Sonuçlar hazırlanıyor...', icon: Sparkles },
 ];
 
+const TeamLogo = ({ name, crest }: { name: string; crest?: string }) => {
+  if (crest) {
+    return (
+      <img 
+        src={crest} 
+        alt={name} 
+        className="w-14 h-14 object-contain"
+        onError={(e) => {
+          e.currentTarget.style.display = 'none';
+          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+        }}
+      />
+    );
+  }
+  return (
+    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+      <span className="text-lg font-semibold text-primary">
+        {name.substring(0, 2).toUpperCase()}
+      </span>
+    </div>
+  );
+};
+
 const AnalysisLoadingState: React.FC<AnalysisLoadingStateProps> = ({
   homeTeam,
   awayTeam,
   homeTeamCrest,
   awayTeamCrest,
+  isComplete = false,
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
 
+  // When complete, jump to final state
+  useEffect(() => {
+    if (isComplete) {
+      setCurrentStep(LOADING_STEPS.length);
+      setProgress(100);
+    }
+  }, [isComplete]);
+
   // Animate through steps
   useEffect(() => {
+    if (isComplete) return;
     const stepInterval = setInterval(() => {
-      setCurrentStep((prev) => {
-        if (prev < LOADING_STEPS.length - 1) {
-          return prev + 1;
-        }
-        return prev;
-      });
+      setCurrentStep((prev) =>
+        prev < LOADING_STEPS.length - 1 ? prev + 1 : prev
+      );
     }, 1500);
-
     return () => clearInterval(stepInterval);
-  }, []);
+  }, [isComplete]);
 
   // Animate progress bar
   useEffect(() => {
+    if (isComplete) return;
     const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev < 95) {
-          return prev + Math.random() * 5 + 2;
-        }
-        return prev;
-      });
+      setProgress((prev) => (prev < 92 ? prev + Math.random() * 4 + 1 : prev));
     }, 300);
-
     return () => clearInterval(progressInterval);
-  }, []);
+  }, [isComplete]);
 
-  // Team logo with fallback
-  const TeamLogo = ({ name, crest }: { name: string; crest?: string }) => {
-    if (crest) {
-      return (
-        <img 
-          src={crest} 
-          alt={name} 
-          className="w-16 h-16 object-contain"
-          onError={(e) => {
-            e.currentTarget.style.display = 'none';
-            e.currentTarget.nextElementSibling?.classList.remove('hidden');
-          }}
-        />
-      );
-    }
-    
-    return (
-      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
-        <span className="text-xl font-bold text-primary">
-          {name.substring(0, 2).toUpperCase()}
-        </span>
-      </div>
-    );
-  };
+  const displayProgress = Math.min(Math.round(progress), isComplete ? 100 : 92);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+      exit={{ opacity: 0, y: -16 }}
       className="w-full"
     >
-      {/* Main Loading Card */}
-      <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-6 md:p-8">
-        {/* Animated background glow */}
-        <div className="absolute inset-0 overflow-hidden">
+      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5 md:p-7">
+        {/* Shimmer bg */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
-            animate={{
-              x: ['-100%', '200%'],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: 'linear',
-            }}
-            className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-primary/10 to-transparent skew-x-12"
+            animate={{ x: ['-100%', '200%'] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+            className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-primary/5 to-transparent skew-x-12"
           />
         </div>
 
-        <div className="relative z-10 space-y-6">
-          {/* Header with spinner */}
-          <div className="flex items-center justify-center gap-3">
+        <div className="relative z-10 space-y-5">
+          {/* Header */}
+          <div className="flex items-center justify-center gap-2.5">
             <motion.div
-              animate={{ rotate: 360 }}
+              animate={isComplete ? {} : { rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
             >
-              <Brain className="w-8 h-8 text-primary" />
+              {isComplete ? (
+                <Check className="w-6 h-6 text-green-500" />
+              ) : (
+                <Brain className="w-6 h-6 text-primary" />
+              )}
             </motion.div>
-            <h2 className="text-xl md:text-2xl font-bold text-foreground">
-              Maç Analiz Ediliyor
+            <h2 className="text-lg font-semibold text-foreground">
+              {isComplete ? 'Analiz Tamamlandı' : 'Maç Analiz Ediliyor'}
             </h2>
           </div>
 
-          {/* Match Info */}
-          <div className="flex items-center justify-center gap-4 md:gap-8">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex flex-col items-center gap-2"
-            >
+          {/* Teams */}
+          <div className="flex items-center justify-center gap-6">
+            <div className="flex flex-col items-center gap-1.5">
               <TeamLogo name={homeTeam} crest={homeTeamCrest} />
-              <span className="text-sm font-medium text-foreground max-w-[100px] text-center truncate">
+              <span className="text-xs font-medium text-foreground max-w-[90px] text-center truncate">
                 {homeTeam}
               </span>
-            </motion.div>
-
-            <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="flex flex-col items-center"
-            >
-              <span className="text-2xl font-bold text-muted-foreground">VS</span>
-            </motion.div>
-
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex flex-col items-center gap-2"
-            >
+            </div>
+            <span className="text-lg font-semibold text-muted-foreground">VS</span>
+            <div className="flex flex-col items-center gap-1.5">
               <TeamLogo name={awayTeam} crest={awayTeamCrest} />
-              <span className="text-sm font-medium text-foreground max-w-[100px] text-center truncate">
+              <span className="text-xs font-medium text-foreground max-w-[90px] text-center truncate">
                 {awayTeam}
               </span>
-            </motion.div>
+            </div>
           </div>
 
-          {/* Progress Bar */}
-          <div className="space-y-2">
+          {/* Progress */}
+          <div className="space-y-1.5">
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>İşleniyor...</span>
-              <span>{Math.min(Math.round(progress), 95)}%</span>
+              <span>{isComplete ? 'Tamamlandı' : 'İşleniyor...'}</span>
+              <span>{displayProgress}%</span>
             </div>
-            <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+            <div className="relative h-1.5 bg-muted rounded-full overflow-hidden">
               <motion.div
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary via-primary to-green-500 rounded-full"
-                initial={{ width: '0%' }}
-                animate={{ width: `${Math.min(progress, 95)}%` }}
+                className={`absolute inset-y-0 left-0 rounded-full ${
+                  isComplete
+                    ? 'bg-green-500'
+                    : 'bg-gradient-to-r from-primary to-green-500'
+                }`}
+                animate={{ width: `${displayProgress}%` }}
                 transition={{ duration: 0.3 }}
               />
-              {/* Shimmer effect */}
-              <motion.div
-                animate={{ x: ['-100%', '200%'] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-                className="absolute inset-y-0 w-1/4 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-              />
             </div>
           </div>
 
-          {/* Loading Steps */}
-          <div className="space-y-2">
+          {/* Steps */}
+          <div className="space-y-1.5">
             {LOADING_STEPS.map((step, index) => {
               const Icon = step.icon;
-              const isComplete = index < currentStep;
-              const isCurrent = index === currentStep;
+              const isDone = isComplete || index < currentStep;
+              const isCurrent = !isComplete && index === currentStep;
 
               return (
-                <motion.div
+                <div
                   key={step.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ 
-                    opacity: index <= currentStep ? 1 : 0.4,
-                    x: 0 
-                  }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
-                    isCurrent ? 'bg-primary/10' : ''
+                  className={`flex items-center gap-2.5 py-1.5 px-2 rounded-lg transition-colors ${
+                    isCurrent ? 'bg-primary/5' : ''
                   }`}
+                  style={{ opacity: index <= currentStep || isComplete ? 1 : 0.35 }}
                 >
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                    isComplete 
-                      ? 'bg-green-500/20 text-green-500' 
-                      : isCurrent 
-                        ? 'bg-primary/20 text-primary' 
+                  <div
+                    className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                      isDone
+                        ? 'bg-green-500/15 text-green-500'
+                        : isCurrent
+                        ? 'bg-primary/15 text-primary'
                         : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {isComplete ? (
-                      <Check className="w-4 h-4" />
+                    }`}
+                  >
+                    {isDone ? (
+                      <Check className="w-3 h-3" />
                     ) : isCurrent ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      >
-                        <Loader2 className="w-4 h-4" />
-                      </motion.div>
+                      <Loader2 className="w-3 h-3 animate-spin" />
                     ) : (
-                      <Icon className="w-3 h-3" />
+                      <Icon className="w-2.5 h-2.5" />
                     )}
                   </div>
-                  <span className={`text-sm ${
-                    isComplete 
-                      ? 'text-green-500' 
-                      : isCurrent 
-                        ? 'text-foreground font-medium' 
+                  <span
+                    className={`text-sm ${
+                      isDone
+                        ? 'text-green-500'
+                        : isCurrent
+                        ? 'text-foreground font-medium'
                         : 'text-muted-foreground'
-                  }`}>
+                    }`}
+                  >
                     {step.message}
                   </span>
-                </motion.div>
+                </div>
               );
             })}
           </div>
 
-          {/* Skeleton Preview Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-            {['AI Öneri', 'Tahminler', 'İstatistikler'].map((label, index) => (
-              <motion.div
+          {/* Skeleton cards */}
+          <div className="grid grid-cols-3 gap-3 pt-2">
+            {['AI Öneri', 'Tahminler', 'İstatistikler'].map((label, i) => (
+              <div
                 key={label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
-                className="relative overflow-hidden rounded-xl border border-border bg-card/50 p-4"
+                className="relative overflow-hidden rounded-xl border border-border/40 bg-card/50 p-3"
               >
-                {/* Shimmer overlay */}
                 <motion.div
                   animate={{ x: ['-100%', '200%'] }}
-                  transition={{ 
-                    duration: 2, 
-                    repeat: Infinity, 
-                    ease: 'linear',
-                    delay: index * 0.3 
-                  }}
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-muted/50 to-transparent"
+                  transition={{ duration: 2, repeat: Infinity, ease: 'linear', delay: i * 0.3 }}
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-muted/30 to-transparent"
                 />
-                
-                <div className="relative space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-muted animate-pulse" />
-                    <div className="h-4 w-20 bg-muted rounded animate-pulse" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-3 w-full bg-muted rounded animate-pulse" />
-                    <div className="h-3 w-3/4 bg-muted rounded animate-pulse" />
-                    <div className="h-3 w-1/2 bg-muted rounded animate-pulse" />
-                  </div>
-                  <div className="pt-2">
-                    <div className="h-6 w-16 bg-muted rounded-full animate-pulse" />
-                  </div>
+                <div className="relative space-y-2">
+                  <div className="h-3 w-12 bg-muted rounded animate-pulse" />
+                  <div className="h-2 w-full bg-muted rounded animate-pulse" />
+                  <div className="h-2 w-2/3 bg-muted rounded animate-pulse" />
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
