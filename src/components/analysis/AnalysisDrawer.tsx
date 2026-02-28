@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,22 +20,21 @@ interface AnalysisDrawerProps {
 const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClose }) => {
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
 
-  // Two-phase mount: mount → next rAF → animate in
+  // Mount → forced reflow → animate in
   useEffect(() => {
+    let rafId: number;
     if (isOpen && analysis) {
       setMounted(true);
-      // Phase 2: next frame, trigger CSS transition
-      const raf1 = requestAnimationFrame(() => {
-        const raf2 = requestAnimationFrame(() => {
-          setVisible(true);
-        });
-        return () => cancelAnimationFrame(raf2);
+      rafId = requestAnimationFrame(() => {
+        // Force synchronous reflow so browser paints translate-y-full first
+        drawerRef.current?.offsetHeight;
+        setVisible(true);
       });
-      return () => cancelAnimationFrame(raf1);
+      return () => cancelAnimationFrame(rafId);
     } else {
       setVisible(false);
-      // Wait for transition to finish before unmounting
       const timeout = setTimeout(() => setMounted(false), 350);
       return () => clearTimeout(timeout);
     }
@@ -66,6 +65,7 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
 
       {/* Drawer */}
       <div
+        ref={drawerRef}
         className={`fixed inset-x-0 bottom-0 top-8 z-50 bg-background rounded-t-2xl overflow-hidden flex flex-col transition-transform duration-300 ease-out ${
           visible ? 'translate-y-0' : 'translate-y-full'
         }`}
