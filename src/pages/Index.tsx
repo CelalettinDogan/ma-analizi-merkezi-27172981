@@ -71,6 +71,8 @@ const Index: React.FC = () => {
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [analysisDrawerOpen, setAnalysisDrawerOpen] = useState(false);
+  const [analysisComplete, setAnalysisComplete] = useState(false);
+  const drawerDelayRef = useRef<NodeJS.Timeout | null>(null);
 
   // Footer stats - derived from useHomeData
   const footerStats = {
@@ -140,20 +142,23 @@ const Index: React.FC = () => {
   // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      if (leagueScrollTimeoutRef.current) {
-        clearTimeout(leagueScrollTimeoutRef.current);
-      }
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      if (leagueScrollTimeoutRef.current) clearTimeout(leagueScrollTimeoutRef.current);
+      if (drawerDelayRef.current) clearTimeout(drawerDelayRef.current);
     };
   }, []);
 
-  // Open analysis drawer when analysis completes
+  // Sequenced transition: analysis completes → show 100% → delay → open drawer
   useEffect(() => {
     if (analysis && !analysisLoading && pendingAnalysisScrollRef.current) {
       pendingAnalysisScrollRef.current = false;
-      setAnalysisDrawerOpen(true);
+      // Phase 1: show completion state
+      setAnalysisComplete(true);
+      // Phase 2: after 500ms, open drawer
+      drawerDelayRef.current = setTimeout(() => {
+        setAnalysisDrawerOpen(true);
+        setAnalysisComplete(false);
+      }, 500);
     }
   }, [analysis, analysisLoading]);
 
@@ -166,6 +171,11 @@ const Index: React.FC = () => {
         return;
       }
     }
+
+    // Close drawer and reset for new analysis
+    setAnalysisDrawerOpen(false);
+    setAnalysisComplete(false);
+    if (drawerDelayRef.current) clearTimeout(drawerDelayRef.current);
 
     // Set loading state immediately for instant feedback
     setLoadingMatchId(match.id);
@@ -212,7 +222,8 @@ const Index: React.FC = () => {
       pendingAnalysisScrollRef.current = false;
     } finally {
       setLoadingMatchId(null);
-      setAnalyzingMatchInfo(null);
+      // Don't clear analyzingMatchInfo here — it's needed during the completion phase
+      // It gets cleared when a new analysis starts (handleMatchSelect)
     }
   };
 
@@ -340,12 +351,12 @@ const Index: React.FC = () => {
 
         {/* In-Page Loading State */}
         <AnimatePresence>
-          {analysisLoading && analyzingMatchInfo && (
+          {(analysisLoading || analysisComplete) && analyzingMatchInfo && (
             <motion.div
               ref={analysisLoadingRef}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              exit={{ opacity: 0, y: -16 }}
               id="analysis-loading-section"
               style={{ scrollMarginTop: '100px' }}
             >
@@ -354,6 +365,7 @@ const Index: React.FC = () => {
                 awayTeam={analyzingMatchInfo.awayTeam}
                 homeTeamCrest={analyzingMatchInfo.homeTeamCrest}
                 awayTeamCrest={analyzingMatchInfo.awayTeamCrest}
+                isComplete={analysisComplete}
               />
             </motion.div>
           )}
