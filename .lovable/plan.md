@@ -1,27 +1,42 @@
 
 
-# Fix: Progress Bar %92'de Durma Sorunu
+# Bottom Navigation — Minimal Redesign
 
-## Sorun
-`AnalysisLoadingState` bileşeninde progress bar %92'ye ulaştıktan sonra tamamen duruyor (`if (prev >= 92) return prev`). Uzun süren analizlerde (ML edge function 10-20s sürebiliyor) kullanıcı donmuş gibi görüyor.
+## Changes (single file: `src/components/navigation/BottomNav.tsx`)
 
-## Çözüm (`src/components/analysis/AnalysisLoadingState.tsx`)
+### 1. Shorten labels
+- "Ana Sayfa" → "Ana"
+- "Canlı" → "Canlı" (already short)
+- "AI Asistan" → "AI"
+- "Sıralama" → "Lig"
+- "Premium" → "Pro"
+- "Profil" → "Profil" (already short)
 
-Progress bar'ın %92'den sonra tamamen durmasını kaldır. Bunun yerine çok yavaş ama sürekli hareket eden bir mantık ekle:
+### 2. Label styling
+- Font: `text-[10px]` with `whitespace-nowrap` and `leading-none`
+- Gap between icon and label: `gap-1` (was `gap-0.5`)
 
-```typescript
-setProgress((prev) => {
-  if (prev >= 98) return prev;           // Sadece %98'de dur (isComplete=true gelene kadar)
-  if (prev >= 92) return prev + 0.1;     // %92-98: çok yavaş ama hareket var
-  if (prev >= 85) return prev + Math.random() * 0.5 + 0.2;
-  return prev + Math.random() * 2 + 1;
-});
-```
+### 3. Icon sizing
+- Keep `w-5 h-5` (20px) — good touch readability
 
-`displayProgress` cap'ini de güncellemek gerekiyor:
-```typescript
-const displayProgress = Math.min(Math.round(progress), isComplete ? 100 : 98);
-```
+### 4. Button layout
+- Remove `min-w-[56px]`, use `flex-1` so tabs share width equally
+- Keep `min-h-[48px]` for touch target
+- Padding: `py-2 px-1`
 
-Tek dosya, 2 satır değişikliği.
+### 5. Badges — minimal
+- Remove premium star badge entirely (too noisy)
+- Keep live pulse dot but make it smaller: `w-1 h-1`
+- Remove active badge
+
+### 6. Active state
+- Keep `motion.div` layoutId pill but change to `bg-primary/6 rounded-2xl`
+- Active: icon + label `text-primary`
+- Inactive: `text-muted-foreground/70` (slightly lighter for more contrast with active)
+
+### 7. Container
+- Change to `bg-card/95 backdrop-blur-2xl border-t border-border/30`
+- Inner row: `py-1.5` top, safe-area bottom stays
+
+Result: flat, compact, evenly spaced tabs — Linear/Notion aesthetic.
 
