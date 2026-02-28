@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useCallback } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, Radio, Sparkles, Crown, BarChart3, User } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -17,7 +17,6 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
   const location = useLocation();
   const navigate = useNavigate();
   const { isAdmin, isPremium, isLoading } = useAccessLevel();
-  const stableItemsRef = useRef<NavItem[] | null>(null);
 
   const computedItems = useMemo((): NavItem[] => {
     const baseItems: NavItem[] = [
@@ -46,14 +45,6 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
     });
   }, [isAdmin, isPremium]);
 
-  const navItems = useMemo(() => {
-    if (!isLoading) {
-      stableItemsRef.current = computedItems;
-      return computedItems;
-    }
-    return stableItemsRef.current ?? computedItems;
-  }, [isLoading, computedItems]);
-
   const handleClick = useCallback((item: NavItem, e: React.MouseEvent) => {
     e.preventDefault();
     if (item.isAction && onSearchClick) {
@@ -63,15 +54,16 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
     navigate(item.path);
   }, [onSearchClick, navigate]);
 
+  if (isLoading) return null;
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden" ref={ref}>
-      {/* Navigation bar — no gradient fade */}
       <div className="bg-card/95 backdrop-blur-2xl border-t border-border/30">
         <div 
           className="flex items-center py-1.5"
           style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
         >
-          {navItems.map((item) => {
+          {computedItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
 
@@ -87,7 +79,6 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                   "touch-manipulation rounded-lg"
                 )}
               >
-                {/* Active background */}
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
