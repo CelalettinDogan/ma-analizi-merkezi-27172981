@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,9 +29,11 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
     if (isOpen && analysis) {
       setMounted(true);
       rafId = requestAnimationFrame(() => {
-        // Force synchronous reflow so browser paints translate-y-full first
+        // Double-rAF: first ensures paint of translate-y-full, second triggers transition
         drawerRef.current?.offsetHeight;
-        setVisible(true);
+        requestAnimationFrame(() => {
+          setVisible(true);
+        });
       });
       return () => cancelAnimationFrame(rafId);
     } else {
@@ -52,7 +55,7 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
 
   if (!mounted) return null;
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
@@ -134,7 +137,8 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
           </div>
         )}
       </div>
-    </>
+    </>,
+    document.body
   );
 };
 
