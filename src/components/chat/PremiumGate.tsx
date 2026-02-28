@@ -22,7 +22,7 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' 
   const navigate = useNavigate();
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+    <div className="flex flex-col min-h-dvh bg-background">
       {/* Header */}
       <header className="flex items-center gap-3 px-4 py-3 pt-safe">
         <Button
@@ -37,7 +37,7 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' 
       </header>
 
       {/* Main — scroll-free, centered */}
-      <main className="flex-1 flex flex-col justify-center px-5 gap-4 xs:gap-5 pb-32">
+      <main className="flex-1 flex flex-col justify-center px-5 gap-4 xs:gap-5" style={{ paddingBottom: 'calc(140px + env(safe-area-inset-bottom, 0px))' }}>
         {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -99,7 +99,7 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' 
       </main>
 
       {/* Fixed CTA */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe bg-background/95 backdrop-blur-lg border-t border-border/30">
+      <div className="fixed left-0 right-0 z-40 p-4 bg-background/95 backdrop-blur-lg border-t border-border/30" style={{ bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' }}>
         <div className="max-w-md mx-auto space-y-2">
           <Button
             onClick={() => navigate('/premium')}
