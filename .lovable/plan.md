@@ -1,46 +1,27 @@
 
 
-# Fix: AnalysisDrawer İlk Açılışta Inline Görünüyor
+# Fix: Progress Bar %92'de Durma Sorunu
 
-## Kök Neden
+## Sorun
+`AnalysisLoadingState` bileşeninde progress bar %92'ye ulaştıktan sonra tamamen duruyor (`if (prev >= 92) return prev`). Uzun süren analizlerde (ML edge function 10-20s sürebiliyor) kullanıcı donmuş gibi görüyor.
 
-AnalysisDrawer, `Index` bileşeninin içinde render ediliyor. `Index` ise `TabShell` içinde `display: none / block` ile toggle edilen bir div'in alt elemanı. `fixed` pozisyonlama ve `rAF` + reflow yaklaşımı bu yapıda güvenilir çalışmıyor -- ilk açılışta tarayıcı drawer'ı `translate-y-full` state'inde paint etmeden doğrudan `translate-y-0`'a geçiyor, bu yüzden transition tetiklenmiyor ve drawer aniden görünüyor.
+## Çözüm (`src/components/analysis/AnalysisLoadingState.tsx`)
 
-Başka sekmeye gidip dönünce çalışıyor çünkü element zaten bir kez DOM'da paint edilmiş oluyor.
-
-## Çözüm: React Portal
-
-Drawer'ı `ReactDOM.createPortal` ile `document.body`'ye taşı. Bu sayede TabShell'in `display` toggling'inden tamamen bağımsız hale gelir. Portal, modal/drawer bileşenleri için standart React yaklaşımıdır.
-
-## Dosya: `src/components/analysis/AnalysisDrawer.tsx`
-
-1. `import { createPortal } from 'react-dom'` ekle
-2. Return edilen JSX'i `createPortal(..., document.body)` ile wrap et
-3. Mevcut rAF + reflow mantığını koru (portal içinde güvenilir çalışacak)
-4. Double-rAF pattern'ına geç: dıştaki rAF paint'i garanti eder, içteki rAF'ta `setVisible(true)` çağrılır
+Progress bar'ın %92'den sonra tamamen durmasını kaldır. Bunun yerine çok yavaş ama sürekli hareket eden bir mantık ekle:
 
 ```typescript
-// Mevcut
-return (
-  <>
-    {/* Backdrop */}
-    ...
-    {/* Drawer */}
-    ...
-  </>
-);
-
-// Yeni
-return createPortal(
-  <>
-    {/* Backdrop */}
-    ...
-    {/* Drawer */}
-    ...
-  </>,
-  document.body
-);
+setProgress((prev) => {
+  if (prev >= 98) return prev;           // Sadece %98'de dur (isComplete=true gelene kadar)
+  if (prev >= 92) return prev + 0.1;     // %92-98: çok yavaş ama hareket var
+  if (prev >= 85) return prev + Math.random() * 0.5 + 0.2;
+  return prev + Math.random() * 2 + 1;
+});
 ```
 
-Tek dosya değişikliği. Başka dosya etkilenmez.
+`displayProgress` cap'ini de güncellemek gerekiyor:
+```typescript
+const displayProgress = Math.min(Math.round(progress), isComplete ? 100 : 98);
+```
+
+Tek dosya, 2 satır değişikliği.
 
