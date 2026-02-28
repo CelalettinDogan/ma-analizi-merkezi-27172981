@@ -218,20 +218,10 @@ export function useMatchAnalysis() {
     setAnalysis(null); // Clear stale data before new analysis
     setIsLoading(true);
 
-    // Fetch per-type dynamic AI vs Math weights
+    // Fetch weights in parallel with main data (moved below with Promise.all)
     const predictionTypes = ['Maç Sonucu', 'Toplam Gol Alt/Üst', 'Karşılıklı Gol', 'İlk Yarı Sonucu'];
     const perTypeWeights: Record<string, { aiWeight: number; mathWeight: number } | null> = {};
-    try {
-      const weightResults = await Promise.all(
-        predictionTypes.map(type => getAIMathWeights(type))
-      );
-      predictionTypes.forEach((type, i) => {
-        perTypeWeights[type] = weightResults[i];
-        if (weightResults[i]) {
-          console.log(`[useMatchAnalysis] ${type} weights: AI=${(weightResults[i]!.aiWeight * 100).toFixed(1)}%, Math=${(weightResults[i]!.mathWeight * 100).toFixed(1)}%`);
-        }
-      });
-    } catch (e) { console.warn('[useMatchAnalysis] Failed to fetch dynamic weights:', e); }
+    
     try {
       // Lig kodunu bul
       const competition = SUPPORTED_COMPETITIONS.find(
@@ -254,27 +244,41 @@ export function useMatchAnalysis() {
       const isCL = competitionCode === 'CL';
       const domesticLeagues: CompetitionCode[] = ['PL', 'BL1', 'PD', 'SA', 'FL1'];
 
-      // Paralel olarak verileri çek
+      // Paralel olarak verileri + weights'i çek
+      const weightsPromise = Promise.all(predictionTypes.map(type => getAIMathWeights(type)))
+        .then(results => {
+          predictionTypes.forEach((type, i) => {
+            perTypeWeights[type] = results[i];
+            if (results[i]) {
+              console.log(`[useMatchAnalysis] ${type} weights: AI=${(results[i]!.aiWeight * 100).toFixed(1)}%, Math=${(results[i]!.mathWeight * 100).toFixed(1)}%`);
+            }
+          });
+        })
+        .catch(e => console.warn('[useMatchAnalysis] Failed to fetch dynamic weights:', e));
+
       let standings: Standing[] = [];
       let recentMatches: any[] = [];
 
       if (isCL) {
-        // CL maçları için tüm desteklenen liglerin standings'lerini paralel çek
-        const allResults = await Promise.all(
-          domesticLeagues.map(league => 
+        const allResults = await Promise.all([
+          ...domesticLeagues.map(league => 
             Promise.all([getStandings(league), getFinishedMatches(league, 90)])
-          )
-        );
-        // Tüm liglerin standings ve maçlarını birleştir
-        for (const [leagueStandings, leagueMatches] of allResults) {
+          ),
+          weightsPromise,
+        ]);
+        for (let i = 0; i < domesticLeagues.length; i++) {
+          const [leagueStandings, leagueMatches] = allResults[i] as [Standing[], any[]];
           standings = [...standings, ...leagueStandings];
           recentMatches = [...recentMatches, ...leagueMatches];
         }
       } else {
-        [standings, recentMatches] = await Promise.all([
+        const [standingsResult, matchesResult] = await Promise.all([
           getStandings(competitionCode),
           getFinishedMatches(competitionCode, 90),
+          weightsPromise,
         ]);
+        standings = standingsResult;
+        recentMatches = matchesResult;
       }
 
       // Takımları bul (team_id veya isim eşleşmesi)
@@ -686,18 +690,15 @@ export function useMatchAnalysis() {
 
       setAnalysis(result);
       
-      // Tahminleri veritabanına kaydet ve feature'ları logla
-      try {
-        const predictionId = await savePredictions(
-          data.league,
-          result.input.homeTeam,
-          result.input.awayTeam,
-          data.matchDate,
-          result.predictions,
-          user?.id
-        );
-        
-        // ML öğrenme döngüsü için feature'ları kaydet
+      // Fire-and-forget: DB kayıtlarını arka planda yap, kullanıcıyı bekleme
+      savePredictions(
+        data.league,
+        result.input.homeTeam,
+        result.input.awayTeam,
+        data.matchDate,
+        result.predictions,
+        user?.id
+      ).then(predictionId => {
         if (predictionId) {
           const aiConf = result.predictions[0]?.aiConfidence || 0.5;
           const mathConf = result.predictions[0]?.mathConfidence || 0.5;
@@ -709,7 +710,6 @@ export function useMatchAnalysis() {
             { homeExpected: expectedGoals.homeExpected, awayExpected: expectedGoals.awayExpected }
           );
           
-          // Add AI and Math prediction values for separate tracking
           const primaryPred = result.predictions[0];
           if (primaryPred && isAIEnhanced) {
             (featureRecord as any).ai_prediction_value = primaryPred.prediction;
@@ -719,12 +719,13 @@ export function useMatchAnalysis() {
             }
           }
           
-          await savePredictionFeatures(predictionId, featureRecord);
-          console.log('[ML] Prediction features saved for learning loop');
+          savePredictionFeatures(predictionId, featureRecord)
+            .then(() => console.log('[ML] Prediction features saved for learning loop'))
+            .catch(e => console.error('Error saving features:', e));
         }
-      } catch (saveError) {
+      }).catch(saveError => {
         console.error('Error saving predictions:', saveError);
-      }
+      });
       
       if (!isAIEnhanced) {
         sonnerToast('Analiz hazır ✓', { duration: 1500 });

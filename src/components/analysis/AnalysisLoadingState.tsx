@@ -59,23 +59,27 @@ const AnalysisLoadingState: React.FC<AnalysisLoadingStateProps> = ({
     }
   }, [isComplete]);
 
-  // Animate through steps
+  // Animate through steps (slower: 2s per step = 10s total)
   useEffect(() => {
     if (isComplete) return;
     const stepInterval = setInterval(() => {
       setCurrentStep((prev) =>
         prev < LOADING_STEPS.length - 1 ? prev + 1 : prev
       );
-    }, 1500);
+    }, 2000);
     return () => clearInterval(stepInterval);
   }, [isComplete]);
 
-  // Animate progress bar
+  // Animate progress bar (slower, with deceleration after 85%)
   useEffect(() => {
     if (isComplete) return;
     const progressInterval = setInterval(() => {
-      setProgress((prev) => (prev < 92 ? prev + Math.random() * 4 + 1 : prev));
-    }, 300);
+      setProgress((prev) => {
+        if (prev >= 92) return prev;
+        if (prev >= 85) return prev + Math.random() * 0.5 + 0.2; // very slow after 85%
+        return prev + Math.random() * 2 + 1; // slower: +1-3
+      });
+    }, 500);
     return () => clearInterval(progressInterval);
   }, [isComplete]);
 
