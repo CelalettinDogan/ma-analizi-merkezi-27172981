@@ -142,7 +142,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
         <div className="text-center py-12">
           <Calendar className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
           <p className="text-muted-foreground text-sm">Planlanmış maç bulunamadı</p>
-          <p className="text-xs text-muted-foreground/50 mt-1">Lig seçerek maçları görüntüleyin</p>
+          <p className="text-xs text-muted-foreground/60 mt-1">Lig seçerek maçları görüntüleyin</p>
         </div>
       </div>
     );
@@ -155,7 +155,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
         <div className="flex items-center gap-2">
           <div className="w-1 h-5 rounded-full bg-primary" />
           <h2 className="font-display font-semibold text-sm">{title}</h2>
-          <span className="text-xs text-muted-foreground/60">{matches.length}</span>
+          <span className="text-xs text-muted-foreground">{matches.length}</span>
         </div>
       </div>
 
@@ -193,10 +193,10 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <span className={cn(
-                "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-micro font-medium",
+                "inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-micro font-medium",
                 featuredReason === 'Büyük Maç' 
-                  ? "bg-secondary/10 text-secondary" 
-                  : "bg-primary/10 text-primary"
+                  ? "bg-secondary/8 text-secondary" 
+                  : "bg-primary/5 text-primary"
               )}>
                 {featuredReason === 'Büyük Maç' ? (
                   <Sparkles className="w-3 h-3" />
@@ -208,7 +208,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                 {featuredReason}
               </span>
               {!hasMatchesToday && (
-                <span className="text-micro text-muted-foreground/50">
+               <span className="text-micro text-muted-foreground/60">
                   {getDateLabel(featuredMatch.utcDate)}
                 </span>
               )}
@@ -236,10 +236,10 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
 
             {/* Center: Time */}
             <div className="flex flex-col items-center flex-shrink-0 px-2">
-              <span className="text-lg font-bold text-primary tabular-nums">
+              <span className="text-lg font-semibold text-primary tabular-nums">
                 {format(new Date(featuredMatch.utcDate), 'HH:mm')}
               </span>
-              <span className="text-micro text-muted-foreground/50">
+              <span className="text-micro text-muted-foreground/60">
                 {featuredMatch.competition.code}
               </span>
             </div>
@@ -273,7 +273,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
       {/* Match List — minimal rows */}
       <div className="space-y-0.5">
         {!hasMatchesToday && displayedMatches.length > 0 && (
-          <div className="text-micro text-muted-foreground/50 font-medium px-3 py-1.5">
+          <div className="text-micro text-muted-foreground/60 font-medium px-3 py-1.5">
             {getDateLabel(displayedMatches[0].utcDate)}
           </div>
         )}
@@ -289,7 +289,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
           return (
             <React.Fragment key={match.id}>
               {showDateSeparator && (
-                <div className="text-micro text-muted-foreground/50 font-medium px-3 py-2 mt-2">
+                <div className="text-micro text-muted-foreground/60 font-medium px-3 py-2 mt-2">
                   {getDateLabel(match.utcDate)}
                 </div>
               )}
@@ -334,7 +334,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                 </div>
 
                 {/* League code */}
-                <span className="text-micro text-muted-foreground/40 shrink-0">
+                <span className="text-micro text-muted-foreground/60 shrink-0">
                   {match.competition.code}
                 </span>
 

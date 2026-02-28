@@ -55,7 +55,7 @@ const MatchSlide: React.FC<{
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1.5">
             <span className="text-base">{match.competition.area?.flag || '🏆'}</span>
-            <span className="text-micro text-muted-foreground/60 truncate max-w-[100px]">
+            <span className="text-micro text-muted-foreground truncate max-w-[100px]">
               {match.competition.name}
             </span>
           </div>
@@ -144,7 +144,7 @@ const MatchSlide: React.FC<{
 
         {/* Footer */}
         <div className="mt-3 pt-2.5 border-t border-border/10 flex items-center justify-between">
-          <span className="text-micro text-muted-foreground/40 tabular-nums">
+          <span className="text-micro text-muted-foreground/60 tabular-nums">
             {format(matchDate, 'd MMM', { locale: tr })}
           </span>
           <span className="text-micro text-primary font-medium">Analiz Et →</span>
@@ -223,8 +223,7 @@ const MatchCarousel: React.FC<MatchCarouselProps> = ({ matches, onMatchSelect, i
         </div>
       </div>
 
-      {/* Fade edge */}
-      <div className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+      {/* No fade edge — native feel */}
     </div>
   );
 };
