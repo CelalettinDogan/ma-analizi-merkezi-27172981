@@ -1,34 +1,25 @@
 
 
-# Premium Bottom Nav & Badge Redesign
+# Fix PremiumGate CTA Layout
 
-## File 1: `src/components/navigation/BottomNav.tsx`
+## Problem
+PremiumGate uses `fixed inset-0 z-50` for the full page and `fixed bottom-0` for the CTA. The CTA sits at `bottom-0` with `pb-safe`, but BottomNav is also `fixed bottom-0 z-50` — they overlap and the CTA goes behind the nav.
 
-### Icon consistency
-- Replace mixed icon styles with visually balanced set: `Home`, `Radio` (instead of `Zap`), `Sparkles` (instead of `Bot`), `BarChart3` (instead of `Trophy`), `Crown`, `User`
-- Set `strokeWidth={1.75}` on all icons for uniform weight
-- Keep `w-[22px] h-[22px]` for consistent optical size
+## Changes (single file: `src/components/chat/PremiumGate.tsx`)
 
-### Active state — filled feel + scale
-- Active icon: add `fill="currentColor"` + `opacity-20` fill to simulate filled state without needing separate icon set
-- Wrap icon+label in `motion.div` with `animate={{ scale: isActive ? 1.05 : 1 }}` (150ms ease-out)
-- Keep `bg-primary/8` pill background for active tab
-- Transition: `duration-150` ease-out
+### 1. Remove full-screen fixed overlay
+- Change outer container from `fixed inset-0 z-50` to a normal flow container
+- Use `min-h-dvh flex flex-col bg-background` so it fills viewport naturally
 
-### Label & spacing
-- Keep `text-[10px]`, `whitespace-nowrap`, `font-medium`
-- Gap between icon and label: `gap-1`
+### 2. Make main content scrollable with proper bottom padding
+- Keep `flex-1 overflow-y-auto`
+- Add bottom padding: `calc(140px + env(safe-area-inset-bottom, 0px))` — accounts for CTA height (~64px) + BottomNav height (~64px) + safe area + spacing
 
-## File 2: `src/components/TodaysMatches.tsx` (lines 195-209)
+### 3. Reposition CTA above BottomNav
+- Change CTA from `fixed bottom-0` to `fixed` with `bottom` set to `calc(64px + env(safe-area-inset-bottom, 0px))` — sits right above the BottomNav
+- Remove `pb-safe` from CTA (no longer at screen edge)
+- Set `z-index: 40` (below BottomNav's z-50 but above content)
 
-### "Büyük Maç" badge — premium chip
-- Background: `bg-muted/40` instead of `bg-secondary/8` — neutral, not orange
-- Text: `text-foreground/70` instead of `text-secondary` — subtle, not colored
-- Icon: `Sparkles` at `w-3 h-3` with `text-foreground/50`
-- Font weight stays `font-medium`
-- Border: none (flat chip)
-- Radius: `rounded-md` (6px) instead of `rounded-lg` — less bubbly, more systematic
-- Same approach for other badge variants (`En Yakın`, `Önerilen`): all use `bg-muted/40 text-foreground/70`
-
-Result: unified neutral chips that don't scream, just inform.
+### 4. Remove `pb-32` from main
+- Replace with dynamic `paddingBottom` style to match CTA + nav height
 
