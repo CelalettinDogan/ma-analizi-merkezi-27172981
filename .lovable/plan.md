@@ -1,42 +1,34 @@
 
 
-# Bottom Navigation — Minimal Redesign
+# Premium Bottom Nav & Badge Redesign
 
-## Changes (single file: `src/components/navigation/BottomNav.tsx`)
+## File 1: `src/components/navigation/BottomNav.tsx`
 
-### 1. Shorten labels
-- "Ana Sayfa" → "Ana"
-- "Canlı" → "Canlı" (already short)
-- "AI Asistan" → "AI"
-- "Sıralama" → "Lig"
-- "Premium" → "Pro"
-- "Profil" → "Profil" (already short)
+### Icon consistency
+- Replace mixed icon styles with visually balanced set: `Home`, `Radio` (instead of `Zap`), `Sparkles` (instead of `Bot`), `BarChart3` (instead of `Trophy`), `Crown`, `User`
+- Set `strokeWidth={1.75}` on all icons for uniform weight
+- Keep `w-[22px] h-[22px]` for consistent optical size
 
-### 2. Label styling
-- Font: `text-[10px]` with `whitespace-nowrap` and `leading-none`
-- Gap between icon and label: `gap-1` (was `gap-0.5`)
+### Active state — filled feel + scale
+- Active icon: add `fill="currentColor"` + `opacity-20` fill to simulate filled state without needing separate icon set
+- Wrap icon+label in `motion.div` with `animate={{ scale: isActive ? 1.05 : 1 }}` (150ms ease-out)
+- Keep `bg-primary/8` pill background for active tab
+- Transition: `duration-150` ease-out
 
-### 3. Icon sizing
-- Keep `w-5 h-5` (20px) — good touch readability
+### Label & spacing
+- Keep `text-[10px]`, `whitespace-nowrap`, `font-medium`
+- Gap between icon and label: `gap-1`
 
-### 4. Button layout
-- Remove `min-w-[56px]`, use `flex-1` so tabs share width equally
-- Keep `min-h-[48px]` for touch target
-- Padding: `py-2 px-1`
+## File 2: `src/components/TodaysMatches.tsx` (lines 195-209)
 
-### 5. Badges — minimal
-- Remove premium star badge entirely (too noisy)
-- Keep live pulse dot but make it smaller: `w-1 h-1`
-- Remove active badge
+### "Büyük Maç" badge — premium chip
+- Background: `bg-muted/40` instead of `bg-secondary/8` — neutral, not orange
+- Text: `text-foreground/70` instead of `text-secondary` — subtle, not colored
+- Icon: `Sparkles` at `w-3 h-3` with `text-foreground/50`
+- Font weight stays `font-medium`
+- Border: none (flat chip)
+- Radius: `rounded-md` (6px) instead of `rounded-lg` — less bubbly, more systematic
+- Same approach for other badge variants (`En Yakın`, `Önerilen`): all use `bg-muted/40 text-foreground/70`
 
-### 6. Active state
-- Keep `motion.div` layoutId pill but change to `bg-primary/6 rounded-2xl`
-- Active: icon + label `text-primary`
-- Inactive: `text-muted-foreground/70` (slightly lighter for more contrast with active)
-
-### 7. Container
-- Change to `bg-card/95 backdrop-blur-2xl border-t border-border/30`
-- Inner row: `py-1.5` top, safe-area bottom stays
-
-Result: flat, compact, evenly spaced tabs — Linear/Notion aesthetic.
+Result: unified neutral chips that don't scream, just inform.
 
