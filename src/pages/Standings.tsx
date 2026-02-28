@@ -130,7 +130,7 @@ const StandingsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20 lg:pb-8">
+    <div className="min-h-screen bg-background lg:pb-8" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
       {/* Header */}
       <AppHeader />
 

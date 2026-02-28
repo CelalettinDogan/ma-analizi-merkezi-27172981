@@ -331,7 +331,7 @@ const Chat: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden pb-24 md:pb-0">
+      <main className="flex-1 flex flex-col overflow-hidden md:pb-0" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
         <ChatContainer 
           messages={messages} 
           isLoading={chatLoading}

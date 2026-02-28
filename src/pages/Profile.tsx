@@ -183,7 +183,7 @@ const Profile = () => {
     return (
       <div className="h-[100dvh] bg-background flex flex-col">
         <AppHeader />
-        <main className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:pb-6">
+        <main className="flex-1 overflow-y-auto px-4 py-4 lg:pb-6" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
           <div className="space-y-3 max-w-lg mx-auto">
             <Skeleton className="h-24 w-full rounded-xl" />
             <Skeleton className="h-20 w-full rounded-xl" />
@@ -198,7 +198,7 @@ const Profile = () => {
     return (
       <div className="h-[100dvh] bg-background flex flex-col">
         <AppHeader />
-        <main className="flex-1 overflow-y-auto px-4 py-4 pb-24 lg:pb-6 flex items-center justify-center">
+        <main className="flex-1 overflow-y-auto px-4 py-4 lg:pb-6 flex items-center justify-center" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
           <Card className="w-full max-w-md glass-card">
             <CardContent className="pt-6 text-center">
               <User className="h-14 w-14 text-muted-foreground mx-auto mb-3" />
@@ -226,7 +226,7 @@ const Profile = () => {
   return (
     <div className="h-[100dvh] bg-background flex flex-col">
       <AppHeader />
-      <main className="flex-1 overflow-y-auto px-3 xs:px-4 py-3 xs:py-4 pb-24 lg:pb-6">
+      <main className="flex-1 overflow-y-auto px-3 xs:px-4 py-3 xs:py-4 lg:pb-6" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
         <motion.div 
           initial="hidden" 
           animate="visible" 
