@@ -215,6 +215,7 @@ export function useMatchAnalysis() {
   };
 
   const analyzeMatch = async (data: MatchInput) => {
+    setAnalysis(null); // Clear stale data before new analysis
     setIsLoading(true);
 
     // Fetch per-type dynamic AI vs Math weights

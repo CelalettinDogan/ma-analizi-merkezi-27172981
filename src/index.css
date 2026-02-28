@@ -15,16 +15,16 @@
     --popover: 222 47% 9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 142 71% 45%;
+    --primary: 152 60% 40%;
     --primary-foreground: 222 47% 6%;
 
-    --secondary: 45 93% 47%;
+    --secondary: 45 70% 45%;
     --secondary-foreground: 222 47% 6%;
 
     --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted-foreground: 215 20% 55%;
 
-    --accent: 142 71% 45%;
+    --accent: 152 60% 40%;
     --accent-foreground: 222 47% 6%;
 
     --destructive: 0 84% 60%;
@@ -32,30 +32,30 @@
 
     --border: 217 33% 17%;
     --input: 217 33% 17%;
-    --ring: 142 71% 45%;
+    --ring: 152 60% 40%;
 
     --radius: 0.75rem;
 
     /* Custom tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(142 71% 45%), hsl(160 84% 39%));
-    --gradient-gold: linear-gradient(135deg, hsl(45 93% 47%), hsl(38 92% 50%));
+    --gradient-primary: linear-gradient(135deg, hsl(152 60% 40%), hsl(160 55% 35%));
+    --gradient-gold: linear-gradient(135deg, hsl(45 70% 45%), hsl(38 65% 48%));
     --gradient-card: linear-gradient(180deg, hsl(222 47% 11%), hsl(222 47% 8%));
     --gradient-hero: linear-gradient(135deg, hsl(222 47% 8%) 0%, hsl(222 47% 4%) 100%);
     
-    --shadow-glow: 0 0 40px hsl(142 71% 45% / 0.15);
-    --shadow-glow-strong: 0 0 60px hsl(142 71% 45% / 0.25);
+    --shadow-glow: 0 0 40px hsl(152 60% 40% / 0.12);
+    --shadow-glow-strong: 0 0 60px hsl(152 60% 40% / 0.2);
     --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.3);
     --shadow-elevated: 0 8px 32px hsl(0 0% 0% / 0.4);
-    --shadow-premium: 0 4px 20px hsl(45 93% 47% / 0.15);
+    --shadow-premium: 0 4px 20px hsl(45 70% 45% / 0.12);
 
     /* Team colors */
-    --win: 142 71% 45%;
+    --win: 152 60% 40%;
     --loss: 0 84% 60%;
-    --draw: 45 93% 47%;
+    --draw: 45 70% 45%;
     
     /* Confidence colors - Standardized */
-    --confidence-high: 142 71% 45%;
-    --confidence-medium: 45 93% 47%;
+    --confidence-high: 152 60% 40%;
+    --confidence-medium: 45 70% 45%;
     --confidence-low: 215 20% 65%;
   }
 
@@ -155,7 +155,7 @@
 
   .glass-card-premium::before {
     content: '';
-    @apply absolute inset-0 bg-gradient-to-br from-white/8 via-transparent to-transparent pointer-events-none;
+    @apply absolute inset-0 bg-gradient-to-br from-white/3 via-transparent to-transparent pointer-events-none;
   }
 
   /* Interactive glass card with hover effects */

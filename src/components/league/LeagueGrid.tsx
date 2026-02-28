@@ -94,9 +94,9 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
                     className={cn(
                       "flex items-center gap-1.5 sm:gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl whitespace-nowrap transition-all",
                       "border flex-shrink-0 min-h-[48px]", // Better touch target
-                      isSelected
-                        ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25"
-                        : "bg-card border-border hover:border-primary/50 hover:bg-primary/5"
+                    isSelected
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/10"
+                        : "bg-card border-border/40 hover:border-primary/40 hover:bg-primary/5"
                     )}
                   >
                     <span className="text-lg sm:text-xl">{league.flag}</span>

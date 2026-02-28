@@ -268,7 +268,7 @@ const Index: React.FC = () => {
       <HeroSection stats={stats} onAnalyzeClick={() => setCommandOpen(true)} />
 
       {/* Main Content - Clean Single Column Flow */}
-      <main className="container mx-auto px-4 py-8 space-y-8">
+      <main className="container mx-auto px-4 py-6 space-y-6">
         {/* League Selection - Compact Pills with Scroll Indicator */}
         <motion.section 
           initial={{ opacity: 0, y: 10 }}
