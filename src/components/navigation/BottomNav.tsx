@@ -21,11 +21,11 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
 
   const computedItems = useMemo((): NavItem[] => {
     const baseItems: NavItem[] = [
-      { icon: Home, label: 'Ana Sayfa', path: '/' },
+      { icon: Home, label: 'Ana', path: '/' },
       { icon: Zap, label: 'Canlı', path: '/live', badge: 'live' as const },
-      { icon: Bot, label: 'AI Asistan', path: '/chat' },
-      { icon: Trophy, label: 'Sıralama', path: '/standings' },
-      { icon: Crown, label: 'Premium', path: '/premium' },
+      { icon: Bot, label: 'AI', path: '/chat' },
+      { icon: Trophy, label: 'Lig', path: '/standings' },
+      { icon: Crown, label: 'Pro', path: '/premium' },
       { icon: User, label: 'Profil', path: '/profile' },
     ];
 
@@ -66,9 +66,9 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden" ref={ref}>
       {/* Navigation bar — no gradient fade */}
-      <div className="bg-card/98 backdrop-blur-xl border-t border-border/60">
+      <div className="bg-card/95 backdrop-blur-2xl border-t border-border/30">
         <div 
-          className="flex items-center justify-evenly py-2"
+          className="flex items-center py-1.5"
           style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
         >
           {navItems.map((item) => {
@@ -76,14 +76,14 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
             const Icon = item.icon;
 
             return (
-              <button
+                <button
                 key={item.path}
                 onClick={(e) => handleClick(item, e)}
                 aria-label={item.label}
                 aria-current={isActive ? 'page' : undefined}
                 className={cn(
-                  "relative flex flex-col items-center justify-center gap-0.5 py-1.5 px-2",
-                  "min-w-[56px] min-h-[48px]",
+                  "relative flex flex-col items-center justify-center gap-1 py-2 px-1",
+                  "flex-1 min-h-[48px]",
                   "touch-manipulation rounded-lg transition-colors duration-200"
                 )}
               >
@@ -91,7 +91,7 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute inset-0 bg-primary/8 rounded-xl"
+                    className="absolute inset-0 bg-primary/6 rounded-2xl"
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
@@ -100,24 +100,16 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                   <Icon 
                     className={cn(
                       "w-5 h-5 transition-colors",
-                      isActive ? "text-primary" : "text-muted-foreground"
+                      isActive ? "text-primary" : "text-muted-foreground/70"
                     )} 
                   />
                   {item.badge === 'live' && (
-                    <span className="absolute -top-0.5 -right-1 w-1.5 h-1.5 bg-destructive rounded-full animate-pulse" />
-                  )}
-                  {item.badge === 'premium' && (
-                    <span className="absolute -top-1 -right-1.5 w-3 h-3 bg-amber-500/80 rounded-full flex items-center justify-center">
-                      <span className="text-micro text-white font-bold leading-none" style={{ fontSize: '6px' }}>★</span>
-                    </span>
-                  )}
-                  {item.badge === 'active' && (
-                    <span className="absolute -top-0.5 -right-1 w-1.5 h-1.5 bg-primary rounded-full" />
+                    <span className="absolute -top-0.5 -right-0.5 w-1 h-1 bg-destructive rounded-full animate-pulse" />
                   )}
                 </div>
                 <span className={cn(
-                  "text-micro font-medium transition-colors relative z-10",
-                  isActive ? "text-primary" : "text-muted-foreground"
+                  "text-[10px] font-medium leading-none whitespace-nowrap transition-colors relative z-10",
+                  isActive ? "text-primary" : "text-muted-foreground/70"
                 )}>
                   {item.label}
                 </span>
