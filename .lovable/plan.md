@@ -1,38 +1,36 @@
 
 
-# Analiz Performans ve Progress Bar İyileştirmesi
+# Bottom Navigation Overlap Fix
 
-## Sorun 1: Uzun Süren Analizler
+## Problem
+Profile page and AnalysisDrawer content gets cut off by the fixed BottomNav (~80px + safe-area). Current `pb-24` (96px) isn't enough when safe-area-inset-bottom is added on top.
 
-`analyzeMatch` fonksiyonunda sıralı çağrılar bottleneck oluşturuyor:
+## Fix
 
-1. **`getAIMathWeights` × 4 tip** — Ana analiz başlamadan ÖNCE 4 ayrı DB sorgusu yapılıyor (satır 224-234)
-2. **`getMLPrediction`** — Edge function çağrısı (AI Gateway) en yavaş adım, 5-15 saniye sürebiliyor
-3. **`savePredictions` + `savePredictionFeatures`** — Analiz bittikten sonra sıralı DB yazımları
+### 1. Profile.tsx — line 229
+Change `pb-24` to use `calc()` with safe-area:
+```
+pb-24 → style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom))' }}
+```
+Apply same fix to loading state (line 186) and unauthenticated state (line 201).
 
-**Düzeltme (`useMatchAnalysis.ts`):**
-- `getAIMathWeights` çağrılarını ana veri çekme ile paralelize et (standings + weights aynı anda)
-- `savePredictions` ve `savePredictionFeatures`'ı fire-and-forget yap (result'ı bekleme, `await` kaldır) — kullanıcı sonuçları görsün, DB yazımı arka planda olsun
+### 2. AnalysisDrawer.tsx — line 92
+The inner content div already has `pb-24` but the scrollable container uses `pb-safe`. Change the inner `pb-24` to a larger value that accounts for both BottomNav overlap and safe-area:
+```
+pb-24 → pb-32
+```
+Note: The drawer is a full-screen overlay (z-50) so BottomNav isn't visible behind it, but extra bottom padding ensures the LegalDisclaimer at the bottom is fully scrollable past the rounded bottom edge.
 
-## Sorun 2: Progress Bar %92'de Takılıyor
+### 3. Index.tsx — Check main content padding
+Verify and fix the main scroll container's bottom padding similarly.
 
-Progress bar fake timing kullanıyor — gerçek ilerlemeyle bağlantısı yok. Uzun analizlerde %92'de dakikalarca kalabiliyor.
+### 4. Other tab pages (Live, Chat, Standings, Premium)
+Search for any `pb-24` in these pages and apply the same `calc(80px + env(safe-area-inset-bottom))` pattern for consistency.
 
-**Düzeltme (`AnalysisLoadingState.tsx`):**
-- Progress hızını azalt: 300ms interval → 500ms, artış `+1-3` (şu an `+1-5`)
-- %85 sonrası çok yavaşlat (her 800ms'de +0.5) — böylece uzun analizlerde bile hareket var
-- Step geçiş süresini 1500ms → 2000ms yap (5 step × 2s = 10s, ML çağrısı süresine daha uygun)
-
-## Sorun 3: Drawer Tekrar Açılma
-
-Mevcut kod doğru çalışıyor — `handleMatchSelect` her seferinde `setAnalysisDrawerOpen(false)` yapıyor, `pendingAnalysisScrollRef` tekrar `true` oluyor. Ancak aynı maçı tekrar analiz ederken `analysis` null → aynı obje olduğu için `useEffect` tetiklenmeyebilir. 
-
-**Guard ekle (`Index.tsx`):** `useEffect` dependency'sine `analysis` object reference'ını koy — zaten var ama `pendingAnalysisScrollRef` kontrolünü güçlendir.
-
-## Dosya Değişiklikleri
-
-| Dosya | Değişiklik |
-|-------|-----------|
-| `src/hooks/useMatchAnalysis.ts` | Weight fetch'i paralelize et, DB save'leri fire-and-forget yap |
-| `src/components/analysis/AnalysisLoadingState.tsx` | Progress timing'i yavaşlat, step geçişini uzat |
+## Files to Change
+| File | Change |
+|------|--------|
+| `src/pages/Profile.tsx` | Replace `pb-24` with inline style `paddingBottom: calc(80px + env(safe-area-inset-bottom))` on all 3 main containers |
+| `src/components/analysis/AnalysisDrawer.tsx` | Increase inner content `pb-24` → `pb-32` for full scroll clearance |
+| `src/pages/Live.tsx`, `src/pages/Chat.tsx`, `src/pages/Standings.tsx`, `src/pages/Premium.tsx`, `src/pages/Index.tsx` | Audit and fix `pb-24` to use safe-area-aware padding |
 
