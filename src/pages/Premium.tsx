@@ -123,7 +123,7 @@ const Premium = () => {
 
   if (isPremium || isAdmin) {
     return (
-      <div className="min-h-[100dvh] bg-background flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col">
         <AppHeader />
         <main className="flex-1 flex items-center justify-center px-4">
           <div className="w-full max-w-sm text-center p-6 rounded-xl border border-border bg-card">
@@ -139,7 +139,7 @@ const Premium = () => {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <AppHeader />
 
       {/* 

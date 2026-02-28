@@ -203,7 +203,7 @@ const Chat: React.FC = () => {
 
   // PREMIUM USER: Has access - show chat interface
   return (
-    <div className="h-dvh bg-background flex flex-col">
+    <div className="h-screen bg-background flex flex-col">
       {/* Chat Limit Sheet for Premium users */}
       <ChatLimitSheet
         isOpen={showLimitSheet}

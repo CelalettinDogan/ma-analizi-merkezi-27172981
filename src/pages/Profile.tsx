@@ -181,7 +181,7 @@ const Profile = () => {
 
   if (authLoading) {
     return (
-      <div className="h-[100dvh] bg-background flex flex-col">
+      <div className="h-screen bg-background flex flex-col">
         <AppHeader />
         <main className="flex-1 overflow-y-auto px-4 py-4 lg:pb-6" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
           <div className="space-y-3 max-w-lg mx-auto">
@@ -196,7 +196,7 @@ const Profile = () => {
 
   if (!user) {
     return (
-      <div className="h-[100dvh] bg-background flex flex-col">
+      <div className="h-screen bg-background flex flex-col">
         <AppHeader />
         <main className="flex-1 overflow-y-auto px-4 py-4 lg:pb-6 flex items-center justify-center" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
           <Card className="w-full max-w-md glass-card">
@@ -224,7 +224,7 @@ const Profile = () => {
     : (canUseAIChat ? dailyChatLimit : 0);
 
   return (
-    <div className="h-[100dvh] bg-background flex flex-col">
+    <div className="h-screen bg-background flex flex-col">
       <AppHeader />
       <main className="flex-1 overflow-y-auto px-3 xs:px-4 py-3 xs:py-4 lg:pb-6" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
         <motion.div 

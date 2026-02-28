@@ -146,7 +146,7 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-background via-background to-muted/30 flex flex-col pt-safe">
+    <div className="h-screen overflow-hidden bg-gradient-to-b from-background via-background to-muted/30 flex flex-col pt-safe">
       {/* Logo & Brand Section */}
       <div className="flex-shrink-0 flex flex-col items-center justify-center py-2 xs:py-3 sm:py-6 px-6">
         <img src={logoImg} alt="GolMetrik AI" className="w-12 h-12 xs:w-14 xs:h-14 sm:w-20 sm:h-20 aspect-square object-cover mb-1 rounded-2xl shadow-lg" />
