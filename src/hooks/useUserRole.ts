@@ -4,6 +4,16 @@ import { useAuth } from '@/contexts/AuthContext';
 
 type AppRole = 'admin' | 'moderator' | 'user' | 'vip';
 
+const ROLES_CACHE_KEY = 'cached_user_roles';
+
+const readCachedRoles = (): AppRole[] => {
+  try {
+    const raw = localStorage.getItem(ROLES_CACHE_KEY);
+    if (raw) return JSON.parse(raw) as AppRole[];
+  } catch {}
+  return [];
+};
+
 interface UseUserRoleReturn {
   roles: AppRole[];
   isAdmin: boolean;
@@ -17,8 +27,9 @@ interface UseUserRoleReturn {
 
 export const useUserRole = (): UseUserRoleReturn => {
   const { user } = useAuth();
-  const [roles, setRoles] = useState<AppRole[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const cachedRoles = readCachedRoles();
+  const [roles, setRoles] = useState<AppRole[]>(cachedRoles);
+  const [isLoading, setIsLoading] = useState(cachedRoles.length === 0);
 
   const fetchRoles = useCallback(async () => {
     if (!user) {
@@ -36,10 +47,11 @@ export const useUserRole = (): UseUserRoleReturn => {
       if (error) {
         console.error('Error fetching user roles:', error);
         setRoles([]);
+        try { localStorage.removeItem(ROLES_CACHE_KEY); } catch {}
       } else {
-        // Type assertion since we know the enum values
         const userRoles = (data || []).map(r => r.role as AppRole);
         setRoles(userRoles);
+        try { localStorage.setItem(ROLES_CACHE_KEY, JSON.stringify(userRoles)); } catch {}
       }
     } catch (e) {
       console.error('Error fetching roles:', e);

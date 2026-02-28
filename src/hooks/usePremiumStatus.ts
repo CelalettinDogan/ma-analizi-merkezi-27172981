@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { PlanType } from '@/constants/accessLevels';
 
+const PREMIUM_CACHE_KEY = 'cached_premium_sub';
+
 interface PremiumSubscription {
   id: string;
   plan_type: string;
@@ -55,8 +57,22 @@ const getPlanTypeFromSubscription = (subscription: PremiumSubscription | null): 
 
 export const usePremiumStatus = (): UsePremiumStatusReturn => {
   const { user } = useAuth();
-  const [subscription, setSubscription] = useState<PremiumSubscription | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  const cachedSub = (() => {
+    try {
+      const raw = localStorage.getItem(PREMIUM_CACHE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as PremiumSubscription;
+        // Check if cached sub is still valid
+        if (new Date(parsed.expires_at) > new Date()) return parsed;
+        localStorage.removeItem(PREMIUM_CACHE_KEY);
+      }
+    } catch {}
+    return null;
+  })();
+
+  const [subscription, setSubscription] = useState<PremiumSubscription | null>(cachedSub);
+  const [isLoading, setIsLoading] = useState(cachedSub === null);
 
   const fetchPremiumStatus = useCallback(async () => {
     if (!user) {
@@ -80,7 +96,12 @@ export const usePremiumStatus = (): UsePremiumStatusReturn => {
         console.error('Error fetching premium status:', error);
       }
 
-      setSubscription(data || null);
+      const sub = data || null;
+      setSubscription(sub);
+      try {
+        if (sub) localStorage.setItem(PREMIUM_CACHE_KEY, JSON.stringify(sub));
+        else localStorage.removeItem(PREMIUM_CACHE_KEY);
+      } catch {}
     } catch (e) {
       console.error('Error fetching premium status:', e);
       setSubscription(null);

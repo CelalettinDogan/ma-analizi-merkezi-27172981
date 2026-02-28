@@ -99,6 +99,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     setUser(null);
     setSession(null);
+    // Clear cached role/premium data for clean next-user experience
+    try {
+      localStorage.removeItem('nav_access_cache');
+      localStorage.removeItem('cached_user_roles');
+      localStorage.removeItem('cached_premium_sub');
+    } catch {}
     await supabase.auth.signOut();
   };
 

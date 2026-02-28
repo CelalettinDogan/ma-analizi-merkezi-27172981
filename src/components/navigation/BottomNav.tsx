@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, Radio, Sparkles, Crown, BarChart3, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { useAccessLevel } from '@/hooks/useAccessLevel';
+import { useCachedAccessLevel } from '@/hooks/useCachedAccessLevel';
 
 interface NavItem {
   icon: React.ElementType;
@@ -16,7 +16,7 @@ interface NavItem {
 const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(({ onSearchClick }, ref) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAdmin, isPremium, isLoading } = useAccessLevel();
+  const { isAdmin, isPremium } = useCachedAccessLevel();
 
   const computedItems = useMemo((): NavItem[] => {
     const baseItems: NavItem[] = [
@@ -54,7 +54,7 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
     navigate(item.path);
   }, [onSearchClick, navigate]);
 
-  if (isLoading) return null;
+  
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden" ref={ref}>
