@@ -22,7 +22,7 @@ const PremiumGate: React.FC<PremiumGateProps> = ({ onClose, variant = 'chatbot' 
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col min-h-dvh bg-background">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
       <header className="flex items-center gap-3 px-4 py-3 pt-safe">
         <Button

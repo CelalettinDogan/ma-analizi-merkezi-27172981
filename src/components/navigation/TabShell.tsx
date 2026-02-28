@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 // Lazy-ish imports — all mount at once but stay in bundle
 import Index from '@/pages/Index';
@@ -129,12 +130,14 @@ const TabShell: React.FC = () => {
               opacity: isActive ? 1 : 0,
               transform: isActive ? 'translateY(0)' : 'translateY(4px)',
               transition: initialRender ? 'none' : 'opacity 0.2s ease-out, transform 0.2s ease-out',
-              minHeight: '100dvh',
+              minHeight: '100vh',
               overflowY: 'auto',
               WebkitOverflowScrolling: 'touch',
             }}
           >
-            <Component />
+            <ErrorBoundary>
+              <Component />
+            </ErrorBoundary>
           </div>
         );
       })}
