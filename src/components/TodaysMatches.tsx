@@ -192,18 +192,13 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
           {/* Top row: reason tag + H2H */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <span className={cn(
-                "inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-micro font-medium",
-                featuredReason === 'Büyük Maç' 
-                  ? "bg-secondary/8 text-secondary" 
-                  : "bg-primary/5 text-primary"
-              )}>
+             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-micro font-medium bg-muted/40 text-foreground/70">
                 {featuredReason === 'Büyük Maç' ? (
-                  <Sparkles className="w-3 h-3" />
+                  <Sparkles className="w-3 h-3 text-foreground/50" />
                 ) : featuredReason === 'En Yakın' ? (
-                  <Clock className="w-3 h-3" />
+                  <Clock className="w-3 h-3 text-foreground/50" />
                 ) : (
-                  <Star className="w-3 h-3" />
+                  <Star className="w-3 h-3 text-foreground/50" />
                 )}
                 {featuredReason}
               </span>
