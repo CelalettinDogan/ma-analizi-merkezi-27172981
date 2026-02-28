@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Zap, Bot, Crown, Trophy, User } from 'lucide-react';
+import { Home, Radio, Sparkles, Crown, BarChart3, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useAccessLevel } from '@/hooks/useAccessLevel';
@@ -22,9 +22,9 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
   const computedItems = useMemo((): NavItem[] => {
     const baseItems: NavItem[] = [
       { icon: Home, label: 'Ana', path: '/' },
-      { icon: Zap, label: 'Canlı', path: '/live', badge: 'live' as const },
-      { icon: Bot, label: 'AI', path: '/chat' },
-      { icon: Trophy, label: 'Lig', path: '/standings' },
+      { icon: Radio, label: 'Canlı', path: '/live', badge: 'live' as const },
+      { icon: Sparkles, label: 'AI', path: '/chat' },
+      { icon: BarChart3, label: 'Lig', path: '/standings' },
       { icon: Crown, label: 'Pro', path: '/premium' },
       { icon: User, label: 'Profil', path: '/profile' },
     ];
@@ -82,37 +82,45 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                 aria-label={item.label}
                 aria-current={isActive ? 'page' : undefined}
                 className={cn(
-                  "relative flex flex-col items-center justify-center gap-1 py-2 px-1",
+                  "relative flex flex-col items-center justify-center py-2 px-1",
                   "flex-1 min-h-[48px]",
-                  "touch-manipulation rounded-lg transition-colors duration-200"
+                  "touch-manipulation rounded-lg"
                 )}
               >
-                {/* Active background — subtle */}
+                {/* Active background */}
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute inset-0 bg-primary/6 rounded-2xl"
+                    className="absolute inset-0 bg-primary/8 rounded-2xl"
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
                 
-                <div className="relative z-10">
-                  <Icon 
-                    className={cn(
-                      "w-5 h-5 transition-colors",
-                      isActive ? "text-primary" : "text-muted-foreground/70"
-                    )} 
-                  />
-                  {item.badge === 'live' && (
-                    <span className="absolute -top-0.5 -right-0.5 w-1 h-1 bg-destructive rounded-full animate-pulse" />
-                  )}
-                </div>
-                <span className={cn(
-                  "text-[10px] font-medium leading-none whitespace-nowrap transition-colors relative z-10",
-                  isActive ? "text-primary" : "text-muted-foreground/70"
-                )}>
-                  {item.label}
-                </span>
+                <motion.div
+                  className="relative z-10 flex flex-col items-center gap-1"
+                  animate={{ scale: isActive ? 1.05 : 1 }}
+                  transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
+                >
+                  <div className="relative">
+                    <Icon 
+                      className={cn(
+                        "w-[22px] h-[22px] transition-colors duration-150",
+                        isActive ? "text-primary" : "text-muted-foreground/70"
+                      )}
+                      strokeWidth={1.75}
+                      {...(isActive ? { fill: "currentColor", fillOpacity: 0.15 } : {})}
+                    />
+                    {item.badge === 'live' && (
+                      <span className="absolute -top-0.5 -right-0.5 w-1 h-1 bg-destructive rounded-full animate-pulse" />
+                    )}
+                  </div>
+                  <span className={cn(
+                    "text-[10px] font-medium leading-none whitespace-nowrap transition-colors duration-150",
+                    isActive ? "text-primary" : "text-muted-foreground/70"
+                  )}>
+                    {item.label}
+                  </span>
+                </motion.div>
               </button>
             );
           })}
