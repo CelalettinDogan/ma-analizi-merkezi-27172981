@@ -16,29 +16,26 @@ interface NavItem {
 const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(({ onSearchClick }, ref) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAdmin, isPremium } = useCachedAccessLevel();
+  const { isAdmin, isPremium, isResolved } = useCachedAccessLevel();
 
   const computedItems = useMemo((): NavItem[] => {
-    const baseItems: NavItem[] = [
+    const items: NavItem[] = [
       { icon: Home, label: 'Ana', path: '/' },
       { icon: Radio, label: 'Canlı', path: '/live', badge: 'live' as const },
       { icon: Sparkles, label: 'AI', path: '/chat' },
       { icon: BarChart3, label: 'Lig', path: '/standings' },
-      { icon: Crown, label: 'Pro', path: '/premium' },
       { icon: User, label: 'Profil', path: '/profile' },
     ];
 
-    const filteredItems = (isPremium || isAdmin) 
-      ? baseItems.filter(item => item.path !== '/premium')
-      : baseItems;
+    // Explicit positive check: only show Pro tab when role is explicitly free
+    const showProTab = !isPremium && !isAdmin;
+    if (showProTab) {
+      items.splice(4, 0, { icon: Crown, label: 'Pro', path: '/premium', badge: 'premium' as const });
+    }
 
-    return filteredItems.map(item => {
-      if (item.path === '/live') return item;
-      if (item.path === '/chat') {
-        if (isAdmin || isPremium) return item;
-        return { ...item, badge: 'premium' as const };
-      }
-      if (item.path === '/premium') {
+    // AI chat badge: only mark as premium when role is explicitly free
+    return items.map(item => {
+      if (item.path === '/chat' && !isAdmin && !isPremium) {
         return { ...item, badge: 'premium' as const };
       }
       return item;
@@ -54,7 +51,26 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
     navigate(item.path);
   }, [onSearchClick, navigate]);
 
-  
+  // Skeleton nav while role is unresolved — prevents flicker
+  if (!isResolved) {
+    return (
+      <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden" ref={ref}>
+        <div className="bg-card/95 backdrop-blur-2xl border-t border-border/30">
+          <div 
+            className="flex items-center py-1.5"
+            style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
+          >
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="flex-1 flex flex-col items-center justify-center py-2 px-1 min-h-[48px] gap-1">
+                <div className="w-[22px] h-[22px] rounded-md bg-muted animate-pulse" />
+                <div className="w-6 h-2 rounded bg-muted animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden" ref={ref}>
