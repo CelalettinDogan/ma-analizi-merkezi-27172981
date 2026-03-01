@@ -1,46 +1,18 @@
 
 
-# Release Preparation Plan
+# Secret Ekleme Planı
 
-## Current State
-- `capacitor.config.ts`: Correct — `webDir: 'dist'`, production settings (no dev server URL, debugging disabled)
-- `dvh` usage: **Zero instances found** — already clean
-- `android/` directory: Does not exist in Lovable (generated locally via `npx cap add android`)
+## Durum
+Mevcut secret'lar arasında `GOOGLE_PLAY_SERVICE_ACCOUNT_KEY` ve `GOOGLE_PLAY_PACKAGE_NAME` bulunmuyor. Bu iki secret'ın eklenmesi gerekiyor.
 
-## Changes Needed
+## Eklenecek Secret'lar
 
-### 1. `android/app/build.gradle` — Version Bump
-This file lives in your **local** Android project, not in Lovable. You need to edit it in Android Studio or your local editor:
+1. **GOOGLE_PLAY_SERVICE_ACCOUNT_KEY** — Paylaştığın service account JSON'unun tamamı (tek satır string)
+2. **GOOGLE_PLAY_PACKAGE_NAME** — `app.golmetrik.android`
 
-```text
-Find:    versionCode X
-Replace: versionCode X+1
+## Yöntem
+Implementation moduna geçtiğimde `add_secret` aracını kullanarak senden bu değerleri güvenli şekilde isteyeceğim. Secret'lar backend'e güvenli olarak kaydedilecek ve Edge Function'lar (`verify-purchase`, `play-store-webhook`) tarafından kullanılabilir olacak.
 
-Find:    versionName "current"
-Replace: versionName "next minor" (e.g., "1.1" → "1.2")
-```
-
-Lovable cannot edit this file since the `android/` directory is gitignored and generated locally.
-
-### 2. Production Build Readiness
-Everything is already correct:
-- `npm run build` produces output in `dist/`
-- `capacitor.config.ts` has `webDir: 'dist'` ✓
-- No dev server URL active ✓
-- `webContentsDebuggingEnabled: false` ✓
-
-### 3. dvh CSS Usage
-**No action needed** — zero `dvh` references found anywhere in the codebase. Already using `vh`-based utilities (`h-screen`, `min-h-screen`).
-
-### 4. Release Checklist Summary
-No code changes are required from Lovable. The project is release-ready.
-
-**Your local workflow:**
-```bash
-git pull
-npm install
-npm run build
-npx cap sync android
-```
-Then open Android Studio → `android/app/build.gradle` → bump `versionCode` and `versionName` → Generate Signed Bundle.
+## Not
+Chat'te paylaştığın private key'i doğrudan secret olarak kaydedeceğim — tekrar girmen gerekmeyecek, araç üzerinden onaylamanı isteyeceğim.
 
