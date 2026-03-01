@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
@@ -24,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const initialized = useRef(false);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -31,14 +32,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        setIsLoading(false);
+        // Only set isLoading=false from listener AFTER initialization
+        if (initialized.current) {
+          setIsLoading(false);
+        }
       }
     );
 
-    // THEN check for existing session
+    // THEN check for existing session — this is the authoritative init
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      initialized.current = true;
       setIsLoading(false);
     });
 
@@ -71,12 +76,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (Capacitor.isNativePlatform()) {
       // Native: Manuel OAuth URL + harici tarayıcı
       try {
-        const state = crypto.getRandomValues(new Uint8Array(16))
+      const nonce = crypto.getRandomValues(new Uint8Array(16))
           .reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
+
+        // Embed native flag in state parameter instead of redirect_uri
+        const state = `native:${nonce}`;
 
         const params = new URLSearchParams({
           provider: 'google',
-          redirect_uri: `${LOVABLE_CLOUD_URL}/callback?platform=native`,
+          redirect_uri: `${LOVABLE_CLOUD_URL}/callback`,
           state,
         });
 
