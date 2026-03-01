@@ -128,6 +128,7 @@ const Auth: React.FC = () => {
         variant: 'destructive',
       });
     }
+    // Native'de tarayıcı açılınca loading'i hemen kapat (kullanıcı dışarıda)
     setIsLoading(false);
   };
 
