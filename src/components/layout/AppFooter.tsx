@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import logoImage from '@/assets/logo.png';
 
 const AppFooter: React.FC = () => {
   return (
@@ -13,9 +14,11 @@ const AppFooter: React.FC = () => {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center shadow-lg shadow-primary/20">
-                <span className="text-primary-foreground font-bold">GM</span>
-              </div>
+              <img
+                src={logoImage}
+                alt="GolMetrik AI"
+                className="w-10 h-10 rounded-xl object-contain shadow-lg shadow-primary/20"
+              />
               <span className="font-display font-bold text-xl text-foreground">GolMetrik AI</span>
             </div>
             <p className="text-sm text-muted-foreground max-w-md mb-4">
