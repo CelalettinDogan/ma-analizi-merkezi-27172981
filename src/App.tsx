@@ -56,16 +56,17 @@ const DeepLinkHandler = () => {
             const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
             
             if (accessToken && refreshToken) {
-              await supabase.auth.setSession({
+              const { error } = await supabase.auth.setSession({
                 access_token: accessToken,
                 refresh_token: refreshToken,
               });
-              try {
-                await Browser.close();
-              } catch (e) {
-                // Browser zaten kapalı olabilir
+              if (!error) {
+                // Close the external browser that was opened for OAuth
+                try { await Browser.close(); } catch {}
+                navigate('/', { replace: true });
+              } else {
+                console.error('Deep link session error:', error);
               }
-              navigate('/', { replace: true });
             }
           }
         } catch (error) {
