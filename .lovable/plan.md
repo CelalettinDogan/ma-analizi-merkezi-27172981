@@ -1,27 +1,50 @@
 
 
-# Logo Değişikliği Planı
+# İki Sorun: Oturum Kalıcılığı + Native Google OAuth
 
-## Mevcut Logo Kullanım Noktaları
+## Sorun 1: Uygulama Kapatılıp Açılınca Oturum Kaybolması
 
-| Konum | Mevcut | Değişiklik |
-|--------|--------|------------|
-| **AppHeader.tsx** | `/lovable-uploads/d341d88c-...png` | Yeni logo ile değiştir |
-| **Auth.tsx** | `@/assets/logo.png` import | Yeni logo ile değiştir |
-| **AppFooter.tsx** | Gradient div + "GM" text | Yeni logo img ile değiştir |
-| **public/favicon.png** | Eski favicon | Yeni logo ile değiştir |
-| **public/apple-touch-icon.png** | Eski ikon | Yeni logo ile değiştir |
-| **index.html** | Favicon referansları | Güncellenecek |
+**Kök Neden:** `AuthContext`'te yarış durumu (race condition) var. `onAuthStateChange` listener'ı, `getSession()` tamamlanmadan önce `session: null` ile ateşlenebiliyor. Bu durumda `isLoading = false` ve `user = null` olup TabShell'in auth guard'ı kullanıcıyı hemen `/auth`'a yönlendiriyor — oturum localStorage'da mevcut olsa bile.
 
-**Not**: GuestGate ve PremiumGate'deki `varioAvatar` AI asistan avatarıdır, uygulama logosu değil — dokunulmayacak.
+**Çözüm:**
+- `AuthContext`'e bir `initialized` ref ekle
+- `isLoading`'i sadece `getSession()` tamamlandığında `false` yap
+- `onAuthStateChange`'in `isLoading`'i `false` yapmasını ancak initialization sonrasına ertele
+- Bu sayede session restore tamamlanmadan auth guard devreye girmeyecek
 
-## Yapılacaklar
+## Sorun 2: Google OAuth Native'de Lovable'a Giriş Yapıyor
 
-1. **Yeni logoyu kopyala**: `user-uploads://` dosyasını `src/assets/logo.png` olarak kopyala (mevcut dosyanın üzerine yazılacak) ve `public/favicon.png`, `public/apple-touch-icon.png` olarak da kopyala
-2. **AppHeader.tsx**: `src` attribute'unu `/lovable-uploads/...` yerine import edilen `logoImage`'a çevir, `bg-white` yerine `bg-transparent` yap (yeni logonun beyaz arka planı var)
-3. **Auth.tsx**: Import zaten `@/assets/logo.png` — dosya değişince otomatik güncellenecek, sadece `rounded-2xl` stilini koru
-4. **AppFooter.tsx**: "GM" gradient div yerine `<img>` ile yeni logoyu göster
-5. **index.html**: Favicon referansını güncelle
+**Kök Neden:** `signInWithGoogle` native dalında `redirect_uri` olarak `${LOVABLE_CLOUD_URL}/callback?platform=native` kullanılıyor. Ancak Lovable Cloud OAuth akışı bu redirect_uri'yi düzgün işlemeyebilir — kullanıcı harici tarayıcıda preview sitesinde kalıyor, `golmetrik://` yönlendirmesi gerçekleşmiyor.
 
-Tüm logo gösterimleri `object-contain` kullanarak orijinal oranları koruyacak, `shadow-lg` ve `rounded-2xl` ile native mobil uyumlu görünüm sağlanacak.
+**Çözüm:**
+- `redirect_uri`'den `?platform=native` parametresini çıkar, bunun yerine OAuth `state` parametresine `native` bilgisini göm
+- `AuthCallback.tsx`'te state parametresinden native tespiti yap
+- Deep link yönlendirmesinden sonra harici tarayıcıyı kapatmak için fallback mekanizması ekle
+- `DeepLinkHandler`'da session kurulduktan sonra `Browser.close()` çağrısını garantile
+
+## Değişecek Dosyalar
+
+1. **`src/contexts/AuthContext.tsx`** — `initialized` ref ile race condition düzeltmesi + `signInWithGoogle` native dalında state parametresi kullanımı
+2. **`src/pages/AuthCallback.tsx`** — State parametresinden native platform tespiti + güvenli custom scheme yönlendirmesi
+3. **`src/App.tsx`** — `DeepLinkHandler`'da Browser.close() güvenlik iyileştirmesi
+
+## Teknik Detay
+
+```text
+MEVCUT AKIŞ (sorunlu):
+App başlar → onAuthStateChange(null) → isLoading=false, user=null → Auth guard → /auth
+
+DÜZELTİLMİŞ AKIŞ:
+App başlar → onAuthStateChange(null) → initialized=false, isLoading devam eder
+         → getSession() → session bulunur → user set → isLoading=false → Ana sayfa
+
+MEVCUT OAUTH (sorunlu):
+Native → Browser.open(LOVABLE/~oauth/initiate?redirect_uri=LOVABLE/callback?platform=native)
+→ Google auth → LOVABLE/callback?platform=native (ama yönlendirme çalışmıyor)
+
+DÜZELTİLMİŞ OAUTH:
+Native → Browser.open(LOVABLE/~oauth/initiate?redirect_uri=LOVABLE/callback&state=native:xxx)
+→ Google auth → LOVABLE/callback#access_token=...&state=native:xxx
+→ AuthCallback: state içinde "native" → golmetrik://callback?tokens → DeepLinkHandler → session
+```
 
