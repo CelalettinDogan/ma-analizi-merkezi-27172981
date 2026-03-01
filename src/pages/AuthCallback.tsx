@@ -15,9 +15,10 @@ const AuthCallback = () => {
         const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
 
-        // Detect native platform from state parameter (state=native:xxx)
+        // Detect native platform from BOTH state parameter AND query param (dual fallback)
         const state = hashParams.get('state') || searchParams.get('state') || '';
-        const isNativePlatform = state.startsWith('native:');
+        const platformParam = searchParams.get('platform');
+        const isNativePlatform = state.startsWith('native:') || platformParam === 'native';
 
         if (accessToken && refreshToken) {
           // Native platform: redirect tokens to custom scheme so the app picks them up

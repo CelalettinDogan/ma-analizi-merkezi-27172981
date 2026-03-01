@@ -76,15 +76,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (Capacitor.isNativePlatform()) {
       // Native: Manuel OAuth URL + harici tarayıcı
       try {
-      const nonce = crypto.getRandomValues(new Uint8Array(16))
+        const nonce = crypto.getRandomValues(new Uint8Array(16))
           .reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
 
-        // Embed native flag in state parameter instead of redirect_uri
+        // Embed native flag in BOTH state AND redirect_uri query param
+        // State may be overridden by Lovable Cloud, so query param is the fallback
         const state = `native:${nonce}`;
 
         const params = new URLSearchParams({
           provider: 'google',
-          redirect_uri: `${LOVABLE_CLOUD_URL}/callback`,
+          redirect_uri: `${LOVABLE_CLOUD_URL}/callback?platform=native`,
           state,
         });
 
