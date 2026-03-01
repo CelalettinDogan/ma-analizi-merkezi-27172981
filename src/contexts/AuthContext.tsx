@@ -90,6 +90,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const oauthUrl = `${LOVABLE_CLOUD_URL}/~oauth/initiate?${params}`;
         await Browser.open({ url: oauthUrl });
+        // Native'de harici tarayıcı açıldı — uygulama arka plana geçecek
+        // DeepLinkHandler token'ları yakalayıp oturumu kuracak
         return { error: null };
       } catch (e) {
         return { error: e instanceof Error ? e : new Error(String(e)) };
