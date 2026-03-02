@@ -147,7 +147,7 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-gradient-to-b from-background via-background to-muted/30 flex flex-col pt-safe">
+    <div className="h-screen overflow-y-auto overflow-x-hidden bg-gradient-to-b from-background via-background to-muted/30 flex flex-col pt-safe">
       {/* Logo & Brand Section */}
       <div className="flex-shrink-0 flex flex-col items-center justify-center py-2 xs:py-3 sm:py-6 px-6">
         <img src={logoImg} alt="GolMetrik AI" className="w-12 h-12 xs:w-14 xs:h-14 sm:w-20 sm:h-20 aspect-square object-cover mb-1 rounded-2xl shadow-lg" />
@@ -156,11 +156,11 @@ const Auth: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden px-6 pb-2 max-w-md mx-auto w-full">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 pb-2 max-w-md mx-auto w-full">
         {/* Google Sign In - Prominent */}
         <Button
           variant="outline"
-          className="w-full h-10 text-base font-medium gap-3 border-border/60 bg-card/80 hover:bg-card mb-3 rounded-xl shadow-sm touch-manipulation"
+          className="w-full min-h-[2.5rem] text-base font-medium gap-3 border-border/60 bg-card/80 hover:bg-card mb-3 rounded-xl shadow-sm touch-manipulation"
           onClick={handleGoogleSignIn}
           disabled={isLoading}
         >
@@ -203,7 +203,7 @@ const Auth: React.FC = () => {
                     placeholder="ornek@email.com"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    className="pl-11 h-12 rounded-xl bg-muted/30 border-border/50"
+                    className="pl-11 min-h-[3rem] h-auto rounded-xl bg-muted/30 border-border/50"
                     required
                   />
                 </div>
@@ -227,7 +227,7 @@ const Auth: React.FC = () => {
                     placeholder="••••••••"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
-                    className="pl-11 pr-11 h-12 rounded-xl bg-muted/30 border-border/50"
+                    className="pl-11 pr-11 min-h-[3rem] h-auto rounded-xl bg-muted/30 border-border/50"
                     required
                   />
                   <button
@@ -239,7 +239,7 @@ const Auth: React.FC = () => {
                   </button>
                 </div>
               </div>
-              <Button type="submit" className="w-full h-12 rounded-xl text-base font-medium" disabled={isLoading}>
+              <Button type="submit" className="w-full min-h-[3rem] rounded-xl text-base font-medium" disabled={isLoading}>
                 {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Giriş yapılıyor...</> : 'Giriş Yap'}
               </Button>
             </form>
@@ -258,7 +258,7 @@ const Auth: React.FC = () => {
                     placeholder="Adınız"
                     value={registerName}
                     onChange={(e) => setRegisterName(e.target.value)}
-                    className="pl-11 h-10 rounded-xl bg-muted/30 border-border/50"
+                    className="pl-11 min-h-[2.5rem] h-auto rounded-xl bg-muted/30 border-border/50"
                   />
                 </div>
               </div>
@@ -272,7 +272,7 @@ const Auth: React.FC = () => {
                     placeholder="ornek@email.com"
                     value={registerEmail}
                     onChange={(e) => setRegisterEmail(e.target.value)}
-                    className="pl-11 h-10 rounded-xl bg-muted/30 border-border/50"
+                    className="pl-11 min-h-[2.5rem] h-auto rounded-xl bg-muted/30 border-border/50"
                     required
                   />
                 </div>
@@ -287,7 +287,7 @@ const Auth: React.FC = () => {
                     placeholder="En az 6 karakter"
                     value={registerPassword}
                     onChange={(e) => setRegisterPassword(e.target.value)}
-                    className="pl-11 pr-11 h-10 rounded-xl bg-muted/30 border-border/50"
+                    className="pl-11 pr-11 min-h-[2.5rem] h-auto rounded-xl bg-muted/30 border-border/50"
                     required
                     minLength={6}
                   />
@@ -320,7 +320,7 @@ const Auth: React.FC = () => {
                 </label>
               </div>
 
-              <Button type="submit" className="w-full h-10 rounded-xl text-base font-medium" disabled={isLoading || !termsAccepted}>
+              <Button type="submit" className="w-full min-h-[2.5rem] rounded-xl text-base font-medium" disabled={isLoading || !termsAccepted}>
                 {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Kayıt yapılıyor...</> : 'Kayıt Ol'}
               </Button>
             </form>
@@ -348,15 +348,15 @@ const Auth: React.FC = () => {
                 placeholder="ornek@email.com"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
-                className="pl-11 h-12 rounded-xl"
+                className="pl-11 min-h-[3rem] h-auto rounded-xl"
                 required
               />
             </div>
             <div className="flex gap-3">
-              <Button type="button" variant="outline" className="flex-1 h-12 rounded-xl" onClick={() => setShowResetDialog(false)}>
+              <Button type="button" variant="outline" className="flex-1 min-h-[3rem] rounded-xl" onClick={() => setShowResetDialog(false)}>
                 İptal
               </Button>
-              <Button type="submit" className="flex-1 h-12 rounded-xl" disabled={isResetting}>
+              <Button type="submit" className="flex-1 min-h-[3rem] rounded-xl" disabled={isResetting}>
                 {isResetting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Gönderiliyor...</> : 'Bağlantı Gönder'}
               </Button>
             </div>
