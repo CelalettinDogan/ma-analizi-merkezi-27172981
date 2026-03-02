@@ -62,7 +62,7 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
           >
             {[1, 2, 3, 4, 5].map(i => (
               <div key={i} className="flex-1 flex flex-col items-center justify-center py-2 px-1 min-h-[48px] gap-1">
-                <div className="w-5 h-5 rounded-md bg-muted animate-pulse" />
+                <div className="w-[22px] h-[22px] rounded-md bg-muted animate-pulse" />
                 <div className="w-6 h-2 rounded bg-muted animate-pulse" />
               </div>
             ))}
@@ -111,7 +111,7 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                   <div className="relative">
                     <Icon 
                       className={cn(
-                        "w-5 h-5 transition-colors duration-150",
+                        "w-[22px] h-[22px] transition-colors duration-150",
                         isActive ? "text-primary" : "text-muted-foreground/70"
                       )}
                       strokeWidth={1.75}
@@ -122,7 +122,7 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                     )}
                   </div>
                   <span className={cn(
-                    "text-[0.625rem] font-medium leading-none whitespace-nowrap transition-colors duration-150",
+                    "text-[10px] font-medium leading-none whitespace-nowrap transition-colors duration-150",
                     isActive ? "text-primary" : "text-muted-foreground/70"
                   )}>
                     {item.label}

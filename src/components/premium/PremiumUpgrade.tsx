@@ -175,7 +175,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
           </div>
 
           {/* Plan Selection */}
-          <div className="grid grid-cols-3 gap-1.5">
+          <div className="grid grid-cols-3 gap-2">
             {plans.map((plan) => {
               const isSelected = selectedPlan === plan.id;
               const displayPrice = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
@@ -197,7 +197,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
                     </Badge>
                   )}
                   
-                  <div className={`w-8 h-8 shrink-0 mx-auto mb-2 rounded-lg bg-gradient-to-br ${plan.color} flex items-center justify-center`}>
+                  <div className={`w-8 h-8 mx-auto mb-2 rounded-lg bg-gradient-to-br ${plan.color} flex items-center justify-center`}>
                     {plan.id === 'premium_basic' && <Zap className="w-4 h-4 text-white" />}
                     {plan.id === 'premium_plus' && <Crown className="w-4 h-4 text-white" />}
                     {plan.id === 'premium_pro' && <Sparkles className="w-4 h-4 text-white" />}
@@ -272,7 +272,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
           <Button
             onClick={handlePurchase}
             disabled={isLoading}
-            className="w-full min-h-[3rem] text-lg font-semibold"
+            className="w-full h-12 text-lg font-semibold"
             size="lg"
           >
             {isLoading ? (

@@ -113,14 +113,14 @@ const LiveMatchCard: React.FC<LiveMatchCardProps> = ({ match, onClick }) => {
           {/* Score */}
           <div className="flex items-center gap-2">
             <div className={cn(
-              "text-3xl font-bold min-w-[2.5rem] text-center",
+              "text-3xl font-bold min-w-[40px] text-center",
               isLive && "text-foreground"
             )}>
               {match.score.fullTime.home ?? 0}
             </div>
             <span className="text-muted-foreground text-xl">-</span>
             <div className={cn(
-              "text-3xl font-bold min-w-[2.5rem] text-center",
+              "text-3xl font-bold min-w-[40px] text-center",
               isLive && "text-foreground"
             )}>
               {match.score.fullTime.away ?? 0}

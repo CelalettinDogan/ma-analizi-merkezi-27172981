@@ -74,7 +74,7 @@ export const ActivityFeed = ({ predictions, isLoading }: ActivityFeedProps) => {
             {TYPE_LABELS[prediction.prediction_type] || prediction.prediction_type}
           </span>
           <span className="text-xs text-muted-foreground">•</span>
-          <span className="text-xs text-muted-foreground truncate flex-1 min-w-0">
+          <span className="text-xs text-muted-foreground truncate max-w-[80px]">
             {prediction.prediction_value}
           </span>
           <span className="text-xs text-muted-foreground">•</span>

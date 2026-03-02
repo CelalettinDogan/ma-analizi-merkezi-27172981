@@ -110,21 +110,11 @@
 @layer base {
   * {
     @apply border-border;
-    min-width: 0;
-  }
-
-  html {
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-    overflow-x: hidden;
   }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', system-ui, sans-serif;
-    overflow-x: hidden;
-    word-break: break-word;
-    overflow-wrap: break-word;
   }
 
   h1, h2, h3, h4, h5, h6 {
