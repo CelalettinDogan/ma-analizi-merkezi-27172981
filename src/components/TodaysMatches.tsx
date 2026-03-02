@@ -351,7 +351,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
           variant="ghost"
           size="sm"
           onClick={() => setShowAll(true)}
-          className="w-full text-primary text-xs h-9"
+          className="w-full text-primary text-xs min-h-[2.25rem]"
         >
           Tümünü Gör (+{otherMatches.length - 5})
         </Button>

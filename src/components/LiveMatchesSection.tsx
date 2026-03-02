@@ -145,7 +145,7 @@ const LiveMatchesSection: React.FC<LiveMatchesSectionProps> = ({ onSelectMatch }
             value={selectedLeague}
             onValueChange={(value) => setSelectedLeague(value as CompetitionCode | 'ALL')}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-auto min-w-[140px] max-w-[200px]">
               <SelectValue placeholder="Lig seçin" />
             </SelectTrigger>
             <SelectContent>
