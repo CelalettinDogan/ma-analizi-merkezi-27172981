@@ -40,7 +40,7 @@ const MatchSlide: React.FC<{
   return (
     <motion.div
       whileTap={{ scale: 0.97 }}
-      className="flex-shrink-0 w-[260px] md:w-[300px]"
+      className="flex-shrink-0 w-[72vw] max-w-[300px] min-w-[240px]"
     >
       <button
         onClick={onSelect}
@@ -172,7 +172,7 @@ const MatchCarousel: React.FC<MatchCarouselProps> = ({ matches, onMatchSelect, i
         {Array.from({ length: 3 }).map((_, i) => (
           <div 
             key={i}
-            className="flex-shrink-0 w-[260px] md:w-[300px] h-[160px] rounded-2xl bg-muted/10 animate-pulse"
+            className="flex-shrink-0 w-[72vw] max-w-[300px] min-w-[240px] h-[160px] rounded-2xl bg-muted/10 animate-pulse"
           />
         ))}
       </div>
