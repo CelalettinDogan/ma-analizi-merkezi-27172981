@@ -222,7 +222,7 @@ const Chat: React.FC = () => {
               variant="ghost"
               size="icon"
               onClick={() => navigate(-1)}
-              className="rounded-full w-8 h-8"
+              className="rounded-full min-w-[2rem] min-h-[2rem] w-8 h-auto"
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
@@ -238,25 +238,25 @@ const Chat: React.FC = () => {
               <div className="flex items-center gap-1.5">
                 <h1 className="font-semibold text-sm">VARio - AI Asistan</h1>
                 {isAdmin && (
-                  <Badge variant="secondary" className="text-micro h-4 px-1.5 bg-amber-500/20 text-amber-600 border-0">
+                  <Badge variant="secondary" className="text-micro min-h-[1rem] h-auto px-1.5 bg-amber-500/20 text-amber-600 border-0">
                     <Crown className="w-2.5 h-2.5 mr-0.5" />
                     Admin
                   </Badge>
                 )}
                 {isPremiumPro && !isAdmin && (
-                  <Badge variant="secondary" className="text-micro h-4 px-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600 border-0">
+                  <Badge variant="secondary" className="text-micro min-h-[1rem] h-auto px-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600 border-0">
                     <Star className="w-2.5 h-2.5 mr-0.5" />
                     Pro
                   </Badge>
                 )}
                 {isPremiumPlus && !isAdmin && (
-                  <Badge variant="secondary" className="text-micro h-4 px-1.5 bg-primary/20 text-primary border-0">
+                  <Badge variant="secondary" className="text-micro min-h-[1rem] h-auto px-1.5 bg-primary/20 text-primary border-0">
                     <Sparkles className="w-2.5 h-2.5 mr-0.5" />
                     Plus
                   </Badge>
                 )}
                 {isPremiumBasic && !isAdmin && (
-                  <Badge variant="secondary" className="text-micro h-4 px-1.5 bg-emerald-500/20 text-emerald-600 border-0">
+                  <Badge variant="secondary" className="text-micro min-h-[1rem] h-auto px-1.5 bg-emerald-500/20 text-emerald-600 border-0">
                     Basic
                   </Badge>
                 )}
@@ -281,7 +281,7 @@ const Chat: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="rounded-full w-8 h-8"
+                  className="rounded-full min-w-[2rem] min-h-[2rem] w-8 h-auto"
                 >
                   <MoreVertical className="w-4 h-4" />
                 </Button>

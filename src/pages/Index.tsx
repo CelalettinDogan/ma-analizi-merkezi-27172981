@@ -335,7 +335,7 @@ const Index: React.FC = () => {
             {isLoadingMatches ? (
               <div className="flex gap-4 overflow-hidden">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex-shrink-0 w-[280px] md:w-[320px]">
+                  <div key={i} className="flex-shrink-0 w-[72vw] max-w-[300px] min-w-[240px]">
                     <MatchCardSkeleton />
                   </div>
                 ))}

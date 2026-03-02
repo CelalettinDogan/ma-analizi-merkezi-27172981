@@ -120,7 +120,7 @@ const AnalysisHistory: React.FC = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate(-1)}
-                className="h-9 w-9"
+                className="min-h-[2.25rem] min-w-[2.25rem]"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
@@ -147,10 +147,10 @@ const AnalysisHistory: React.FC = () => {
 
       {/* Filters */}
       <div className="container mx-auto px-4 py-4">
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2">
           <Select value={dateFilter} onValueChange={(v) => setDateFilter(v as DateFilter)}>
-            <SelectTrigger className="w-[140px]">
-              <Calendar className="h-4 w-4 mr-2" />
+            <SelectTrigger className="w-auto min-w-[120px] max-w-[160px]">
+              <Calendar className="h-4 w-4 mr-2 shrink-0" />
               <SelectValue placeholder="Tarih" />
             </SelectTrigger>
             <SelectContent>
@@ -162,8 +162,8 @@ const AnalysisHistory: React.FC = () => {
           </Select>
 
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-            <SelectTrigger className="w-[140px]">
-              <Filter className="h-4 w-4 mr-2" />
+            <SelectTrigger className="w-auto min-w-[120px] max-w-[160px]">
+              <Filter className="h-4 w-4 mr-2 shrink-0" />
               <SelectValue placeholder="Durum" />
             </SelectTrigger>
             <SelectContent>
