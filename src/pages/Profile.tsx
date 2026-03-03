@@ -247,7 +247,7 @@ const Profile = () => {
                       <h1 className="text-base font-bold truncate font-display">{displayName}</h1>
                       {(isPremium || isAdmin) && <Crown className="h-4 w-4 text-amber-500 flex-shrink-0" />}
                     </div>
-                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    <p className="text-xs text-muted-foreground break-all min-w-0">{user.email}</p>
                     {memberSince && <p className="text-micro text-muted-foreground mt-0.5">Üye: {memberSince}</p>}
                   </div>
                 </div>
