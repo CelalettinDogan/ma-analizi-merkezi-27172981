@@ -1,44 +1,46 @@
 
 
-# Google ile Giriş — Native Android'de Çalıştırma
+# Samsung %150 Font Scaling — Layout Koruma
 
-## Mevcut Durum
-Kod tarafında bridge mekanizması son düzenlemeyle zaten uygulandı. Akış doğru tasarlanmış:
+## Sorun
+Android cihazlarda sistem font ölçeklendirmesi (%150) uygulandığında, sabit yükseklikli bileşenler taşıyor ve layout kırılıyor. `text-size-adjust` koruması henüz uygulanmamış.
 
-```text
-App → Browser.open(LOVABLE/~oauth/initiate?state=native:xxx)
-→ Google Auth → LOVABLE/callback#tokens&state=native:xxx
-→ AuthCallback: golmetrik://callback?tokens
-→ DeepLinkHandler: setSession + Browser.close()
-```
+## Yaklaşım
+Kullanıcının talimatına birebir uyarak **minimal, cerrahi** düzeltmeler yapılacak. Hero, CTA butonları ve tablo spacing'e dokunulmayacak.
 
-## Eksik Parça: Android Deep Link Konfigürasyonu
-`golmetrik://callback` özel URL şemasının Android tarafında tanımlı olması gerekiyor. Bu, `AndroidManifest.xml`'e intent filter eklenerek yapılır. Lovable'dan bu dosya düzenlenemez — Android Studio'da yapılması gereken bir adım.
+## Değişiklikler
 
-## Yapılacaklar (Kod Tarafı)
+### 1. `src/index.css` — Global güvenlik kuralları
+- `html` elementine `-webkit-text-size-adjust: 100%; text-size-adjust: 100%` ekle
+- `body`'ye `overflow-x: hidden` ekle
+- `*` seçicisine `min-width: 0` ekle (flex/grid taşma koruması)
 
-Kod zaten doğru durumda. Ancak iki ek güvenlik iyileştirmesi yapabiliriz:
+### 2. `src/components/ui/button.tsx` — Icon button sabit yükseklik düzeltmesi
+- `icon` size varyantında `h-10 w-10` → `min-h-[40px] min-w-[40px] h-auto w-auto` yap
+- `sm` size'da `h-9` → `min-h-[36px] h-auto` yap
+- `default` ve `lg` size'lara dokunma (Hero CTA bunları kullanıyor)
 
-1. **`AuthContext.tsx`** — `signInWithGoogle` native dalında `isLoading` state'ini `false` yapma (çünkü kullanıcı harici tarayıcıya yönlendiriliyor, loading spinner gereksiz kalıyor)
+### 3. `src/components/ui/input.tsx` — Input sabit yükseklik
+- `h-10` → `min-h-[40px] h-auto` yap
 
-2. **`Auth.tsx`** — Google buton loading state'ini native'de farklı yönet (tarayıcı açılınca loading'i kapat)
+### 4. `src/components/chat/ChatInput.tsx` — Send button
+- `h-11 w-11` → `min-h-[44px] min-w-[44px] h-auto w-auto` yap
 
-## Senin Yapman Gereken (Android Studio)
+### 5. `src/components/chat/ChatMessage.tsx` — Mesaj metni break-word
+- Mesaj bubble'daki inline `style` zaten `overflowWrap: 'break-word'` içeriyor — yeterli, ek değişiklik yok
 
-`android/app/src/main/AndroidManifest.xml` dosyasına, ana `<activity>` bloğu içine şu intent filter'ı ekle:
+### 6. `src/components/navigation/BottomNav.tsx` — Tab buton yüksekliği
+- `min-h-[48px]` zaten var — ek değişiklik yok
 
-```xml
-<intent-filter>
-    <action android:name="android.intent.action.VIEW" />
-    <category android:name="android.intent.category.DEFAULT" />
-    <category android:name="android.intent.category.BROWSABLE" />
-    <data android:scheme="golmetrik" android:host="callback" />
-</intent-filter>
-```
+### 7. `src/pages/Standings.tsx` — Takım adı break-word
+- Tablo hücrelerindeki takım adlarına `break-words min-w-0` ekle (satır yüksekliği değişmeyecek)
 
-Bu eklendikten sonra `golmetrik://callback` linki uygulamayı açacak ve `DeepLinkHandler` token'ları yakalayacak.
+### 8. `src/pages/Profile.tsx` — Email break-word
+- Kullanıcı email alanına `break-all min-w-0` ekle
 
-## Özet
-- Kod tarafı: Küçük UX iyileştirmesi (loading state)
-- Android tarafı: Intent filter eklenmesi (kritik, bu olmadan deep link çalışmaz)
+## Dokunulmayacaklar
+- HeroSection — CTA butonu `lg` size, değişmeyecek
+- Tablo satır yükseklikleri
+- Kart spacing ve padding
+- BottomNav layout
 
