@@ -1,6 +1,6 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Zap, Shield, Activity, Users } from 'lucide-react';
+import { TrendingUp, TrendingDown, Zap, Shield, Activity, Users, Home, Plane } from 'lucide-react';
 import { TeamStats, TeamPower } from '@/types/match';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
@@ -89,6 +89,89 @@ const ComparisonRow = memo<{
 
 ComparisonRow.displayName = 'ComparisonRow';
 
+// Form Tabs: Home/Away split
+const FormTabs = memo<{
+  homeTeam: string;
+  awayTeam: string;
+  homeForm: string[];
+  awayForm: string[];
+  homeStats: TeamStats;
+  awayStats: TeamStats;
+}>(({ homeTeam, awayTeam, homeForm, awayForm, homeStats, awayStats }) => {
+  const [tab, setTab] = useState<'home' | 'away'>('home');
+
+  const homePerf = homeStats?.homePerformance;
+  const awayPerf = awayStats?.awayPerformance;
+
+  return (
+    <div className="mb-5">
+      {/* Tab buttons */}
+      <div className="flex gap-1 p-1 rounded-xl bg-muted/30 mb-3">
+        <button
+          onClick={() => setTab('home')}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors touch-manipulation",
+            tab === 'home' ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+          )}
+        >
+          <Home className="w-3 h-3" />
+          İç Saha
+        </button>
+        <button
+          onClick={() => setTab('away')}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors touch-manipulation",
+            tab === 'away' ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+          )}
+        >
+          <Plane className="w-3 h-3" />
+          Deplasman
+        </button>
+      </div>
+
+      {/* Form badges */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-xs text-muted-foreground mb-2">
+            {homeTeam} {tab === 'home' ? 'İç Saha' : 'Deplasman'}
+          </p>
+          <div className="flex gap-1 flex-wrap">
+            {homeForm.length > 0 ? (
+              homeForm.slice(0, 5).map((result, i) => <FormBadge key={i} result={result} />)
+            ) : (
+              <span className="text-xs text-muted-foreground">Veri yok</span>
+            )}
+          </div>
+          {tab === 'home' && homePerf && (
+            <p className="text-micro text-muted-foreground mt-1.5">
+              {homePerf.wins}G {homePerf.draws}B {homePerf.losses}M
+            </p>
+          )}
+          {tab === 'away' && awayPerf && (
+            <p className="text-micro text-muted-foreground mt-1.5">
+              {awayPerf.wins}G {awayPerf.draws}B {awayPerf.losses}M
+            </p>
+          )}
+        </div>
+        <div className="flex flex-col items-end">
+          <p className="text-xs text-muted-foreground mb-2">
+            {awayTeam} {tab === 'home' ? 'İç Saha' : 'Deplasman'}
+          </p>
+          <div className="flex gap-1 flex-wrap">
+            {awayForm.length > 0 ? (
+              awayForm.slice(0, 5).map((result, i) => <FormBadge key={i} result={result} />)
+            ) : (
+              <span className="text-xs text-muted-foreground">Veri yok</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+FormTabs.displayName = 'FormTabs';
+
 const TeamComparisonCard: React.FC<TeamComparisonCardProps> = ({
   homeTeam,
   awayTeam,
@@ -161,33 +244,15 @@ const TeamComparisonCard: React.FC<TeamComparisonCardProps> = ({
         </div>
       </div>
 
-      {/* Form Display */}
-      <div className="grid grid-cols-2 gap-4 mb-5">
-        <div>
-          <p className="text-xs text-muted-foreground mb-2">Son 5 Maç</p>
-          <div className="flex gap-1">
-            {homeForm.length > 0 ? (
-              homeForm.slice(0, 5).map((result, i) => (
-                <FormBadge key={i} result={result} />
-              ))
-            ) : (
-              <span className="text-xs text-muted-foreground">Veri yok</span>
-            )}
-          </div>
-        </div>
-        <div className="flex flex-col items-end">
-          <p className="text-xs text-muted-foreground mb-2">Son 5 Maç</p>
-          <div className="flex gap-1">
-            {awayForm.length > 0 ? (
-              awayForm.slice(0, 5).map((result, i) => (
-                <FormBadge key={i} result={result} />
-              ))
-            ) : (
-              <span className="text-xs text-muted-foreground">Veri yok</span>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Form Display — Home/Away Split */}
+      <FormTabs
+        homeTeam={homeTeam}
+        awayTeam={awayTeam}
+        homeForm={homeForm}
+        awayForm={awayForm}
+        homeStats={homeStats}
+        awayStats={awayStats}
+      />
 
       {/* Stats Comparison Table */}
       <div className="space-y-3 pt-3 border-t border-border/50">

@@ -82,31 +82,31 @@ const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights, homeTeam
         {/* Teams */}
         <div className="flex items-center justify-center gap-3 md:gap-6">
           {/* Home Team */}
-          <div className="flex-1 text-center">
+          <div className="flex-1 text-center min-w-0">
             <TeamLogo 
               crest={homeTeamCrest} 
               teamName={match.homeTeam} 
               gradient="from-primary/20 to-primary/10"
             />
-            <h2 className="text-sm md:text-base font-semibold text-foreground line-clamp-2">{match.homeTeam}</h2>
+            <h2 className="text-sm md:text-base font-semibold text-foreground break-words min-w-0">{match.homeTeam}</h2>
             <span className="text-xs text-muted-foreground">Ev Sahibi</span>
           </div>
 
           {/* VS Badge */}
-          <div className="flex flex-col items-center">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-primary/20 via-muted to-secondary/20 flex items-center justify-center border border-border/50">
-              <span className="text-sm md:text-base font-bold text-muted-foreground">VS</span>
+          <div className="flex flex-col items-center shrink-0">
+            <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-primary/20 via-muted to-secondary/20 flex items-center justify-center border border-border/50">
+              <span className="text-xs md:text-base font-bold text-muted-foreground">VS</span>
             </div>
           </div>
 
           {/* Away Team */}
-          <div className="flex-1 text-center">
+          <div className="flex-1 text-center min-w-0">
             <TeamLogo 
               crest={awayTeamCrest} 
               teamName={match.awayTeam} 
               gradient="from-secondary/20 to-secondary/10"
             />
-            <h2 className="text-sm md:text-base font-semibold text-foreground line-clamp-2">{match.awayTeam}</h2>
+            <h2 className="text-sm md:text-base font-semibold text-foreground break-words min-w-0">{match.awayTeam}</h2>
             <span className="text-xs text-muted-foreground">Deplasman</span>
           </div>
         </div>
