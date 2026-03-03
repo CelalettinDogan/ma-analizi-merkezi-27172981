@@ -180,7 +180,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             disabled={!message.trim() || isLoading || disabled || isOverLimit}
             size="icon"
             className={cn(
-              "h-11 w-11 rounded-full shrink-0 transition-all duration-200",
+              "min-h-[44px] min-w-[44px] h-auto w-auto rounded-full shrink-0 transition-all duration-200",
               "bg-gradient-to-br from-primary to-primary/80",
               "hover:from-primary/90 hover:to-primary/70",
               "shadow-md shadow-primary/20 hover:shadow-lg",

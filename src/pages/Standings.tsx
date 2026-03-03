@@ -237,7 +237,7 @@ const StandingsPage: React.FC = () => {
                                     className="w-5 h-5 md:w-6 md:h-6 object-contain"
                                   />
                                 )}
-                                <span className="font-medium truncate max-w-[100px] md:max-w-none text-xs md:text-sm">
+                                <span className="font-medium truncate max-w-[100px] md:max-w-none text-xs md:text-sm break-words min-w-0">
                                   {team.team_short_name || team.team_name}
                                 </span>
                               </div>
