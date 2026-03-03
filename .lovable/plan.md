@@ -1,46 +1,78 @@
 
 
-# Samsung %150 Font Scaling — Layout Koruma
+# Maç Analiz Ekranı — 2026 Premium Seviye Yeniden Tasarım
 
-## Sorun
-Android cihazlarda sistem font ölçeklendirmesi (%150) uygulandığında, sabit yükseklikli bileşenler taşıyor ve layout kırılıyor. `text-size-adjust` koruması henüz uygulanmamış.
+## Mevcut Durum
+Analiz ekranı (AnalysisDrawer) tüm bileşenleri dikey olarak sıralıyor: MatchHeroCard → AIRecommendationCard → PredictionPillSelector → TeamComparisonCard → H2HTimeline → AdvancedAnalysisTabs → LegalDisclaimer. Bilgi yoğunluğu yüksek, ilk ekranda karar verilebilir veri yok, hiyerarşi eksik.
 
-## Yaklaşım
-Kullanıcının talimatına birebir uyarak **minimal, cerrahi** düzeltmeler yapılacak. Hero, CTA butonları ve tablo spacing'e dokunulmayacak.
+## Mimari Değişiklikler
 
-## Değişiklikler
+### 1. AnalysisDrawer — Gerçek Bottom Sheet Davranışı
+- Touch-based drag handle ile snap points: %40 (peek) ve %85 (full)
+- Peek modda sadece yeni "AnalysisHeroSummary" bileşeni görünür (karar verilebilir minimal veri)
+- Yukarı sürükleyince veya "Detayı Gör" butonuyla %85'e snap
+- `onTouchStart/Move/End` ile velocity-based snap logic
+- Background blur (`backdrop-blur-xl`) ve elevation shadow
 
-### 1. `src/index.css` — Global güvenlik kuralları
-- `html` elementine `-webkit-text-size-adjust: 100%; text-size-adjust: 100%` ekle
-- `body`'ye `overflow-x: hidden` ekle
-- `*` seçicisine `min-width: 0` ekle (flex/grid taşma koruması)
+### 2. Yeni Bileşen: AnalysisHeroSummary (İlk Ekran)
+Drawer peek modunda görünen karar kartı:
+- Takım logoları + isimler (wrap destekli)
+- Ana tahmin büyük font (örn: "Liverpool Kazanır")
+- Hibrit güven skoru % ile circular progress + info tooltip (Poisson ağırlığı, Form ağırlığı, xG ağırlığı, Güç puanı etkisi açıklaması)
+- Beklenen gol toplamı (xG toplam)
+- En olası skor
+- Micro fade-in + subtle progress animation
+- "Detaylı Analiz" butonu → full snap
 
-### 2. `src/components/ui/button.tsx` — Icon button sabit yükseklik düzeltmesi
-- `icon` size varyantında `h-10 w-10` → `min-h-[40px] min-w-[40px] h-auto w-auto` yap
-- `sm` size'da `h-9` → `min-h-[36px] h-auto` yap
-- `default` ve `lg` size'lara dokunma (Hero CTA bunları kullanıyor)
+### 3. MatchHeroCard Güncelleme
+- VS alanı adaptif küçülsün (küçük ekranda `w-8 h-8`)
+- Takım isimleri `break-words` ile 2 satır wrap
+- 16px kart radius, 12px iç element radius tutarlılığı
+- 8pt grid spacing
 
-### 3. `src/components/ui/input.tsx` — Input sabit yükseklik
-- `h-10` → `min-h-[40px] h-auto` yap
+### 4. AIRecommendationCard — Sadeleştirme
+- Güven tooltip'i eklenmesi: % nasıl hesaplanıyor (Poisson, Form, xG, Güç puanı ağırlıkları)
+- Mevcut yapı korunur, tooltip ile şeffaflık artırılır
 
-### 4. `src/components/chat/ChatInput.tsx` — Send button
-- `h-11 w-11` → `min-h-[44px] min-w-[44px] h-auto w-auto` yap
+### 5. TeamComparisonCard — İç Saha / Deplasman Ayrımı
+- "Son 5 Maç" yerine "Son 5 İç Saha" ve "Son 5 Deplasman" sekmeli gösterim
+- İç saha xG vs deplasman xG kıyaslama satırı eklenmesi
+- Hücum/Savunma güç endeksi zaten mevcut, radar chart AdvancedAnalysisTabs'da var
 
-### 5. `src/components/chat/ChatMessage.tsx` — Mesaj metni break-word
-- Mesaj bubble'daki inline `style` zaten `overflowWrap: 'break-word'` içeriyor — yeterli, ek değişiklik yok
+### 6. AdvancedAnalysisTabs → CollapsibleAnalysis'e Geçiş
+- Tab yapısı yerine accordion (CollapsibleAnalysis zaten mevcut) kullanılacak
+- "Detayı Gör" başlığı altında tüm ileri analiz accordion ile açılacak
+- Her section başlığında küçük badge (sayı/durum)
 
-### 6. `src/components/navigation/BottomNav.tsx` — Tab buton yüksekliği
-- `min-h-[48px]` zaten var — ek değişiklik yok
+### 7. Güven Şeffaflığı Tooltip
+- Yeni mikro bileşen: `ConfidenceBreakdownTooltip`
+- Tooltip içeriği: Poisson ağırlığı, Form skoru, xG etkisi, Güç puanı oranları
+- `@radix-ui/react-tooltip` kullanılarak implement
 
-### 7. `src/pages/Standings.tsx` — Takım adı break-word
-- Tablo hücrelerindeki takım adlarına `break-words min-w-0` ekle (satır yüksekliği değişmeyecek)
+### 8. Responsive & Overflow Koruması
+- Tüm takım isimleri `break-words min-w-0`
+- VS alanı responsive (`w-8 md:w-12`)
+- Metin taşması kontrolü tüm kartlarda
+- 360dp + %150 font scale uyumlu
 
-### 8. `src/pages/Profile.tsx` — Email break-word
-- Kullanıcı email alanına `break-all min-w-0` ekle
+### 9. Renk & Stil Tutarlılığı
+- Mevcut premium koyu-yeşil ana renk korunur
+- Nötr arka plan (`bg-card`, `bg-muted`)
+- 16px kart radius, 12px iç element radius
+- 8pt spacing grid (p-4, gap-4, mb-4 vb.)
+
+## Değişecek Dosyalar
+1. `src/components/analysis/AnalysisDrawer.tsx` — Bottom sheet snap logic + peek mode
+2. `src/components/analysis/AnalysisHeroSummary.tsx` — YENİ: Karar kartı
+3. `src/components/analysis/ConfidenceBreakdownTooltip.tsx` — YENİ: Güven açıklama tooltip
+4. `src/components/analysis/MatchHeroCard.tsx` — Responsive VS, wrap, spacing
+5. `src/components/analysis/AIRecommendationCard.tsx` — Tooltip entegrasyonu
+6. `src/components/analysis/TeamComparisonCard.tsx` — İç saha/deplasman ayrımı
+7. `src/components/analysis/index.ts` — Yeni export'lar
 
 ## Dokunulmayacaklar
-- HeroSection — CTA butonu `lg` size, değişmeyecek
-- Tablo satır yükseklikleri
-- Kart spacing ve padding
-- BottomNav layout
+- Hero CTA butonları (Index sayfası)
+- BottomNav
+- Mevcut renk paleti
+- Prediction/match type sistemi
 
