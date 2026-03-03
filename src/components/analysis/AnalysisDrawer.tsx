@@ -8,8 +8,9 @@ import {
   PredictionPillSelector,
   H2HTimeline,
   TeamComparisonCard,
-  AdvancedAnalysisTabs,
+  CollapsibleAnalysis,
 } from '@/components/analysis';
+import AnalysisHeroSummary from './AnalysisHeroSummary';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
 
 interface AnalysisDrawerProps {
@@ -18,18 +19,30 @@ interface AnalysisDrawerProps {
   onClose: () => void;
 }
 
+const SNAP_PEEK = 0.4;   // 40% of viewport
+const SNAP_FULL = 0.85;  // 85% of viewport
+const VELOCITY_THRESHOLD = 0.5;
+
 const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClose }) => {
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [snapPoint, setSnapPoint] = useState<number>(SNAP_PEEK);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Touch tracking
+  const touchStartY = useRef(0);
+  const touchStartTime = useRef(0);
+  const currentTranslateY = useRef(0);
+  const isDragging = useRef(false);
 
   // Mount → forced reflow → animate in
   useEffect(() => {
     let rafId: number;
     if (isOpen && analysis) {
       setMounted(true);
+      setSnapPoint(SNAP_PEEK);
       rafId = requestAnimationFrame(() => {
-        // Double-rAF: first ensures paint of translate-y-full, second triggers transition
         drawerRef.current?.offsetHeight;
         requestAnimationFrame(() => {
           setVisible(true);
@@ -38,7 +51,10 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
       return () => cancelAnimationFrame(rafId);
     } else {
       setVisible(false);
-      const timeout = setTimeout(() => setMounted(false), 350);
+      const timeout = setTimeout(() => {
+        setMounted(false);
+        setSnapPoint(SNAP_PEEK);
+      }, 350);
       return () => clearTimeout(timeout);
     }
   }, [isOpen, analysis]);
@@ -53,7 +69,75 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
     return () => { document.body.style.overflow = ''; };
   }, [visible]);
 
+  const getDrawerHeight = useCallback(() => {
+    return snapPoint * window.innerHeight;
+  }, [snapPoint]);
+
+  const expandToFull = useCallback(() => {
+    setSnapPoint(SNAP_FULL);
+  }, []);
+
+  // Touch handlers for drag handle area
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    // Only drag from handle area or when scroll is at top
+    const scrollEl = scrollRef.current;
+    const isAtTop = !scrollEl || scrollEl.scrollTop <= 0;
+    
+    if (!isAtTop && snapPoint === SNAP_FULL) return;
+    
+    touchStartY.current = e.touches[0].clientY;
+    touchStartTime.current = Date.now();
+    currentTranslateY.current = 0;
+    isDragging.current = true;
+  }, [snapPoint]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isDragging.current) return;
+    
+    const deltaY = e.touches[0].clientY - touchStartY.current;
+    currentTranslateY.current = deltaY;
+
+    if (drawerRef.current && deltaY > 0) {
+      drawerRef.current.style.transform = `translateY(${deltaY}px)`;
+      drawerRef.current.style.transition = 'none';
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+
+    const deltaY = currentTranslateY.current;
+    const elapsed = (Date.now() - touchStartTime.current) / 1000;
+    const velocity = Math.abs(deltaY) / elapsed;
+
+    if (drawerRef.current) {
+      drawerRef.current.style.transform = '';
+      drawerRef.current.style.transition = '';
+    }
+
+    // Swipe down → close or collapse
+    if (deltaY > 50 || (deltaY > 20 && velocity > VELOCITY_THRESHOLD)) {
+      if (snapPoint === SNAP_FULL) {
+        setSnapPoint(SNAP_PEEK);
+      } else {
+        onClose();
+      }
+      return;
+    }
+
+    // Swipe up → expand
+    if (deltaY < -50 || (deltaY < -20 && velocity > VELOCITY_THRESHOLD)) {
+      if (snapPoint === SNAP_PEEK) {
+        setSnapPoint(SNAP_FULL);
+      }
+    }
+  }, [snapPoint, onClose]);
+
   if (!mounted) return null;
+
+  const height = getDrawerHeight();
+  const isPeek = snapPoint === SNAP_PEEK;
 
   return createPortal(
     <>
@@ -69,72 +153,94 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
       {/* Drawer */}
       <div
         ref={drawerRef}
-        className={`fixed inset-x-0 bottom-0 top-8 z-50 bg-background rounded-t-2xl overflow-hidden flex flex-col transition-transform duration-300 ease-out ${
+        className={`fixed inset-x-0 bottom-0 z-50 bg-background/95 backdrop-blur-xl rounded-t-2xl overflow-hidden flex flex-col transition-all duration-300 ease-out ${
           visible ? 'translate-y-0' : 'translate-y-full'
         }`}
-        style={{ willChange: 'transform' }}
+        style={{
+          height: `${height}px`,
+          willChange: 'transform, height',
+          boxShadow: '0 -8px 32px rgba(0,0,0,0.3)',
+        }}
       >
-        {/* Handle bar + Close */}
-        <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-border/50 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-1 rounded-full bg-muted-foreground/30 mx-auto" />
+        {/* Drag handle + Close */}
+        <div
+          className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0 cursor-grab active:cursor-grabbing"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="flex-1 flex justify-center">
+            <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-8 w-8 rounded-full"
+            className="h-8 w-8 rounded-full absolute right-3 top-3"
           >
             <X className="w-4 h-4" />
           </Button>
         </div>
 
-        {/* Scrollable content */}
+        {/* Content */}
         {analysis && (
-          <div className="flex-1 overflow-y-auto overscroll-contain pb-safe">
-            <div className="container mx-auto px-4 py-4 space-y-4 pb-32">
-              <MatchHeroCard 
-                match={analysis.input} 
-                insights={analysis.insights}
-                homeTeamCrest={analysis.input.homeTeamCrest}
-                awayTeamCrest={analysis.input.awayTeamCrest}
-              />
+          <>
+            {isPeek ? (
+              /* Peek mode: Hero Summary only */
+              <AnalysisHeroSummary analysis={analysis} onExpand={expandToFull} />
+            ) : (
+              /* Full mode: All content */
+              <div
+                ref={scrollRef}
+                className="flex-1 overflow-y-auto overscroll-contain"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                <div className="px-4 py-4 space-y-4 pb-32">
+                  <MatchHeroCard
+                    match={analysis.input}
+                    insights={analysis.insights}
+                    homeTeamCrest={analysis.input.homeTeamCrest}
+                    awayTeamCrest={analysis.input.awayTeamCrest}
+                  />
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <AIRecommendationCard 
-                  predictions={analysis.predictions} 
-                  matchInput={analysis.input}
-                />
-                <div className="space-y-4">
-                  <div className="p-4 rounded-2xl bg-card border border-border/50">
-                    <PredictionPillSelector 
-                      predictions={analysis.predictions} 
-                      matchInput={analysis.input} 
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <AIRecommendationCard
+                      predictions={analysis.predictions}
+                      matchInput={analysis.input}
                     />
+                    <div className="p-4 rounded-2xl bg-card border border-border/50">
+                      <PredictionPillSelector
+                        predictions={analysis.predictions}
+                        matchInput={analysis.input}
+                      />
+                    </div>
                   </div>
+
+                  <TeamComparisonCard
+                    homeTeam={analysis.input.homeTeam}
+                    awayTeam={analysis.input.awayTeam}
+                    homeStats={analysis.homeTeamStats}
+                    awayStats={analysis.awayTeamStats}
+                    homePower={analysis.homePower}
+                    awayPower={analysis.awayPower}
+                  />
+
+                  <H2HTimeline
+                    h2h={analysis.headToHead}
+                    homeTeam={analysis.input.homeTeam}
+                    awayTeam={analysis.input.awayTeam}
+                  />
+
+                  {/* Advanced Analysis — Accordion */}
+                  <CollapsibleAnalysis analysis={analysis} />
+
+                  <LegalDisclaimer />
                 </div>
               </div>
-
-              <TeamComparisonCard
-                homeTeam={analysis.input.homeTeam}
-                awayTeam={analysis.input.awayTeam}
-                homeStats={analysis.homeTeamStats}
-                awayStats={analysis.awayTeamStats}
-                homePower={analysis.homePower}
-                awayPower={analysis.awayPower}
-              />
-
-              <H2HTimeline
-                h2h={analysis.headToHead}
-                homeTeam={analysis.input.homeTeam}
-                awayTeam={analysis.input.awayTeam}
-              />
-
-              <AdvancedAnalysisTabs analysis={analysis} />
-
-              <LegalDisclaimer />
-            </div>
-          </div>
+            )}
+          </>
         )}
       </div>
     </>,

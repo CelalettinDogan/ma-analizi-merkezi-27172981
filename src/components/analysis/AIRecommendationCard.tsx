@@ -8,6 +8,7 @@ import { useAnalysisSet } from '@/contexts/AnalysisSetContext';
 import { cn, getHybridConfidence, getConfidenceLevel } from '@/lib/utils';
 import ShareCard from '@/components/ShareCard';
 import { formatMatchDate } from '@/lib/utils';
+import ConfidenceBreakdownTooltip from './ConfidenceBreakdownTooltip';
 
 interface AIRecommendationCardProps {
   predictions: Prediction[];
@@ -96,10 +97,13 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
           <p className="text-sm text-muted-foreground">{mainPrediction.type}</p>
         </div>
 
-        {/* Single Hybrid Confidence Bar */}
+        {/* Single Hybrid Confidence Bar + Tooltip */}
         <div className="mb-5">
           <div className="flex items-center justify-between text-xs mb-2">
-            <span className="text-muted-foreground">Hibrit Güven Skoru</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted-foreground">Hibrit Güven Skoru</span>
+              <ConfidenceBreakdownTooltip prediction={mainPrediction} hybridConfidence={hybridConfidence} />
+            </div>
             <span className={cn("font-bold text-sm", color)}>%{Math.round(hybridConfidence)}</span>
           </div>
           <Progress value={hybridConfidence} className="h-2.5" />
