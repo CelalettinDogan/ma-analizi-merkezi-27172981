@@ -95,13 +95,13 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   onClick={() => handleQuickPrompt(prompt.text)}
                   disabled={isLoading}
                   className={cn(
-                    "px-2.5 py-1.5 text-micro rounded-full transition-all flex items-center gap-1 shrink-0",
+                    "px-3 py-2.5 text-micro rounded-full transition-all flex items-center gap-1.5 shrink-0 min-h-[44px] touch-manipulation",
                     "bg-muted/50 border hover:bg-muted hover:border-primary/30",
                     getPromptBorderColor(prompt.text)
                   )}
                 >
                   <span className="shrink-0">{prompt.icon}</span>
-                  <span className="truncate max-w-[130px] font-medium">{prompt.text}</span>
+                  <span className="truncate max-w-[180px] font-medium">{prompt.text}</span>
                 </motion.button>
               ))}
             </div>

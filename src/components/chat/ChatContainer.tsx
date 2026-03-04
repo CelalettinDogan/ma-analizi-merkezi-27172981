@@ -111,7 +111,7 @@ const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ onQuickPrompt }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="w-full max-w-xs mb-5"
+        className="w-full max-w-sm mb-5"
       >
         <div className="grid grid-cols-2 gap-2">
           {promptsLoading ? (
@@ -197,8 +197,7 @@ const ScrollToBottomButton: React.FC<{ onClick: () => void; visible: boolean }> 
           "hover:shadow-lg transition-shadow text-xs font-medium"
         )}
       >
-        <ArrowDown className="w-3 h-3" />
-        Yeni mesaj
+        <ArrowDown className="w-3.5 h-3.5" />
       </motion.button>
     )}
   </AnimatePresence>

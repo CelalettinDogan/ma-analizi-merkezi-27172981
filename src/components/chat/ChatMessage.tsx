@@ -79,9 +79,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
           "flex gap-2 px-3 py-[5px] group min-w-0 items-end",
           isUser ? "flex-row-reverse" : "flex-row"
         )}
-        onMouseEnter={() => setShowActions(true)}
-        onMouseLeave={() => setShowActions(false)}
-        onTouchStart={() => setShowActions(true)}
+        onTouchStart={() => setShowActions(prev => !prev)}
       >
         {/* Avatar */}
         <div
@@ -189,7 +187,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={handleCopy}
-                    className="p-1 rounded-md hover:bg-muted transition-colors"
+                    className="p-2 rounded-md hover:bg-muted transition-colors touch-manipulation"
                     title="Kopyala"
                   >
                     {copied ? (
@@ -206,7 +204,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                     onClick={() => handleFeedback(true)}
                     disabled={feedback !== null}
                     className={cn(
-                      "p-1 rounded-md transition-colors",
+                      "p-2 rounded-md transition-colors touch-manipulation",
                       feedback === 'positive' 
                         ? "bg-emerald-500/20 text-emerald-500" 
                         : "hover:bg-muted text-muted-foreground"
@@ -222,7 +220,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                     onClick={() => handleFeedback(false)}
                     disabled={feedback !== null}
                     className={cn(
-                      "p-1 rounded-md transition-colors",
+                      "p-2 rounded-md transition-colors touch-manipulation",
                       feedback === 'negative' 
                         ? "bg-destructive/20 text-destructive" 
                         : "hover:bg-muted text-muted-foreground"
