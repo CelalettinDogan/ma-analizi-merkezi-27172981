@@ -169,7 +169,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
           disabled={!!loadingMatchId}
           className={cn(
             "relative w-full text-left rounded-2xl p-4 transition-all",
-            "bg-card/60 backdrop-blur-sm",
+            "bg-card/60 backdrop-blur-sm shadow-sm",
             "border border-border/30",
             loadingMatchId === featuredMatch.id && "opacity-80",
             loadingMatchId && loadingMatchId !== featuredMatch.id && "opacity-40"
@@ -258,15 +258,17 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
 
           {/* CTA row */}
           <div className="flex items-center justify-center gap-1.5 mt-4 pt-3 border-t border-border/20">
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span className="text-xs font-medium text-primary">Analiz Et</span>
-            <ChevronRight className="w-3.5 h-3.5 text-primary" />
+            <span className="inline-flex items-center gap-1.5 bg-primary/10 rounded-full px-3 py-1">
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-medium text-primary">Analiz Et</span>
+              <ChevronRight className="w-3.5 h-3.5 text-primary" />
+            </span>
           </div>
         </motion.button>
       )}
 
       {/* Match List — minimal rows */}
-      <div className="space-y-0.5">
+      <div className="divide-y divide-border/10">
         {!hasMatchesToday && displayedMatches.length > 0 && (
           <div className="text-micro text-muted-foreground/60 font-medium px-3 py-1.5">
             {getDateLabel(displayedMatches[0].utcDate)}

@@ -23,7 +23,7 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
       onClick={onClick}
       className={cn(
         "w-full max-w-full p-3 sm:p-4 rounded-2xl text-left transition-all duration-300 overflow-hidden",
-        "bg-card border border-border/50",
+        "bg-card border border-border/50 shadow-sm",
         "hover:border-border"
       )}
     >
@@ -120,8 +120,10 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
 
       {/* Action */}
       <div className="flex items-center justify-center gap-1.5 sm:gap-2 pt-2.5 sm:pt-3 border-t border-border/30">
-        <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-        <span className="text-xs sm:text-sm font-medium text-primary">Hızlı Analiz</span>
+        <span className="inline-flex items-center gap-1.5 bg-primary/10 rounded-full px-3 py-1">
+          <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+          <span className="text-xs sm:text-sm font-medium text-primary">Hızlı Analiz</span>
+        </span>
       </div>
     </motion.button>
   );

@@ -49,7 +49,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   const animatedPredictions = useCountUp(stats.totalPredictions);
 
   return (
-    <section className="relative pt-3 pb-6 md:py-12 overflow-hidden">
+    <section className="relative pt-3 pb-4 md:py-12 overflow-hidden">
       {/* Gradient background — subtle */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-emerald-500/3" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/8 via-transparent to-transparent" />

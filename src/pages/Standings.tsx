@@ -225,7 +225,10 @@ const StandingsPage: React.FC = () => {
                               getPositionBg(team.position, standings.length)
                             )}
                           >
-                            <TableCell className="text-center font-semibold text-xs md:text-sm">
+                            <TableCell className={cn(
+                              "text-center font-semibold text-xs md:text-sm py-3",
+                              team.position > 7 && team.position <= standings.length - 3 && "text-muted-foreground"
+                            )}>
                               {team.position}
                             </TableCell>
                             <TableCell>
@@ -254,7 +257,7 @@ const StandingsPage: React.FC = () => {
                             )}>
                               {team.goal_difference > 0 ? '+' : ''}{team.goal_difference}
                             </TableCell>
-                            <TableCell className="text-center font-bold text-sm md:text-lg">{team.points}</TableCell>
+                            <TableCell className="text-center font-bold text-primary text-sm md:text-lg py-3">{team.points}</TableCell>
                             <TableCell className="hidden lg:table-cell">
                               <div className="flex items-center justify-center gap-0.5 md:gap-1">
                                 {team.form ? (
