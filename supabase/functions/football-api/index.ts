@@ -16,6 +16,9 @@ const CACHE_TTL = {
   default: 5 * 60 * 1000,     // 5 minutes default
 };
 
+// Global cooldown after 429
+let rateLimitCooldownUntil = 0;
+
 interface RequestBody {
   action: 'competitions' | 'matches' | 'standings' | 'teams' | 'head2head' | 'live';
   competitionCode?: string;
@@ -62,6 +65,21 @@ serve(async (req) => {
       return new Response(JSON.stringify(cached.data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-Cache': 'HIT' },
       });
+    }
+
+    // Check global cooldown — return stale cache or 429 without hitting external API
+    if (now < rateLimitCooldownUntil) {
+      const remainingSec = Math.ceil((rateLimitCooldownUntil - now) / 1000);
+      console.warn(`[Cooldown] Blocking request for ${remainingSec}s more`);
+      if (cached) {
+        return new Response(JSON.stringify(cached.data), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-Cache': 'STALE-COOLDOWN' },
+        });
+      }
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded', retryAfter: remainingSec, message: 'API rate limit aşıldı. Lütfen biraz bekleyin.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': String(remainingSec) } },
+      );
     }
 
     let url: string;
@@ -131,7 +149,9 @@ serve(async (req) => {
     // Handle rate limiting with retry-after
     if (response.status === 429) {
       const retryAfter = response.headers.get('X-RequestCounter-Reset') || '60';
-      console.warn(`Rate limited. Retry after: ${retryAfter}s`);
+      const retryAfterMs = parseInt(retryAfter) * 1000;
+      rateLimitCooldownUntil = Date.now() + retryAfterMs;
+      console.warn(`Rate limited. Cooldown set for ${retryAfter}s`);
       
       // Return cached data if available, even if stale
       if (cached) {
