@@ -222,41 +222,41 @@ const Chat: React.FC = () => {
               variant="ghost"
               size="icon"
               onClick={() => navigate(-1)}
-              className="rounded-full w-8 h-8"
+              className="rounded-full min-w-[44px] min-h-[44px] w-auto h-auto"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-5 h-5" />
             </Button>
             
             {/* Compact Bot Avatar + Title */}
             <div className="flex items-center gap-2">
               <div className="relative">
-                <img src={varioAvatar} alt="VARio" className="w-8 h-8 rounded-full object-cover shadow-md shadow-emerald-500/20" />
+                <img src={varioAvatar} alt="VARio" className="w-9 h-9 rounded-full object-cover shadow-md shadow-emerald-500/20" />
                 {/* Online indicator */}
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-background" />
               </div>
               
-              <div className="flex items-center gap-1.5">
-                <h1 className="font-semibold text-sm">VARio - AI Asistan</h1>
+              <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                <h1 className="font-semibold text-sm">VARio</h1>
                 {isAdmin && (
-                  <Badge variant="secondary" className="text-micro h-4 px-1.5 bg-amber-500/20 text-amber-600 border-0">
+                  <Badge variant="secondary" className="text-micro min-h-[16px] h-auto px-1.5 bg-amber-500/20 text-amber-600 border-0">
                     <Crown className="w-2.5 h-2.5 mr-0.5" />
                     Admin
                   </Badge>
                 )}
                 {isPremiumPro && !isAdmin && (
-                  <Badge variant="secondary" className="text-micro h-4 px-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600 border-0">
+                  <Badge variant="secondary" className="text-micro min-h-[16px] h-auto px-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600 border-0">
                     <Star className="w-2.5 h-2.5 mr-0.5" />
                     Pro
                   </Badge>
                 )}
                 {isPremiumPlus && !isAdmin && (
-                  <Badge variant="secondary" className="text-micro h-4 px-1.5 bg-primary/20 text-primary border-0">
+                  <Badge variant="secondary" className="text-micro min-h-[16px] h-auto px-1.5 bg-primary/20 text-primary border-0">
                     <Sparkles className="w-2.5 h-2.5 mr-0.5" />
                     Plus
                   </Badge>
                 )}
                 {isPremiumBasic && !isAdmin && (
-                  <Badge variant="secondary" className="text-micro h-4 px-1.5 bg-emerald-500/20 text-emerald-600 border-0">
+                  <Badge variant="secondary" className="text-micro min-h-[16px] h-auto px-1.5 bg-emerald-500/20 text-emerald-600 border-0">
                     Basic
                   </Badge>
                 )}
@@ -266,24 +266,14 @@ const Chat: React.FC = () => {
 
           {/* Status + Actions */}
           <div className="flex items-center gap-1">
-            {chatLoading && (
-              <motion.span
-                animate={{ opacity: [1, 0.5, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="text-micro text-emerald-500 font-medium mr-1"
-              >
-                Yazıyor...
-              </motion.span>
-            )}
-            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="rounded-full w-8 h-8"
+                  className="rounded-full min-w-[44px] min-h-[44px] w-auto h-auto"
                 >
-                  <MoreVertical className="w-4 h-4" />
+                  <MoreVertical className="w-5 h-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40">
@@ -321,9 +311,9 @@ const Chat: React.FC = () => {
                   setMatchContext(null);
                   setContextSent(false);
                 }}
-                className="h-6 w-6 rounded-full"
+                className="min-w-[44px] min-h-[44px] w-auto h-auto rounded-full"
               >
-                <X className="w-3 h-3" />
+                <X className="w-4 h-4" />
               </Button>
             </div>
           </motion.div>
@@ -341,7 +331,9 @@ const Chat: React.FC = () => {
         
         {/* Compact Usage meter for Premium users (not admin) */}
         {!isAdmin && usage && dailyChatLimit < 999 && (
-          <UsageMeter current={usage.current} limit={usage.limit} isAdmin={false} />
+          <div className="border-t border-border/30">
+            <UsageMeter current={usage.current} limit={usage.limit} isAdmin={false} />
+          </div>
         )}
         
         {/* Chat input */}
