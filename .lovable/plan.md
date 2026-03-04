@@ -1,109 +1,78 @@
-# UI/UX Modernization Pass — 2026 Premium Native Feel
 
-## Overview
 
-Visual polish and interaction quality improvements across 7 key areas. No layout or information architecture changes.
+# AI Chatbot Ekranı — Tasarımsal Sorun Analizi & Düzeltme Planı
 
-## Changes
+## Tespit Edilen Sorunlar
 
-### 1. Hero Section — Slight vertical reduction
+### A. Touch Target İhlalleri (WCAG AA / Material 3 — minimum 44px)
+1. **Header geri butonu**: `w-8 h-8` = 32px — 44px altında
+2. **Header 3-dot menü butonu**: `w-8 h-8` = 32px — 44px altında
+3. **Match context X butonu**: `h-6 w-6` = 24px — ciddi ihlal
+4. **Mesaj aksiyon butonları** (kopyala/beğen/beğenme): `p-1` = ~20px tap alanı
+5. **Quick prompt pill'leri** (ChatInput): `py-1.5` = ~28px yükseklik, 44px altında
 
-**File: `src/components/HeroSection.tsx**`
+### B. Layout / Overflow Sorunları
+6. **Badge'ler** (`h-4 text-micro`): %150 font scaling'de metin taşar, sabit `h-4` kırılır
+7. **Quick prompt text**: `max-w-[130px] truncate` — metin kesilir, kullanıcı içeriği göremez
+8. **WelcomeMessage**: `max-w-xs` (320px) — 414px ekranlarda gereksiz dar, boş alan israfı
+9. **Header badge'leri**: Uzun plan isimleri + %150 font scale'de title satırı taşabilir
 
-- Reduce `pb-6` → `pb-4` for tighter vertical rhythm
-- Keep CTA size and structure unchanged
+### C. Hiyerarşi / Native Feel Eksikleri
+10. **"Yazıyor..." animasyonu** header'da: Title ile aynı satırda yarışıyor, okunması zor
+11. **UsageMeter → ChatInput arası**: Görsel ayrım yok, iki bileşen birbirine yapışık
+12. **Mesaj aksiyon butonları**: `onMouseEnter/Leave` kullanılıyor — mobilde güvenilmez, `onTouchStart` var ama `onTouchEnd` ile gizleme yok
+13. **ScrollToBottomButton**: "Yeni mesaj" metni her zaman gösteriliyor ama yeni mesaj olmayabilir, sadece yukarı scroll yapılmış olabilir
 
-### 2. League Selector Chips — Modern pill style
+### D. Responsive / Capacitor Uyumluluk
+14. **GuestGate**: `min-h-screen` kullanıyor ama BottomNav TabShell'de her zaman render ediliyor — alt kısım BottomNav ile çakışabilir
+15. **PremiumGate**: Fixed CTA `bottom: calc(64px + env(...))` — BottomNav'ın TabShell'den geldiği düşünülürse doğru, ama GuestGate'de bu koruma yok
 
-**File: `src/components/league/LeagueGrid.tsx**`
+## Düzeltme Planı
 
-- Active state: stronger `bg-primary` with `shadow-md shadow-primary/20`
-- Non-active: `bg-card border border-border/50 shadow-sm` (soft elevation + clear border)
-- Pill radius: `rounded-full` instead of `rounded-xl`
-- Press animation: `whileTap={{ scale: 0.95 }}` (stronger feedback)
+### 1. Touch Target Düzeltmeleri — `Chat.tsx`
+- Header back button: `w-8 h-8` → `min-w-[44px] min-h-[44px]`
+- Header menu button: `w-8 h-8` → `min-w-[44px] min-h-[44px]`
+- Match context X button: `h-6 w-6` → `min-w-[44px] min-h-[44px]` (görsel ikon aynı kalır, tap alanı büyür)
 
-### 3. Match Cards — Elevation & CTA prominence
+### 2. Badge Overflow Fix — `Chat.tsx`
+- Plan badge'lerinde `h-4` → `min-h-[16px] h-auto` yap, %150 scale'de taşmasın
+- Title + badge satırını `flex-wrap` ile sarmala
 
-**File: `src/components/match/MatchCarousel.tsx` (MatchSlide)**
+### 3. Mesaj Aksiyon Butonları — `ChatMessage.tsx`
+- `p-1` → `p-2` (tap area ~32px → 40px minimum)
+- `onTouchStart` ile toggle yerine, mobilde tap-to-show/hide mantığı ekle
+- Touch dışında tıklama ile de gizlenecek şekilde düzelt
 
-- Add `shadow-sm` elevation to card
-- "Analiz Et →" text → pill-style CTA with `bg-primary/10 rounded-full px-3 py-1`
-- Press: `whileTap={{ scale: 0.97 }}` already present, keep it
+### 4. Quick Prompt Touch Target — `ChatInput.tsx`
+- Pill'lerdeki `py-1.5` → `py-2.5` (44px minimum yükseklik)
+- `max-w-[130px]` → `max-w-[180px]` (daha fazla metin göster)
 
-**File: `src/components/TodaysMatches.tsx**`
+### 5. WelcomeMessage Responsive — `ChatContainer.tsx`
+- `max-w-xs` → `max-w-sm` (wider on 414px screens)
+- Quick prompt skeleton `h-14` yeterli
 
-- Featured card: add `shadow-sm` 
-- CTA row: make "Analiz Et" more prominent with `bg-primary/10 rounded-full px-3 py-1`
-- Match list rows: add `border-b border-border/10` subtle separators between rows
+### 6. ScrollToBottom Label — `ChatContainer.tsx`
+- "Yeni mesaj" → sadece aşağı ok ikonu (yanlış bilgi vermesin)
 
-**File: `src/components/live/LiveMatchCard2.tsx**`
+### 7. GuestGate BottomNav Clearance — `GuestGate.tsx`
+- Content area'ya `pb-24` veya `paddingBottom: calc(80px + env(...))` ekle
 
-- Add `shadow-sm` to card
-- "Hızlı Analiz" → pill-style CTA `bg-primary/10 rounded-full px-3 py-1`
+### 8. Header "Yazıyor..." Konumu — `Chat.tsx`
+- Status text'i header'dan çıkar, ChatContainer'ın üstüne veya TypingIndicator'a bırak (zaten var)
+- Header'da sadece online dot yeterli
 
-### 4. Standings Table — Row spacing & separators
+## Değişecek Dosyalar (6)
+1. `src/pages/Chat.tsx` — Touch targets, badge overflow, header cleanup
+2. `src/components/chat/ChatMessage.tsx` — Action button touch targets, mobile toggle
+3. `src/components/chat/ChatInput.tsx` — Prompt pill touch targets, max-width
+4. `src/components/chat/ChatContainer.tsx` — WelcomeMessage width, scroll button label
+5. `src/components/chat/GuestGate.tsx` — BottomNav clearance padding
+6. `src/components/chat/PremiumGate.tsx` — Minor: touch target kontrol (zaten iyi)
 
-**File: `src/pages/Standings.tsx**`
+## Dokunulmayacaklar
+- BottomNav yapısı
+- Chat mesaj balonu tasarımı (radius, gradient)
+- SSE/chatbot logic
+- ChatLimitSheet (Drawer — zaten iyi)
+- Renk paleti
 
-- Add subtle row dividers via TableRow: existing `hover:bg-muted/20` is fine
-- Increase cell padding slightly: add `py-3` to TableCell (from default)
-- Position number: add `text-muted-foreground` for non-special positions
-- Points column: ensure `font-bold text-primary` for emphasis
-
-### 5. Bottom Navigation — Icon weight & active contrast
-
-**File: `src/components/navigation/BottomNav.tsx**`
-
-- Increase icon size: `w-[22px] h-[22px]` → `w-[24px] h-[24px]`
-- Increase stroke weight for active: `strokeWidth={1.75}` → active `strokeWidth={2}`, inactive stays `1.75`
-- Active background: `bg-primary/8` → `bg-primary/12` for stronger contrast
-- Active label: add `font-semibold` (currently `font-medium`)
-
-### 6. Micro Interactions — Global press feedback
-
-**File: `src/lib/animations.ts**`
-
-- Update `cardTap` to `{ scale: 0.97 }` (currently may be different)
-- Add `buttonPress` export: `{ scale: 0.97, transition: { duration: 0.1 } }`
-
-### 7. Page Transitions
-
-**File: `src/components/navigation/TabShell.tsx**` (if wrapping routes)  
-  
-8.Card padding standard: p-4
-
-Inner spacing: gap-3
-
-Section spacing: mt-6  
-9. Typography polish
-
-- Improve title tracking
-
-- Slight weight increase for key labels
-
-- Ensure consistent text scale hierarchy
-
-- Verify `AnimatePresence` with `fadeIn` is applied to page transitions — add if missing  
-10. Analysis-Centric Emphasis
-  - Stronger visual hierarchy for analysis CTAs
-  - Premium visual treatment for AI result screen
-  - Animated data reveal for perceived intelligence
-
-## Files to edit (7 files)
-
-1. `src/components/HeroSection.tsx`
-2. `src/components/league/LeagueGrid.tsx`
-3. `src/components/match/MatchCarousel.tsx`
-4. `src/components/TodaysMatches.tsx`
-5. `src/components/live/LiveMatchCard2.tsx`
-6. `src/pages/Standings.tsx`
-7. `src/components/navigation/BottomNav.tsx`
-8. `src/lib/animations.ts`
-
-## Preserved
-
-- Layout structure, spacing grid, color palette
-- Information architecture
-- Font scaling compatibility (min-h, break-words)
-- Safe area handling  
-  
