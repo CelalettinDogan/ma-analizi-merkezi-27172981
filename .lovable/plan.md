@@ -1,78 +1,109 @@
+# UI/UX Modernization Pass — 2026 Premium Native Feel
 
+## Overview
 
-# Maç Analiz Ekranı — 2026 Premium Seviye Yeniden Tasarım
+Visual polish and interaction quality improvements across 7 key areas. No layout or information architecture changes.
 
-## Mevcut Durum
-Analiz ekranı (AnalysisDrawer) tüm bileşenleri dikey olarak sıralıyor: MatchHeroCard → AIRecommendationCard → PredictionPillSelector → TeamComparisonCard → H2HTimeline → AdvancedAnalysisTabs → LegalDisclaimer. Bilgi yoğunluğu yüksek, ilk ekranda karar verilebilir veri yok, hiyerarşi eksik.
+## Changes
 
-## Mimari Değişiklikler
+### 1. Hero Section — Slight vertical reduction
 
-### 1. AnalysisDrawer — Gerçek Bottom Sheet Davranışı
-- Touch-based drag handle ile snap points: %40 (peek) ve %85 (full)
-- Peek modda sadece yeni "AnalysisHeroSummary" bileşeni görünür (karar verilebilir minimal veri)
-- Yukarı sürükleyince veya "Detayı Gör" butonuyla %85'e snap
-- `onTouchStart/Move/End` ile velocity-based snap logic
-- Background blur (`backdrop-blur-xl`) ve elevation shadow
+**File: `src/components/HeroSection.tsx**`
 
-### 2. Yeni Bileşen: AnalysisHeroSummary (İlk Ekran)
-Drawer peek modunda görünen karar kartı:
-- Takım logoları + isimler (wrap destekli)
-- Ana tahmin büyük font (örn: "Liverpool Kazanır")
-- Hibrit güven skoru % ile circular progress + info tooltip (Poisson ağırlığı, Form ağırlığı, xG ağırlığı, Güç puanı etkisi açıklaması)
-- Beklenen gol toplamı (xG toplam)
-- En olası skor
-- Micro fade-in + subtle progress animation
-- "Detaylı Analiz" butonu → full snap
+- Reduce `pb-6` → `pb-4` for tighter vertical rhythm
+- Keep CTA size and structure unchanged
 
-### 3. MatchHeroCard Güncelleme
-- VS alanı adaptif küçülsün (küçük ekranda `w-8 h-8`)
-- Takım isimleri `break-words` ile 2 satır wrap
-- 16px kart radius, 12px iç element radius tutarlılığı
-- 8pt grid spacing
+### 2. League Selector Chips — Modern pill style
 
-### 4. AIRecommendationCard — Sadeleştirme
-- Güven tooltip'i eklenmesi: % nasıl hesaplanıyor (Poisson, Form, xG, Güç puanı ağırlıkları)
-- Mevcut yapı korunur, tooltip ile şeffaflık artırılır
+**File: `src/components/league/LeagueGrid.tsx**`
 
-### 5. TeamComparisonCard — İç Saha / Deplasman Ayrımı
-- "Son 5 Maç" yerine "Son 5 İç Saha" ve "Son 5 Deplasman" sekmeli gösterim
-- İç saha xG vs deplasman xG kıyaslama satırı eklenmesi
-- Hücum/Savunma güç endeksi zaten mevcut, radar chart AdvancedAnalysisTabs'da var
+- Active state: stronger `bg-primary` with `shadow-md shadow-primary/20`
+- Non-active: `bg-card border border-border/50 shadow-sm` (soft elevation + clear border)
+- Pill radius: `rounded-full` instead of `rounded-xl`
+- Press animation: `whileTap={{ scale: 0.95 }}` (stronger feedback)
 
-### 6. AdvancedAnalysisTabs → CollapsibleAnalysis'e Geçiş
-- Tab yapısı yerine accordion (CollapsibleAnalysis zaten mevcut) kullanılacak
-- "Detayı Gör" başlığı altında tüm ileri analiz accordion ile açılacak
-- Her section başlığında küçük badge (sayı/durum)
+### 3. Match Cards — Elevation & CTA prominence
 
-### 7. Güven Şeffaflığı Tooltip
-- Yeni mikro bileşen: `ConfidenceBreakdownTooltip`
-- Tooltip içeriği: Poisson ağırlığı, Form skoru, xG etkisi, Güç puanı oranları
-- `@radix-ui/react-tooltip` kullanılarak implement
+**File: `src/components/match/MatchCarousel.tsx` (MatchSlide)**
 
-### 8. Responsive & Overflow Koruması
-- Tüm takım isimleri `break-words min-w-0`
-- VS alanı responsive (`w-8 md:w-12`)
-- Metin taşması kontrolü tüm kartlarda
-- 360dp + %150 font scale uyumlu
+- Add `shadow-sm` elevation to card
+- "Analiz Et →" text → pill-style CTA with `bg-primary/10 rounded-full px-3 py-1`
+- Press: `whileTap={{ scale: 0.97 }}` already present, keep it
 
-### 9. Renk & Stil Tutarlılığı
-- Mevcut premium koyu-yeşil ana renk korunur
-- Nötr arka plan (`bg-card`, `bg-muted`)
-- 16px kart radius, 12px iç element radius
-- 8pt spacing grid (p-4, gap-4, mb-4 vb.)
+**File: `src/components/TodaysMatches.tsx**`
 
-## Değişecek Dosyalar
-1. `src/components/analysis/AnalysisDrawer.tsx` — Bottom sheet snap logic + peek mode
-2. `src/components/analysis/AnalysisHeroSummary.tsx` — YENİ: Karar kartı
-3. `src/components/analysis/ConfidenceBreakdownTooltip.tsx` — YENİ: Güven açıklama tooltip
-4. `src/components/analysis/MatchHeroCard.tsx` — Responsive VS, wrap, spacing
-5. `src/components/analysis/AIRecommendationCard.tsx` — Tooltip entegrasyonu
-6. `src/components/analysis/TeamComparisonCard.tsx` — İç saha/deplasman ayrımı
-7. `src/components/analysis/index.ts` — Yeni export'lar
+- Featured card: add `shadow-sm` 
+- CTA row: make "Analiz Et" more prominent with `bg-primary/10 rounded-full px-3 py-1`
+- Match list rows: add `border-b border-border/10` subtle separators between rows
 
-## Dokunulmayacaklar
-- Hero CTA butonları (Index sayfası)
-- BottomNav
-- Mevcut renk paleti
-- Prediction/match type sistemi
+**File: `src/components/live/LiveMatchCard2.tsx**`
 
+- Add `shadow-sm` to card
+- "Hızlı Analiz" → pill-style CTA `bg-primary/10 rounded-full px-3 py-1`
+
+### 4. Standings Table — Row spacing & separators
+
+**File: `src/pages/Standings.tsx**`
+
+- Add subtle row dividers via TableRow: existing `hover:bg-muted/20` is fine
+- Increase cell padding slightly: add `py-3` to TableCell (from default)
+- Position number: add `text-muted-foreground` for non-special positions
+- Points column: ensure `font-bold text-primary` for emphasis
+
+### 5. Bottom Navigation — Icon weight & active contrast
+
+**File: `src/components/navigation/BottomNav.tsx**`
+
+- Increase icon size: `w-[22px] h-[22px]` → `w-[24px] h-[24px]`
+- Increase stroke weight for active: `strokeWidth={1.75}` → active `strokeWidth={2}`, inactive stays `1.75`
+- Active background: `bg-primary/8` → `bg-primary/12` for stronger contrast
+- Active label: add `font-semibold` (currently `font-medium`)
+
+### 6. Micro Interactions — Global press feedback
+
+**File: `src/lib/animations.ts**`
+
+- Update `cardTap` to `{ scale: 0.97 }` (currently may be different)
+- Add `buttonPress` export: `{ scale: 0.97, transition: { duration: 0.1 } }`
+
+### 7. Page Transitions
+
+**File: `src/components/navigation/TabShell.tsx**` (if wrapping routes)  
+  
+8.Card padding standard: p-4
+
+Inner spacing: gap-3
+
+Section spacing: mt-6  
+9. Typography polish
+
+- Improve title tracking
+
+- Slight weight increase for key labels
+
+- Ensure consistent text scale hierarchy
+
+- Verify `AnimatePresence` with `fadeIn` is applied to page transitions — add if missing  
+10. Analysis-Centric Emphasis
+  - Stronger visual hierarchy for analysis CTAs
+  - Premium visual treatment for AI result screen
+  - Animated data reveal for perceived intelligence
+
+## Files to edit (7 files)
+
+1. `src/components/HeroSection.tsx`
+2. `src/components/league/LeagueGrid.tsx`
+3. `src/components/match/MatchCarousel.tsx`
+4. `src/components/TodaysMatches.tsx`
+5. `src/components/live/LiveMatchCard2.tsx`
+6. `src/pages/Standings.tsx`
+7. `src/components/navigation/BottomNav.tsx`
+8. `src/lib/animations.ts`
+
+## Preserved
+
+- Layout structure, spacing grid, color palette
+- Information architecture
+- Font scaling compatibility (min-h, break-words)
+- Safe area handling  
+  
