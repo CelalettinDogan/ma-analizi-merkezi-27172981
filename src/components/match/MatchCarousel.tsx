@@ -46,7 +46,7 @@ const MatchSlide: React.FC<{
         onClick={onSelect}
         className={cn(
           "w-full p-4 rounded-2xl text-left transition-all",
-          "bg-card/50 backdrop-blur-sm border border-border/20",
+          "bg-card/50 backdrop-blur-sm border border-border/20 shadow-sm",
           "active:bg-card/70",
           "focus:outline-none focus:ring-2 focus:ring-primary/30"
         )}
@@ -147,7 +147,7 @@ const MatchSlide: React.FC<{
           <span className="text-micro text-muted-foreground/60 tabular-nums">
             {format(matchDate, 'd MMM', { locale: tr })}
           </span>
-          <span className="text-micro text-primary font-medium">Analiz Et →</span>
+          <span className="text-micro text-primary font-medium bg-primary/10 rounded-full px-3 py-1">Analiz Et →</span>
         </div>
       </button>
     </motion.div>

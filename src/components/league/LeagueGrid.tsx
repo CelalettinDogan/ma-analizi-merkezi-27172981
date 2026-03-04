@@ -90,13 +90,13 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
                   <motion.button
                     onClick={() => onLeagueSelect(league.code)}
                     whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileTap={{ scale: 0.95 }}
                     className={cn(
-                      "flex items-center gap-1.5 sm:gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl whitespace-nowrap transition-all",
-                      "border flex-shrink-0 min-h-[48px]", // Better touch target
+                      "flex items-center gap-1.5 sm:gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-full whitespace-nowrap transition-all",
+                      "border flex-shrink-0 min-h-[48px]",
                     isSelected
-                        ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/10"
-                        : "bg-card border-border/40 hover:border-primary/40 hover:bg-primary/5"
+                        ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20"
+                        : "bg-card border-border/50 shadow-sm hover:border-primary/40 hover:bg-primary/5"
                     )}
                   >
                     <span className="text-lg sm:text-xl">{league.flag}</span>

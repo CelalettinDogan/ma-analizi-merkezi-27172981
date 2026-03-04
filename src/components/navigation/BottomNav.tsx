@@ -98,7 +98,7 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute inset-0 bg-primary/8 rounded-2xl"
+                    className="absolute inset-0 bg-primary/12 rounded-2xl"
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
@@ -111,10 +111,10 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                   <div className="relative">
                     <Icon 
                       className={cn(
-                        "w-[22px] h-[22px] transition-colors duration-150",
+                        "w-[24px] h-[24px] transition-colors duration-150",
                         isActive ? "text-primary" : "text-muted-foreground/70"
                       )}
-                      strokeWidth={1.75}
+                      strokeWidth={isActive ? 2 : 1.75}
                       {...(isActive ? { fill: "currentColor", fillOpacity: 0.15 } : {})}
                     />
                     {item.badge === 'live' && (
@@ -122,8 +122,8 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                     )}
                   </div>
                   <span className={cn(
-                    "text-[10px] font-medium leading-none whitespace-nowrap transition-colors duration-150",
-                    isActive ? "text-primary" : "text-muted-foreground/70"
+                    "text-[10px] leading-none whitespace-nowrap transition-colors duration-150",
+                    isActive ? "text-primary font-semibold" : "text-muted-foreground/70 font-medium"
                   )}>
                     {item.label}
                   </span>

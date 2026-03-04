@@ -73,7 +73,13 @@ export const cardHover = {
 };
 
 export const cardTap = {
-  scale: 0.98
+  scale: 0.97
+};
+
+// Button press feedback
+export const buttonPress = {
+  scale: 0.97,
+  transition: { duration: 0.1 }
 };
 
 // Pulse animation for live indicators
