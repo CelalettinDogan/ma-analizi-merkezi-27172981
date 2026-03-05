@@ -20,7 +20,7 @@ interface AnalysisDrawerProps {
 }
 
 const SNAP_PEEK = 0.4;   // 40% of viewport
-const SNAP_FULL = 0.85;  // 85% of viewport
+const SNAP_FULL = 0.93;  // 93% of viewport
 const VELOCITY_THRESHOLD = 0.5;
 
 const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClose }) => {
@@ -158,6 +158,7 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
         }`}
         style={{
           height: `${height}px`,
+          maxHeight: `calc(${height}px - env(safe-area-inset-top, 0px))`,
           willChange: 'transform, height',
           boxShadow: '0 -8px 32px rgba(0,0,0,0.3)',
         }}
@@ -193,11 +194,12 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
               <div
                 ref={scrollRef}
                 className="flex-1 overflow-y-auto overscroll-contain"
+                style={{ WebkitOverflowScrolling: 'touch' }}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
               >
-                <div className="px-4 py-4 space-y-4 pb-32">
+                <div className="px-4 py-4 space-y-4" style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }}>
                   <MatchHeroCard
                     match={analysis.input}
                     insights={analysis.insights}
