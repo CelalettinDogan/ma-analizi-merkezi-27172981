@@ -37,6 +37,9 @@ const config: CapacitorConfig = {
     backgroundColor: '#0f172a',
     initialFocus: false,
     useLegacyBridge: false,
+    webViewSettings: {
+      textZoom: 100,
+    },
   },
   ios: {
     contentInset: 'automatic',

@@ -109,8 +109,18 @@
 
 @layer base {
   html {
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+  }
+
+  /* Android font scaling koruması - kritik UI elemanları */
+  button,
+  [role="tab"],
+  [role="tablist"],
+  nav,
+  .bottom-nav-text {
+    -webkit-text-size-adjust: none !important;
+    text-size-adjust: none !important;
   }
 
   * {
