@@ -150,7 +150,7 @@ const Auth: React.FC = () => {
     <div className="h-screen overflow-hidden bg-gradient-to-b from-background via-background to-muted/30 flex flex-col pt-safe">
       {/* Logo & Brand Section */}
       <div className="flex-shrink-0 flex flex-col items-center justify-center py-2 xs:py-3 sm:py-6 px-6">
-        <img src={logoImg} alt="GolMetrik AI" className="w-12 h-12 xs:w-14 xs:h-14 sm:w-20 sm:h-20 aspect-square object-cover mb-1 rounded-2xl shadow-lg" />
+        <img src={logoImg} alt="GolMetrik AI" className="w-12 h-12 xs:w-14 xs:h-14 sm:w-20 sm:h-20 aspect-square object-contain mb-1 rounded-2xl shadow-lg" />
         <h1 className="font-display font-bold text-2xl sm:text-3xl text-foreground">GolMetrik AI</h1>
         <p className="text-xs sm:text-sm text-muted-foreground mt-0">Akıllı Futbol Analizi</p>
       </div>
