@@ -142,7 +142,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             placeholder={disabled && disabledReason ? disabledReason : placeholder}
             disabled={disabled || isLoading}
             className={cn(
-              "min-h-[48px] max-h-[120px] resize-none pr-12 rounded-3xl text-sm",
+              "min-h-[48px] max-h-[120px] resize-none rounded-3xl text-sm",
               "bg-background/80 backdrop-blur-sm border-border/50",
               "focus:border-primary/50 focus-visible:ring-0 focus-visible:ring-offset-0",
               "placeholder:text-muted-foreground/50",
@@ -151,19 +151,19 @@ const ChatInput: React.FC<ChatInputProps> = ({
             rows={1}
           />
           
-          {/* Character counter - subtle */}
+          {/* Character counter - below textarea */}
           <AnimatePresence>
             {message.length > 0 && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 className={cn(
-                  "absolute bottom-2.5 right-14 text-micro px-1.5 py-0.5 rounded-full",
+                  "text-right text-micro px-2 pt-0.5",
                   isOverLimit 
-                    ? "bg-destructive/20 text-destructive" 
+                    ? "text-destructive" 
                     : isNearLimit 
-                      ? "bg-amber-500/20 text-amber-600 dark:text-amber-400" 
+                      ? "text-amber-600 dark:text-amber-400" 
                       : "text-muted-foreground/50"
                 )}
               >

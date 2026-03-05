@@ -170,15 +170,18 @@ const StandingsPage: React.FC = () => {
             <TabsList className="grid w-full grid-cols-3 mb-4">
               <TabsTrigger value="standings" className="flex items-center gap-1.5 text-xs md:text-sm">
                 <Trophy className="w-3.5 h-3.5" />
-                <span className="hidden xs:inline">Puan</span> Durumu
+                <span className="xs:hidden">Puan</span>
+                <span className="hidden xs:inline">Puan Durumu</span>
               </TabsTrigger>
               <TabsTrigger value="goals" className="flex items-center gap-1.5 text-xs md:text-sm">
                 <Target className="w-3.5 h-3.5" />
-                <span className="hidden xs:inline">Gol</span> İstatistik
+                <span className="xs:hidden">Goller</span>
+                <span className="hidden xs:inline">Gol İstatistik</span>
               </TabsTrigger>
               <TabsTrigger value="form" className="flex items-center gap-1.5 text-xs md:text-sm">
                 <TrendingUp className="w-3.5 h-3.5" />
-                Form Analiz
+                <span className="xs:hidden">Form</span>
+                <span className="hidden xs:inline">Form Analiz</span>
               </TabsTrigger>
             </TabsList>
 
