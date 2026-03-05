@@ -1,18 +1,22 @@
 
 
-# Google ile Giriş Yap Kaldırma
+# Test Kullanıcısı Oluşturma
+
+Auth loglarına göre `test@demo.com` adresiyle zaten bir kayıt yapılmış (user_id: `95e406d2-9763-4db2-b535-6860a83e303a`) ancak e-posta onaylanmamış. Bu yüzden giriş yapılamıyor.
 
 ## Yapılacaklar
 
-### `src/pages/Auth.tsx`
-1. `signInWithGoogle` import'unu `useAuth` destructuring'den kaldır (satır 22)
-2. `handleGoogleSignIn` fonksiyonunu sil (satır 121-133)
-3. Google Sign In butonu ve "veya e-posta ile" divider'ını sil (satır 160-184)
-4. Tabs bölümü doğrudan `<div className="flex-1...">` altında başlayacak
+1. **Geçici edge function oluştur** (`supabase/functions/create-test-user/index.ts`):
+   - Supabase Admin API ile mevcut kullanıcının e-postasını onayla (`email_confirm: true`)
+   - Şifreyi `Test12345` olarak ayarla
+   - `supabase.auth.admin.updateUser()` kullanılacak
 
-### `src/contexts/AuthContext.tsx`
-- `signInWithGoogle` fonksiyonu ve `AuthContextType`'dan kaldırılabilir ama native deep link altyapısı başka yerde kullanılıyorsa bozulmaması için **opsiyonel**. Auth.tsx'ten çağrıyı kaldırmak yeterli.
+2. **Deploy et ve çağır**:
+   - Edge function'ı deploy edip `curl_edge_functions` ile çalıştır
+   - Kullanıcı onaylandıktan sonra edge function'ı sil (tek seferlik işlem)
 
-## Değişecek Dosya
-- `src/pages/Auth.tsx` — Google butonu, divider ve handler silme
+3. **Sonuç**: `test@demo.com` / `Test12345` ile giriş yapılabilir hale gelecek
+
+## Değişecek Dosyalar
+- `supabase/functions/create-test-user/index.ts` (oluştur → çalıştır → sil)
 
