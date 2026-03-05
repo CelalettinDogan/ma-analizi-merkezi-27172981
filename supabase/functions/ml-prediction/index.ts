@@ -85,8 +85,35 @@ serve(async (req) => {
     const body: RequestBody = await req.json();
     const { homeTeam, awayTeam, h2h, league, context, poisson, historicalAccuracy, leagueOver25Pct } = body;
 
+    // Check if ML model weights are available for additional context
+    let mlModelContext = '';
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      if (supabaseUrl && serviceKey) {
+        const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+        const adminClient = createClient(supabaseUrl, serviceKey);
+        const { data: mlWeights } = await adminClient
+          .from('ml_model_weights')
+          .select('prediction_type, metrics')
+          .eq('is_active', true);
+        
+        if (mlWeights && mlWeights.length > 0) {
+          mlModelContext = '\n\nML MODEL BİLGİSİ (Lojistik Regresyon):\n';
+          for (const w of mlWeights) {
+            const m = w.metrics as any;
+            mlModelContext += `- ${w.prediction_type}: Doğruluk %${((m?.accuracy || 0) * 100).toFixed(1)}, ${m?.sample_count || 0} örnek\n`;
+          }
+          mlModelContext += 'ML modeli ile çeliştiğin durumlarda daha temkinli ol ve güven seviyesini düşür.\n';
+        }
+      }
+    } catch (e) {
+      console.warn('[ml-prediction] Could not fetch ML weights:', e);
+    }
+
     // Enhanced system prompt
     let systemPrompt = `Sen profesyonel bir futbol analiz uzmanısın. Kapsamlı veri analizi yaparak maç tahmini üretiyorsun.
+${mlModelContext}
 
 DETAYLI ANALİZ KRİTERLERİ:
 

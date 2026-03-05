@@ -35,3 +35,12 @@ verify_jwt = false
 
 [functions.compute-admin-analytics]
 verify_jwt = false
+
+[functions.train-ml-model]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
+
+[functions.admin-users]
+verify_jwt = false

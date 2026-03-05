@@ -10,7 +10,11 @@ import {
   BarChart3,
   Trophy,
   Brain,
-  Calculator
+  Calculator,
+  Cpu,
+  Play,
+  Clock,
+  Database
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -71,6 +75,8 @@ const AIManagement: React.FC<AIManagementProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [aiVsMathStats, setAiVsMathStats] = useState<AIvsMathStat[]>([]);
   const [activeWeights, setActiveWeights] = useState<{ aiWeight: number; mathWeight: number } | null>(null);
+  const [mlModels, setMlModels] = useState<any[]>([]);
+  const [isTraining, setIsTraining] = useState(false);
 
   // Fetch AI vs Math stats
   useEffect(() => {
@@ -121,6 +127,43 @@ const AIManagement: React.FC<AIManagementProps> = ({
 
     if (!isLoading) fetchAiVsMath();
   }, [isLoading]);
+
+  // Fetch ML model weights
+  useEffect(() => {
+    const fetchMLModels = async () => {
+      try {
+        const { data } = await supabase
+          .from('ml_model_weights' as any)
+          .select('*')
+          .order('trained_at', { ascending: false });
+        if (data) setMlModels(data as any[]);
+      } catch (e) {
+        console.error('ML models fetch error:', e);
+      }
+    };
+    if (!isLoading) fetchMLModels();
+  }, [isLoading]);
+
+  const handleTrainModel = async () => {
+    setIsTraining(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('train-ml-model');
+      if (error) throw error;
+      toast.success('ML modeli başarıyla eğitildi');
+      console.log('[Admin] Train result:', data);
+      // Refresh ML models
+      const { data: updated } = await supabase
+        .from('ml_model_weights' as any)
+        .select('*')
+        .order('trained_at', { ascending: false });
+      if (updated) setMlModels(updated as any[]);
+    } catch (e) {
+      console.error('Train error:', e);
+      toast.error('Model eğitimi başarısız');
+    } finally {
+      setIsTraining(false);
+    }
+  };
 
   const handleSavePrompt = async () => {
     setIsSaving(true);
@@ -223,9 +266,10 @@ const AIManagement: React.FC<AIManagementProps> = ({
       </motion.div>
 
       <Tabs defaultValue="stats" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="stats">İstatistikler</TabsTrigger>
           <TabsTrigger value="ai-vs-math">AI vs Matematik</TabsTrigger>
+          <TabsTrigger value="ml-model">ML Model</TabsTrigger>
           <TabsTrigger value="leagues">Lig Bazlı</TabsTrigger>
           <TabsTrigger value="prompt">Sistem Promptu</TabsTrigger>
         </TabsList>
@@ -377,6 +421,116 @@ const AIManagement: React.FC<AIManagementProps> = ({
                     Tahminler doğrulandıkça burada görünecek.
                   </p>
                 )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        </TabsContent>
+
+        {/* ML Model Tab */}
+        <TabsContent value="ml-model" className="space-y-4">
+          <motion.div variants={staggerItem}>
+            <Card className="mb-4">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Cpu className="w-5 h-5" />
+                      ML Model Durumu
+                    </CardTitle>
+                    <CardDescription>
+                      Lojistik regresyon modeli — doğrulanmış verilerden eğitilir
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    onClick={handleTrainModel} 
+                    disabled={isTraining}
+                    variant="outline" 
+                    className="gap-2"
+                  >
+                    {isTraining ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Play className="w-4 h-4" />
+                    )}
+                    Yeniden Eğit
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {mlModels.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">
+                    Henüz eğitilmiş model yok. Yeterli doğrulanmış veri biriktikten sonra model eğitilebilir.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {mlModels.map((model: any) => {
+                      const metrics = model.metrics || {};
+                      const accuracy = (metrics.accuracy || 0) * 100;
+                      const trainedAt = model.trained_at ? new Date(model.trained_at) : null;
+                      
+                      return (
+                        <div key={model.prediction_type} className="p-4 rounded-lg border space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Brain className="w-4 h-4 text-primary" />
+                              <span className="font-medium">{model.prediction_type}</span>
+                              {model.is_active && (
+                                <Badge className="bg-green-500/20 text-green-500 text-xs">Aktif</Badge>
+                              )}
+                            </div>
+                            {getAccuracyBadge(accuracy)}
+                          </div>
+                          
+                          <div className="grid grid-cols-3 gap-3 text-sm">
+                            <div className="flex items-center gap-1.5">
+                              <Target className="w-3.5 h-3.5 text-muted-foreground" />
+                              <span className="text-muted-foreground">Doğruluk:</span>
+                              <span className={`font-bold ${getAccuracyColor(accuracy)}`}>
+                                %{accuracy.toFixed(1)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Database className="w-3.5 h-3.5 text-muted-foreground" />
+                              <span className="text-muted-foreground">Örnek:</span>
+                              <span className="font-bold">{metrics.sample_count || 0}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <BarChart3 className="w-3.5 h-3.5 text-muted-foreground" />
+                              <span className="text-muted-foreground">AUC:</span>
+                              <span className="font-bold">{(metrics.auc || 0).toFixed(3)}</span>
+                            </div>
+                          </div>
+                          
+                          <Progress value={accuracy} className="h-2" />
+                          
+                          {trainedAt && (
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Clock className="w-3 h-3" />
+                              Son eğitim: {trainedAt.toLocaleDateString('tr-TR')} {trainedAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3 text-sm text-muted-foreground">
+                  <Cpu className="w-5 h-5 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-medium text-foreground mb-1">ML Model Nasıl Çalışır?</p>
+                    <p>
+                      Doğrulanmış tahminlerden özellik vektörleri çıkarılır ve her tahmin türü için 
+                      ayrı lojistik regresyon modeli eğitilir (gradient descent, L2 regularization). 
+                      Eğitilen ağırlıklar client-side inference'ta sigmoid fonksiyonu ile kullanılarak 
+                      AI ve Matematik tahminlerine ek bir 3. katman olarak birleştirilir.
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
