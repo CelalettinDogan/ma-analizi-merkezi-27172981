@@ -41,4 +41,6 @@ export const PREDICTION_TYPE_LABELS: Record<string, string> = {
   'Karşılıklı Gol': 'KG Var/Yok',
   'Doğru Skor': 'Doğru Skor',
   'İlk Yarı Sonucu': 'İY Sonucu',
+  'İlk Yarı / Maç Sonucu': 'İY/MS',
+  'İki Yarıda da Gol': 'İY Alt/Üst',
 };

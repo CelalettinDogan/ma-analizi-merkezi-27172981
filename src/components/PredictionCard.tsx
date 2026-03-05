@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Target, TrendingUp, Sparkles } from 'lucide-react';
+import { Target, TrendingUp, Sparkles, Trophy } from 'lucide-react';
 import { Prediction, MatchInput } from '@/types/match';
 import { AddToSetButton } from '@/components/analysis-set';
 import { Progress } from '@/components/ui/progress';
@@ -23,6 +23,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matc
   const mathPercentage = prediction.mathConfidence ? Math.round(prediction.mathConfidence * 100) : 0;
   const hybridPercentage = Math.round(getHybridConfidence(prediction));
   const hybridLevel = getConfidenceLevel(hybridPercentage);
+  const hasProbability = prediction.probability !== undefined && prediction.probability > 0;
 
   return (
     <div 
@@ -47,15 +48,35 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matc
             <p className="text-lg font-display font-bold gradient-text">{prediction.prediction}</p>
           </div>
         </div>
-        <span className={`prediction-badge border ${confidenceColors[prediction.confidence]}`}>
-          {prediction.confidence.charAt(0).toUpperCase() + prediction.confidence.slice(1)}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span className={`prediction-badge border ${confidenceColors[prediction.confidence]}`}>
+            {prediction.confidence.charAt(0).toUpperCase() + prediction.confidence.slice(1)}
+          </span>
+          {hasProbability && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+              <Trophy className="w-3 h-3" />
+              %{Math.round(prediction.probability!)}
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Hybrid + AI & Math Confidence Bars */}
+      {/* Confidence Bars */}
       {prediction.isAIPowered && (prediction.aiConfidence || prediction.mathConfidence) && (
         <div className="mb-4 space-y-2 p-3 rounded-lg bg-muted/30">
-          {/* Hybrid Confidence Summary */}
+          {hasProbability && (
+            <>
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold flex items-center gap-1 text-primary">
+                  🎯 Poisson Olasılığı
+                </span>
+                <span className="font-bold text-primary">%{Math.round(prediction.probability!)}</span>
+              </div>
+              <Progress value={prediction.probability} className="h-2" />
+              <div className="border-t border-border/50 pt-2 mt-2" />
+            </>
+          )}
+
           <div className="flex items-center justify-between text-xs">
             <span className={cn(
               "font-semibold flex items-center gap-1",
@@ -68,7 +89,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matc
               hybridLevel === 'yüksek' ? 'text-win' : hybridLevel === 'orta' ? 'text-draw' : 'text-loss'
             )}>%{hybridPercentage}</span>
           </div>
-          <Progress value={hybridPercentage} className="h-2" />
+          <Progress value={hybridPercentage} className="h-1.5" />
           
           <div className="border-t border-border/50 pt-2 mt-2 space-y-2">
             <div className="flex items-center justify-between text-xs">

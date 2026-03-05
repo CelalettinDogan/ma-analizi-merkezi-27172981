@@ -43,6 +43,26 @@ function calculateHybridConfidence(prediction: Prediction): number {
   return (ai + math) / 2;
 }
 
+// Select the best prediction based on real Poisson probability (Phase 1)
+// Falls back to hybrid confidence if probability is not available
+function selectBestPrediction(predictions: Prediction[]): Prediction {
+  // First, try to find the prediction with the highest real probability
+  const withProbability = predictions.filter(p => p.probability !== undefined && p.probability > 0);
+  
+  if (withProbability.length > 0) {
+    return withProbability.reduce((best, current) => {
+      return (current.probability || 0) > (best.probability || 0) ? current : best;
+    });
+  }
+  
+  // Fallback: use hybrid confidence
+  return predictions.reduce((best, current) => {
+    const currentHybrid = calculateHybridConfidence(current);
+    const bestHybrid = calculateHybridConfidence(best);
+    return currentHybrid > bestHybrid ? current : best;
+  });
+}
+
 export async function savePredictions(
   league: string,
   homeTeam: string,
@@ -54,14 +74,12 @@ export async function savePredictions(
   // Normalize league code for consistent storage
   const normalizedLeague = normalizeLeagueCode(league);
   
-  // Find the prediction with the highest hybrid confidence
-  const bestPrediction = predictions.reduce((best, current) => {
-    const currentHybrid = calculateHybridConfidence(current);
-    const bestHybrid = calculateHybridConfidence(best);
-    return currentHybrid > bestHybrid ? current : best;
-  });
+  // Select the best prediction using probability-based ranking (Phase 1)
+  const bestPrediction = selectBestPrediction(predictions);
 
-  const hybridConfidence = calculateHybridConfidence(bestPrediction);
+  const hybridConfidence = bestPrediction.probability 
+    ? bestPrediction.probability / 100  // Use real probability
+    : calculateHybridConfidence(bestPrediction);
   const isPremium = hybridConfidence >= PREMIUM_CONFIDENCE_THRESHOLD;
 
   // Check if a primary prediction already exists for this match + user (UPSERT logic)
@@ -292,7 +310,7 @@ function checkPredictionCorrect(
         return null;
       }
       
-      // Parse HT/FT prediction (e.g., "Ev / Ev" or "Beraberlik / Deplasman")
+      // Parse HT/FT prediction (e.g., "Ev / Ev" or "Ber / Dep")
       const [htPrediction, ftPrediction] = prediction.split(' / ');
       
       // Check HT result
@@ -308,6 +326,19 @@ function checkPredictionCorrect(
       if (homeScore === awayScore && ftPrediction.includes('Ber')) ftCorrect = true;
       
       return htCorrect && ftCorrect;
+    }
+
+    case PREDICTION_TYPES.FIRST_HALF_OVER_UNDER: {
+      // Cannot verify without HT score data
+      if (firstHalfHomeScore === undefined || firstHalfAwayScore === undefined) {
+        return null;
+      }
+      const firstHalfGoals = firstHalfHomeScore + firstHalfAwayScore;
+      if (prediction.includes('İY 0.5 Üst') && firstHalfGoals > 0.5) return true;
+      if (prediction.includes('İY 0.5 Alt') && firstHalfGoals < 0.5) return true;
+      if (prediction.includes('İY 1.5 Üst') && firstHalfGoals > 1.5) return true;
+      if (prediction.includes('İY 1.5 Alt') && firstHalfGoals < 1.5) return true;
+      return false;
     }
 
     default:
