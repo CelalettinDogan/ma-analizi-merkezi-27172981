@@ -856,6 +856,36 @@ export type Database = {
         }
         Relationships: []
       }
+      ml_model_weights: {
+        Row: {
+          feature_names: string[]
+          feature_ranges: Json
+          is_active: boolean
+          metrics: Json
+          prediction_type: string
+          trained_at: string
+          weights: Json
+        }
+        Insert: {
+          feature_names?: string[]
+          feature_ranges?: Json
+          is_active?: boolean
+          metrics?: Json
+          prediction_type: string
+          trained_at?: string
+          weights?: Json
+        }
+        Update: {
+          feature_names?: string[]
+          feature_ranges?: Json
+          is_active?: boolean
+          metrics?: Json
+          prediction_type?: string
+          trained_at?: string
+          weights?: Json
+        }
+        Relationships: []
+      }
       prediction_features: {
         Row: {
           actual_result: string | null

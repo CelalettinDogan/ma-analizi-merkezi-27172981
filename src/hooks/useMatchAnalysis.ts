@@ -18,23 +18,37 @@ import {
   savePredictionFeatures,
   getAIMathWeights
 } from '@/services/mlPredictionService';
+import { getAllMLInferences, type MLFeatures } from '@/services/mlInferenceService';
 import { calculatePoissonExpectedGoals, generateScoreProbabilities, calculateMatchResultProbabilities, calculateGoalLineProbabilities as calcGoalLines, calculateBTTSProbability, calculatePowerIndexes, getMostLikelyScores } from '@/utils/poissonCalculator';
 import { calculateMatchImportance, calculateMomentum, calculateCleanSheetRatio } from '@/utils/contextAnalyzer';
 import { isDerbyMatch } from '@/utils/derbyDetector';
 
-// Hibrit güven hesaplama - dinamik ağırlıklarla
+// 3 katmanlı hibrit güven hesaplama: AI + Math + ML
 function calculateHybridConfidence(
   aiConfidence: number,
   mathConfidence: number,
-  dynamicWeights?: { aiWeight: number; mathWeight: number } | null
+  dynamicWeights?: { aiWeight: number; mathWeight: number } | null,
+  mlConfidence?: number | null
 ): 'düşük' | 'orta' | 'yüksek' {
   let hybrid: number;
-  if (dynamicWeights) {
+  
+  if (mlConfidence != null && mlConfidence > 0) {
+    // 3 katmanlı: AI, Math, ML
+    const mlWeight = 0.2;
+    if (dynamicWeights) {
+      const remainingWeight = 1 - mlWeight;
+      hybrid = aiConfidence * dynamicWeights.aiWeight * remainingWeight 
+             + mathConfidence * dynamicWeights.mathWeight * remainingWeight 
+             + mlConfidence * mlWeight;
+    } else {
+      hybrid = aiConfidence * 0.35 + mathConfidence * 0.35 + mlConfidence * 0.2 + 0.5 * 0.1;
+    }
+  } else if (dynamicWeights) {
     hybrid = aiConfidence * dynamicWeights.aiWeight + mathConfidence * dynamicWeights.mathWeight;
   } else {
-    // Varsayılan: 40% AI, 40% Math, 20% baseline
     hybrid = aiConfidence * 0.4 + mathConfidence * 0.4 + 0.5 * 0.2;
   }
+  
   if (hybrid >= 0.7) return 'yüksek';
   if (hybrid >= 0.5) return 'orta';
   return 'düşük';
@@ -561,29 +575,64 @@ export function useMatchAnalysis() {
         awayAttackIndex: awayPower.attackIndex,
       };
 
-      // AI tahminlerini al
+      // ML inference feature objesi oluştur
+      const mlFeatures: MLFeatures = {
+        home_form_score: calculateFormScore(homeStanding.form),
+        away_form_score: calculateFormScore(awayStanding.form),
+        home_goal_avg: homeStanding.goalsFor / homeStanding.playedGames,
+        away_goal_avg: awayStanding.goalsFor / awayStanding.playedGames,
+        position_diff: homeStanding.position - awayStanding.position,
+        home_advantage_score: homeStanding.position <= 6 ? 70 : homeStanding.position <= 12 ? 50 : 30,
+        h2h_home_wins: features.h2h.homeWins,
+        h2h_away_wins: features.h2h.awayWins,
+        expected_goals: expectedGoals.homeExpected + expectedGoals.awayExpected,
+        home_attack_index: homeAttackStrength,
+        home_defense_index: homeDefenseStrength,
+        away_attack_index: awayAttackStrength,
+        away_defense_index: awayDefenseStrength,
+        home_momentum: calculateMomentum(homeStanding.form) || 0,
+        away_momentum: calculateMomentum(awayStanding.form) || 0,
+        poisson_home_expected: expectedGoals.homeExpected,
+        poisson_away_expected: expectedGoals.awayExpected,
+      };
+
+      // AI tahminleri + ML inference paralel çalıştır
       let finalPredictions: Prediction[] = mathResult.predictions;
       let isAIEnhanced = false;
+      let mlInferences: Record<string, any> = {};
 
       try {
-        const mlResult = await getMLPrediction(
-          features.homeTeam,
-          features.awayTeam,
-          features.h2h,
-          data.league,
-          {
-            over25Prob: rawGoalLines.over2_5,
-            leagueOver25Pct,
-            homeExpected: expectedGoals.homeExpected,
-            awayExpected: expectedGoals.awayExpected,
-          }
-        );
+        const [mlResult, mlInferenceResults] = await Promise.all([
+          getMLPrediction(
+            features.homeTeam,
+            features.awayTeam,
+            features.h2h,
+            data.league,
+            {
+              over25Prob: rawGoalLines.over2_5,
+              leagueOver25Pct,
+              homeExpected: expectedGoals.homeExpected,
+              awayExpected: expectedGoals.awayExpected,
+            }
+          ),
+          getAllMLInferences(mlFeatures),
+        ]);
+
+        mlInferences = mlInferenceResults;
+        if (Object.keys(mlInferences).length > 0) {
+          console.log('[useMatchAnalysis] ML inference results:', Object.entries(mlInferences).map(([k, v]) => `${k}: ${(v.probability * 100).toFixed(1)}%`).join(', '));
+        }
 
         if (mlResult?.success && mlResult.predictions) {
           isAIEnhanced = true;
           const ai = mlResult.predictions;
           
-          // Hibrit tahminler oluştur
+          const getMLConf = (type: string): number | null => {
+            const ml = mlInferences[type];
+            return ml ? ml.confidence : null;
+          };
+          
+          // Hibrit tahminler oluştur (3 katmanlı)
           finalPredictions = [
             {
               type: 'Maç Sonucu',
@@ -591,7 +640,8 @@ export function useMatchAnalysis() {
               confidence: calculateHybridConfidence(
                 ai.matchResult.confidence,
                 mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Maç Sonucu')?.confidence || 'orta'),
-                perTypeWeights['Maç Sonucu']
+                perTypeWeights['Maç Sonucu'],
+                getMLConf('Maç Sonucu')
               ),
               reasoning: ai.matchResult.reasoning,
               isAIPowered: true,
@@ -608,18 +658,13 @@ export function useMatchAnalysis() {
                 const aiDirection = ai.totalGoals.prediction === 'OVER_2_5' ? 'Üst' : 'Alt';
                 const mathDirection = mathPred?.prediction?.includes('Üst') ? 'Üst' : 'Alt';
                 
-                if (isBorderZone) {
-                  // Sınır bölgede güveni düşür
-                  return 'düşük' as const;
-                }
-                if (aiDirection !== mathDirection) {
-                  // AI ve matematik ters yönde - Poisson'a öncelik ver, güveni düşür
-                  return 'düşük' as const;
-                }
+                if (isBorderZone) return 'düşük' as const;
+                if (aiDirection !== mathDirection) return 'düşük' as const;
                 return calculateHybridConfidence(
                   ai.totalGoals.confidence,
                   mathConfidenceToNumber(mathPred?.confidence || 'orta'),
-                  perTypeWeights['Toplam Gol Alt/Üst']
+                  perTypeWeights['Toplam Gol Alt/Üst'],
+                  getMLConf('Toplam Gol Alt/Üst')
                 );
               })(),
               reasoning: ai.totalGoals.reasoning,
@@ -633,7 +678,8 @@ export function useMatchAnalysis() {
               confidence: calculateHybridConfidence(
                 ai.bothTeamsScore.confidence,
                 mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'Karşılıklı Gol')?.confidence || 'orta'),
-                perTypeWeights['Karşılıklı Gol']
+                perTypeWeights['Karşılıklı Gol'],
+                getMLConf('Karşılıklı Gol')
               ),
               reasoning: ai.bothTeamsScore.reasoning,
               isAIPowered: true,
@@ -647,7 +693,7 @@ export function useMatchAnalysis() {
               reasoning: ai.correctScore.reasoning,
               isAIPowered: true,
               aiConfidence: ai.correctScore.confidence,
-              mathConfidence: 0.3, // Doğru skor her zaman düşük güven
+              mathConfidence: 0.3,
             },
             {
               type: 'İlk Yarı Sonucu',
@@ -655,7 +701,8 @@ export function useMatchAnalysis() {
               confidence: calculateHybridConfidence(
                 ai.firstHalf.confidence,
                 mathConfidenceToNumber(mathResult.predictions.find(p => p.type === 'İlk Yarı Sonucu')?.confidence || 'orta'),
-                perTypeWeights['İlk Yarı Sonucu']
+                perTypeWeights['İlk Yarı Sonucu'],
+                getMLConf('İlk Yarı Sonucu')
               ),
               reasoning: ai.firstHalf.reasoning,
               isAIPowered: true,
@@ -664,11 +711,10 @@ export function useMatchAnalysis() {
             },
           ];
 
-          sonnerToast('AI analizi hazır ✓', { duration: 1500 });
+          sonnerToast('AI + ML analizi hazır ✓', { duration: 1500 });
         }
       } catch (aiError) {
         console.error('AI prediction error (falling back to math):', aiError);
-        // AI hatası durumunda matematiksel tahminlerle devam et
       }
 
       const result: MatchAnalysis = {
