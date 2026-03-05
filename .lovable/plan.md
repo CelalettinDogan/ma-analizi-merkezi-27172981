@@ -1,62 +1,18 @@
 
 
-# Android Sistem Font Ölçeklendirme Koruması
+# Analiz Drawer Full Mode İçerik Kesintisi Düzeltme
 
-## Sorunun Kaynağı
+## Sorun
+Drawer full modda `SNAP_FULL = 0.85` (viewport'un %85'i) kullanıyor. Native Android'de status bar, navigation bar ve Capacitor WebView'ın viewport hesaplaması nedeniyle kullanılabilir alan daha da küçülüyor. İçerik scroll container'ı `flex-1 overflow-y-auto` ile tanımlı ama drawer yüksekliği yeterli olmadığı için alt kısımlar ekran dışında kalıyor.
 
-Android'de kullanıcılar **Ayarlar → Ekran → Yazı tipi boyutu/kalınlığı** ile sistem genelinde %130-200 arası büyütme yapabilir. WebView (Capacitor) bu ayarı varsayılan olarak sayfaya yansıtır ve `rem`/`em` tabanlı tüm boyutlar orantılı büyür. Bu da:
-- Buton metinlerinin taşmasına
-- Kartların kırılmasına
-- Navigasyonun bozulmasına neden olur.
+## Çözüm
 
-Mevcut `text-size-adjust: 100%` sadece tarayıcının *otomatik* text inflation'ını engeller, Android sistem font scaling'ini **engellemez**.
+### `src/components/analysis/AnalysisDrawer.tsx`
+1. **SNAP_FULL değerini 0.85 → 0.93 yap** — Safe area'yı koruyarak drawer'ı neredeyse tam ekran aç
+2. **Drawer height hesaplamasına safe-area desteği ekle** — `max-height` ile `env(safe-area-inset-top)` çıkararak native cihazlarda status bar ile çakışmayı önle
+3. **Scroll container'a `-webkit-overflow-scrolling: touch`** ekle — iOS/Android WebView'da smooth scroll garantisi
+4. **pb-32 → `paddingBottom: calc(2rem + env(safe-area-inset-bottom))`** — Alt içeriğin safe area altında kaybolmasını önle
 
-## Çözüm Stratejisi
-
-Profesyonel uygulamalar (WhatsApp, Instagram vb.) WebView'daki font scaling'i tamamen devre dışı bırakır. Bunun için iki katmanlı müdahale gerekir:
-
-### 1. Capacitor WebView Ayarı (`capacitor.config.ts`)
-Android WebView'da `textZoom` değerini `100`'e sabitleyerek sistem font ölçeklendirmesini tamamen devre dışı bırakmak. Capacitor'ın `android.webViewSettings` config'ine eklenecek:
-
-```ts
-android: {
-  // ...mevcut ayarlar
-  webViewSettings: {
-    textZoom: 100  // Sistem font scaling'ini devre dışı bırak
-  }
-}
-```
-
-Bu **tek başına** sorunu tamamen çözer. Ancak ek güvenlik katmanı olarak:
-
-### 2. CSS Güvenlik Katmanı (`src/index.css`)
-Eski WebView sürümlerinde fallback olarak tüm temel UI elemanlarına `-webkit-text-size-adjust: none` ve sabit font boyutları eklemek:
-
-```css
-html {
-  -webkit-text-size-adjust: none;
-  text-size-adjust: none;
-}
-```
-
-> **Not**: `100%` → `none` değişikliği, tarayıcının *hiçbir koşulda* font boyutunu değiştirmemesini garanti eder.
-
-### 3. Kritik UI Elemanları için `!important` Koruması
-Butonlar, navigasyon ve header gibi kırılgan alanlara minimum/maksimum boyut sınırları:
-
-```css
-.bottom-nav-text, button, [role="tab"] {
-  font-size: inherit !important;
-  -webkit-text-size-adjust: none !important;
-}
-```
-
-## Değişecek Dosyalar
-1. **`capacitor.config.ts`** — `android.webViewSettings.textZoom: 100` ekle
-2. **`src/index.css`** — `text-size-adjust: 100%` → `none`, kritik element koruması
-
-## Etki
-- Sistem font scaling tamamen devre dışı kalır (native app davranışı)
-- Mevcut tasarım, responsive yapı ve animasyonlar korunur
-- Kullanıcı deneyimi tüm Android cihazlarda tutarlı olur
+### Değişecek Dosya
+- `src/components/analysis/AnalysisDrawer.tsx` — SNAP_FULL artır, safe-area padding/height düzeltmeleri
 
