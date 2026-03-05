@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { 
   User, Heart, Settings, LogOut, ChevronRight, Crown, Star, 
   Brain, Calendar, TrendingUp, Clock, Sparkles, Info, FileText, Shield,
-  Bell, Palette, HelpCircle, Trash2, AlertTriangle, Zap, MessageCircle
+  Palette, HelpCircle, Trash2, AlertTriangle, Zap, MessageCircle
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -18,7 +18,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -66,30 +66,12 @@ const Profile = () => {
   // Sheet States
   const [showPrivacySheet, setShowPrivacySheet] = useState(false);
   const [showTermsSheet, setShowTermsSheet] = useState(false);
-  const [showNotificationSheet, setShowNotificationSheet] = useState(false);
   const [showThemeSheet, setShowThemeSheet] = useState(false);
   const [showAIInfoSheet, setShowAIInfoSheet] = useState(false);
   const [showDeleteAccountSheet, setShowDeleteAccountSheet] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   
-  const [notificationSettings, setNotificationSettings] = useState(() => {
-    const saved = localStorage.getItem('golmetrik-notification-settings');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return { matchReminders: true, resultNotifications: true, premiumOffers: false };
-      }
-    }
-    return { matchReminders: true, resultNotifications: true, premiumOffers: false };
-  });
-
-  const updateNotificationSetting = (key: string, value: boolean) => {
-    const newSettings = { ...notificationSettings, [key]: value };
-    setNotificationSettings(newSettings);
-    localStorage.setItem('golmetrik-notification-settings', JSON.stringify(newSettings));
-  };
 
   const { data: upcomingMatches, isLoading: matchesLoading } = useQuery({
     queryKey: ['upcoming-matches-profile'],
@@ -426,10 +408,6 @@ const Profile = () => {
                   Ayarlar
                 </h2>
 
-                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl" onClick={() => setShowNotificationSheet(true)}>
-                  <span className="flex items-center gap-2.5"><Bell className="h-4 w-4 text-muted-foreground" />Bildirim Ayarları</span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </Button>
                 <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl" onClick={() => setShowThemeSheet(true)}>
                   <span className="flex items-center gap-2.5"><Palette className="h-4 w-4 text-muted-foreground" />Tema</span>
                   <span className="text-xs text-muted-foreground capitalize">{theme === 'dark' ? 'Koyu' : theme === 'light' ? 'Açık' : 'Sistem'}</span>
@@ -472,43 +450,6 @@ const Profile = () => {
           </p>
         </motion.div>
       </main>
-
-      {/* Notification Settings Sheet */}
-      <Sheet open={showNotificationSheet} onOpenChange={setShowNotificationSheet}>
-        <SheetContent side="bottom" className="h-auto max-h-[80vh]">
-          <SheetHeader className="pb-4">
-            <SheetTitle className="flex items-center gap-2">
-              <Bell className="w-5 h-5" />
-              Bildirim Ayarları
-            </SheetTitle>
-            <SheetDescription>Hangi bildirimleri almak istediğinizi seçin</SheetDescription>
-          </SheetHeader>
-          <div className="space-y-4 pb-6">
-            <div className="flex items-center justify-between py-3 border-b border-border">
-              <div>
-                <p className="font-medium text-sm">Maç Hatırlatıcıları</p>
-                <p className="text-xs text-muted-foreground">Takip ettiğiniz maçlar başlamadan önce</p>
-              </div>
-              <Switch checked={notificationSettings.matchReminders} onCheckedChange={(checked) => updateNotificationSetting('matchReminders', checked)} />
-            </div>
-            <div className="flex items-center justify-between py-3 border-b border-border">
-              <div>
-                <p className="font-medium text-sm">Sonuç Bildirimleri</p>
-                <p className="text-xs text-muted-foreground">Analiz sonuçları doğrulandığında</p>
-              </div>
-              <Switch checked={notificationSettings.resultNotifications} onCheckedChange={(checked) => updateNotificationSetting('resultNotifications', checked)} />
-            </div>
-            <div className="flex items-center justify-between py-3">
-              <div>
-                <p className="font-medium text-sm">Premium Teklifleri</p>
-                <p className="text-xs text-muted-foreground">Özel kampanya ve indirimler</p>
-              </div>
-              <Switch checked={notificationSettings.premiumOffers} onCheckedChange={(checked) => updateNotificationSetting('premiumOffers', checked)} />
-            </div>
-            <p className="text-micro text-muted-foreground pt-2">📱 Bildirim ayarları cihaz ayarlarınızdan da yönetilebilir.</p>
-          </div>
-        </SheetContent>
-      </Sheet>
 
       {/* Theme Settings Sheet */}
       <Sheet open={showThemeSheet} onOpenChange={setShowThemeSheet}>
