@@ -1,31 +1,18 @@
 
 
-# Logo Değişikliği Planı
+# Google ile Giriş Yap Kaldırma
 
 ## Yapılacaklar
 
-1. **Yeni logoyu projeye kopyala**: `user-uploads://logo_1x1.png` → `src/assets/logo.png` (mevcut dosyanın üzerine yaz)
+### `src/pages/Auth.tsx`
+1. `signInWithGoogle` import'unu `useAuth` destructuring'den kaldır (satır 22)
+2. `handleGoogleSignIn` fonksiyonunu sil (satır 121-133)
+3. Google Sign In butonu ve "veya e-posta ile" divider'ını sil (satır 160-184)
+4. Tabs bölümü doğrudan `<div className="flex-1...">` altında başlayacak
 
-2. **Public klasöründeki ikonları güncelle**: Aynı görseli şu dosyalara da kopyala:
-   - `public/favicon.png`
-   - `public/logo-192.png`
-   - `public/logo-512.png`
-   - `public/apple-touch-icon.png`
-   - `public/logo.png`
+### `src/contexts/AuthContext.tsx`
+- `signInWithGoogle` fonksiyonu ve `AuthContextType`'dan kaldırılabilir ama native deep link altyapısı başka yerde kullanılıyorsa bozulmaması için **opsiyonel**. Auth.tsx'ten çağrıyı kaldırmak yeterli.
 
-3. **Auth sayfasında stil düzeltme** (`src/pages/Auth.tsx`):
-   - `rounded-2xl` → `rounded-2xl` kalabilir ama `object-cover` → `object-contain` olarak değiştirilmeli (yeni logo beyaz arka planlı, kırpılmamalı)
-
-4. **Header'da stil kontrolü** (`src/components/layout/AppHeader.tsx`):
-   - Mevcut `object-contain rounded-xl` zaten uygun, değişiklik gerekmeyebilir
-
-5. **Footer'da stil kontrolü** (`src/components/layout/AppFooter.tsx`):
-   - Mevcut `object-contain rounded-xl` zaten uygun
-
-Yeni logo beyaz arka planlı ve taçlı futbol topu içeriyor. Tüm kullanım yerlerinde `object-contain` ile 1:1 aspect ratio korunacak, `bg-transparent` ile temiz görünecek.
-
-## Değişecek Dosyalar
-- `src/assets/logo.png` (üzerine yaz)
-- `public/favicon.png`, `public/logo-192.png`, `public/logo-512.png`, `public/apple-touch-icon.png`, `public/logo.png` (üzerine yaz)
-- `src/pages/Auth.tsx` (object-cover → object-contain)
+## Değişecek Dosya
+- `src/pages/Auth.tsx` — Google butonu, divider ve handler silme
 
