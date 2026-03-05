@@ -6,7 +6,7 @@ export const PREDICTION_TYPES = {
   CORRECT_SCORE: 'Doğru Skor',
   FIRST_HALF: 'İlk Yarı Sonucu',
   HALF_TIME_FULL_TIME: 'İlk Yarı / Maç Sonucu',
-  BOTH_HALVES: 'İki Yarıda da Gol',
+  FIRST_HALF_OVER_UNDER: 'İki Yarıda da Gol',
 } as const;
 
 export const PREDICTION_TYPE_LABELS: Record<string, string> = {
@@ -16,7 +16,7 @@ export const PREDICTION_TYPE_LABELS: Record<string, string> = {
   [PREDICTION_TYPES.CORRECT_SCORE]: 'DS',
   [PREDICTION_TYPES.FIRST_HALF]: 'İY',
   [PREDICTION_TYPES.HALF_TIME_FULL_TIME]: 'İY/MS',
-  [PREDICTION_TYPES.BOTH_HALVES]: '2YG',
+  [PREDICTION_TYPES.FIRST_HALF_OVER_UNDER]: 'İY Ü/A',
 };
 
 // Confidence level constants

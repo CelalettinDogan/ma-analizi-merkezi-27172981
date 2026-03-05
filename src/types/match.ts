@@ -38,6 +38,7 @@ export interface Prediction {
   isAIPowered?: boolean;
   aiConfidence?: number;
   mathConfidence?: number;
+  probability?: number; // Real Poisson probability (0-100), used for primary selection
 }
 
 export interface MatchInsights {

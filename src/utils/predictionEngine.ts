@@ -56,18 +56,11 @@ function calculateGoalAverage(standing: Standing): { scored: number; conceded: n
 
 // Ev sahibi/Deplasman avantajı hesapla
 function calculateHomeAdvantage(homeStanding: Standing, awayStanding: Standing): number {
-  // Ev sahibi takımın ev performansını, deplasman takımının deplasman performansıyla karşılaştır
   const homePoints = homeStanding.points;
   const awayPoints = awayStanding.points;
-  
   const pointDiff = homePoints - awayPoints;
-  
-  // Ev sahibi avantajı olarak +10% bonus ekle
   const homeBonus = 10;
-  
-  // -30 ile +30 arası normalize et
   const advantage = Math.max(-30, Math.min(30, pointDiff + homeBonus));
-  
   return advantage;
 }
 
@@ -91,7 +84,6 @@ function analyzeH2H(matches: Match[], homeTeamId: number, awayTeamId: number): H
       score: `${homeScore}-${awayScore}`,
     });
 
-    // Şu anki maç için ev sahibi olan takım açısından değerlendir
     const isCurrentHomeTeamHome = match.homeTeam.id === homeTeamId;
     
     if (homeScore > awayScore) {
@@ -120,14 +112,11 @@ export function generatePrediction(input: AnalysisInput): MatchAnalysis {
   
   const homeAdvantage = calculateHomeAdvantage(homeTeam.standing, awayTeam.standing);
   
-  // H2H analizi
   const h2h = analyzeH2H(h2hMatches, homeTeam.standing.team.id, awayTeam.standing.team.id);
   
-  // Form dizisini oluştur
   const homeForm = homeTeam.standing.form?.split(',').slice(-5) || [];
   const awayForm = awayTeam.standing.form?.split(',').slice(-5) || [];
 
-  // TeamStats oluştur
   const homeTeamStats: TeamStats = {
     form: homeForm,
     goalsScored: homeGoalAvg.scored,
@@ -150,7 +139,6 @@ export function generatePrediction(input: AnalysisInput): MatchAnalysis {
     },
   };
 
-  // Tahminleri hesapla
   const predictions = generatePredictions({
     homeFormScore,
     awayFormScore,
@@ -173,7 +161,6 @@ export function generatePrediction(input: AnalysisInput): MatchAnalysis {
     poissonFirstHalfAway: input.poissonFirstHalfAway,
   });
 
-  // Taktik analiz oluştur
   const tacticalAnalysis = generateTacticalAnalysis(
     homeTeam.standing,
     awayTeam.standing,
@@ -181,7 +168,6 @@ export function generatePrediction(input: AnalysisInput): MatchAnalysis {
     awayFormScore
   );
 
-  // Önemli faktörler
   const keyFactors = generateKeyFactors(
     homeTeam.standing,
     awayTeam.standing,
@@ -203,7 +189,7 @@ export function generatePrediction(input: AnalysisInput): MatchAnalysis {
     predictions,
     tacticalAnalysis,
     keyFactors,
-    injuries: { home: [], away: [] }, // API'de sakatlık verisi yok
+    injuries: { home: [], away: [] },
   };
 }
 
@@ -229,6 +215,13 @@ interface PredictionInput {
   poissonFirstHalfAway?: number;
 }
 
+// Simple Poisson probability helper for inline calculations
+function inlinePoissonProb(lambda: number, k: number): number {
+  let factorial = 1;
+  for (let i = 2; i <= k; i++) factorial *= i;
+  return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial;
+}
+
 function generatePredictions(input: PredictionInput): Prediction[] {
   const {
     homeFormScore,
@@ -252,14 +245,15 @@ function generatePredictions(input: PredictionInput): Prediction[] {
   let matchResult: string;
   let matchConfidence: 'düşük' | 'orta' | 'yüksek';
   let matchReasoning: string;
+  let matchProbability: number | undefined;
 
   const pHomeWin = input.poissonHomeWinProb;
   const pDraw = input.poissonDrawProb;
   const pAwayWin = input.poissonAwayWinProb;
 
   if (pHomeWin !== undefined && pDraw !== undefined && pAwayWin !== undefined) {
-    // Poisson tabanlı karar (daha güvenilir)
     const maxProb = Math.max(pHomeWin, pDraw, pAwayWin);
+    matchProbability = maxProb; // Real Poisson probability
     
     if (pHomeWin > 55 && pHomeWin === maxProb) {
       matchResult = `${homeTeamName} Kazanır`;
@@ -282,7 +276,6 @@ function generatePredictions(input: PredictionInput): Prediction[] {
       matchConfidence = 'orta';
       matchReasoning = `Poisson modeli %${pDraw.toFixed(0)} beraberlik olasılığı hesapladı. Dengeli güçler.`;
     } else {
-      // En yüksek olasılıklı sonuç ama düşük güvenle
       if (maxProb === pHomeWin) {
         matchResult = `${homeTeamName} Kazanır`;
       } else if (maxProb === pAwayWin) {
@@ -294,7 +287,6 @@ function generatePredictions(input: PredictionInput): Prediction[] {
       matchReasoning = `Olasılıklar çok yakın (Ev: %${pHomeWin.toFixed(0)}, Ber: %${pDraw.toFixed(0)}, Dep: %${pAwayWin.toFixed(0)}). Belirsiz maç.`;
     }
   } else {
-    // Fallback: eski form bazlı mantık
     if (scoreDiff > 25) {
       matchResult = `${homeTeamName} Kazanır`;
       matchConfidence = 'yüksek';
@@ -323,6 +315,7 @@ function generatePredictions(input: PredictionInput): Prediction[] {
     prediction: matchResult,
     confidence: matchConfidence,
     reasoning: matchReasoning,
+    probability: matchProbability,
   });
 
   // 2. Toplam Gol Tahmini (Alt/Üst 2.5) - Poisson tabanlı
@@ -332,36 +325,40 @@ function generatePredictions(input: PredictionInput): Prediction[] {
   let goalPrediction: string;
   let goalConfidence: 'düşük' | 'orta' | 'yüksek';
   let goalReasoning: string;
+  let goalProbability: number | undefined;
 
   if (over25Prob !== undefined) {
-    // Poisson tabanlı karar (daha güvenilir)
     const probPct = (over25Prob * 100).toFixed(0);
     const leagueInfo = input.leagueOver25Pct ? ` Lig ortalaması: %${input.leagueOver25Pct.toFixed(0)}.` : '';
     
+    // Real probability: whichever side (over or under) the prediction picks
     if (over25Prob > 0.60) {
       goalPrediction = '2.5 Üst';
       goalConfidence = 'yüksek';
+      goalProbability = over25Prob * 100;
       goalReasoning = `Poisson modeli %${probPct} olasılıkla 2.5 üstü gösteriyor.${leagueInfo} Beklenen toplam: ${expectedGoals.toFixed(1)} gol.`;
     } else if (over25Prob > 0.55) {
       goalPrediction = '2.5 Üst';
       goalConfidence = 'orta';
+      goalProbability = over25Prob * 100;
       goalReasoning = `Poisson modeli %${probPct} olasılıkla hafif üst yönde.${leagueInfo} ${homeTeamName} ${homeGoalAvg.scored.toFixed(2)}, ${awayTeamName} ${awayGoalAvg.scored.toFixed(2)} gol ortalamasına sahip.`;
     } else if (over25Prob < 0.40) {
       goalPrediction = '2.5 Alt';
       goalConfidence = 'yüksek';
+      goalProbability = (1 - over25Prob) * 100;
       goalReasoning = `Poisson modeli %${(100 - over25Prob * 100).toFixed(0)} olasılıkla alt gösteriyor.${leagueInfo} Düşük gol beklentisi: ${expectedGoals.toFixed(1)}.`;
     } else if (over25Prob < 0.45) {
       goalPrediction = '2.5 Alt';
       goalConfidence = 'orta';
+      goalProbability = (1 - over25Prob) * 100;
       goalReasoning = `Poisson modeli %${(100 - over25Prob * 100).toFixed(0)} olasılıkla alt yönünde.${leagueInfo} Savunma ağırlıklı maç bekleniyor.`;
     } else {
-      // %45-55 SINIR BÖLGESİ - temkinli ol
       goalPrediction = over25Prob >= 0.50 ? '2.5 Üst' : '2.5 Alt';
       goalConfidence = 'düşük';
+      goalProbability = over25Prob >= 0.50 ? over25Prob * 100 : (1 - over25Prob) * 100;
       goalReasoning = `⚠️ Sınır bölge: Poisson modeli %${probPct} olasılık hesapladı.${leagueInfo} Belirsiz durum, düşük güven.`;
     }
   } else {
-    // Poisson yoksa eski basit mantık (fallback)
     if (expectedGoals > 3.0) {
       goalPrediction = '2.5 Üst';
       goalConfidence = 'yüksek';
@@ -386,6 +383,7 @@ function generatePredictions(input: PredictionInput): Prediction[] {
     prediction: goalPrediction,
     confidence: goalConfidence,
     reasoning: goalReasoning,
+    probability: goalProbability,
   });
 
   // 3. Karşılıklı Gol - Poisson tabanlı
@@ -394,32 +392,36 @@ function generatePredictions(input: PredictionInput): Prediction[] {
   let bttsResult: string;
   let bttsConfidence: 'düşük' | 'orta' | 'yüksek';
   let bttsReasoning: string;
+  let bttsProbability: number | undefined;
 
   if (pBtts !== undefined) {
     if (pBtts > 65) {
       bttsResult = 'Evet';
       bttsConfidence = 'yüksek';
+      bttsProbability = pBtts;
       bttsReasoning = `Poisson modeli %${pBtts.toFixed(0)} karşılıklı gol olasılığı hesapladı. Her iki takım da gol atma kapasitesine sahip.`;
     } else if (pBtts > 55) {
       bttsResult = 'Evet';
       bttsConfidence = 'orta';
+      bttsProbability = pBtts;
       bttsReasoning = `Poisson modeli %${pBtts.toFixed(0)} karşılıklı gol olasılığı gösteriyor. ${homeTeamName} ${homeGoalAvg.conceded.toFixed(2)} gol yiyor.`;
     } else if (pBtts < 35) {
       bttsResult = 'Hayır';
       bttsConfidence = 'yüksek';
+      bttsProbability = 100 - pBtts;
       bttsReasoning = `Poisson modeli %${(100 - pBtts).toFixed(0)} olasılıkla bir takımın gol atamayacağını gösteriyor.`;
     } else if (pBtts < 45) {
       bttsResult = 'Hayır';
       bttsConfidence = 'orta';
+      bttsProbability = 100 - pBtts;
       bttsReasoning = `Poisson modeli %${(100 - pBtts).toFixed(0)} olasılıkla karşılıklı gol beklemiyor. Savunma ağırlıklı maç.`;
     } else {
-      // %45-55 sınır bölgesi
       bttsResult = pBtts >= 50 ? 'Evet' : 'Hayır';
       bttsConfidence = 'düşük';
+      bttsProbability = pBtts >= 50 ? pBtts : 100 - pBtts;
       bttsReasoning = `⚠️ Sınır bölge: Poisson BTTS olasılığı %${pBtts.toFixed(0)}. Belirsiz durum.`;
     }
   } else {
-    // Fallback: eski basit mantık
     const bothTeamsScoreProb = (homeGoalAvg.scored > 1.2 && awayGoalAvg.scored > 1.0) || 
                                 (homeGoalAvg.conceded > 1.0 && awayGoalAvg.conceded > 1.0);
     bttsResult = bothTeamsScoreProb ? 'Evet' : 'Hayır';
@@ -440,15 +442,24 @@ function generatePredictions(input: PredictionInput): Prediction[] {
     prediction: bttsResult,
     confidence: bttsConfidence,
     reasoning: bttsReasoning,
+    probability: bttsProbability,
   });
 
   // 4. Doğru Skor Tahmini - Poisson en olası skor
   let correctScoreHome: number;
   let correctScoreAway: number;
+  let correctScoreProbability: number | undefined;
   
   if (input.poissonMostLikelyScore) {
     correctScoreHome = input.poissonMostLikelyScore.home;
     correctScoreAway = input.poissonMostLikelyScore.away;
+    // Calculate exact score probability from Poisson if we have first-half data (means full Poisson is computed)
+    if (input.poissonFirstHalfHome !== undefined) {
+      // Approximate: use the lambda values to get the raw probability
+      const homeExp = (homeGoalAvg.scored + awayGoalAvg.conceded) / 2;
+      const awayExp = (awayGoalAvg.scored + homeGoalAvg.conceded) / 2;
+      correctScoreProbability = inlinePoissonProb(homeExp, correctScoreHome) * inlinePoissonProb(awayExp, correctScoreAway) * 100;
+    }
   } else {
     const homeExpectedGoals = (homeGoalAvg.scored + awayGoalAvg.conceded) / 2;
     const awayExpectedGoals = (awayGoalAvg.scored + homeGoalAvg.conceded) / 2;
@@ -461,27 +472,53 @@ function generatePredictions(input: PredictionInput): Prediction[] {
     prediction: `${correctScoreHome}-${correctScoreAway}`,
     confidence: 'düşük',
     reasoning: `Poisson dağılımının en olası skoru. Doğru skor tahmini doğası gereği düşük güvenilirliğe sahiptir.`,
+    probability: correctScoreProbability,
   });
 
   // 5. İlk Yarı Sonucu - Yarı-Poisson modeli
   let firstHalfPrediction: string;
   let firstHalfConfidence: 'düşük' | 'orta' | 'yüksek' = 'orta';
   let firstHalfReasoning: string;
+  let firstHalfProbability: number | undefined;
 
   if (input.poissonFirstHalfHome !== undefined && input.poissonFirstHalfAway !== undefined) {
-    const fhDiff = input.poissonFirstHalfHome - input.poissonFirstHalfAway;
+    const fhHome = input.poissonFirstHalfHome;
+    const fhAway = input.poissonFirstHalfAway;
+    const fhDiff = fhHome - fhAway;
+
+    // Calculate first half result probabilities using Poisson
+    let fhHomeWinProb = 0;
+    let fhDrawProb = 0;
+    let fhAwayWinProb = 0;
+    for (let h = 0; h <= 4; h++) {
+      for (let a = 0; a <= 4; a++) {
+        const prob = inlinePoissonProb(fhHome, h) * inlinePoissonProb(fhAway, a);
+        if (h > a) fhHomeWinProb += prob;
+        else if (h === a) fhDrawProb += prob;
+        else fhAwayWinProb += prob;
+      }
+    }
+    fhHomeWinProb *= 100;
+    fhDrawProb *= 100;
+    fhAwayWinProb *= 100;
+
+    const maxFhProb = Math.max(fhHomeWinProb, fhDrawProb, fhAwayWinProb);
+
     if (fhDiff > 0.3) {
       firstHalfPrediction = homeTeamName;
       firstHalfConfidence = fhDiff > 0.5 ? 'orta' : 'düşük';
-      firstHalfReasoning = `İlk yarı beklenen gol: ${homeTeamName} ${input.poissonFirstHalfHome.toFixed(2)} - ${awayTeamName} ${input.poissonFirstHalfAway.toFixed(2)}. Ev sahibi erken baskı kurabilir.`;
+      firstHalfProbability = fhHomeWinProb;
+      firstHalfReasoning = `İlk yarı beklenen gol: ${homeTeamName} ${fhHome.toFixed(2)} - ${awayTeamName} ${fhAway.toFixed(2)}. Ev sahibi erken baskı kurabilir.`;
     } else if (fhDiff < -0.3) {
       firstHalfPrediction = awayTeamName;
       firstHalfConfidence = fhDiff < -0.5 ? 'orta' : 'düşük';
-      firstHalfReasoning = `İlk yarı beklenen gol: ${homeTeamName} ${input.poissonFirstHalfHome.toFixed(2)} - ${awayTeamName} ${input.poissonFirstHalfAway.toFixed(2)}. Deplasman takımı avantajlı.`;
+      firstHalfProbability = fhAwayWinProb;
+      firstHalfReasoning = `İlk yarı beklenen gol: ${homeTeamName} ${fhHome.toFixed(2)} - ${awayTeamName} ${fhAway.toFixed(2)}. Deplasman takımı avantajlı.`;
     } else {
       firstHalfPrediction = 'Beraberlik';
       firstHalfConfidence = 'orta';
-      firstHalfReasoning = `İlk yarı beklenen gol çok yakın (${input.poissonFirstHalfHome.toFixed(2)} vs ${input.poissonFirstHalfAway.toFixed(2)}). İlk yarı beraberlik bekleniyor.`;
+      firstHalfProbability = fhDrawProb;
+      firstHalfReasoning = `İlk yarı beklenen gol çok yakın (${fhHome.toFixed(2)} vs ${fhAway.toFixed(2)}). İlk yarı beraberlik bekleniyor.`;
     }
   } else {
     firstHalfPrediction = scoreDiff > 15 ? homeTeamName : scoreDiff < -15 ? awayTeamName : 'Beraberlik';
@@ -493,7 +530,129 @@ function generatePredictions(input: PredictionInput): Prediction[] {
     prediction: firstHalfPrediction,
     confidence: firstHalfConfidence,
     reasoning: firstHalfReasoning,
+    probability: firstHalfProbability,
   });
+
+  // 6. İY/MS (HT/FT) - İlk yarı × Maç sonu çapraz matris
+  if (input.poissonFirstHalfHome !== undefined && input.poissonFirstHalfAway !== undefined &&
+      pHomeWin !== undefined && pDraw !== undefined && pAwayWin !== undefined) {
+    const fhHome = input.poissonFirstHalfHome;
+    const fhAway = input.poissonFirstHalfAway;
+    
+    // Calculate first half probabilities
+    let fhHomeWinProb = 0, fhDrawProb = 0, fhAwayWinProb = 0;
+    for (let h = 0; h <= 4; h++) {
+      for (let a = 0; a <= 4; a++) {
+        const prob = inlinePoissonProb(fhHome, h) * inlinePoissonProb(fhAway, a);
+        if (h > a) fhHomeWinProb += prob;
+        else if (h === a) fhDrawProb += prob;
+        else fhAwayWinProb += prob;
+      }
+    }
+
+    // Full-time probabilities (already 0-100 range)
+    const ftHome = pHomeWin / 100;
+    const ftDraw = pDraw / 100;
+    const ftAway = pAwayWin / 100;
+
+    // 9-way HT/FT combinations with conditional probability adjustment
+    // P(HT=X, FT=Y) ≈ P(HT=X) × P(FT=Y | HT=X)
+    // Simplified: use cross product with small correlation adjustments
+    const htftCombinations = [
+      { ht: 'Ev', ft: 'Ev', prob: fhHomeWinProb * ftHome * 1.3 },      // Leading team more likely to win
+      { ht: 'Ev', ft: 'Ber', prob: fhHomeWinProb * ftDraw * 0.7 },     // Less likely to lose lead to draw
+      { ht: 'Ev', ft: 'Dep', prob: fhHomeWinProb * ftAway * 0.4 },     // Rare comeback
+      { ht: 'Ber', ft: 'Ev', prob: fhDrawProb * ftHome * 0.9 },
+      { ht: 'Ber', ft: 'Ber', prob: fhDrawProb * ftDraw * 1.4 },       // Drawn at HT often stays drawn
+      { ht: 'Ber', ft: 'Dep', prob: fhDrawProb * ftAway * 0.9 },
+      { ht: 'Dep', ft: 'Ev', prob: fhAwayWinProb * ftHome * 0.4 },     // Rare comeback
+      { ht: 'Dep', ft: 'Ber', prob: fhAwayWinProb * ftDraw * 0.7 },
+      { ht: 'Dep', ft: 'Dep', prob: fhAwayWinProb * ftAway * 1.3 },
+    ];
+
+    // Normalize probabilities
+    const totalProb = htftCombinations.reduce((sum, c) => sum + c.prob, 0);
+    htftCombinations.forEach(c => { c.prob = (c.prob / totalProb) * 100; });
+
+    // Find the most likely HT/FT combination
+    htftCombinations.sort((a, b) => b.prob - a.prob);
+    const bestHtft = htftCombinations[0];
+    const htftProbability = bestHtft.prob;
+
+    let htftConfidence: 'düşük' | 'orta' | 'yüksek' = 'düşük';
+    if (htftProbability > 30) htftConfidence = 'yüksek';
+    else if (htftProbability > 20) htftConfidence = 'orta';
+
+    const htLabel = bestHtft.ht === 'Ev' ? homeTeamName : bestHtft.ht === 'Dep' ? awayTeamName : 'Beraberlik';
+    const ftLabel = bestHtft.ft === 'Ev' ? homeTeamName : bestHtft.ft === 'Dep' ? awayTeamName : 'Beraberlik';
+
+    predictions.push({
+      type: 'İlk Yarı / Maç Sonucu',
+      prediction: `${bestHtft.ht} / ${bestHtft.ft}`,
+      confidence: htftConfidence,
+      reasoning: `İY/MS çapraz matris: ${htLabel} (İY) / ${ftLabel} (MS) — %${htftProbability.toFixed(1)} olasılık. İlk yarı beklenen gol: ${fhHome.toFixed(2)}-${fhAway.toFixed(2)}.`,
+      probability: htftProbability,
+    });
+  }
+
+  // 7. İlk Yarı Alt/Üst 0.5 - Yarı-Poisson goal line
+  if (input.poissonFirstHalfHome !== undefined && input.poissonFirstHalfAway !== undefined) {
+    const fhHome = input.poissonFirstHalfHome;
+    const fhAway = input.poissonFirstHalfAway;
+    const fhTotalExpected = fhHome + fhAway;
+
+    // Calculate first half over 0.5 probability
+    const p00 = inlinePoissonProb(fhHome, 0) * inlinePoissonProb(fhAway, 0);
+    const fhOver05 = (1 - p00) * 100;
+
+    // Calculate first half over 1.5 probability
+    let fhUnder15Prob = 0;
+    for (let h = 0; h <= 1; h++) {
+      for (let a = 0; a <= 1; a++) {
+        if (h + a <= 1) {
+          fhUnder15Prob += inlinePoissonProb(fhHome, h) * inlinePoissonProb(fhAway, a);
+        }
+      }
+    }
+    const fhOver15 = (1 - fhUnder15Prob) * 100;
+
+    // Pick the most actionable line (0.5 or 1.5)
+    let fhGoalPrediction: string;
+    let fhGoalConfidence: 'düşük' | 'orta' | 'yüksek';
+    let fhGoalProbability: number;
+    let fhGoalReasoning: string;
+
+    // Prefer 0.5 line when over probability is high, or 1.5 when appropriate
+    if (fhOver05 > 75) {
+      fhGoalPrediction = 'İY 0.5 Üst';
+      fhGoalConfidence = fhOver05 > 85 ? 'yüksek' : 'orta';
+      fhGoalProbability = fhOver05;
+      fhGoalReasoning = `İlk yarıda en az 1 gol olasılığı %${fhOver05.toFixed(0)}. Beklenen ilk yarı gol: ${fhTotalExpected.toFixed(2)}.`;
+    } else if (fhOver05 < 50) {
+      fhGoalPrediction = 'İY 0.5 Alt';
+      fhGoalConfidence = fhOver05 < 35 ? 'yüksek' : 'orta';
+      fhGoalProbability = 100 - fhOver05;
+      fhGoalReasoning = `İlk yarıda golsüz kalma olasılığı %${(100 - fhOver05).toFixed(0)}. Savunma ağırlıklı başlangıç bekleniyor.`;
+    } else if (fhOver15 > 55) {
+      fhGoalPrediction = 'İY 1.5 Üst';
+      fhGoalConfidence = fhOver15 > 65 ? 'orta' : 'düşük';
+      fhGoalProbability = fhOver15;
+      fhGoalReasoning = `İlk yarıda 2+ gol olasılığı %${fhOver15.toFixed(0)}. Hücum ağırlıklı bir başlangıç bekleniyor.`;
+    } else {
+      fhGoalPrediction = 'İY 1.5 Alt';
+      fhGoalConfidence = 'orta';
+      fhGoalProbability = 100 - fhOver15;
+      fhGoalReasoning = `İlk yarıda 1 veya daha az gol olasılığı %${(100 - fhOver15).toFixed(0)}. Temkinli bir başlangıç bekleniyor.`;
+    }
+
+    predictions.push({
+      type: 'İki Yarıda da Gol',
+      prediction: fhGoalPrediction,
+      confidence: fhGoalConfidence,
+      reasoning: fhGoalReasoning,
+      probability: fhGoalProbability,
+    });
+  }
 
   return predictions;
 }
@@ -535,7 +694,6 @@ function generateKeyFactors(
 ): string[] {
   const factors: string[] = [];
   
-  // Puan durumu faktörü
   if (homeStanding.position <= 4) {
     factors.push(`${homeStanding.team.name} şampiyonluk yarışında (${homeStanding.position}. sıra, ${homeStanding.points} puan)`);
   }
@@ -543,7 +701,6 @@ function generateKeyFactors(
     factors.push(`${awayStanding.team.name} liderlik mücadelesinde (${awayStanding.position}. sıra, ${awayStanding.points} puan)`);
   }
   
-  // Form faktörü
   if (homeFormScore >= 70) {
     factors.push(`${homeStanding.team.name} son 5 maçta üstün form (${homeFormScore}% performans)`);
   }
@@ -551,7 +708,6 @@ function generateKeyFactors(
     factors.push(`${awayStanding.team.name} mükemmel deplasman serisi (${awayFormScore}% performans)`);
   }
   
-  // Gol faktörleri
   const homeGoalAvg = homeStanding.goalsFor / homeStanding.playedGames;
   const awayGoalAvg = awayStanding.goalsFor / awayStanding.playedGames;
   
@@ -562,13 +718,11 @@ function generateKeyFactors(
     factors.push(`${awayStanding.team.name} hücum gücü: maç başına ${awayGoalAvg.toFixed(1)} gol`);
   }
   
-  // H2H faktörü
   if (h2h.lastMatches.length > 0) {
     const totalH2H = h2h.homeWins + h2h.awayWins + h2h.draws;
     factors.push(`Son ${totalH2H} karşılaşma: ${h2h.homeWins} ev sahibi, ${h2h.awayWins} deplasman, ${h2h.draws} beraberlik`);
   }
   
-  // Savunma faktörü
   const homeDefense = homeStanding.goalsAgainst / homeStanding.playedGames;
   const awayDefense = awayStanding.goalsAgainst / awayStanding.playedGames;
   
@@ -579,7 +733,7 @@ function generateKeyFactors(
     factors.push(`${awayStanding.team.name} defansif güç: maç başına ${awayDefense.toFixed(1)} gol yiyor`);
   }
 
-  return factors.slice(0, 5); // En fazla 5 faktör
+  return factors.slice(0, 5);
 }
 
 // Mock veriden gerçek veriye geçiş için fallback
@@ -589,7 +743,6 @@ export function generateMockPrediction(
   league: string,
   matchDate: string
 ): MatchAnalysis {
-  // Basit mock veri döndür (API çalışmadığında)
   return {
     input: { league, homeTeam: homeTeamName, awayTeam: awayTeamName, matchDate },
     homeTeamStats: {
