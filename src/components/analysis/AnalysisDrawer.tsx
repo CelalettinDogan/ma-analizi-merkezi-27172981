@@ -155,12 +155,22 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
     }
   }, []);
 
+  const isInteractiveTarget = useCallback((target: HTMLElement, container: HTMLElement) => {
+    const interactive = target.closest(INTERACTIVE_SELECTOR);
+    // If the matched interactive element is the wrapper itself, it's not a nested interactive
+    return interactive !== null && interactive !== container;
+  }, []);
+
   const handlePeekTouchEnd = useCallback((e: React.TouchEvent) => {
     if (peekTouchMoved.current) return;
-    const target = e.target as HTMLElement;
-    if (target.closest(INTERACTIVE_SELECTOR)) return;
+    if (isInteractiveTarget(e.target as HTMLElement, e.currentTarget as HTMLElement)) return;
     expandToFull();
-  }, [expandToFull]);
+  }, [expandToFull, isInteractiveTarget]);
+
+  const handlePeekClick = useCallback((e: React.MouseEvent) => {
+    if (isInteractiveTarget(e.target as HTMLElement, e.currentTarget as HTMLElement)) return;
+    expandToFull();
+  }, [expandToFull, isInteractiveTarget]);
 
   const handlePeekKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -232,6 +242,7 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
                 onTouchMove={handlePeekTouchMove}
                 onTouchEnd={handlePeekTouchEnd}
                 onKeyDown={handlePeekKeyDown}
+                onClick={handlePeekClick}
               >
                 <AnalysisHeroSummary analysis={analysis} />
               </div>
