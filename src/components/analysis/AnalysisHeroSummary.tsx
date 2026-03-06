@@ -1,14 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ChevronUp, Target } from 'lucide-react';
+import { ChevronUp } from 'lucide-react';
 import { MatchAnalysis, Prediction } from '@/types/match';
 import { getHybridConfidence, getConfidenceLevel, cn } from '@/lib/utils';
 import ConfidenceBreakdownTooltip from './ConfidenceBreakdownTooltip';
-import { Button } from '@/components/ui/button';
 
 interface AnalysisHeroSummaryProps {
   analysis: MatchAnalysis;
-  onExpand: () => void;
 }
 
 const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis, onExpand }) => {
