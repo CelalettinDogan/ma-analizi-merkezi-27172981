@@ -30,11 +30,15 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
   const drawerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Touch tracking
+  // Touch tracking (drag handle)
   const touchStartY = useRef(0);
   const touchStartTime = useRef(0);
   const currentTranslateY = useRef(0);
   const isDragging = useRef(false);
+
+  // Peek tap-to-expand tracking
+  const peekTouchStartY = useRef(0);
+  const peekTouchMoved = useRef(false);
 
   // Mount → forced reflow → animate in
   useEffect(() => {
@@ -134,6 +138,37 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
     }
   }, [snapPoint, onClose]);
 
+  // Peek tap-to-expand handlers
+  const INTERACTIVE_SELECTOR = 'button, a, input, textarea, select, [role="button"], [role="link"], [role="tab"], [data-interactive], [contenteditable="true"]';
+  const PEEK_DRAG_THRESHOLD = 8;
+
+  const handlePeekTouchStart = useCallback((e: React.TouchEvent) => {
+    peekTouchStartY.current = e.touches[0].clientY;
+    peekTouchMoved.current = false;
+  }, []);
+
+  const handlePeekTouchMove = useCallback((e: React.TouchEvent) => {
+    if (peekTouchMoved.current) return;
+    const delta = Math.abs(e.touches[0].clientY - peekTouchStartY.current);
+    if (delta > PEEK_DRAG_THRESHOLD) {
+      peekTouchMoved.current = true;
+    }
+  }, []);
+
+  const handlePeekTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (peekTouchMoved.current) return;
+    const target = e.target as HTMLElement;
+    if (target.closest(INTERACTIVE_SELECTOR)) return;
+    expandToFull();
+  }, [expandToFull]);
+
+  const handlePeekKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      expandToFull();
+    }
+  }, [expandToFull]);
+
   if (!mounted) return null;
 
   const height = getDrawerHeight();
@@ -187,8 +222,19 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
         {analysis && (
           <>
             {isPeek ? (
-              /* Peek mode: Hero Summary only */
-              <AnalysisHeroSummary analysis={analysis} onExpand={expandToFull} />
+              /* Peek mode: Hero Summary — tap anywhere to expand */
+              <div
+                role="button"
+                tabIndex={0}
+                aria-label="Detaylar için dokun"
+                className="cursor-pointer transition-transform duration-150 active:scale-[0.995]"
+                onTouchStart={handlePeekTouchStart}
+                onTouchMove={handlePeekTouchMove}
+                onTouchEnd={handlePeekTouchEnd}
+                onKeyDown={handlePeekKeyDown}
+              >
+                <AnalysisHeroSummary analysis={analysis} />
+              </div>
             ) : (
               /* Full mode: All content */
               <div
