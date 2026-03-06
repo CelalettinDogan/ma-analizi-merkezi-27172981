@@ -222,8 +222,19 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
         {analysis && (
           <>
             {isPeek ? (
-              /* Peek mode: Hero Summary only */
-              <AnalysisHeroSummary analysis={analysis} onExpand={expandToFull} />
+              /* Peek mode: Hero Summary — tap anywhere to expand */
+              <div
+                role="button"
+                tabIndex={0}
+                aria-label="Detaylar için dokun"
+                className="cursor-pointer transition-transform duration-150 active:scale-[0.995]"
+                onTouchStart={handlePeekTouchStart}
+                onTouchMove={handlePeekTouchMove}
+                onTouchEnd={handlePeekTouchEnd}
+                onKeyDown={handlePeekKeyDown}
+              >
+                <AnalysisHeroSummary analysis={analysis} />
+              </div>
             ) : (
               /* Full mode: All content */
               <div
