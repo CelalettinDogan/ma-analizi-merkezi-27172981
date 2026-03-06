@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Target, TrendingUp, Sparkles, Trophy } from 'lucide-react';
+import { Target, TrendingUp, Sparkles, Trophy, Shield } from 'lucide-react';
 import { Prediction, MatchInput } from '@/types/match';
 import { AddToSetButton } from '@/components/analysis-set';
 import { Progress } from '@/components/ui/progress';
@@ -58,8 +58,32 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matc
               %{Math.round(prediction.probability!)}
             </span>
           )}
+          {prediction.riskLevel && (
+            <span className={cn(
+              "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
+              prediction.riskLevel === 'low' ? 'bg-win/20 text-win' :
+              prediction.riskLevel === 'medium' ? 'bg-draw/20 text-draw' :
+              'bg-loss/20 text-loss'
+            )}>
+              <Shield className="w-3 h-3" />
+              {prediction.riskLevel === 'low' ? 'D.Risk' : prediction.riskLevel === 'medium' ? 'O.Risk' : 'Y.Risk'}
+            </span>
+          )}
         </div>
       </div>
+
+      {/* Market Score Bar (if available) */}
+      {prediction.marketScore !== undefined && prediction.marketScore > 0 && (
+        <div className="mb-4 p-3 rounded-lg bg-muted/30">
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className="font-semibold text-primary flex items-center gap-1">
+              📊 Market Skoru
+            </span>
+            <span className="font-bold text-primary">%{prediction.marketScore}</span>
+          </div>
+          <Progress value={prediction.marketScore} className="h-2" />
+        </div>
+      )}
 
       {/* Confidence Bars */}
       {prediction.isAIPowered && (prediction.aiConfidence || prediction.mathConfidence) && (

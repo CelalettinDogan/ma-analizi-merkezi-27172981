@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Sparkles, Check, Star, AlertTriangle, Info } from 'lucide-react';
+import { Plus, Sparkles, Check, Star, AlertTriangle, Info, Crown } from 'lucide-react';
 import { Prediction, MatchInput } from '@/types/match';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -38,9 +38,14 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const { addToSet, items } = useAnalysisSet();
 
-  // Sort predictions by hybrid confidence (highest first)
+  // Sort predictions by marketScore (if available) or hybrid confidence
   const sortedPredictions = useMemo(() => {
-    return [...predictions].sort((a, b) => getHybridConfidence(b) - getHybridConfidence(a));
+    return [...predictions].sort((a, b) => {
+      if (a.marketScore !== undefined && b.marketScore !== undefined) {
+        return (b.marketScore || 0) - (a.marketScore || 0);
+      }
+      return getHybridConfidence(b) - getHybridConfidence(a);
+    });
   }, [predictions]);
 
   const isInSet = (prediction: Prediction) => {
@@ -101,7 +106,7 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
                 )}
               >
                 <div className="flex items-center gap-2">
-                  {/* Simplified: just type + confidence icon */}
+                  {prediction.isRecommended && <Crown className="w-3.5 h-3.5 text-primary" />}
                   <span>{prediction.type}</span>
                   <LevelIcon className="w-3.5 h-3.5" />
                   {inSet && <Check className="w-3.5 h-3.5" />}
@@ -149,11 +154,11 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
                     </div>
                   </div>
 
-                  {/* Single Hybrid Progress Bar */}
+                  {/* Market Score or Hybrid Progress Bar */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
-                        <Sparkles className="w-3 h-3" /> Hibrit Skor
+                        <Sparkles className="w-3 h-3" /> {selectedPrediction.marketScore !== undefined ? 'Market Skoru' : 'Hibrit Skor'}
                       </span>
                       <span className={cn("font-medium", color)}>%{Math.round(hybridConfidence)}</span>
                     </div>

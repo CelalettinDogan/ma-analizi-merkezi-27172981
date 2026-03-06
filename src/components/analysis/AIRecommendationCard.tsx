@@ -26,8 +26,11 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showFullReasoning, setShowFullReasoning] = useState(false);
   
-  // Sort predictions by hybrid confidence (highest first) and select best one
+  // Sort predictions by marketScore (if available) or hybrid confidence
   const sortedPredictions = [...predictions].sort((a, b) => {
+    if (a.marketScore !== undefined && b.marketScore !== undefined) {
+      return (b.marketScore || 0) - (a.marketScore || 0);
+    }
     const aHybrid = getHybridConfidence(a);
     const bHybrid = getHybridConfidence(b);
     return bHybrid - aHybrid;
@@ -94,14 +97,29 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
           <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
             {mainPrediction.prediction}
           </h3>
-          <p className="text-sm text-muted-foreground">{mainPrediction.type}</p>
+          <div className="flex items-center justify-center gap-2">
+            <p className="text-sm text-muted-foreground">{mainPrediction.type}</p>
+            {mainPrediction.riskLevel && (
+              <span className={cn(
+                "text-xs px-2 py-0.5 rounded-full font-medium",
+                mainPrediction.riskLevel === 'low' ? 'bg-emerald-500/20 text-emerald-400' :
+                mainPrediction.riskLevel === 'medium' ? 'bg-amber-500/20 text-amber-400' :
+                'bg-red-500/20 text-red-400'
+              )}>
+                {mainPrediction.riskLevel === 'low' ? 'Düşük Risk' :
+                 mainPrediction.riskLevel === 'medium' ? 'Orta Risk' : 'Yüksek Risk'}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Single Hybrid Confidence Bar + Tooltip */}
+        {/* Market Score or Hybrid Confidence Bar + Tooltip */}
         <div className="mb-5">
           <div className="flex items-center justify-between text-xs mb-2">
             <div className="flex items-center gap-1.5">
-              <span className="text-muted-foreground">Hibrit Güven Skoru</span>
+              <span className="text-muted-foreground">
+                {mainPrediction.marketScore !== undefined ? 'Market Skoru' : 'Hibrit Güven Skoru'}
+              </span>
               <ConfidenceBreakdownTooltip prediction={mainPrediction} hybridConfidence={hybridConfidence} />
             </div>
             <span className={cn("font-bold text-sm", color)}>%{Math.round(hybridConfidence)}</span>

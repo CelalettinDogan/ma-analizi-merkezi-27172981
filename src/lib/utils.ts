@@ -149,7 +149,13 @@ export function getHybridConfidence(prediction: {
   aiConfidence?: number;
   mathConfidence?: number;
   confidence?: string;
+  marketScore?: number;
 }, weights?: { aiWeight?: number; mathWeight?: number }): number {
+  // If marketScore is available, use it as the primary confidence indicator
+  if (prediction.marketScore !== undefined && prediction.marketScore > 0) {
+    return prediction.marketScore;
+  }
+  
   const ai = prediction.aiConfidence || 0;
   const math = prediction.mathConfidence || 0;
   

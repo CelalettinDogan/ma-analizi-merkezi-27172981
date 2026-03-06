@@ -22,6 +22,7 @@ import { getAllMLInferences, type MLFeatures } from '@/services/mlInferenceServi
 import { calculatePoissonExpectedGoals, generateScoreProbabilities, calculateMatchResultProbabilities, calculateGoalLineProbabilities as calcGoalLines, calculateBTTSProbability, calculatePowerIndexes, getMostLikelyScores } from '@/utils/poissonCalculator';
 import { calculateMatchImportance, calculateMomentum, calculateCleanSheetRatio } from '@/utils/contextAnalyzer';
 import { isDerbyMatch } from '@/utils/derbyDetector';
+import { enrichPredictionsWithMarketScores, type MarketReliabilityData } from '@/utils/marketScoring';
 
 // 3 katmanlı hibrit güven hesaplama: AI + Math + ML
 function calculateHybridConfidence(
@@ -717,6 +718,33 @@ export function useMatchAnalysis() {
         console.error('AI prediction error (falling back to math):', aiError);
       }
 
+      // === MARKET SCORING: Historical reliability + FMS hesapla ===
+      let marketScoredPredictions = finalPredictions;
+      try {
+        const { data: mlStats } = await supabase
+          .from('ml_model_stats')
+          .select('prediction_type, accuracy_percentage, total_predictions');
+        
+        const historicalData: MarketReliabilityData[] = (mlStats || []).map((s: any) => ({
+          predictionType: s.prediction_type,
+          accuracyPercentage: s.accuracy_percentage ? Number(s.accuracy_percentage) : null,
+          totalPredictions: s.total_predictions ? Number(s.total_predictions) : null,
+        }));
+        
+        marketScoredPredictions = enrichPredictionsWithMarketScores(
+          finalPredictions,
+          mathResult.predictions,
+          historicalData,
+        );
+        
+        const recommended = marketScoredPredictions.find(p => p.isRecommended);
+        if (recommended) {
+          console.log(`[useMatchAnalysis] Best market: ${recommended.type} (FMS: ${recommended.marketScore}, risk: ${recommended.riskLevel})`);
+        }
+      } catch (e) {
+        console.warn('[useMatchAnalysis] Market scoring failed, using original order:', e);
+      }
+
       const result: MatchAnalysis = {
         ...mathResult,
         input: {
@@ -724,7 +752,7 @@ export function useMatchAnalysis() {
           homeTeamCrest: homeStanding.team.crest,
           awayTeamCrest: awayStanding.team.crest,
         },
-        predictions: finalPredictions,
+        predictions: marketScoredPredictions,
         isAIEnhanced,
         // Advanced data
         insights,
