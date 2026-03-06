@@ -39,6 +39,14 @@ export interface Prediction {
   aiConfidence?: number;
   mathConfidence?: number;
   probability?: number; // Real Poisson probability (0-100), used for primary selection
+  // Market-aware scoring fields
+  marketScore?: number;        // Final Market Score (0-100)
+  signalStrength?: number;     // Sinyal gücü (0-100)
+  modelAgreement?: number;     // Model uyumu (0-100)
+  historicalReliability?: number; // Tarihsel güvenilirlik (0-100)
+  edgeClarity?: number;        // Edge netliği (0-100)
+  riskLevel?: 'low' | 'medium' | 'high';
+  isRecommended?: boolean;     // En iyi market mi?
 }
 
 export interface MatchInsights {

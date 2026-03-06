@@ -255,7 +255,7 @@ function generatePredictions(input: PredictionInput): Prediction[] {
     const maxProb = Math.max(pHomeWin, pDraw, pAwayWin);
     matchProbability = maxProb; // Real Poisson probability
     
-    if (pHomeWin > 55 && pHomeWin === maxProb) {
+    if (pHomeWin > 58 && pHomeWin === maxProb) {
       matchResult = `${homeTeamName} Kazanır`;
       matchConfidence = 'yüksek';
       matchReasoning = `Poisson modeli %${pHomeWin.toFixed(0)} olasılıkla ev sahibi galibiyeti gösteriyor. ${homeTeamName} ${homePosition}. sırada.`;
@@ -263,7 +263,7 @@ function generatePredictions(input: PredictionInput): Prediction[] {
       matchResult = `${homeTeamName} Kazanır`;
       matchConfidence = 'orta';
       matchReasoning = `Poisson modeli %${pHomeWin.toFixed(0)} olasılıkla ${homeTeamName} hafif favori. Ev sahibi avantajı etkili.`;
-    } else if (pAwayWin > 55 && pAwayWin === maxProb) {
+    } else if (pAwayWin > 58 && pAwayWin === maxProb) {
       matchResult = `${awayTeamName} Kazanır`;
       matchConfidence = 'yüksek';
       matchReasoning = `Poisson modeli %${pAwayWin.toFixed(0)} olasılıkla deplasman galibiyeti gösteriyor. ${awayTeamName} ${awayPosition}. sırada.`;
@@ -332,22 +332,22 @@ function generatePredictions(input: PredictionInput): Prediction[] {
     const leagueInfo = input.leagueOver25Pct ? ` Lig ortalaması: %${input.leagueOver25Pct.toFixed(0)}.` : '';
     
     // Real probability: whichever side (over or under) the prediction picks
-    if (over25Prob > 0.60) {
+    if (over25Prob > 0.58) {
       goalPrediction = '2.5 Üst';
       goalConfidence = 'yüksek';
       goalProbability = over25Prob * 100;
       goalReasoning = `Poisson modeli %${probPct} olasılıkla 2.5 üstü gösteriyor.${leagueInfo} Beklenen toplam: ${expectedGoals.toFixed(1)} gol.`;
-    } else if (over25Prob > 0.55) {
+    } else if (over25Prob > 0.52) {
       goalPrediction = '2.5 Üst';
       goalConfidence = 'orta';
       goalProbability = over25Prob * 100;
       goalReasoning = `Poisson modeli %${probPct} olasılıkla hafif üst yönde.${leagueInfo} ${homeTeamName} ${homeGoalAvg.scored.toFixed(2)}, ${awayTeamName} ${awayGoalAvg.scored.toFixed(2)} gol ortalamasına sahip.`;
-    } else if (over25Prob < 0.40) {
+    } else if (over25Prob < 0.42) {
       goalPrediction = '2.5 Alt';
       goalConfidence = 'yüksek';
       goalProbability = (1 - over25Prob) * 100;
       goalReasoning = `Poisson modeli %${(100 - over25Prob * 100).toFixed(0)} olasılıkla alt gösteriyor.${leagueInfo} Düşük gol beklentisi: ${expectedGoals.toFixed(1)}.`;
-    } else if (over25Prob < 0.45) {
+    } else if (over25Prob < 0.48) {
       goalPrediction = '2.5 Alt';
       goalConfidence = 'orta';
       goalProbability = (1 - over25Prob) * 100;
@@ -395,22 +395,22 @@ function generatePredictions(input: PredictionInput): Prediction[] {
   let bttsProbability: number | undefined;
 
   if (pBtts !== undefined) {
-    if (pBtts > 65) {
+    if (pBtts > 60) {
       bttsResult = 'Evet';
       bttsConfidence = 'yüksek';
       bttsProbability = pBtts;
       bttsReasoning = `Poisson modeli %${pBtts.toFixed(0)} karşılıklı gol olasılığı hesapladı. Her iki takım da gol atma kapasitesine sahip.`;
-    } else if (pBtts > 55) {
+    } else if (pBtts > 52) {
       bttsResult = 'Evet';
       bttsConfidence = 'orta';
       bttsProbability = pBtts;
       bttsReasoning = `Poisson modeli %${pBtts.toFixed(0)} karşılıklı gol olasılığı gösteriyor. ${homeTeamName} ${homeGoalAvg.conceded.toFixed(2)} gol yiyor.`;
-    } else if (pBtts < 35) {
+    } else if (pBtts < 40) {
       bttsResult = 'Hayır';
       bttsConfidence = 'yüksek';
       bttsProbability = 100 - pBtts;
       bttsReasoning = `Poisson modeli %${(100 - pBtts).toFixed(0)} olasılıkla bir takımın gol atamayacağını gösteriyor.`;
-    } else if (pBtts < 45) {
+    } else if (pBtts < 48) {
       bttsResult = 'Hayır';
       bttsConfidence = 'orta';
       bttsProbability = 100 - pBtts;

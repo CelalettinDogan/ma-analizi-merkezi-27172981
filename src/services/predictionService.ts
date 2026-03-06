@@ -43,12 +43,18 @@ function calculateHybridConfidence(prediction: Prediction): number {
   return (ai + math) / 2;
 }
 
-// Select the best prediction based on real Poisson probability (Phase 1)
-// Falls back to hybrid confidence if probability is not available
+// Select the best prediction based on market score (Phase 2) or Poisson probability fallback
 function selectBestPrediction(predictions: Prediction[]): Prediction {
-  // First, try to find the prediction with the highest real probability
-  const withProbability = predictions.filter(p => p.probability !== undefined && p.probability > 0);
+  // Phase 2: Use marketScore if available
+  const withMarketScore = predictions.filter(p => p.marketScore !== undefined && p.marketScore > 0);
+  if (withMarketScore.length > 0) {
+    return withMarketScore.reduce((best, current) => {
+      return (current.marketScore || 0) > (best.marketScore || 0) ? current : best;
+    });
+  }
   
+  // Fallback Phase 1: try Poisson probability
+  const withProbability = predictions.filter(p => p.probability !== undefined && p.probability > 0);
   if (withProbability.length > 0) {
     return withProbability.reduce((best, current) => {
       return (current.probability || 0) > (best.probability || 0) ? current : best;
