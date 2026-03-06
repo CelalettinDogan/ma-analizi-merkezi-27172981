@@ -134,16 +134,16 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
         )}
       </motion.div>
 
-      {/* Expand button */}
-      <Button
-        variant="outline"
-        onClick={onExpand}
-        className="w-full gap-2 rounded-xl border-primary/30 text-primary hover:bg-primary/10 min-h-[44px]"
-      >
-        <Target className="w-4 h-4" />
-        Detaylı Analiz
-        <ChevronUp className="w-4 h-4" />
-      </Button>
+      {/* Tap affordance hint */}
+      <div className="flex flex-col items-center gap-1 pt-2 pb-1">
+        <ChevronUp
+          className="w-5 h-5 text-muted-foreground/40 animate-bounce"
+          style={{ animationDuration: '2s' }}
+        />
+        <span className="text-[10px] text-muted-foreground/40 tracking-wide">
+          Detaylar için dokun
+        </span>
+      </div>
     </div>
   );
 };
