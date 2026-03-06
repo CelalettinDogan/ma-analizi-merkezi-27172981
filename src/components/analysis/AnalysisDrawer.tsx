@@ -238,6 +238,7 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
                 onTouchMove={handlePeekTouchMove}
                 onTouchEnd={handlePeekTouchEnd}
                 onKeyDown={handlePeekKeyDown}
+                onClick={handlePeekClick}
               >
                 <AnalysisHeroSummary analysis={analysis} />
               </div>
