@@ -138,6 +138,37 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
     }
   }, [snapPoint, onClose]);
 
+  // Peek tap-to-expand handlers
+  const INTERACTIVE_SELECTOR = 'button, a, input, textarea, select, [role="button"], [role="link"], [role="tab"], [data-interactive], [contenteditable="true"]';
+  const PEEK_DRAG_THRESHOLD = 8;
+
+  const handlePeekTouchStart = useCallback((e: React.TouchEvent) => {
+    peekTouchStartY.current = e.touches[0].clientY;
+    peekTouchMoved.current = false;
+  }, []);
+
+  const handlePeekTouchMove = useCallback((e: React.TouchEvent) => {
+    if (peekTouchMoved.current) return;
+    const delta = Math.abs(e.touches[0].clientY - peekTouchStartY.current);
+    if (delta > PEEK_DRAG_THRESHOLD) {
+      peekTouchMoved.current = true;
+    }
+  }, []);
+
+  const handlePeekTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (peekTouchMoved.current) return;
+    const target = e.target as HTMLElement;
+    if (target.closest(INTERACTIVE_SELECTOR)) return;
+    expandToFull();
+  }, [expandToFull]);
+
+  const handlePeekKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      expandToFull();
+    }
+  }, [expandToFull]);
+
   if (!mounted) return null;
 
   const height = getDrawerHeight();
