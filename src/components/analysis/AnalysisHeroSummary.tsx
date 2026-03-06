@@ -9,7 +9,7 @@ interface AnalysisHeroSummaryProps {
   analysis: MatchAnalysis;
 }
 
-const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis, onExpand }) => {
+const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) => {
   // Best prediction
   const sortedPredictions = [...analysis.predictions].sort(
     (a, b) => getHybridConfidence(b) - getHybridConfidence(a)
