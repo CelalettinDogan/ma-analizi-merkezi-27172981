@@ -30,11 +30,15 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
   const drawerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Touch tracking
+  // Touch tracking (drag handle)
   const touchStartY = useRef(0);
   const touchStartTime = useRef(0);
   const currentTranslateY = useRef(0);
   const isDragging = useRef(false);
+
+  // Peek tap-to-expand tracking
+  const peekTouchStartY = useRef(0);
+  const peekTouchMoved = useRef(false);
 
   // Mount → forced reflow → animate in
   useEffect(() => {
