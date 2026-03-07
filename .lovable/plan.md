@@ -1,135 +1,79 @@
 
 
-# Hibrit Market Selection Engine — Refactor Planı
+# Satın Alma Sistemi — Sorun Analizi ve Düzeltme Planı
 
-## Mevcut Sorunlar
+## Sorunun Kökü
 
-1. **Eşitsiz confidence eşikleri**: `predictionEngine.ts`'de 1X2 marketi `>55%` ile "yüksek" olurken, BTTS `>65%` gerektiriyor. 1X2 doğası gereği daha polarize olduğu için neredeyse her maçta "yüksek" çıkıyor.
+Edge function loglarında net bir hata var:
 
-2. **`mathConfidenceToNumber` sabit mapping**: `yüksek=0.8`, `orta=0.6`, `düşük=0.4` — market türünden bağımsız. 1X2'nin "yüksek"i ile BTTS'nin "orta"sı arasında gerçek sinyal gücü farkı yansımıyor.
-
-3. **`selectBestPrediction`** en yüksek raw Poisson olasılığını seçiyor. 1X2'nin ham olasılığı (%55-65) doğal olarak BTTS'den (%50-60) yüksek çıkar, ama bu "daha güvenilir sinyal" demek değil.
-
-4. **Market reliability / historical accuracy** hiç kullanılmıyor. `ml_model_stats` tablosunda market bazlı doğruluk verileri var ama ana tahmin seçiminde değerlendirilmiyor.
-
----
-
-## Yeni Mimari: Market-Aware Hybrid Scoring
-
-### Katman 1: `src/utils/marketScoring.ts` (YENİ DOSYA)
-
-Her market için bağımsız bir **Final Market Score (FMS)** hesaplayan utility:
-
-```
-FMS = (signalStrength × 0.35) + (modelAgreement × 0.25) + (historicalReliability × 0.20) + (edgeClarity × 0.20)
+```text
+Google Play verification failed: 401
+"The current user has insufficient permissions to perform the requested operation."
+reason: "permissionDenied"
 ```
 
-Bileşenler:
-- **signalStrength**: Poisson olasılığının market-spesifik "kesinlik" eşiğinden ne kadar uzakta olduğu. 1X2'de %50 belirsizlik noktası, BTTS'de %50, O/U'da %50. Mesafe ne kadar büyükse sinyal o kadar güçlü.
-- **modelAgreement**: AI, Math ve ML'nin aynı yönde mi gösterdiği (0 veya 1, kısmi uyum 0.5)
-- **historicalReliability**: `ml_model_stats` tablosundan market bazlı accuracy oranı (0-1)
-- **edgeClarity**: Olasılığın belirsizlik bölgesinden (45-55%) ne kadar uzak olduğu, normalized
+Satın alma Android cihazda başarıyla gerçekleşiyor, ancak backend doğrulaması başarısız oluyor. Bu yüzden veritabanına abonelik kaydı yazılmıyor ve kullanıcı premium özelliklerden yararlanamıyor. "edge non code" hatası da bu doğrulama hatasının kullanıcıya yansıması.
 
-Market-spesifik kalibrasyon config'i:
+## İki Sorun Var
 
-```typescript
-const MARKET_CONFIG = {
-  'Maç Sonucu': { 
-    uncertaintyCenter: 33.3, // 3 yönlü market
-    volatilityPenalty: 0.15, // 3 sonuçlu → daha volatil
-    minEdgeThreshold: 12,    // %33+12 = %45'in altında edge yok
-  },
-  'Toplam Gol Alt/Üst': { 
-    uncertaintyCenter: 50,
-    volatilityPenalty: 0,
-    minEdgeThreshold: 8,
-  },
-  'Karşılıklı Gol': { 
-    uncertaintyCenter: 50,
-    volatilityPenalty: 0,
-    minEdgeThreshold: 8,
-  },
-  // ... diğer marketler
-};
+### Sorun 1: Google Play Console İzinleri (Manuel Ayar)
+
+Service Account'ın Google Play Console'da yeterli izni yok. Bu bir kod sorunu değil — Google Play Console'dan ayarlanması gerekiyor:
+
+1. **Google Play Console** → Ayarlar → API erişimi
+2. Service Account'ı bul (GOOGLE_PLAY_SERVICE_ACCOUNT_KEY JSON'daki `client_email`)
+3. "Erişimi yönet" → Şu izinleri ver:
+   - **Finansal verileri görüntüle**
+   - **Siparişleri ve abonelikleri yönet**
+4. Uygulama iznini **tüm uygulamalar** veya **app.golmetrik.android** olarak ayarla
+5. Değişikliklerin yayılması 15-30 dakika sürebilir
+
+### Sorun 2: Eski API Versiyonu (Kod Değişikliği)
+
+Her iki edge function da Google Play **Subscriptions v3 API** kullanıyor. Ancak yeni Base Plan modeli (basic-monthly gibi planIdentifier'lar) ile **Subscriptions v2 API** daha uyumlu ve önerilen modern API.
+
+v3 API URL'i subscription ID'yi path'te bekliyor — bu eski model. v2 API ise sadece purchaseToken ile çalışıyor ve tüm bilgiyi döndürüyor.
+
+```text
+// Eski (v3) — sorunlu:
+/v3/applications/{pkg}/purchases/subscriptions/{subId}/tokens/{token}
+
+// Yeni (v2) — önerilen:
+/v3/applications/{pkg}/purchases/subscriptionsv2/tokens/{token}
 ```
 
-1X2'ye `volatilityPenalty` uygulanması, 3 yönlü marketin doğal avantajını dengeler.
+## Yapılacak Değişiklikler
 
-### Katman 2: `predictionEngine.ts` Güncelleme
+### 1. `supabase/functions/verify-purchase/index.ts`
 
-Confidence eşiklerini market-spesifik ve simetrik hale getir:
+- `verifyGooglePlaySubscription` fonksiyonunu v2 API'ye geçir
+- v2 yanıt formatını parse et (farklı field isimleri: `lineItems`, `expiryTime` vs.)
+- `acknowledgeSubscription` fonksiyonunu v2 endpoint'e güncelle
+- Hata mesajlarını Türkçe ve kullanıcı dostu yap
 
-| Market | Yüksek | Orta | Düşük |
-|--------|--------|------|-------|
-| 1X2 (mevcut) | >55% | >45% | rest |
-| 1X2 (yeni) | >58% | >45% | rest |
-| BTTS (mevcut) | >65% | >55% | rest |
-| BTTS (yeni) | >60% | >52% | rest |
-| O/U (mevcut) | >60% | >55% | rest |
-| O/U (yeni) | >58% | >52% | rest |
+### 2. `supabase/functions/play-store-webhook/index.ts`
 
-Not: Değerler yapay dengeleme değil, market doğasına uygun kalibrasyon. BTTS eşikleri düşürülüyor çünkü binary markette %60 zaten güçlü sinyal.
+- `getSubscriptionDetails` fonksiyonunu aynı şekilde v2 API'ye geçir
+- v2 yanıt formatına göre field mapping'i güncelle
 
-### Katman 3: `Prediction` type genişletme (`types/match.ts`)
+### 3. `src/services/purchaseService.ts`
 
-```typescript
-export interface Prediction {
-  // ... mevcut alanlar
-  marketScore?: number;        // Final Market Score (0-100)
-  signalStrength?: number;     // Sinyal gücü (0-100)
-  modelAgreement?: number;     // Model uyumu (0-100)
-  historicalReliability?: number; // Tarihsel güvenilirlik (0-100)
-  edgeClarity?: number;        // Edge netliği (0-100)
-  riskLevel?: 'low' | 'medium' | 'high';
-  isRecommended?: boolean;     // En iyi market mi?
-}
+- `verifyPurchase` hata yakalama ve kullanıcıya gösterilen mesajları iyileştir
+- Edge function'dan dönen spesifik hataları (izin, token, config) ayrıştır
+
+## Sistem Akışı (Düzeltme Sonrası)
+
+```text
+Kullanıcı → Play Store → Satın alma başarılı
+  → purchaseToken alınır
+  → verify-purchase Edge Function çağrılır
+  → Google Play v2 API ile doğrulama
+  → premium_subscriptions tablosuna kayıt
+  → Kullanıcı premium olarak işaretlenir
+  → İptal/süre dolumu → play-store-webhook otomatik günceller
 ```
 
-### Katman 4: `useMatchAnalysis.ts` Güncelleme
+## Önemli Not
 
-Tahminler oluşturulduktan sonra, `marketScoring` utility'si ile her market için FMS hesapla:
-
-1. `ml_model_stats`'dan market bazlı historical accuracy çek (mevcut `getAIMathWeights` ile paralel)
-2. Her prediction'a `marketScore`, `signalStrength`, `modelAgreement`, `historicalReliability`, `edgeClarity`, `riskLevel` ekle
-3. En yüksek `marketScore`'a sahip prediction'ı `isRecommended: true` olarak işaretle
-4. Predictions array'ini `marketScore` sırasına göre sırala
-
-### Katman 5: `predictionService.ts` Güncelleme
-
-`selectBestPrediction` fonksiyonunu `marketScore` bazlı çalışacak şekilde güncelle:
-- `marketScore` varsa onu kullan
-- Yoksa mevcut Poisson probability fallback
-
-### Katman 6: UI Güncellemeleri
-
-**AIRecommendationCard**: En yüksek `marketScore`'lu prediction'ı göster (zaten `sortedPredictions[0]` mantığı var, sıralama `marketScore`'a geçecek)
-
-**PredictionCard**: Market Score progress bar'ı ekle + risk level badge
-
-**PredictionPillSelector**: Sıralamayı `marketScore` bazlı yap, recommended pill'e özel badge ekle
-
----
-
-## Değişecek Dosyalar
-
-1. **`src/utils/marketScoring.ts`** — YENİ: Market scoring engine
-2. **`src/utils/predictionEngine.ts`** — Confidence eşiklerini market-spesifik güncelle
-3. **`src/types/match.ts`** — Prediction interface genişlet
-4. **`src/hooks/useMatchAnalysis.ts`** — Market scoring entegrasyonu + historical reliability fetch
-5. **`src/services/predictionService.ts`** — `selectBestPrediction` güncelle
-6. **`src/lib/utils.ts`** — `getHybridConfidence`'ı marketScore-aware yap
-7. **`src/components/analysis/AIRecommendationCard.tsx`** — marketScore sıralama
-8. **`src/components/PredictionCard.tsx`** — Market score bar + risk badge
-9. **`src/components/analysis/PredictionPillSelector.tsx`** — marketScore sıralama + recommended badge
-
-## Korunacaklar
-
-- Mevcut 3 katmanlı hibrit mimari (AI + Math + ML) aynen kalacak
-- `prediction_features` ve `ml_model_stats` tablo yapıları değişmeyecek
-- Edge function'lar değişmeyecek
-- Confidence değerleri sahte dengeleme yapılmayacak — gerçek farklar korunacak
-
-## Continuous Learning Altyapısı
-
-Zaten mevcut olan `ml_model_stats` tablosu market bazlı accuracy takibi yapıyor. Yeni `historicalReliability` bileşeni bu veriyi aktif olarak kullanarak market selection'ı sürekli iyileştirecek. `train-ml-model` edge function haftalık çalışmaya devam edecek.
+Kod değişiklikleri yapılsa bile, **Google Play Console'daki Service Account izinleri düzeltilmeden** sistem çalışmayacak. Bu adım manuel olarak yapılmalı.
 
