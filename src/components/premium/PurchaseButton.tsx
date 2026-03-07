@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Crown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { purchaseService } from '@/services/purchaseService';
+import { usePlatformPremium } from '@/hooks/usePlatformPremium';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
