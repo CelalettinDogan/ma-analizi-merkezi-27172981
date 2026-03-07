@@ -329,6 +329,7 @@ const LivePage: React.FC = () => {
             <span>Otomatik güncelleme aktif (60 sn)</span>
           </motion.div>
         )}
+      </div>
       </main>
 
       <CommandPalette 

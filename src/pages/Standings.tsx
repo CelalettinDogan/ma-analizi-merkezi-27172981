@@ -316,6 +316,7 @@ const StandingsPage: React.FC = () => {
             </TabsContent>
           </Tabs>
         </motion.div>
+      </div>
       </main>
 
       {/* Command Palette */}

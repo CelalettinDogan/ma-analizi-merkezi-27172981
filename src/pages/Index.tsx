@@ -375,6 +375,7 @@ const Index: React.FC = () => {
 
 
 
+      </div>
       </main>
 
       {/* Analysis Drawer — full-screen overlay */}
