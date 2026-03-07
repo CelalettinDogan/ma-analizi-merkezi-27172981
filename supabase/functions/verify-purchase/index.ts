@@ -126,14 +126,14 @@ async function verifyGooglePlaySubscription(
   return response.json();
 }
 
-// Acknowledge the subscription (v1 acknowledge endpoint still works for v2 purchases)
+// Acknowledge the subscription using Subscriptions v2 API (no productId needed in path)
 async function acknowledgeSubscription(
   packageName: string,
-  productId: string,
   purchaseToken: string,
   accessToken: string
 ): Promise<void> {
-  const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptions/${productId}/tokens/${purchaseToken}:acknowledge`;
+  // v2 acknowledge endpoint — does not require productId, works with Base Plan model
+  const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptionsv2/tokens/${purchaseToken}:acknowledge`;
   
   const response = await fetch(url, {
     method: "POST",
@@ -148,6 +148,8 @@ async function acknowledgeSubscription(
     const error = await response.text();
     console.error("Acknowledge failed:", response.status, error);
     // Non-fatal — log but don't throw
+  } else {
+    console.log("Subscription acknowledged successfully via v2 API");
   }
 }
 
