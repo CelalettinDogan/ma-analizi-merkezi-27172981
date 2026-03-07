@@ -40,7 +40,7 @@ const AnalysisLimitBanner = ({ isVisible, onClose, onUpgrade }: AnalysisLimitBan
 
   const handleUpgrade = () => {
     onUpgrade();
-    navigate('/profile', { state: { openPremium: true } });
+    navigate('/premium');
   };
 
   return (

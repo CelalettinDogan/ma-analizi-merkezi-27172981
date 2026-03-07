@@ -62,7 +62,7 @@ const PremiumPromotionModal: React.FC<PremiumPromotionModalProps> = ({
 
   const handleUpgrade = () => {
     onClose();
-    navigate('/profile', { state: { openPremium: true } });
+    navigate('/premium');
   };
 
   return (
