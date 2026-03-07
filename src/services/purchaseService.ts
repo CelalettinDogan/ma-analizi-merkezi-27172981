@@ -58,6 +58,15 @@ export const PLAN_PRODUCTS = {
 
 const ALL_PRODUCT_IDS = Object.values(PRODUCTS);
 
+const BASE_PLAN_IDS: Record<string, string> = {
+  premium_basic_monthly: 'basic-monthly',
+  premium_basic_yearly: 'basic-yearly',
+  premium_plus_monthly: 'plus-monthly',
+  premium_plus_yearly: 'plus-yearly',
+  premium_pro_monthly: 'pro-monthly',
+  premium_pro_yearly: 'pro-yearly',
+};
+
 class PurchaseService {
   private isNative: boolean;
   private initialized = false;
@@ -139,7 +148,9 @@ class PurchaseService {
       // Open native Google Play purchase sheet
       const transaction = await NativePurchases.purchaseProduct({
         productIdentifier: productId,
+        planIdentifier: BASE_PLAN_IDS[productId] || '',
         productType: PURCHASE_TYPE.SUBS,
+        quantity: 1,
       });
 
       const purchaseToken = transaction?.purchaseToken || transaction?.transactionId;
