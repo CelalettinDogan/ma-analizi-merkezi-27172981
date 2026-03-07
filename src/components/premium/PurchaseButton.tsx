@@ -40,6 +40,7 @@ export const PurchaseButton: React.FC<PurchaseButtonProps> = ({
       const result = await purchaseService.purchaseSubscription(productId);
 
       if (result.success) {
+        refetch();
         toast.success(`${displayPlanName} üyeliğin aktif!`);
         onSuccess?.();
       } else {

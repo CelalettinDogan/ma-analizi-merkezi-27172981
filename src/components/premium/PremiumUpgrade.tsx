@@ -118,6 +118,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
       const result = await purchaseService.restorePurchases();
       
       if (result.success) {
+        refetch();
         toast.success('Satın almalar geri yüklendi!');
         onClose?.();
       } else {
