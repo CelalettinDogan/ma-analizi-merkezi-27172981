@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Crown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { purchaseService } from '@/services/purchaseService';
+import { usePlatformPremium } from '@/hooks/usePlatformPremium';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +29,7 @@ export const PurchaseButton: React.FC<PurchaseButtonProps> = ({
   onError,
 }) => {
   const [isLoading, setIsLoading] = React.useState(false);
+  const { refetch } = usePlatformPremium();
 
   // Get plan name from product ID if not provided
   const displayPlanName = planName || purchaseService.getPlanNameFromProductId(productId);
@@ -39,6 +41,7 @@ export const PurchaseButton: React.FC<PurchaseButtonProps> = ({
       const result = await purchaseService.purchaseSubscription(productId);
 
       if (result.success) {
+        refetch();
         toast.success(`${displayPlanName} üyeliğin aktif!`);
         onSuccess?.();
       } else {

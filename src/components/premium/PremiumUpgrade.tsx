@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { usePlatform } from '@/hooks/usePlatform';
+import { usePlatformPremium } from '@/hooks/usePlatformPremium';
 import { purchaseService, PRODUCTS, PLAN_PRODUCTS } from '@/services/purchaseService';
 import { PLAN_PRICES } from '@/constants/accessLevels';
 import { toast } from 'sonner';
@@ -73,6 +74,7 @@ const plans: PlanConfig[] = [
 
 export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
   const { isNative } = usePlatform();
+  const { refetch } = usePlatformPremium();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanConfig['id']>('premium_plus');
   const [isYearly, setIsYearly] = useState(true);
@@ -90,6 +92,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
         const result = await purchaseService.purchaseSubscription(productId);
         
         if (result.success) {
+          refetch();
           toast.success(`${planName} üyeliğin aktif edildi!`);
           onClose?.();
         } else {
@@ -115,6 +118,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
       const result = await purchaseService.restorePurchases();
       
       if (result.success) {
+        refetch();
         toast.success('Satın almalar geri yüklendi!');
         onClose?.();
       } else {

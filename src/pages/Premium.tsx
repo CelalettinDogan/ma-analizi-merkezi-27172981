@@ -96,8 +96,12 @@ const Premium = () => {
     setIsLoading(true);
     try {
       const r = await purchaseService.restorePurchases();
-      if (r.success) toast.success('Geri yüklendi!');
-      else toast.info(r.error || 'Bulunamadı');
+      if (r.success) {
+        refetch();
+        toast.success('Geri yüklendi!');
+      } else {
+        toast.info(r.error || 'Bulunamadı');
+      }
     } catch { toast.error('Hata'); }
     finally { setIsLoading(false); }
   };

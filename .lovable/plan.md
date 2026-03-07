@@ -1,98 +1,135 @@
 
 
-# Premium Abonelik Sistemi — Uçtan Uca Analiz Raporu
+# Hibrit Market Selection Engine — Refactor Planı
 
-## Genel Akış
+## Mevcut Sorunlar
 
-```text
-Kullanıcı → Play Store satın alma → purchaseToken alınır
-  → verify-purchase Edge Function → Google Play v2 API doğrulama
-  → premium_subscriptions tablosuna upsert → frontend refetch()
-  → usePremiumStatus → isPremium=true → özellikler açılır
-  
-İptal/süre dolumu → play-store-webhook → DB güncelleme
-  → is_active=false veya expires_at geçmiş → usePremiumStatus → isPremium=false
+1. **Eşitsiz confidence eşikleri**: `predictionEngine.ts`'de 1X2 marketi `>55%` ile "yüksek" olurken, BTTS `>65%` gerektiriyor. 1X2 doğası gereği daha polarize olduğu için neredeyse her maçta "yüksek" çıkıyor.
+
+2. **`mathConfidenceToNumber` sabit mapping**: `yüksek=0.8`, `orta=0.6`, `düşük=0.4` — market türünden bağımsız. 1X2'nin "yüksek"i ile BTTS'nin "orta"sı arasında gerçek sinyal gücü farkı yansımıyor.
+
+3. **`selectBestPrediction`** en yüksek raw Poisson olasılığını seçiyor. 1X2'nin ham olasılığı (%55-65) doğal olarak BTTS'den (%50-60) yüksek çıkar, ama bu "daha güvenilir sinyal" demek değil.
+
+4. **Market reliability / historical accuracy** hiç kullanılmıyor. `ml_model_stats` tablosunda market bazlı doğruluk verileri var ama ana tahmin seçiminde değerlendirilmiyor.
+
+---
+
+## Yeni Mimari: Market-Aware Hybrid Scoring
+
+### Katman 1: `src/utils/marketScoring.ts` (YENİ DOSYA)
+
+Her market için bağımsız bir **Final Market Score (FMS)** hesaplayan utility:
+
+```
+FMS = (signalStrength × 0.35) + (modelAgreement × 0.25) + (historicalReliability × 0.20) + (edgeClarity × 0.20)
 ```
 
----
+Bileşenler:
+- **signalStrength**: Poisson olasılığının market-spesifik "kesinlik" eşiğinden ne kadar uzakta olduğu. 1X2'de %50 belirsizlik noktası, BTTS'de %50, O/U'da %50. Mesafe ne kadar büyükse sinyal o kadar güçlü.
+- **modelAgreement**: AI, Math ve ML'nin aynı yönde mi gösterdiği (0 veya 1, kısmi uyum 0.5)
+- **historicalReliability**: `ml_model_stats` tablosundan market bazlı accuracy oranı (0-1)
+- **edgeClarity**: Olasılığın belirsizlik bölgesinden (45-55%) ne kadar uzak olduğu, normalized
 
-## Bileşen Bazlı Analiz
+Market-spesifik kalibrasyon config'i:
 
-### 1. Satın Alma ve Doğrulama — SORUNSUZ
+```typescript
+const MARKET_CONFIG = {
+  'Maç Sonucu': { 
+    uncertaintyCenter: 33.3, // 3 yönlü market
+    volatilityPenalty: 0.15, // 3 sonuçlu → daha volatil
+    minEdgeThreshold: 12,    // %33+12 = %45'in altında edge yok
+  },
+  'Toplam Gol Alt/Üst': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  'Karşılıklı Gol': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  // ... diğer marketler
+};
+```
 
-| Adım | Durum | Açıklama |
-|------|-------|----------|
-| Native purchase | ✅ | `purchaseService.purchaseSubscription()` — `planIdentifier` düzeltildi |
-| Token doğrulama | ✅ | `verify-purchase` v2 API kullanıyor |
-| DB kayıt | ✅ | `upsert` + fallback `insert` mekanizması var |
-| Acknowledge | ✅ | Pending ise otomatik acknowledge yapılıyor |
-| plan_type mapping | ✅ | productId'den doğru plan_type çıkarılıyor |
+1X2'ye `volatilityPenalty` uygulanması, 3 yönlü marketin doğal avantajını dengeler.
 
-### 2. Frontend Premium Kontrolü — SORUNSUZ
+### Katman 2: `predictionEngine.ts` Güncelleme
 
-| Bileşen | Kontrol |
-|---------|---------|
-| `usePremiumStatus` | `is_active=true AND expires_at >= now()` sorgusu — doğru |
-| `usePlatformPremium` | `usePremiumStatus` üzerine wrapper |
-| `useAccessLevel` | `planType` + `isAdmin` ile tüm erişim kararları |
-| localStorage cache | Premium sub cache + nav cache — hızlı ilk render |
+Confidence eşiklerini market-spesifik ve simetrik hale getir:
 
-### 3. Webhook ile Durum Güncelleme — SORUNSUZ
+| Market | Yüksek | Orta | Düşük |
+|--------|--------|------|-------|
+| 1X2 (mevcut) | >55% | >45% | rest |
+| 1X2 (yeni) | >58% | >45% | rest |
+| BTTS (mevcut) | >65% | >55% | rest |
+| BTTS (yeni) | >60% | >52% | rest |
+| O/U (mevcut) | >60% | >55% | rest |
+| O/U (yeni) | >58% | >52% | rest |
 
-| Senaryo | Webhook Davranışı |
-|---------|-------------------|
-| İptal (süre bitmeden) | `is_active = expiryTime > now` — doğru, süre bitene kadar premium devam |
-| Süre dolumu | `is_active = false` — doğru |
-| Yenileme | `is_active = true`, yeni `expires_at` — doğru |
-| Askıya alma / Duraklatma | `is_active = false` — doğru |
+Not: Değerler yapay dengeleme değil, market doğasına uygun kalibrasyon. BTTS eşikleri düşürülüyor çünkü binary markette %60 zaten güçlü sinyal.
 
-### 4. Süre Yönetimi — SORUNSUZ
+### Katman 3: `Prediction` type genişletme (`types/match.ts`)
 
-- `expiryTime` Google Play v2 API'den `lineItems[0].expiryTime` olarak alınıyor
-- Frontend `expires_at >= new Date().toISOString()` ile kontrol ediyor
-- `daysRemaining` hesaplanıyor ve kullanıcıya gösteriliyor
+```typescript
+export interface Prediction {
+  // ... mevcut alanlar
+  marketScore?: number;        // Final Market Score (0-100)
+  signalStrength?: number;     // Sinyal gücü (0-100)
+  modelAgreement?: number;     // Model uyumu (0-100)
+  historicalReliability?: number; // Tarihsel güvenilirlik (0-100)
+  edgeClarity?: number;        // Edge netliği (0-100)
+  riskLevel?: 'low' | 'medium' | 'high';
+  isRecommended?: boolean;     // En iyi market mi?
+}
+```
 
----
+### Katman 4: `useMatchAnalysis.ts` Güncelleme
 
-## TESPİT EDİLEN SORUNLAR
+Tahminler oluşturulduktan sonra, `marketScoring` utility'si ile her market için FMS hesapla:
 
-### Sorun 1: `PremiumUpgrade` bileşeni satın alma sonrası `refetch()` çağırmıyor (ORTA)
+1. `ml_model_stats`'dan market bazlı historical accuracy çek (mevcut `getAIMathWeights` ile paralel)
+2. Her prediction'a `marketScore`, `signalStrength`, `modelAgreement`, `historicalReliability`, `edgeClarity`, `riskLevel` ekle
+3. En yüksek `marketScore`'a sahip prediction'ı `isRecommended: true` olarak işaretle
+4. Predictions array'ini `marketScore` sırasına göre sırala
 
-`src/pages/Premium.tsx` satır 84'te `refetch()` çağrılıyor — doğru.
+### Katman 5: `predictionService.ts` Güncelleme
 
-Ancak `src/components/premium/PremiumUpgrade.tsx` satır 92-94'te sadece `onClose?.()` çağrılıyor, **`refetch()` çağrılmıyor**. Bu bileşen Index sayfasından açılan onboarding/modal akışında kullanılıyorsa, satın alma sonrası kullanıcı hâlâ "free" görünür çünkü premium durumu yeniden sorgulanmaz.
+`selectBestPrediction` fonksiyonunu `marketScore` bazlı çalışacak şekilde güncelle:
+- `marketScore` varsa onu kullan
+- Yoksa mevcut Poisson probability fallback
 
-**Düzeltme:** `PremiumUpgrade` bileşenine `usePlatformPremium` hook'undan `refetch` alıp başarılı satın alma sonrası çağırmak.
+### Katman 6: UI Güncellemeleri
 
-### Sorun 2: `PurchaseButton` bileşeni satın alma sonrası `refetch()` çağırmıyor (ORTA)
+**AIRecommendationCard**: En yüksek `marketScore`'lu prediction'ı göster (zaten `sortedPredictions[0]` mantığı var, sıralama `marketScore`'a geçecek)
 
-`src/components/premium/PurchaseButton.tsx` — `onSuccess` callback'i var ama bunu çağıran sayfanın `refetch()` yapıp yapmadığı garanti değil.
+**PredictionCard**: Market Score progress bar'ı ekle + risk level badge
 
-**Düzeltme:** `PurchaseButton` içinde de `usePlatformPremium().refetch()` çağrısı eklemek veya `onSuccess` callback'inin refetch'i garanti ettiğinden emin olmak.
-
-### Sorun 3: Restore sonrası `refetch()` yok (DÜŞÜK)
-
-`Premium.tsx` satır 95-103 — restore başarılı olunca toast gösteriyor ama `refetch()` çağırmıyor. Kullanıcı restore yaptıktan sonra premium görünmez.
-
-**Düzeltme:** `handleRestore` içinde `if (r.success) { refetch(); toast.success(...); }` eklemek.
-
-### Sorun 4: Birden fazla aktif abonelik riski (DÜŞÜK)
-
-`upsert` `order_id` üzerinden çalışıyor. Ancak kullanıcı farklı bir plan satın alırsa (ör. basic→pro), farklı `order_id` ile yeni bir satır oluşur ve eski abonelik hâlâ `is_active=true` kalır. Frontend `maybeSingle()` ve `order('expires_at', desc).limit(1)` ile en son olanı alıyor — bu doğru çalışır. Ancak veritabanında birden fazla aktif kayıt birikebilir.
-
-**Düzeltme:** `verify-purchase`'da yeni abonelik kaydedilmeden önce aynı kullanıcının eski aktif aboneliklerini `is_active=false` yapmak.
+**PredictionPillSelector**: Sıralamayı `marketScore` bazlı yap, recommended pill'e özel badge ekle
 
 ---
 
 ## Değişecek Dosyalar
 
-| Dosya | Değişiklik |
-|-------|-----------|
-| `src/components/premium/PremiumUpgrade.tsx` | Satın alma sonrası `refetch()` ekleme |
-| `src/pages/Premium.tsx` | Restore sonrası `refetch()` ekleme |
-| `supabase/functions/verify-purchase/index.ts` | Yeni kayıt öncesi eski aktif abonelikleri deaktive etme |
+1. **`src/utils/marketScoring.ts`** — YENİ: Market scoring engine
+2. **`src/utils/predictionEngine.ts`** — Confidence eşiklerini market-spesifik güncelle
+3. **`src/types/match.ts`** — Prediction interface genişlet
+4. **`src/hooks/useMatchAnalysis.ts`** — Market scoring entegrasyonu + historical reliability fetch
+5. **`src/services/predictionService.ts`** — `selectBestPrediction` güncelle
+6. **`src/lib/utils.ts`** — `getHybridConfidence`'ı marketScore-aware yap
+7. **`src/components/analysis/AIRecommendationCard.tsx`** — marketScore sıralama
+8. **`src/components/PredictionCard.tsx`** — Market score bar + risk badge
+9. **`src/components/analysis/PredictionPillSelector.tsx`** — marketScore sıralama + recommended badge
 
-### Sonuç
+## Korunacaklar
 
-Temel akış (satın alma → doğrulama → DB → premium aktif → süre dolunca pasif) **mimari olarak doğru kurulmuş**. Ana risk, bazı UI bileşenlerinin başarılı satın alma sonrası `refetch()` çağırmaması — bu da kullanıcının uygulamayı kapatıp açmadan premium özelliklerini görememesine neden olur.
+- Mevcut 3 katmanlı hibrit mimari (AI + Math + ML) aynen kalacak
+- `prediction_features` ve `ml_model_stats` tablo yapıları değişmeyecek
+- Edge function'lar değişmeyecek
+- Confidence değerleri sahte dengeleme yapılmayacak — gerçek farklar korunacak
+
+## Continuous Learning Altyapısı
+
+Zaten mevcut olan `ml_model_stats` tablosu market bazlı accuracy takibi yapıyor. Yeni `historicalReliability` bileşeni bu veriyi aktif olarak kullanarak market selection'ı sürekli iyileştirecek. `train-ml-model` edge function haftalık çalışmaya devam edecek.
 
