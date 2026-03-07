@@ -271,15 +271,17 @@ const Index: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background md:pb-8" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
+    <div className="h-screen bg-background flex flex-col">
       {/* Header */}
       <AppHeader rightContent={searchButton} />
 
+      {/* Scrollable Content */}
+      <main className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
       {/* Hero Section - Simplified with count-up */}
       <HeroSection stats={stats} onAnalyzeClick={() => setCommandOpen(true)} />
 
       {/* Main Content - Clean Single Column Flow */}
-      <main className="container mx-auto px-4 py-6 space-y-6">
+      <div className="container mx-auto px-4 py-6 space-y-6">
         {/* League Selection - Compact Pills with Scroll Indicator */}
         <motion.section 
           initial={{ opacity: 0, y: 10 }}
