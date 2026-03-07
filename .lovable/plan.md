@@ -1,135 +1,194 @@
 
 
-# Hibrit Market Selection Engine — Refactor Planı
-
-## Mevcut Sorunlar
-
-1. **Eşitsiz confidence eşikleri**: `predictionEngine.ts`'de 1X2 marketi `>55%` ile "yüksek" olurken, BTTS `>65%` gerektiriyor. 1X2 doğası gereği daha polarize olduğu için neredeyse her maçta "yüksek" çıkıyor.
-
-2. **`mathConfidenceToNumber` sabit mapping**: `yüksek=0.8`, `orta=0.6`, `düşük=0.4` — market türünden bağımsız. 1X2'nin "yüksek"i ile BTTS'nin "orta"sı arasında gerçek sinyal gücü farkı yansımıyor.
-
-3. **`selectBestPrediction`** en yüksek raw Poisson olasılığını seçiyor. 1X2'nin ham olasılığı (%55-65) doğal olarak BTTS'den (%50-60) yüksek çıkar, ama bu "daha güvenilir sinyal" demek değil.
-
-4. **Market reliability / historical accuracy** hiç kullanılmıyor. `ml_model_stats` tablosunda market bazlı doğruluk verileri var ama ana tahmin seçiminde değerlendirilmiyor.
+# Premium Abonelik Sistemi — Kapsamlı Denetim Raporu
 
 ---
 
-## Yeni Mimari: Market-Aware Hybrid Scoring
+## A) Genel Sonuç
 
-### Katman 1: `src/utils/marketScoring.ts` (YENİ DOSYA)
+**Sistem kısmen çalışıyor.** Mimari doğru kurulmuş ancak birkaç kritik ve yüksek öncelikli sorun, gerçek kullanıcılarda "satın aldım ama premium gelmedi" senaryosuna yol açabilir.
 
-Her market için bağımsız bir **Final Market Score (FMS)** hesaplayan utility:
+---
 
+## B) Uçtan Uca Akış Analizi
+
+| Adım | Durum | Detay |
+|------|-------|-------|
+| 1. Native satın alma | ✅ | `@capgo/native-purchases` + `planIdentifier` eşlemesi doğru |
+| 2. Token alınması | ✅ | `transaction.purchaseToken` doğru alınıyor |
+| 3. verify-purchase çağrısı | ✅ | `supabase.functions.invoke` ile auth header otomatik |
+| 4. Google Play v2 API doğrulama | ✅ | `/subscriptionsv2/tokens/{token}` doğru endpoint |
+| 5. Acknowledge | ⚠️ YÜKSEK | v1 acknowledge endpoint `productId` gerektiriyor — sorunlu |
+| 6. DB kayıt | ✅ | upsert + fallback insert var |
+| 7. Eski kayıtları deaktive | ✅ | `is_active=false` güncelleniyor |
+| 8. Frontend refetch | ✅ | `PremiumUpgrade`, `PurchaseButton`, `Premium.tsx` hepsinde var |
+| 9. Premium kontrol | ✅ | `usePremiumStatus` → `is_active=true AND expires_at >= now()` |
+| 10. Süre bitince kapanma | ✅ | Frontend query otomatik filtreler; webhook da günceller |
+
+---
+
+## C) Bulunan Sorunlar
+
+### KRİTİK
+
+**Yok** — Temel akış mimari olarak sağlam.
+
+---
+
+### YÜKSEK
+
+#### 1. Acknowledge Endpoint Uyumsuzluğu
+**Dosya:** `supabase/functions/verify-purchase/index.ts` satır 130-151
+
+**Sorun:** Acknowledge işlemi eski v1 endpoint kullanıyor:
 ```
-FMS = (signalStrength × 0.35) + (modelAgreement × 0.25) + (historicalReliability × 0.20) + (edgeClarity × 0.20)
+/purchases/subscriptions/${productId}/tokens/${purchaseToken}:acknowledge
 ```
+Bu endpoint `productId` olarak **subscription ID** bekliyor (örn. `premium_basic_monthly`). Ancak Google Play'in yeni Base Plan modelinde subscription ID artık `productId` değil — Base Plan modeli farklı yapıda. Eğer `productId` olarak `premium_basic_monthly` gönderiliyorsa ve Google Play Console'da subscription ID farklıysa, acknowledge **başarısız olur** (404).
 
-Bileşenler:
-- **signalStrength**: Poisson olasılığının market-spesifik "kesinlik" eşiğinden ne kadar uzakta olduğu. 1X2'de %50 belirsizlik noktası, BTTS'de %50, O/U'da %50. Mesafe ne kadar büyükse sinyal o kadar güçlü.
-- **modelAgreement**: AI, Math ve ML'nin aynı yönde mi gösterdiği (0 veya 1, kısmi uyum 0.5)
-- **historicalReliability**: `ml_model_stats` tablosundan market bazlı accuracy oranı (0-1)
-- **edgeClarity**: Olasılığın belirsizlik bölgesinden (45-55%) ne kadar uzak olduğu, normalized
+Acknowledge başarısız olursa Google Play 3 gün sonra satın almayı **otomatik iptal eder**.
 
-Market-spesifik kalibrasyon config'i:
+**Kanıt:** Satır 136'da `productId` parametresi `resolvedProductId` (lineItem'dan gelen), ancak v1 acknowledge endpoint subscription ID'yi path'te bekliyor. Base Plan modelinde `lineItem.productId` subscription ID ile aynı olmayabilir.
 
+**Düzeltme:** Acknowledge için de Subscriptions v2 API'nin `acknowledge` endpoint'ini kullanmak veya mevcut kodda `resolvedProductId`'nin gerçekten Google Play Console'daki subscription ID ile eşleştiğini doğrulamak. Alternatif olarak, v2 API'de acknowledge artık gerekli olmayabilir — subscriptionState zaten "ACKNOWLEDGED" döner.
+
+---
+
+#### 2. Webhook Subscription Bulunamazsa Kayıp
+**Dosya:** `supabase/functions/play-store-webhook/index.ts` satır 241-243
+
+**Sorun:** Webhook'ta `purchase_token` ile arama yapılıp kayıt bulunamazsa sadece log yazılıyor:
 ```typescript
-const MARKET_CONFIG = {
-  'Maç Sonucu': { 
-    uncertaintyCenter: 33.3, // 3 yönlü market
-    volatilityPenalty: 0.15, // 3 sonuçlu → daha volatil
-    minEdgeThreshold: 12,    // %33+12 = %45'in altında edge yok
-  },
-  'Toplam Gol Alt/Üst': { 
-    uncertaintyCenter: 50,
-    volatilityPenalty: 0,
-    minEdgeThreshold: 8,
-  },
-  'Karşılıklı Gol': { 
-    uncertaintyCenter: 50,
-    volatilityPenalty: 0,
-    minEdgeThreshold: 8,
-  },
-  // ... diğer marketler
-};
+console.log("Subscription not found for token, may need manual resolution");
+```
+Yenileme (RENEWED) webhook'u geldiğinde eğer kullanıcı ilk kez farklı bir token ile kayıt yaptıysa (linked purchase token), yeni token ile kayıt bulunamaz ve abonelik **sessizce düşer**.
+
+**Düzeltme:** `linkedPurchaseToken` kontrolü eklemek veya `user_id` + `product_id` ile alternatif arama yapmak.
+
+---
+
+#### 3. Periyodik Senkronizasyon Yok
+**Sorun:** Webhook kaçarsa veya gecikirse, premium durumunu düzeltecek periyodik bir kontrol mekanizması (cron job) **yok**. Sistem tamamen webhook'a bağımlı.
+
+**Düzeltme:** Bir pg_cron job ekleyerek `expires_at < now() AND is_active = true` olan kayıtları periyodik olarak `is_active = false` yapmak. Bu, webhook kaçsa bile premium'un sonsuza kadar açık kalmasını önler.
+
+---
+
+### ORTA
+
+#### 4. `checkLimit` Race Condition
+**Dosya:** `src/hooks/useAnalysisLimit.ts` satır 93-101
+
+**Sorun:** `checkLimit` fonksiyonu `fetchUsage()` çağırdıktan sonra stale `usageCount` state'ini kullanıyor çünkü React state güncellemesi asenkron:
+```typescript
+await fetchUsage(); // state günceller ama...
+return usageCount < dailyLimit; // eski usageCount kullanılıyor
+```
+Bu, hızlı ardışık analizlerde limiti aşmaya neden olabilir. Ancak backend RPC'de de limit kontrolü yapıldığı için gerçek aşım riski düşük.
+
+---
+
+#### 5. Platform CHECK Constraint
+**Dosya:** Migration `20260123111510` satır 3
+
+**Sorun:** `platform` sütununda `CHECK (platform IN ('web', 'android', 'ios'))` constraint var. Bu immutable olması gereken bir constraint ve sorun çıkarmaz, ancak uygulama sadece Android — `web` ve `ios` değerleri gereksiz.
+
+---
+
+### DÜŞÜK
+
+#### 6. localStorage Cache Stale Kalabilir
+**Dosya:** `src/hooks/usePremiumStatus.ts` satır 62-71
+
+**Sorun:** Premium subscription cache'i localStorage'da tutuluyor. Webhook ile DB'de `is_active=false` yapılsa bile cache süresi dolana kadar kullanıcı **premium görünür**. Cache sadece `expires_at` kontrolü yapıyor, `is_active` kontrolü yok.
+
+**Etkisi:** Düşük — sonraki API çağrısında düzelir. Ancak kullanıcı kısa süreliğine yanlış premium görebilir.
+
+---
+
+## D) Kanıt Özeti
+
+| Sorun | Dosya | Satır | Kanıt |
+|-------|-------|-------|-------|
+| Acknowledge v1 uyumsuzluğu | `verify-purchase/index.ts` | 136 | v1 endpoint + Base Plan model çakışması |
+| Webhook kayıp token | `play-store-webhook/index.ts` | 241 | Sadece log, recovery yok |
+| Cron senkronizasyon eksik | - | - | pg_cron job listesinde premium temizleme yok |
+| checkLimit race condition | `useAnalysisLimit.ts` | 100 | Stale state kullanımı |
+
+---
+
+## E) Düzeltme Planı
+
+### 1. Acknowledge Endpoint Düzeltmesi (YÜKSEK)
+`supabase/functions/verify-purchase/index.ts` — `acknowledgeSubscription` fonksiyonunu güncelle veya kaldır. v2 API ile doğrulanmış bir subscription zaten acknowledge edilmiş sayılır. Mevcut kodda zaten non-fatal (hata fırlatmıyor), ama 3 gün sonra Google iptal edebilir.
+
+**Önerilen:** Acknowledge'ı Subscriptions v2 `acknowledge` endpoint'ine geçirmek:
+```typescript
+// v2 acknowledge — productId gerekmez
+const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptionsv2/tokens/${purchaseToken}:acknowledge`;
 ```
 
-1X2'ye `volatilityPenalty` uygulanması, 3 yönlü marketin doğal avantajını dengeler.
-
-### Katman 2: `predictionEngine.ts` Güncelleme
-
-Confidence eşiklerini market-spesifik ve simetrik hale getir:
-
-| Market | Yüksek | Orta | Düşük |
-|--------|--------|------|-------|
-| 1X2 (mevcut) | >55% | >45% | rest |
-| 1X2 (yeni) | >58% | >45% | rest |
-| BTTS (mevcut) | >65% | >55% | rest |
-| BTTS (yeni) | >60% | >52% | rest |
-| O/U (mevcut) | >60% | >55% | rest |
-| O/U (yeni) | >58% | >52% | rest |
-
-Not: Değerler yapay dengeleme değil, market doğasına uygun kalibrasyon. BTTS eşikleri düşürülüyor çünkü binary markette %60 zaten güçlü sinyal.
-
-### Katman 3: `Prediction` type genişletme (`types/match.ts`)
-
+### 2. Webhook Fallback Araması (YÜKSEK)
+`supabase/functions/play-store-webhook/index.ts` — Token bulunamazsa `user_id` + `product_id` ile arama ekle:
 ```typescript
-export interface Prediction {
-  // ... mevcut alanlar
-  marketScore?: number;        // Final Market Score (0-100)
-  signalStrength?: number;     // Sinyal gücü (0-100)
-  modelAgreement?: number;     // Model uyumu (0-100)
-  historicalReliability?: number; // Tarihsel güvenilirlik (0-100)
-  edgeClarity?: number;        // Edge netliği (0-100)
-  riskLevel?: 'low' | 'medium' | 'high';
-  isRecommended?: boolean;     // En iyi market mi?
+if (!existingSub) {
+  // Try finding by linked purchase token or most recent subscription
+  const { data: fallbackSub } = await supabase
+    .from("premium_subscriptions")
+    .select("*")
+    .eq("product_id", lineItem?.productId)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  // Update fallbackSub if found
 }
 ```
 
-### Katman 4: `useMatchAnalysis.ts` Güncelleme
+### 3. Expired Premium Cleanup Cron (YÜKSEK)
+Yeni DB fonksiyonu + pg_cron job:
+```sql
+CREATE OR REPLACE FUNCTION public.cleanup_expired_premiums()
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $$
+BEGIN
+  UPDATE premium_subscriptions 
+  SET is_active = false 
+  WHERE is_active = true AND expires_at < now();
+END;
+$$;
+-- pg_cron: her saat çalıştır
+```
 
-Tahminler oluşturulduktan sonra, `marketScoring` utility'si ile her market için FMS hesapla:
-
-1. `ml_model_stats`'dan market bazlı historical accuracy çek (mevcut `getAIMathWeights` ile paralel)
-2. Her prediction'a `marketScore`, `signalStrength`, `modelAgreement`, `historicalReliability`, `edgeClarity`, `riskLevel` ekle
-3. En yüksek `marketScore`'a sahip prediction'ı `isRecommended: true` olarak işaretle
-4. Predictions array'ini `marketScore` sırasına göre sırala
-
-### Katman 5: `predictionService.ts` Güncelleme
-
-`selectBestPrediction` fonksiyonunu `marketScore` bazlı çalışacak şekilde güncelle:
-- `marketScore` varsa onu kullan
-- Yoksa mevcut Poisson probability fallback
-
-### Katman 6: UI Güncellemeleri
-
-**AIRecommendationCard**: En yüksek `marketScore`'lu prediction'ı göster (zaten `sortedPredictions[0]` mantığı var, sıralama `marketScore`'a geçecek)
-
-**PredictionCard**: Market Score progress bar'ı ekle + risk level badge
-
-**PredictionPillSelector**: Sıralamayı `marketScore` bazlı yap, recommended pill'e özel badge ekle
+### 4. checkLimit Fix (ORTA)
+`src/hooks/useAnalysisLimit.ts` — `fetchUsage` return değeri kullan:
+```typescript
+const checkLimit = useCallback(async (): Promise<boolean> => {
+  if (hasUnlimitedAnalysis(planType, isAdmin)) return true;
+  const { data } = await supabase.rpc('get_daily_analysis_usage');
+  const currentUsage = data || 0;
+  setUsageCount(currentUsage);
+  return currentUsage < dailyLimit;
+}, [planType, isAdmin, dailyLimit]);
+```
 
 ---
 
-## Değişecek Dosyalar
+## F) Son Kullanıcı Açısından Sonuç
 
-1. **`src/utils/marketScoring.ts`** — YENİ: Market scoring engine
-2. **`src/utils/predictionEngine.ts`** — Confidence eşiklerini market-spesifik güncelle
-3. **`src/types/match.ts`** — Prediction interface genişlet
-4. **`src/hooks/useMatchAnalysis.ts`** — Market scoring entegrasyonu + historical reliability fetch
-5. **`src/services/predictionService.ts`** — `selectBestPrediction` güncelle
-6. **`src/lib/utils.ts`** — `getHybridConfidence`'ı marketScore-aware yap
-7. **`src/components/analysis/AIRecommendationCard.tsx`** — marketScore sıralama
-8. **`src/components/PredictionCard.tsx`** — Market score bar + risk badge
-9. **`src/components/analysis/PredictionPillSelector.tsx`** — marketScore sıralama + recommended badge
+| Soru | Cevap |
+|------|-------|
+| Satın alınca premium özellikler açılıyor mu? | **Evet** — Google Play izinleri doğruysa ve acknowledge başarılıysa. İzinler yanlışsa 401 hatası ile başarısız olur. |
+| Premium bitince geri alınıyor mu? | **Kısmen** — Webhook doğru çalışırsa evet. Webhook kaçarsa premium sonsuza kadar açık kalabilir (cron job yok). |
+| Ücretsiz/premium etiketi doğru değişiyor mu? | **Evet** — `usePremiumStatus` doğru sorgu yapıyor, `useAccessLevel` doğru kararlar veriyor. |
+| Plan süresine göre doğru işliyor mu? | **Evet** — `expiryTime` Google Play'den alınıp DB'ye yazılıyor, frontend `now < expires_at` ile kontrol ediyor. |
+| Uygulama kapatıp açınca premium korunuyor mu? | **Evet** — DB'den sorgu + localStorage cache. |
+| Restore çalışıyor mu? | **Evet** — `restorePurchases` → `getPurchases` → `verifyPurchase` akışı var. |
 
-## Korunacaklar
+### Kırılgan Noktalar:
+1. **Google Play Service Account izinleri** — Hâlâ düzeltilmediyse tüm sistem çalışmaz
+2. **Acknowledge 3 gün kuralı** — v1 endpoint başarısız olursa Google satın almayı iptal eder
+3. **Webhook kayıp** — Cron olmadan premium sonsuza kadar açık kalabilir
 
-- Mevcut 3 katmanlı hibrit mimari (AI + Math + ML) aynen kalacak
-- `prediction_features` ve `ml_model_stats` tablo yapıları değişmeyecek
-- Edge function'lar değişmeyecek
-- Confidence değerleri sahte dengeleme yapılmayacak — gerçek farklar korunacak
-
-## Continuous Learning Altyapısı
-
-Zaten mevcut olan `ml_model_stats` tablosu market bazlı accuracy takibi yapıyor. Yeni `historicalReliability` bileşeni bu veriyi aktif olarak kullanarak market selection'ı sürekli iyileştirecek. `train-ml-model` edge function haftalık çalışmaya devam edecek.
+### Production-Ready Mı?
+**%85 hazır.** Acknowledge endpoint düzeltmesi ve expired premium cron job'ı eklendikten sonra tam production-ready olur. Mevcut haliyle çoğu normal senaryo çalışır, ancak edge case'lerde (plan değişikliği, token yenileme, webhook kaçması) sorunlar yaşanabilir.
 
