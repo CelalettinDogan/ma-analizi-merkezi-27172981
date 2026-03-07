@@ -96,9 +96,12 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
       return true;
     }
 
-    await fetchUsage();
-    return usageCount < dailyLimit;
-  }, [planType, isAdmin, fetchUsage, usageCount, dailyLimit]);
+    // Use direct RPC return value instead of stale React state
+    const { data } = await supabase.rpc('get_daily_analysis_usage');
+    const currentUsage = data || 0;
+    setUsageCount(currentUsage);
+    return currentUsage < dailyLimit;
+  }, [planType, isAdmin, dailyLimit]);
 
   return {
     canAnalyze,

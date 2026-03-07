@@ -258,8 +258,8 @@ Deno.serve(async (req) => {
     
     // Acknowledge if pending
     if (subscription.acknowledgementState === "ACKNOWLEDGEMENT_STATE_PENDING") {
-      console.log("Acknowledging subscription...");
-      await acknowledgeSubscription(packageName, resolvedProductId, purchaseToken, accessToken);
+      console.log("Acknowledging subscription via v2 API...");
+      await acknowledgeSubscription(packageName, purchaseToken, accessToken);
     }
     
     const planType = getPlanType(resolvedProductId);

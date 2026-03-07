@@ -239,7 +239,55 @@ Deno.serve(async (req) => {
           console.log(`Updated subscription ${existingSub.id}: ${notificationName}, active=${isActive}`);
         }
       } else {
-        console.log("Subscription not found for token, may need manual resolution");
+        // Fallback: try finding by linkedPurchaseToken or product_id
+        console.log("Subscription not found for token, trying fallback lookup...");
+        
+        let fallbackSub = null;
+        
+        // Try linkedPurchaseToken if available
+        if (subDetails.linkedPurchaseToken) {
+          const { data: linkedSub } = await supabase
+            .from("premium_subscriptions")
+            .select("*")
+            .eq("purchase_token", subDetails.linkedPurchaseToken)
+            .maybeSingle();
+          fallbackSub = linkedSub;
+        }
+        
+        // Try finding by product_id + most recent active subscription
+        if (!fallbackSub && lineItem?.productId) {
+          const { data: productSub } = await supabase
+            .from("premium_subscriptions")
+            .select("*")
+            .eq("product_id", lineItem.productId)
+            .eq("is_active", true)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          fallbackSub = productSub;
+        }
+        
+        if (fallbackSub) {
+          const { error: fallbackUpdateError } = await supabase
+            .from("premium_subscriptions")
+            .update({
+              purchase_token: purchaseToken, // Update to new token
+              expires_at: expiryTime.toISOString(),
+              is_active: isActive,
+              auto_renewing: autoRenewing,
+              purchase_state: purchaseState,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", fallbackSub.id);
+          
+          if (fallbackUpdateError) {
+            console.error("Fallback update error:", fallbackUpdateError);
+          } else {
+            console.log(`Updated subscription ${fallbackSub.id} via fallback lookup: ${notificationName}, active=${isActive}`);
+          }
+        } else {
+          console.warn("No subscription found via any lookup method for token:", purchaseToken);
+        }
       }
       
       return new Response(

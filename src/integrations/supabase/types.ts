@@ -1382,6 +1382,7 @@ export type Database = {
     }
     Functions: {
       cleanup_expired_caches: { Args: never; Returns: undefined }
+      cleanup_expired_premiums: { Args: never; Returns: undefined }
       cleanup_old_analysis_usage: { Args: never; Returns: undefined }
       cleanup_old_bet_slips: { Args: never; Returns: undefined }
       cleanup_old_cached_matches: { Args: never; Returns: undefined }
