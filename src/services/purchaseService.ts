@@ -148,7 +148,9 @@ class PurchaseService {
       // Open native Google Play purchase sheet
       const transaction = await NativePurchases.purchaseProduct({
         productIdentifier: productId,
+        planIdentifier: BASE_PLAN_IDS[productId] || '',
         productType: PURCHASE_TYPE.SUBS,
+        quantity: 1,
       });
 
       const purchaseToken = transaction?.purchaseToken || transaction?.transactionId;
