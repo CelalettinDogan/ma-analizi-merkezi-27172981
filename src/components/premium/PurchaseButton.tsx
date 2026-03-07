@@ -29,6 +29,7 @@ export const PurchaseButton: React.FC<PurchaseButtonProps> = ({
   onError,
 }) => {
   const [isLoading, setIsLoading] = React.useState(false);
+  const { refetch } = usePlatformPremium();
 
   // Get plan name from product ID if not provided
   const displayPlanName = planName || purchaseService.getPlanNameFromProductId(productId);
