@@ -92,6 +92,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
         const result = await purchaseService.purchaseSubscription(productId);
         
         if (result.success) {
+          refetch();
           toast.success(`${planName} üyeliğin aktif edildi!`);
           onClose?.();
         } else {
