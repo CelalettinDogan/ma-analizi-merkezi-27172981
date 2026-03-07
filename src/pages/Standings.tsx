@@ -130,11 +130,12 @@ const StandingsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background lg:pb-8" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
+    <div className="h-screen bg-background flex flex-col">
       {/* Header */}
       <AppHeader />
 
-      <main className="container mx-auto px-3 md:px-4 py-4 md:py-6 space-y-4 md:space-y-6">
+      <main className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="container mx-auto px-3 md:px-4 py-4 md:py-6 space-y-4 md:space-y-6">
         {/* League Selector */}
         <motion.div {...fadeInUp}>
           <h3 className="text-xs md:text-sm font-medium text-muted-foreground mb-2 md:mb-3">Lig Seçin</h3>
@@ -315,6 +316,7 @@ const StandingsPage: React.FC = () => {
             </TabsContent>
           </Tabs>
         </motion.div>
+      </div>
       </main>
 
       {/* Command Palette */}

@@ -214,10 +214,11 @@ const LivePage: React.FC = () => {
   ) : null;
 
   return (
-    <div className="min-h-screen bg-background md:pb-8" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
+    <div className="h-screen bg-background flex flex-col">
       <AppHeader rightContent={headerRightContent} />
 
-      <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
+      <main className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
         {/* League Filter */}
         <motion.div {...fadeInUp}>
           <h3 className="text-xs sm:text-sm font-medium text-muted-foreground mb-2 sm:mb-3">Lig Filtresi</h3>
@@ -328,6 +329,7 @@ const LivePage: React.FC = () => {
             <span>Otomatik güncelleme aktif (60 sn)</span>
           </motion.div>
         )}
+      </div>
       </main>
 
       <CommandPalette 
