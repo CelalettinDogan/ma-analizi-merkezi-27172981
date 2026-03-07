@@ -74,6 +74,7 @@ const plans: PlanConfig[] = [
 
 export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
   const { isNative } = usePlatform();
+  const { refetch } = usePlatformPremium();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanConfig['id']>('premium_plus');
   const [isYearly, setIsYearly] = useState(true);
