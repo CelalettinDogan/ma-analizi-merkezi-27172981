@@ -312,7 +312,6 @@ const Premium = () => {
       <div
         className="fixed left-0 right-0 z-40 px-4 pt-2 bg-background/95 backdrop-blur-sm border-t border-border/30 lg:hidden"
         style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))', paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))' }}
-        style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}
       >
         <div className="max-w-md mx-auto space-y-1">
           <motion.div whileTap={{ scale: 0.98 }}>
