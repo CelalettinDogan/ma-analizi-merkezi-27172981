@@ -189,16 +189,33 @@ class PurchaseService {
       });
 
       if (error) {
-        return { success: false, error: error.message || 'Doğrulama başarısız.' };
+        console.error('PurchaseService: verify error', error);
+        // Edge function invocation error (network, 500, etc.)
+        return { 
+          success: false, 
+          error: 'Satın alma doğrulanamadı. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.' 
+        };
+      }
+
+      if (data?.error) {
+        // Backend returned a structured error
+        const code = data.code || '';
+        if (code === 'PERMISSION_DENIED' || code === 'CONFIG_ERROR') {
+          return { success: false, error: 'Sunucu hatası. Lütfen daha sonra tekrar deneyin veya destek ile iletişime geçin.' };
+        }
+        if (code === 'PURCHASE_NOT_FOUND') {
+          return { success: false, error: 'Satın alma bulunamadı. Birkaç dakika bekleyip tekrar deneyin.' };
+        }
+        return { success: false, error: data.error };
       }
 
       return {
         success: data?.success ?? false,
         subscription: data?.subscription,
-        error: data?.error,
       };
     } catch (error: any) {
-      return { success: false, error: error?.message || 'Doğrulama başarısız.' };
+      console.error('PurchaseService: verify exception', error);
+      return { success: false, error: 'Bağlantı hatası. Lütfen tekrar deneyin.' };
     }
   }
 

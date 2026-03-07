@@ -26,27 +26,25 @@ interface GooglePlayNotification {
   };
 }
 
-// Notification types for subscriptions
-const NOTIFICATION_TYPES = {
-  1: "SUBSCRIPTION_RECOVERED", // Subscription recovered from account hold
-  2: "SUBSCRIPTION_RENEWED", // Active subscription renewed
-  3: "SUBSCRIPTION_CANCELED", // Subscription canceled (voluntary or involuntary)
-  4: "SUBSCRIPTION_PURCHASED", // New subscription purchased
-  5: "SUBSCRIPTION_ON_HOLD", // Subscription entered account hold
-  6: "SUBSCRIPTION_IN_GRACE_PERIOD", // Subscription entered grace period
-  7: "SUBSCRIPTION_RESTARTED", // User restarted subscription
-  8: "SUBSCRIPTION_PRICE_CHANGE_CONFIRMED", // User confirmed price change
-  9: "SUBSCRIPTION_DEFERRED", // Subscription deferred
-  10: "SUBSCRIPTION_PAUSED", // Subscription paused
-  11: "SUBSCRIPTION_PAUSE_SCHEDULE_CHANGED", // Pause schedule changed
-  12: "SUBSCRIPTION_REVOKED", // Subscription revoked
-  13: "SUBSCRIPTION_EXPIRED", // Subscription expired
+const NOTIFICATION_TYPES: Record<number, string> = {
+  1: "SUBSCRIPTION_RECOVERED",
+  2: "SUBSCRIPTION_RENEWED",
+  3: "SUBSCRIPTION_CANCELED",
+  4: "SUBSCRIPTION_PURCHASED",
+  5: "SUBSCRIPTION_ON_HOLD",
+  6: "SUBSCRIPTION_IN_GRACE_PERIOD",
+  7: "SUBSCRIPTION_RESTARTED",
+  8: "SUBSCRIPTION_PRICE_CHANGE_CONFIRMED",
+  9: "SUBSCRIPTION_DEFERRED",
+  10: "SUBSCRIPTION_PAUSED",
+  11: "SUBSCRIPTION_PAUSE_SCHEDULE_CHANGED",
+  12: "SUBSCRIPTION_REVOKED",
+  13: "SUBSCRIPTION_EXPIRED",
 };
 
 // Get Google Play access token
 async function getGoogleAccessToken(serviceAccountKey: string): Promise<string> {
   const serviceAccount = JSON.parse(serviceAccountKey);
-  
   const now = Math.floor(Date.now() / 1000);
   const expiry = now + 3600;
   
@@ -105,14 +103,13 @@ async function getGoogleAccessToken(serviceAccountKey: string): Promise<string> 
   return tokenData.access_token;
 }
 
-// Get subscription details from Google Play
-async function getSubscriptionDetails(
+// Get subscription details via Subscriptions v2 API
+async function getSubscriptionDetailsV2(
   packageName: string,
-  subscriptionId: string,
   purchaseToken: string,
   accessToken: string
 ) {
-  const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptions/${subscriptionId}/tokens/${purchaseToken}`;
+  const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptionsv2/tokens/${purchaseToken}`;
   
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -146,11 +143,9 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
-    // Parse the notification (comes as base64 encoded message from Pub/Sub)
     const body = await req.json();
     console.log("Received webhook:", JSON.stringify(body));
     
-    // Google Pub/Sub wraps the message
     let notification: GooglePlayNotification;
     if (body.message?.data) {
       const decoded = atob(body.message.data);
@@ -161,7 +156,6 @@ Deno.serve(async (req) => {
     
     console.log("Parsed notification:", JSON.stringify(notification));
     
-    // Handle test notification
     if (notification.testNotification) {
       console.log("Test notification received");
       return new Response(JSON.stringify({ success: true, type: "test" }), {
@@ -170,23 +164,51 @@ Deno.serve(async (req) => {
       });
     }
     
-    // Handle subscription notification
     if (notification.subscriptionNotification) {
-      const { notificationType, purchaseToken, subscriptionId } = notification.subscriptionNotification;
-      const notificationName = NOTIFICATION_TYPES[notificationType as keyof typeof NOTIFICATION_TYPES] || "UNKNOWN";
+      const { notificationType, purchaseToken } = notification.subscriptionNotification;
+      const notificationName = NOTIFICATION_TYPES[notificationType] || "UNKNOWN";
       
-      console.log(`Processing ${notificationName} for subscription ${subscriptionId}`);
+      console.log(`Processing ${notificationName}`);
       
-      // Get full subscription details from Google Play
+      // Get full subscription details via v2 API
       const accessToken = await getGoogleAccessToken(serviceAccountKey);
-      const subscriptionDetails = await getSubscriptionDetails(
-        packageName,
-        subscriptionId,
-        purchaseToken,
-        accessToken
-      );
+      const subDetails = await getSubscriptionDetailsV2(packageName, purchaseToken, accessToken);
       
-      console.log("Subscription details:", JSON.stringify(subscriptionDetails));
+      console.log("Subscription v2 details:", JSON.stringify(subDetails));
+      
+      // Extract data from v2 response
+      const lineItem = subDetails.lineItems?.[0];
+      const expiryTime = lineItem?.expiryTime ? new Date(lineItem.expiryTime) : new Date();
+      const autoRenewing = lineItem?.autoRenewingPlan?.autoRenewEnabled ?? false;
+      const now = new Date();
+      
+      // Determine status from subscriptionState
+      const state = subDetails.subscriptionState || "";
+      let isActive = true;
+      let purchaseState = 0;
+      
+      switch (state) {
+        case "SUBSCRIPTION_STATE_CANCELED":
+          isActive = expiryTime > now; // still active until expiry
+          purchaseState = 1;
+          break;
+        case "SUBSCRIPTION_STATE_EXPIRED":
+          isActive = false;
+          purchaseState = 1;
+          break;
+        case "SUBSCRIPTION_STATE_ON_HOLD":
+        case "SUBSCRIPTION_STATE_PAUSED":
+          isActive = false;
+          purchaseState = 2;
+          break;
+        case "SUBSCRIPTION_STATE_ACTIVE":
+        case "SUBSCRIPTION_STATE_IN_GRACE_PERIOD":
+        case "SUBSCRIPTION_STATE_PENDING_PURCHASE_CANCELED":
+        default:
+          isActive = expiryTime > now;
+          purchaseState = 0;
+          break;
+      }
       
       // Find existing subscription by purchase_token
       const { data: existingSub, error: findError } = await supabase
@@ -199,42 +221,13 @@ Deno.serve(async (req) => {
         console.error("Error finding subscription:", findError);
       }
       
-      const expiryTime = new Date(parseInt(subscriptionDetails.expiryTimeMillis));
-      const now = new Date();
-      
-      // Determine new status based on notification type
-      let isActive = true;
-      let purchaseState = 0;
-      
-      switch (notificationType) {
-        case 3: // CANCELED
-        case 12: // REVOKED
-        case 13: // EXPIRED
-          isActive = expiryTime > now; // Still active until expiry
-          purchaseState = 1;
-          break;
-        case 5: // ON_HOLD
-        case 10: // PAUSED
-          isActive = false;
-          purchaseState = 2;
-          break;
-        case 1: // RECOVERED
-        case 2: // RENEWED
-        case 4: // PURCHASED
-        case 7: // RESTARTED
-          isActive = true;
-          purchaseState = 0;
-          break;
-      }
-      
       if (existingSub) {
-        // Update existing subscription
         const { error: updateError } = await supabase
           .from("premium_subscriptions")
           .update({
             expires_at: expiryTime.toISOString(),
             is_active: isActive,
-            auto_renewing: subscriptionDetails.autoRenewing,
+            auto_renewing: autoRenewing,
             purchase_state: purchaseState,
             updated_at: new Date().toISOString(),
           })
@@ -243,23 +236,18 @@ Deno.serve(async (req) => {
         if (updateError) {
           console.error("Error updating subscription:", updateError);
         } else {
-          console.log(`Updated subscription ${existingSub.id}: ${notificationName}`);
+          console.log(`Updated subscription ${existingSub.id}: ${notificationName}, active=${isActive}`);
         }
       } else {
         console.log("Subscription not found for token, may need manual resolution");
       }
       
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          type: notificationName,
-          subscriptionId,
-        }),
+        JSON.stringify({ success: true, type: notificationName }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
-    // Unhandled notification type
     console.log("Unhandled notification type");
     return new Response(
       JSON.stringify({ success: true, type: "unhandled" }),

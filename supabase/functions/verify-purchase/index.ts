@@ -12,20 +12,26 @@ interface PurchaseVerificationRequest {
   platform: "android" | "ios";
 }
 
-interface GooglePlaySubscription {
+// Subscriptions v2 API response types
+interface SubscriptionV2Response {
   kind: string;
-  startTimeMillis: string;
-  expiryTimeMillis: string;
-  autoRenewing: boolean;
-  priceCurrencyCode: string;
-  priceAmountMicros: string;
-  countryCode: string;
-  developerPayload: string;
-  paymentState: number;
-  cancelReason?: number;
-  userCancellationTimeMillis?: string;
-  orderId: string;
-  acknowledgementState: number;
+  regionCode: string;
+  startTime: string;
+  subscriptionState: string; // e.g. "SUBSCRIPTION_STATE_ACTIVE"
+  latestOrderId: string;
+  acknowledgementState: string; // "ACKNOWLEDGEMENT_STATE_ACKNOWLEDGED" or "ACKNOWLEDGEMENT_STATE_PENDING"
+  lineItems: Array<{
+    productId: string;
+    expiryTime: string;
+    autoRenewingPlan?: {
+      autoRenewEnabled: boolean;
+    };
+    offerDetails?: {
+      basePlanId: string;
+      offerId?: string;
+    };
+  }>;
+  linkedPurchaseToken?: string;
 }
 
 // Get Google Play access token using service account
@@ -35,13 +41,7 @@ async function getGoogleAccessToken(serviceAccountKey: string): Promise<string> 
   const now = Math.floor(Date.now() / 1000);
   const expiry = now + 3600;
   
-  // Create JWT header
-  const header = {
-    alg: "RS256",
-    typ: "JWT",
-  };
-  
-  // Create JWT claims
+  const header = { alg: "RS256", typ: "JWT" };
   const claims = {
     iss: serviceAccount.client_email,
     scope: "https://www.googleapis.com/auth/androidpublisher",
@@ -50,13 +50,10 @@ async function getGoogleAccessToken(serviceAccountKey: string): Promise<string> 
     exp: expiry,
   };
   
-  // Encode header and claims
   const encodedHeader = btoa(JSON.stringify(header)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
   const encodedClaims = btoa(JSON.stringify(claims)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-  
   const signatureInput = `${encodedHeader}.${encodedClaims}`;
   
-  // Import private key and sign
   const privateKeyPem = serviceAccount.private_key;
   const pemContents = privateKeyPem
     .replace("-----BEGIN PRIVATE KEY-----", "")
@@ -64,7 +61,6 @@ async function getGoogleAccessToken(serviceAccountKey: string): Promise<string> 
     .replace(/\n/g, "");
   
   const binaryKey = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0));
-  
   const cryptoKey = await crypto.subtle.importKey(
     "pkcs8",
     binaryKey,
@@ -86,7 +82,6 @@ async function getGoogleAccessToken(serviceAccountKey: string): Promise<string> 
   
   const jwt = `${signatureInput}.${encodedSignature}`;
   
-  // Exchange JWT for access token
   const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -96,21 +91,20 @@ async function getGoogleAccessToken(serviceAccountKey: string): Promise<string> 
   if (!tokenResponse.ok) {
     const error = await tokenResponse.text();
     console.error("Token exchange failed:", error);
-    throw new Error("Failed to get Google access token");
+    throw new Error("GOOGLE_AUTH_FAILED");
   }
   
   const tokenData = await tokenResponse.json();
   return tokenData.access_token;
 }
 
-// Verify subscription with Google Play
+// Verify subscription with Google Play Subscriptions v2 API
 async function verifyGooglePlaySubscription(
   packageName: string,
-  productId: string,
   purchaseToken: string,
   accessToken: string
-): Promise<GooglePlaySubscription> {
-  const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptions/${productId}/tokens/${purchaseToken}`;
+): Promise<SubscriptionV2Response> {
+  const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptionsv2/tokens/${purchaseToken}`;
   
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -118,14 +112,21 @@ async function verifyGooglePlaySubscription(
   
   if (!response.ok) {
     const error = await response.text();
-    console.error("Google Play verification failed:", error);
-    throw new Error(`Google Play verification failed: ${response.status}`);
+    console.error("Google Play verification failed:", response.status, error);
+    
+    if (response.status === 401 || response.status === 403) {
+      throw new Error("PERMISSION_DENIED");
+    }
+    if (response.status === 404) {
+      throw new Error("PURCHASE_NOT_FOUND");
+    }
+    throw new Error(`VERIFICATION_FAILED_${response.status}`);
   }
   
   return response.json();
 }
 
-// Acknowledge the subscription purchase
+// Acknowledge the subscription (v1 acknowledge endpoint still works for v2 purchases)
 async function acknowledgeSubscription(
   packageName: string,
   productId: string,
@@ -145,80 +146,55 @@ async function acknowledgeSubscription(
   
   if (!response.ok) {
     const error = await response.text();
-    console.error("Acknowledge failed:", error);
-    throw new Error(`Failed to acknowledge subscription: ${response.status}`);
+    console.error("Acknowledge failed:", response.status, error);
+    // Non-fatal — log but don't throw
   }
 }
 
 /**
  * Product ID'den plan tipini çıkar
- * 
- * Yeni format:
- * - premium_basic_monthly -> premium_basic
- * - premium_plus_yearly -> premium_plus
- * - premium_pro_monthly -> premium_pro
- * 
- * Legacy fallback:
- * - pro, ultra -> premium_pro
- * - plus -> premium_plus
- * - default -> premium_basic
  */
 function getPlanType(productId: string): string {
-  const lowerProductId = productId.toLowerCase();
-  
-  // Yeni plan format kontrolü
-  if (lowerProductId.includes('premium_pro')) return 'premium_pro';
-  if (lowerProductId.includes('premium_plus')) return 'premium_plus';
-  if (lowerProductId.includes('premium_basic')) return 'premium_basic';
-  
-  // Legacy format fallback
-  if (lowerProductId.includes('pro') || lowerProductId.includes('ultra')) return 'premium_pro';
-  if (lowerProductId.includes('plus')) return 'premium_plus';
-  
-  // Default to basic for any premium purchase
+  const lower = productId.toLowerCase();
+  if (lower.includes('premium_pro')) return 'premium_pro';
+  if (lower.includes('premium_plus')) return 'premium_plus';
+  if (lower.includes('premium_basic')) return 'premium_basic';
+  if (lower.includes('pro') || lower.includes('ultra')) return 'premium_pro';
+  if (lower.includes('plus')) return 'premium_plus';
   return 'premium_basic';
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
   
   try {
-    // Verify authorization
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: "Authorization required" }),
+        JSON.stringify({ error: "Yetkilendirme gerekli", code: "AUTH_REQUIRED" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
-    // Initialize Supabase clients
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     
-    // Client with user's auth for getting user ID
     const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
-    
-    // Admin client for database operations
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
     
-    // Get user ID
     const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
     if (userError || !user) {
-      console.error("Auth error:", userError);
       return new Response(
-        JSON.stringify({ error: "Invalid authentication" }),
+        JSON.stringify({ error: "Geçersiz oturum", code: "INVALID_AUTH" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
-    // Parse request body
     const body: PurchaseVerificationRequest = await req.json();
     const { purchaseToken, productId, orderId, platform } = body;
     
@@ -226,65 +202,68 @@ Deno.serve(async (req) => {
     
     if (!purchaseToken || !productId || !platform) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields: purchaseToken, productId, platform" }),
+        JSON.stringify({ error: "Eksik bilgi", code: "MISSING_FIELDS" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
-    // Get Google Play credentials
     const serviceAccountKey = Deno.env.get("GOOGLE_PLAY_SERVICE_ACCOUNT_KEY");
     const packageName = Deno.env.get("GOOGLE_PLAY_PACKAGE_NAME");
     
     if (!serviceAccountKey || !packageName) {
-      console.error("Missing Google Play configuration");
       return new Response(
-        JSON.stringify({ error: "Server configuration error" }),
+        JSON.stringify({ error: "Sunucu yapılandırma hatası", code: "CONFIG_ERROR" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
     // Get access token
-    console.log("Getting Google access token...");
     const accessToken = await getGoogleAccessToken(serviceAccountKey);
     
-    // Verify subscription with Google Play
-    console.log("Verifying with Google Play...");
-    const subscription = await verifyGooglePlaySubscription(
-      packageName,
-      productId,
-      purchaseToken,
-      accessToken
-    );
+    // Verify with Subscriptions v2 API
+    console.log("Verifying with Google Play v2 API...");
+    const subscription = await verifyGooglePlaySubscription(packageName, purchaseToken, accessToken);
     
-    console.log("Google Play response:", {
-      orderId: subscription.orderId,
-      expiryTime: new Date(parseInt(subscription.expiryTimeMillis)).toISOString(),
-      autoRenewing: subscription.autoRenewing,
-      acknowledgementState: subscription.acknowledgementState,
-    });
+    console.log("Google Play v2 response:", JSON.stringify({
+      state: subscription.subscriptionState,
+      orderId: subscription.latestOrderId,
+      lineItems: subscription.lineItems?.length,
+      ackState: subscription.acknowledgementState,
+    }));
     
-    // Check if subscription is valid
-    const expiryTime = new Date(parseInt(subscription.expiryTimeMillis));
-    if (expiryTime < new Date()) {
+    // Extract data from v2 response
+    const lineItem = subscription.lineItems?.[0];
+    if (!lineItem) {
       return new Response(
-        JSON.stringify({ error: "Subscription has expired", valid: false }),
+        JSON.stringify({ error: "Abonelik bilgisi bulunamadı", code: "NO_LINE_ITEMS" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
-    // Acknowledge if not already acknowledged
-    if (subscription.acknowledgementState === 0) {
-      console.log("Acknowledging subscription...");
-      await acknowledgeSubscription(packageName, productId, purchaseToken, accessToken);
+    const expiryTime = new Date(lineItem.expiryTime);
+    const startTime = new Date(subscription.startTime);
+    const isActive = subscription.subscriptionState === "SUBSCRIPTION_STATE_ACTIVE" 
+                  || subscription.subscriptionState === "SUBSCRIPTION_STATE_IN_GRACE_PERIOD";
+    const autoRenewing = lineItem.autoRenewingPlan?.autoRenewEnabled ?? false;
+    const resolvedProductId = lineItem.productId || productId;
+    
+    if (expiryTime < new Date() && !isActive) {
+      return new Response(
+        JSON.stringify({ error: "Abonelik süresi dolmuş", code: "EXPIRED", valid: false }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
     
-    // Calculate subscription period and plan type
-    const startTime = new Date(parseInt(subscription.startTimeMillis));
-    const planType = getPlanType(productId);
+    // Acknowledge if pending
+    if (subscription.acknowledgementState === "ACKNOWLEDGEMENT_STATE_PENDING") {
+      console.log("Acknowledging subscription...");
+      await acknowledgeSubscription(packageName, resolvedProductId, purchaseToken, accessToken);
+    }
     
-    console.log("Resolved plan type:", { productId, planType });
+    const planType = getPlanType(resolvedProductId);
+    console.log("Resolved plan type:", { resolvedProductId, planType });
     
-    // Upsert subscription record
+    // Upsert subscription
     const { data: subscriptionData, error: upsertError } = await supabaseAdmin
       .from("premium_subscriptions")
       .upsert(
@@ -293,32 +272,68 @@ Deno.serve(async (req) => {
           plan_type: planType,
           platform: platform,
           purchase_token: purchaseToken,
-          order_id: subscription.orderId,
-          product_id: productId,
+          order_id: subscription.latestOrderId || orderId,
+          product_id: resolvedProductId,
           starts_at: startTime.toISOString(),
           expires_at: expiryTime.toISOString(),
           is_active: true,
-          auto_renewing: subscription.autoRenewing,
-          purchase_state: subscription.paymentState,
+          auto_renewing: autoRenewing,
+          purchase_state: 0,
           acknowledged: true,
         },
-        {
-          onConflict: "order_id",
-          ignoreDuplicates: false,
-        }
+        { onConflict: "order_id", ignoreDuplicates: false }
       )
       .select()
       .single();
     
     if (upsertError) {
       console.error("Database error:", upsertError);
+      
+      // Fallback: try insert without onConflict (order_id might not exist yet)
+      const { data: insertData, error: insertError } = await supabaseAdmin
+        .from("premium_subscriptions")
+        .insert({
+          user_id: user.id,
+          plan_type: planType,
+          platform: platform,
+          purchase_token: purchaseToken,
+          order_id: subscription.latestOrderId || orderId,
+          product_id: resolvedProductId,
+          starts_at: startTime.toISOString(),
+          expires_at: expiryTime.toISOString(),
+          is_active: true,
+          auto_renewing: autoRenewing,
+          purchase_state: 0,
+          acknowledged: true,
+        })
+        .select()
+        .single();
+      
+      if (insertError) {
+        console.error("Insert fallback also failed:", insertError);
+        return new Response(
+          JSON.stringify({ error: "Abonelik kaydedilemedi", code: "DB_ERROR" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
+      console.log("Subscription saved via fallback insert:", insertData?.id);
       return new Response(
-        JSON.stringify({ error: "Failed to save subscription" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          success: true,
+          valid: true,
+          subscription: {
+            id: insertData.id,
+            planType,
+            expiresAt: expiryTime.toISOString(),
+            autoRenewing,
+          },
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
-    console.log("Subscription saved successfully:", { id: subscriptionData.id, planType });
+    console.log("Subscription saved:", subscriptionData.id);
     
     return new Response(
       JSON.stringify({
@@ -326,9 +341,9 @@ Deno.serve(async (req) => {
         valid: true,
         subscription: {
           id: subscriptionData.id,
-          planType: planType,
+          planType,
           expiresAt: expiryTime.toISOString(),
-          autoRenewing: subscription.autoRenewing,
+          autoRenewing,
         },
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -336,9 +351,19 @@ Deno.serve(async (req) => {
     
   } catch (error) {
     console.error("Verification error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Verification failed";
+    const message = error instanceof Error ? error.message : "UNKNOWN_ERROR";
+    
+    // Map error codes to user-friendly messages
+    const errorMessages: Record<string, string> = {
+      GOOGLE_AUTH_FAILED: "Google Play bağlantı hatası. Lütfen tekrar deneyin.",
+      PERMISSION_DENIED: "Sunucu izin hatası. Lütfen destek ile iletişime geçin.",
+      PURCHASE_NOT_FOUND: "Satın alma bulunamadı. Lütfen tekrar deneyin.",
+    };
+    
+    const userMessage = errorMessages[message] || "Doğrulama başarısız oldu. Lütfen tekrar deneyin.";
+    
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: userMessage, code: message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
