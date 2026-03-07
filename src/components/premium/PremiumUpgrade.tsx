@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { usePlatform } from '@/hooks/usePlatform';
+import { usePlatformPremium } from '@/hooks/usePlatformPremium';
 import { purchaseService, PRODUCTS, PLAN_PRODUCTS } from '@/services/purchaseService';
 import { PLAN_PRICES } from '@/constants/accessLevels';
 import { toast } from 'sonner';
