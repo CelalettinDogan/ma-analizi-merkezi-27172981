@@ -263,6 +263,17 @@ Deno.serve(async (req) => {
     const planType = getPlanType(resolvedProductId);
     console.log("Resolved plan type:", { resolvedProductId, planType });
     
+    // Deactivate any existing active subscriptions for this user
+    const { error: deactivateError } = await supabaseAdmin
+      .from("premium_subscriptions")
+      .update({ is_active: false })
+      .eq("user_id", user.id)
+      .eq("is_active", true);
+    
+    if (deactivateError) {
+      console.warn("Failed to deactivate old subscriptions:", deactivateError);
+    }
+    
     // Upsert subscription
     const { data: subscriptionData, error: upsertError } = await supabaseAdmin
       .from("premium_subscriptions")
