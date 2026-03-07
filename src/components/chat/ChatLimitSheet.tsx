@@ -80,7 +80,7 @@ const ChatLimitSheet: React.FC<ChatLimitSheetProps> = ({
 
   const handleUpgrade = () => {
     onClose();
-    navigate('/profile', { state: { openPremium: true } });
+    navigate('/premium');
   };
 
   const handleWait = () => {
