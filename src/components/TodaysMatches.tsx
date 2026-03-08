@@ -9,6 +9,14 @@ import { cn } from '@/lib/utils';
 import H2HSummaryBadge from '@/components/match/H2HSummaryBadge';
 import { useH2HPreview } from '@/hooks/useH2HPreview';
 
+const TEAM_PREFIXES = /^(US |AC |FC |ACF |AS |SS |SSC |SSD |UC |RC |CA |CF |CD |RCD |SD |UD |SC |BSC |TSG |VfB |VfL |1\. |Borussia |Sporting |Atlético |Athletic )/i;
+
+const cleanTeamName = (team: { shortName?: string; tla?: string; name: string }): string => {
+  const raw = team.shortName || team.name;
+  const cleaned = raw.replace(TEAM_PREFIXES, '').trim();
+  return cleaned || raw;
+};
+
 interface TodaysMatchesProps {
   matches: Match[];
   isLoading?: boolean;
