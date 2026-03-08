@@ -9,11 +9,93 @@ import { cn } from '@/lib/utils';
 import H2HSummaryBadge from '@/components/match/H2HSummaryBadge';
 import { useH2HPreview } from '@/hooks/useH2HPreview';
 
-const TEAM_PREFIXES = /^(US |AC |FC |ACF |AS |SS |SSC |SSD |UC |RC |CA |CF |CD |RCD |SD |UD |SC |BSC |TSG |VfB |VfL |1\. |Borussia |Sporting |Atlético |Athletic )/i;
+const TEAM_OVERRIDES: Record<string, string> = {
+  'FC Internazionale Milano': 'Inter',
+  'Internazionale Milano': 'Inter',
+  'Inter Milan': 'Inter',
+  'Parma Calcio 1913': 'Parma',
+  'Hellas Verona FC': 'Verona',
+  'Como 1907': 'Como',
+  'Venezia FC': 'Venezia',
+  'Torino FC': 'Torino',
+  'Juventus FC': 'Juventus',
+  'Atalanta BC': 'Atalanta',
+  'AC Milan': 'Milan',
+  'ACF Fiorentina': 'Fiorentina',
+  'US Lecce': 'Lecce',
+  'SSC Napoli': 'Napoli',
+  'SS Lazio': 'Lazio',
+  'AS Roma': 'Roma',
+  'US Sassuolo': 'Sassuolo',
+  'Cagliari Calcio': 'Cagliari',
+  'Empoli FC': 'Empoli',
+  'Udinese Calcio': 'Udinese',
+  'Genoa CFC': 'Genoa',
+  'Bologna FC 1909': 'Bologna',
+  'UC Sampdoria': 'Sampdoria',
+  'Atletico de Madrid': 'Atlético',
+  'Atlético de Madrid': 'Atlético',
+  'Athletic Club': 'Athletic',
+  'Real Sociedad de Fútbol': 'Real Sociedad',
+  'RC Celta de Vigo': 'Celta Vigo',
+  'Rayo Vallecano de Madrid': 'Rayo Vallecano',
+  'RCD Espanyol de Barcelona': 'Espanyol',
+  'Real Betis Balompié': 'Betis',
+  'Borussia Dortmund': 'Dortmund',
+  'Borussia Mönchengladbach': 'Gladbach',
+  'VfB Stuttgart': 'Stuttgart',
+  'VfL Wolfsburg': 'Wolfsburg',
+  'TSG 1899 Hoffenheim': 'Hoffenheim',
+  'Bayer 04 Leverkusen': 'Leverkusen',
+  'RB Leipzig': 'Leipzig',
+  '1. FC Union Berlin': 'Union Berlin',
+  '1. FC Heidenheim 1846': 'Heidenheim',
+  '1. FC Köln': 'Köln',
+  '1. FSV Mainz 05': 'Mainz',
+  'SC Freiburg': 'Freiburg',
+  'FC Augsburg': 'Augsburg',
+  'SV Werder Bremen': 'Werder Bremen',
+  'Eintracht Frankfurt': 'Frankfurt',
+  'Paris Saint-Germain FC': 'PSG',
+  'Paris Saint-Germain': 'PSG',
+  'AS Monaco FC': 'Monaco',
+  'Olympique de Marseille': 'Marseille',
+  'Olympique Lyonnais': 'Lyon',
+  'LOSC Lille': 'Lille',
+  'Stade Rennais FC 1901': 'Rennes',
+  'RC Strasbourg Alsace': 'Strasbourg',
+  'Manchester United FC': 'Man United',
+  'Manchester City FC': 'Man City',
+  'Tottenham Hotspur FC': 'Tottenham',
+  'Arsenal FC': 'Arsenal',
+  'Chelsea FC': 'Chelsea',
+  'Liverpool FC': 'Liverpool',
+  'Newcastle United FC': 'Newcastle',
+  'West Ham United FC': 'West Ham',
+  'Wolverhampton Wanderers FC': 'Wolves',
+  'Brighton & Hove Albion FC': 'Brighton',
+  'Crystal Palace FC': 'Crystal Palace',
+  'Nottingham Forest FC': 'Nott. Forest',
+  'AFC Bournemouth': 'Bournemouth',
+  'Aston Villa FC': 'Aston Villa',
+  'Leicester City FC': 'Leicester',
+  'Everton FC': 'Everton',
+  'Fulham FC': 'Fulham',
+  'Brentford FC': 'Brentford',
+  'Ipswich Town FC': 'Ipswich',
+  'Southampton FC': 'Southampton',
+};
+
+const TEAM_PREFIXES = /^(US |AC |FC |ACF |AS |SS |SSC |SSD |UC |RC |CA |CF |CD |RCD |SD |UD |SC |BSC |TSG |VfB |VfL |SV |1\. |Borussia |Sporting |Atlético |Athletic |LOSC )/i;
+const TEAM_SUFFIXES = / (Calcio|FC|SC|CF|BC|SFC|AFC|CFC|1913|1909|1907|1899|1846|1901|05|04|de Fútbol|Balompié)$/i;
 
 const cleanTeamName = (team: { shortName?: string; tla?: string; name: string }): string => {
+  // Check overrides first (against all available names)
+  for (const key of [team.name, team.shortName]) {
+    if (key && TEAM_OVERRIDES[key]) return TEAM_OVERRIDES[key];
+  }
   const raw = team.shortName || team.name;
-  const cleaned = raw.replace(TEAM_PREFIXES, '').trim();
+  const cleaned = raw.replace(TEAM_PREFIXES, '').replace(TEAM_SUFFIXES, '').trim();
   return cleaned || raw;
 };
 
