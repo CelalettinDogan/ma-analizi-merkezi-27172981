@@ -1,8 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import { Calendar, Heart } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Match } from '@/types/footballApi';
 import { format, parseISO } from 'date-fns';
