@@ -181,9 +181,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
             className={cn(
               "min-h-[44px] min-w-[44px] h-auto w-auto rounded-full shrink-0 transition-all duration-200",
               "bg-gradient-to-br from-primary to-primary/80",
-              "hover:from-primary/90 hover:to-primary/70",
-              "shadow-md shadow-primary/20 hover:shadow-lg",
-              "disabled:opacity-50 disabled:shadow-none"
+              "active:from-primary/90 active:to-primary/70",
+              "shadow-md shadow-primary/20",
+              "disabled:opacity-40 disabled:scale-95 disabled:shadow-none"
             )}
           >
             {isLoading ? (
