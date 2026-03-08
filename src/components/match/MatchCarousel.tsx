@@ -188,25 +188,7 @@ const MatchCarousel: React.FC<MatchCarouselProps> = ({ matches, onMatchSelect, i
   }
 
   return (
-    <div className="relative group">
-      {/* Nav buttons — desktop only */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex"
-        onClick={scrollPrev}
-      >
-        <ChevronLeft className="w-5 h-5" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex"
-        onClick={scrollNext}
-      >
-        <ChevronRight className="w-5 h-5" />
-      </Button>
-
+    <div className="relative">
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex gap-3">
           {matches.map((match) => (

@@ -210,8 +210,8 @@
     @apply glass-card transition-all duration-300 cursor-pointer;
   }
 
-  .glass-card-hover:hover {
-    @apply border-primary/30 -translate-y-0.5;
+  .glass-card-hover:active {
+    @apply border-primary/30;
     box-shadow: var(--shadow-elevated), var(--shadow-glow);
   }
 

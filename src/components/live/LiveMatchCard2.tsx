@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Zap, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Match } from '@/types/footballApi';
-import { cardHover, cardTap } from '@/lib/animations';
+import { cardTap } from '@/lib/animations';
 
 interface LiveMatchCard2Props {
   match: Match;

@@ -126,13 +126,11 @@ const TabShell: React.FC = () => {
             className="bg-background"
             style={{
               display: isActive ? 'block' : 'none',
-              // On initial render, skip fade-in animation
               opacity: isActive ? 1 : 0,
               transform: isActive ? 'translateY(0)' : 'translateY(4px)',
               transition: initialRender ? 'none' : 'opacity 0.2s ease-out, transform 0.2s ease-out',
-              minHeight: '100vh',
-              overflowY: 'auto',
-              WebkitOverflowScrolling: 'touch',
+              height: '100vh',
+              overflow: 'hidden',
             }}
           >
             <ErrorBoundary>

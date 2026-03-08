@@ -190,7 +190,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
           )}
 
           {/* Top row: reason tag + H2H */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between flex-wrap gap-1.5 mb-4">
             <div className="flex items-center gap-2">
              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-micro font-medium bg-muted/40 text-foreground/70">
                 {featuredReason === 'Büyük Maç' ? (
