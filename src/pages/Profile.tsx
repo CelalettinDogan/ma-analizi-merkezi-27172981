@@ -434,11 +434,11 @@ const Profile = () => {
 
                 <div className="border-t border-border/50 my-2" />
 
-                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setShowDeleteAccountSheet(true)}>
+                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl text-destructive active:bg-destructive/10" onClick={() => setShowDeleteAccountSheet(true)}>
                   <span className="flex items-center gap-2.5"><Trash2 className="h-4 w-4" />Hesabı Sil</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" className="w-full justify-start gap-2.5 h-11 text-sm rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleSignOut}>
+                <Button variant="ghost" className="w-full justify-start gap-2.5 h-11 text-sm rounded-xl text-destructive active:bg-destructive/10" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4" /><span>Çıkış Yap</span>
                 </Button>
               </CardContent>
