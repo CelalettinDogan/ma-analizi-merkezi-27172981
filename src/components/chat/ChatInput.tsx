@@ -131,7 +131,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           <Textarea
             ref={textareaRef}
             value={message}
-            onChange={(e) => setMessage(e.target.value.slice(0, maxLength + 50))}
+            onChange={(e) => setMessage(e.target.value.slice(0, maxLength))}
             onKeyDown={handleKeyDown}
             onFocus={() => {
               setShowQuickPrompts(false);
