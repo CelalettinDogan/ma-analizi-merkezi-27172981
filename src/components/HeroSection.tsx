@@ -55,11 +55,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           {/* Left: Trust badge + title compact */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              {stats.accuracy > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/8 text-xs">
-                  <Shield className="w-3 h-3 text-primary" />
-                  <span className="font-medium text-primary">%{animatedAccuracy}</span>
-                  <span className="text-muted-foreground">· {animatedPredictions.toLocaleString()}+ analiz</span>
+              {stats.accuracy >= 65 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/12 text-xs border border-primary/20">
+                  <Shield className="w-3.5 h-3.5 text-primary" />
+                  <span className="font-semibold text-primary">%{animatedAccuracy}</span>
+                  <span className="text-muted-foreground font-medium">· {animatedPredictions.toLocaleString()}+ analiz</span>
                 </span>
               )}
               {stats.liveCount > 0 && (

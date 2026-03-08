@@ -50,17 +50,13 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
 
   return (
     <div className="relative">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-5 rounded-full bg-primary" />
-          <h2 className="text-sm font-semibold text-foreground">Lig Seçin</h2>
-        </div>
-        {selectedLeague && (
+      {selectedLeague && (
+        <div className="flex items-center justify-end mb-2">
           <span className="text-xs text-primary font-medium">
             ✓ {SUPPORTED_COMPETITIONS.find(c => c.code === selectedLeague)?.name}
           </span>
-        )}
-      </div>
+        </div>
+      )}
       
       <div 
         id="leagues" 
