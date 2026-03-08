@@ -132,8 +132,8 @@ async function acknowledgeSubscription(
   purchaseToken: string,
   accessToken: string
 ): Promise<void> {
-  // v2 acknowledge endpoint — does not require productId, works with Base Plan model
-  const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptionsv2/tokens/${purchaseToken}:acknowledge`;
+// v1 acknowledge endpoint — subscriptionId is optional (use "-" wildcard)
+  const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptions/-/tokens/${purchaseToken}:acknowledge`;
   
   const response = await fetch(url, {
     method: "POST",
