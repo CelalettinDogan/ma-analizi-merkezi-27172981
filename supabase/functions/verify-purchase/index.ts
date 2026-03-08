@@ -197,10 +197,14 @@ Deno.serve(async (req) => {
       );
     }
     
-    const body: PurchaseVerificationRequest = await req.json();
+    const rawBody = await req.json();
+    console.log("Raw request body:", JSON.stringify(rawBody));
+    
+    // Handle both direct and nested body structures (supabase.functions.invoke may wrap body)
+    const body: PurchaseVerificationRequest = rawBody?.body || rawBody;
     const { purchaseToken, productId, orderId, platform } = body;
     
-    console.log("Verifying purchase:", { userId: user.id, productId, platform, orderId });
+    console.log("Verifying purchase:", { userId: user.id, productId, platform, orderId, hasPurchaseToken: !!purchaseToken });
     
     if (!purchaseToken || !productId || !platform) {
       return new Response(
