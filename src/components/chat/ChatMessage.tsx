@@ -79,7 +79,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
           "flex gap-2 px-3 py-[5px] group min-w-0 items-end",
           isUser ? "flex-row-reverse" : "flex-row"
         )}
-        onTouchStart={() => setShowActions(prev => !prev)}
+        onClick={() => setShowActions(prev => !prev)}
       >
         {/* Avatar */}
         <div
