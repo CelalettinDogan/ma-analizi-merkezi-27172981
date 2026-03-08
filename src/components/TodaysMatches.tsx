@@ -8,6 +8,7 @@ import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import H2HSummaryBadge from '@/components/match/H2HSummaryBadge';
 import { useH2HPreview } from '@/hooks/useH2HPreview';
+import { useMatchAIPreview, useMatchAIPreviewExists } from '@/hooks/useMatchAIPreview';
 
 const TEAM_OVERRIDES: Record<string, string> = {
   // Serie A
