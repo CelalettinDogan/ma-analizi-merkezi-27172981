@@ -225,7 +225,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                 )}
               </div>
               <span className="font-medium text-sm leading-tight line-clamp-2 min-w-0">
-                {featuredMatch.homeTeam.tla || featuredMatch.homeTeam.shortName || featuredMatch.homeTeam.name}
+                {featuredMatch.homeTeam.shortName || featuredMatch.homeTeam.tla || featuredMatch.homeTeam.name}
               </span>
             </div>
 
