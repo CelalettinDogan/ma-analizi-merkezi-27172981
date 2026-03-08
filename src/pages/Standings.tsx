@@ -224,7 +224,7 @@ const StandingsPage: React.FC = () => {
                           <TableRow
                             key={team.team_id}
                             className={cn(
-                              "hover:bg-muted/20 transition-colors",
+                              "transition-colors",
                               getPositionBg(team.position, standings.length)
                             )}
                           >

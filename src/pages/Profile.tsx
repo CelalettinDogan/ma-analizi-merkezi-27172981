@@ -478,7 +478,7 @@ const Profile = () => {
             </div>
             <div className="flex items-center space-x-3 p-3 rounded-lg border border-border active:bg-muted/30 transition-colors">
               <RadioGroupItem value="system" id="system" />
-              <Label htmlFor="system" className="flex-1 cursor-pointer">
+              <Label htmlFor="system" className="flex-1">
                 <span className="font-medium text-sm">📱 Sistem</span>
                 <p className="text-xs text-muted-foreground">Cihaz ayarlarını takip eder</p>
               </Label>
