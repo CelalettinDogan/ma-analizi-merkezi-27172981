@@ -10,7 +10,7 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
-import { PLAN_PRICES } from '@/constants/accessLevels';
+import { useStoreProducts } from '@/hooks/useStoreProducts';
 
 interface AnalysisLimitSheetProps {
   isOpen: boolean;
@@ -33,6 +33,7 @@ const AnalysisLimitSheet: React.FC<AnalysisLimitSheetProps> = ({
 }) => {
   const navigate = useNavigate();
   const [timeUntilReset, setTimeUntilReset] = useState('');
+  const { cheapestMonthlyPrice } = useStoreProducts();
 
   // Calculate time until midnight
   const calculateTimeUntilMidnight = useCallback(() => {
@@ -108,7 +109,7 @@ const AnalysisLimitSheet: React.FC<AnalysisLimitSheetProps> = ({
                   Premium ile beklemeden sınırsız analiz yapabilirsin
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  ₺{PLAN_PRICES.premium_basic.monthly}/ay'dan başlayan fiyatlarla
+                  {cheapestMonthlyPrice}/ay'dan başlayan fiyatlarla
                 </p>
               </div>
             </div>

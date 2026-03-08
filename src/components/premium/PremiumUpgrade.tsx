@@ -7,10 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 import { usePlatform } from '@/hooks/usePlatform';
 import { usePlatformPremium } from '@/hooks/usePlatformPremium';
+import { useStoreProducts } from '@/hooks/useStoreProducts';
 import { purchaseService, PRODUCTS, PLAN_PRODUCTS } from '@/services/purchaseService';
-import { PLAN_PRICES } from '@/constants/accessLevels';
 import { toast } from 'sonner';
 
 interface PremiumUpgradeProps {
@@ -29,8 +30,6 @@ interface PlanConfig {
   name: string;
   monthlyId: string;
   yearlyId: string;
-  monthlyPrice: number;
-  yearlyPrice: number;
   chatLimit: number;
   popular: boolean;
   color: string;
@@ -38,36 +37,21 @@ interface PlanConfig {
 
 const plans: PlanConfig[] = [
   {
-    id: 'premium_basic',
-    name: 'Basic',
-    monthlyId: PRODUCTS.PREMIUM_BASIC_MONTHLY,
-    yearlyId: PRODUCTS.PREMIUM_BASIC_YEARLY,
-    monthlyPrice: PLAN_PRICES.premium_basic.monthly,
-    yearlyPrice: PLAN_PRICES.premium_basic.yearly,
-    chatLimit: PLAN_PRODUCTS.premium_basic.chatLimit,
-    popular: false,
+    id: 'premium_basic', name: 'Basic',
+    monthlyId: PRODUCTS.PREMIUM_BASIC_MONTHLY, yearlyId: PRODUCTS.PREMIUM_BASIC_YEARLY,
+    chatLimit: PLAN_PRODUCTS.premium_basic.chatLimit, popular: false,
     color: 'from-blue-500 to-blue-600',
   },
   {
-    id: 'premium_plus',
-    name: 'Plus',
-    monthlyId: PRODUCTS.PREMIUM_PLUS_MONTHLY,
-    yearlyId: PRODUCTS.PREMIUM_PLUS_YEARLY,
-    monthlyPrice: PLAN_PRICES.premium_plus.monthly,
-    yearlyPrice: PLAN_PRICES.premium_plus.yearly,
-    chatLimit: PLAN_PRODUCTS.premium_plus.chatLimit,
-    popular: true,
+    id: 'premium_plus', name: 'Plus',
+    monthlyId: PRODUCTS.PREMIUM_PLUS_MONTHLY, yearlyId: PRODUCTS.PREMIUM_PLUS_YEARLY,
+    chatLimit: PLAN_PRODUCTS.premium_plus.chatLimit, popular: true,
     color: 'from-purple-500 to-purple-600',
   },
   {
-    id: 'premium_pro',
-    name: 'Pro',
-    monthlyId: PRODUCTS.PREMIUM_PRO_MONTHLY,
-    yearlyId: PRODUCTS.PREMIUM_PRO_YEARLY,
-    monthlyPrice: PLAN_PRICES.premium_pro.monthly,
-    yearlyPrice: PLAN_PRICES.premium_pro.yearly,
-    chatLimit: PLAN_PRODUCTS.premium_pro.chatLimit,
-    popular: false,
+    id: 'premium_pro', name: 'Pro',
+    monthlyId: PRODUCTS.PREMIUM_PRO_MONTHLY, yearlyId: PRODUCTS.PREMIUM_PRO_YEARLY,
+    chatLimit: PLAN_PRODUCTS.premium_pro.chatLimit, popular: false,
     color: 'from-amber-500 to-orange-600',
   },
 ];
@@ -75,22 +59,21 @@ const plans: PlanConfig[] = [
 export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
   const { isNative } = usePlatform();
   const { refetch } = usePlatformPremium();
+  const { getPrice, getPriceAmount, isLoading: pricesLoading } = useStoreProducts();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanConfig['id']>('premium_plus');
   const [isYearly, setIsYearly] = useState(true);
 
   const selectedPlanConfig = plans.find(p => p.id === selectedPlan)!;
   const productId = isYearly ? selectedPlanConfig.yearlyId : selectedPlanConfig.monthlyId;
-  const price = isYearly ? selectedPlanConfig.yearlyPrice : selectedPlanConfig.monthlyPrice;
+  const priceStr = getPrice(productId);
   const planName = PLAN_PRODUCTS[selectedPlan].name;
 
   const handlePurchase = async () => {
     setIsLoading(true);
-
     try {
       if (isNative) {
         const result = await purchaseService.purchaseSubscription(productId);
-        
         if (result.success) {
           refetch();
           toast.success(`${planName} üyeliğin aktif edildi!`);
@@ -104,7 +87,6 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
           }
         }
       } else {
-        // Development/preview ortamında sessizce geç
         console.log('Purchase simulation - native platform required for real purchases');
         toast.info('Satın alma testi: Gerçek satın alma için mobil uygulama gerekli');
       }
@@ -118,10 +100,8 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
 
   const handleRestore = async () => {
     setIsLoading(true);
-
     try {
       const result = await purchaseService.restorePurchases();
-      
       if (result.success) {
         refetch();
         toast.success('Satın almalar geri yüklendi!');
@@ -187,7 +167,8 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
           <div className="grid grid-cols-3 gap-2">
             {plans.map((plan) => {
               const isSelected = selectedPlan === plan.id;
-              const displayPrice = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+              const currentProductId = isYearly ? plan.yearlyId : plan.monthlyId;
+              const displayPrice = getPrice(currentProductId);
               
               return (
                 <button
@@ -214,9 +195,13 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
                   
                   <p className="font-semibold text-sm">{plan.name}</p>
                   
-                  <p className="text-lg font-bold text-primary mt-1">
-                    ₺{displayPrice}
-                  </p>
+                  {pricesLoading ? (
+                    <Skeleton className="h-6 w-14 mx-auto mt-1 rounded" />
+                  ) : (
+                    <p className="text-lg font-bold text-primary mt-1">
+                      {displayPrice}
+                    </p>
+                  )}
                   <p className="text-micro text-muted-foreground">
                     {isYearly ? '/yıl' : '/ay'}
                   </p>
@@ -269,7 +254,11 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-xl font-bold text-primary">₺{price}</p>
+                {pricesLoading ? (
+                  <Skeleton className="h-7 w-16 rounded" />
+                ) : (
+                  <p className="text-xl font-bold text-primary">{priceStr}</p>
+                )}
                 <p className="text-xs text-muted-foreground">
                   {isYearly ? '/yıl' : '/ay'}
                 </p>
@@ -320,7 +309,7 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
             </Button>
           )}
 
-          {/* Legal Terms - Play Store compliant */}
+          {/* Legal Terms */}
           <div className="space-y-2 text-center">
             <p className="text-micro text-muted-foreground leading-relaxed">
               Abonelik dönem sonunda otomatik olarak yenilenir. 

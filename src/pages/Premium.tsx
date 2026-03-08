@@ -3,12 +3,13 @@ import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { Crown, Check, Sparkles, Zap, Shield, Brain, MessageSquare, Ban, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAccessLevel } from '@/hooks/useAccessLevel';
 import { usePlatformPremium } from '@/hooks/usePlatformPremium';
 import { usePlatform } from '@/hooks/usePlatform';
+import { useStoreProducts } from '@/hooks/useStoreProducts';
 import { purchaseService, PRODUCTS, PLAN_PRODUCTS } from '@/services/purchaseService';
-import { PLAN_PRICES } from '@/constants/accessLevels';
 import AppHeader from '@/components/layout/AppHeader';
 
 import { toast } from 'sonner';
@@ -20,8 +21,6 @@ interface PlanConfig {
   tagline: string;
   monthlyId: string;
   yearlyId: string;
-  monthlyPrice: number;
-  yearlyPrice: number;
   chatLimit: number;
   popular: boolean;
   icon: React.ElementType;
@@ -31,19 +30,16 @@ const plans: PlanConfig[] = [
   {
     id: 'premium_basic', name: 'Basic', tagline: '3 AI/gün',
     monthlyId: PRODUCTS.PREMIUM_BASIC_MONTHLY, yearlyId: PRODUCTS.PREMIUM_BASIC_YEARLY,
-    monthlyPrice: PLAN_PRICES.premium_basic.monthly, yearlyPrice: PLAN_PRICES.premium_basic.yearly,
     chatLimit: PLAN_PRODUCTS.premium_basic.chatLimit, popular: false, icon: Zap,
   },
   {
     id: 'premium_plus', name: 'Plus', tagline: '5 AI/gün',
     monthlyId: PRODUCTS.PREMIUM_PLUS_MONTHLY, yearlyId: PRODUCTS.PREMIUM_PLUS_YEARLY,
-    monthlyPrice: PLAN_PRICES.premium_plus.monthly, yearlyPrice: PLAN_PRICES.premium_plus.yearly,
     chatLimit: PLAN_PRODUCTS.premium_plus.chatLimit, popular: true, icon: Crown,
   },
   {
     id: 'premium_pro', name: 'Pro', tagline: '10 AI/gün',
     monthlyId: PRODUCTS.PREMIUM_PRO_MONTHLY, yearlyId: PRODUCTS.PREMIUM_PRO_YEARLY,
-    monthlyPrice: PLAN_PRICES.premium_pro.monthly, yearlyPrice: PLAN_PRICES.premium_pro.yearly,
     chatLimit: PLAN_PRODUCTS.premium_pro.chatLimit, popular: false, icon: Sparkles,
   },
 ];
@@ -61,6 +57,7 @@ const Premium = () => {
   const { isNative } = usePlatform();
   const { isPremium, isAdmin } = useAccessLevel();
   const { planType } = usePlatformPremium();
+  const { getPrice, getPriceAmount, isLoading: pricesLoading } = useStoreProducts();
 
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanConfig['id']>('premium_plus');
@@ -68,7 +65,6 @@ const Premium = () => {
 
   const sel = plans.find(p => p.id === selectedPlan)!;
   const productId = isYearly ? sel.yearlyId : sel.monthlyId;
-  const price = isYearly ? sel.yearlyPrice : sel.monthlyPrice;
   const planName = PLAN_PRODUCTS[selectedPlan].name;
 
   const { refetch } = usePlatformPremium();
@@ -182,11 +178,6 @@ const Premium = () => {
     <div className="h-screen bg-background flex flex-col">
       <AppHeader />
 
-      {/* 
-        Main content: uses flex-1 + justify-between to fill available space
-        between header and bottom nav WITHOUT scrolling.
-        Bottom padding accounts for fixed CTA + BottomNav.
-      */}
       <main className="flex-1 flex flex-col justify-center px-4 sm:px-6"
         style={{ paddingBottom: 'calc(8.5rem + env(safe-area-inset-bottom, 0px))' }}
       >
@@ -259,7 +250,9 @@ const Premium = () => {
           >
             {plans.map(plan => {
               const isSelected = selectedPlan === plan.id;
-              const dp = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+              const currentProductId = isYearly ? plan.yearlyId : plan.monthlyId;
+              const priceStr = getPrice(currentProductId);
+              const priceNum = getPriceAmount(currentProductId);
               const Icon = plan.icon;
 
               return (
@@ -277,7 +270,7 @@ const Premium = () => {
                         : 'border-border/50 bg-card/60'
                   }`}
                 >
-                  {/* Popüler banner - inside card, no overflow */}
+                  {/* Popüler banner */}
                   {plan.popular && (
                     <div className="w-full bg-primary text-primary-foreground text-micro font-bold py-1 flex items-center justify-center gap-0.5">
                       <Sparkles className="w-2.5 h-2.5" />
@@ -296,17 +289,23 @@ const Premium = () => {
                     {/* Name */}
                     <p className="font-bold text-xs">{plan.name}</p>
 
-                    {/* Price */}
-                    <p className="text-lg font-extrabold tracking-tight mt-0.5">
-                      ₺{dp}
-                    </p>
-                    <p className="text-micro text-muted-foreground -mt-0.5">
-                      {isYearly ? '/yıl' : '/ay'}
-                    </p>
+                    {/* Price — from Google Play */}
+                    {pricesLoading ? (
+                      <Skeleton className="h-6 w-14 mt-1 rounded" />
+                    ) : (
+                      <>
+                        <p className="text-lg font-extrabold tracking-tight mt-0.5">
+                          {priceStr}
+                        </p>
+                        <p className="text-micro text-muted-foreground -mt-0.5">
+                          {isYearly ? '/yıl' : '/ay'}
+                        </p>
+                      </>
+                    )}
 
-                    {isYearly && (
+                    {isYearly && !pricesLoading && (
                       <p className="text-micro text-emerald-500 font-medium mt-0.5">
-                        aylık ₺{Math.round(dp / 12)}
+                        aylık ≈ ₺{Math.round(priceNum / 12)}
                       </p>
                     )}
 
