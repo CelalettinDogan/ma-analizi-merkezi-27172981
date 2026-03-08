@@ -1,135 +1,97 @@
 
 
-# Hibrit Market Selection Engine — Refactor Planı
+# Google Play Satın Alma Akışı — Debug ve Düzeltme Planı
 
-## Mevcut Sorunlar
+## Tespit Edilen Sorunlar
 
-1. **Eşitsiz confidence eşikleri**: `predictionEngine.ts`'de 1X2 marketi `>55%` ile "yüksek" olurken, BTTS `>65%` gerektiriyor. 1X2 doğası gereği daha polarize olduğu için neredeyse her maçta "yüksek" çıkıyor.
+### Sorun 1: Acknowledge Endpoint MEVCUT DEĞİL (KRİTİK)
 
-2. **`mathConfidenceToNumber` sabit mapping**: `yüksek=0.8`, `orta=0.6`, `düşük=0.4` — market türünden bağımsız. 1X2'nin "yüksek"i ile BTTS'nin "orta"sı arasında gerçek sinyal gücü farkı yansımıyor.
+**Dosya:** `supabase/functions/verify-purchase/index.ts` satır 136
 
-3. **`selectBestPrediction`** en yüksek raw Poisson olasılığını seçiyor. 1X2'nin ham olasılığı (%55-65) doğal olarak BTTS'den (%50-60) yüksek çıkar, ama bu "daha güvenilir sinyal" demek değil.
-
-4. **Market reliability / historical accuracy** hiç kullanılmıyor. `ml_model_stats` tablosunda market bazlı doğruluk verileri var ama ana tahmin seçiminde değerlendirilmiyor.
-
----
-
-## Yeni Mimari: Market-Aware Hybrid Scoring
-
-### Katman 1: `src/utils/marketScoring.ts` (YENİ DOSYA)
-
-Her market için bağımsız bir **Final Market Score (FMS)** hesaplayan utility:
-
+Önceki düzeltmede acknowledge endpoint'i yanlış bir v2 URL'ye değiştirilmiş:
 ```
-FMS = (signalStrength × 0.35) + (modelAgreement × 0.25) + (historicalReliability × 0.20) + (edgeClarity × 0.20)
+/purchases/subscriptionsv2/tokens/${purchaseToken}:acknowledge
 ```
+Bu endpoint **Google Play API'de mevcut değil**. v2 API'de sadece `get` ve `revoke` var, acknowledge yok. Doğru endpoint v1:
+```
+/purchases/subscriptions/{subscriptionId}/tokens/{token}:acknowledge
+```
+Google'ın Mayıs 2025 güncellemesiyle `subscriptionId` artık opsiyonel, yani boş string gönderilebilir.
 
-Bileşenler:
-- **signalStrength**: Poisson olasılığının market-spesifik "kesinlik" eşiğinden ne kadar uzakta olduğu. 1X2'de %50 belirsizlik noktası, BTTS'de %50, O/U'da %50. Mesafe ne kadar büyükse sinyal o kadar güçlü.
-- **modelAgreement**: AI, Math ve ML'nin aynı yönde mi gösterdiği (0 veya 1, kısmi uyum 0.5)
-- **historicalReliability**: `ml_model_stats` tablosundan market bazlı accuracy oranı (0-1)
-- **edgeClarity**: Olasılığın belirsizlik bölgesinden (45-55%) ne kadar uzak olduğu, normalized
+**Sonuç:** Acknowledge başarısız oluyor → 3 gün sonra Google satın almayı otomatik iptal eder.
 
-Market-spesifik kalibrasyon config'i:
-
+**Düzeltme:** Acknowledge fonksiyonunu v1 endpoint'e geri çevir, `subscriptionId` opsiyonel olarak geç:
 ```typescript
-const MARKET_CONFIG = {
-  'Maç Sonucu': { 
-    uncertaintyCenter: 33.3, // 3 yönlü market
-    volatilityPenalty: 0.15, // 3 sonuçlu → daha volatil
-    minEdgeThreshold: 12,    // %33+12 = %45'in altında edge yok
-  },
-  'Toplam Gol Alt/Üst': { 
-    uncertaintyCenter: 50,
-    volatilityPenalty: 0,
-    minEdgeThreshold: 8,
-  },
-  'Karşılıklı Gol': { 
-    uncertaintyCenter: 50,
-    volatilityPenalty: 0,
-    minEdgeThreshold: 8,
-  },
-  // ... diğer marketler
-};
+const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptions/-/tokens/${purchaseToken}:acknowledge`;
 ```
 
-1X2'ye `volatilityPenalty` uygulanması, 3 yönlü marketin doğal avantajını dengeler.
+### Sorun 2: Upsert `onConflict: "order_id"` Partial Index ile Çalışmıyor (YÜKSEK)
 
-### Katman 2: `predictionEngine.ts` Güncelleme
+**Dosya:** `supabase/functions/verify-purchase/index.ts` satır 280-300
 
-Confidence eşiklerini market-spesifik ve simetrik hale getir:
+DB'deki `order_id` unique index'i **partial**: `WHERE (order_id IS NOT NULL)`. PostgREST, partial unique index'leri upsert conflict target olarak tanımaz. Bu nedenle upsert **her zaman hata verir** ve fallback insert'e düşer.
 
-| Market | Yüksek | Orta | Düşük |
-|--------|--------|------|-------|
-| 1X2 (mevcut) | >55% | >45% | rest |
-| 1X2 (yeni) | >58% | >45% | rest |
-| BTTS (mevcut) | >65% | >55% | rest |
-| BTTS (yeni) | >60% | >52% | rest |
-| O/U (mevcut) | >60% | >55% | rest |
-| O/U (yeni) | >58% | >52% | rest |
+Fallback insert çalışır, ancak sorun şu: önce `deactivate` adımı (satır 269-273) tüm aktif kayıtları kapatıyor, sonra upsert başarısız, sonra fallback insert çalışıyor. Bu path her seferinde error log oluşturur ve gereksiz karmaşıklık.
 
-Not: Değerler yapay dengeleme değil, market doğasına uygun kalibrasyon. BTTS eşikleri düşürülüyor çünkü binary markette %60 zaten güçlü sinyal.
-
-### Katman 3: `Prediction` type genişletme (`types/match.ts`)
-
+**Düzeltme:** Upsert yerine doğrudan insert kullan. Zaten her satın almada eski kayıtlar deaktive ediliyor:
 ```typescript
-export interface Prediction {
-  // ... mevcut alanlar
-  marketScore?: number;        // Final Market Score (0-100)
-  signalStrength?: number;     // Sinyal gücü (0-100)
-  modelAgreement?: number;     // Model uyumu (0-100)
-  historicalReliability?: number; // Tarihsel güvenilirlik (0-100)
-  edgeClarity?: number;        // Edge netliği (0-100)
-  riskLevel?: 'low' | 'medium' | 'high';
-  isRecommended?: boolean;     // En iyi market mi?
-}
+// Upsert kaldır, doğrudan insert yap
+const { data: subscriptionData, error: insertError } = await supabaseAdmin
+  .from("premium_subscriptions")
+  .insert({
+    user_id: user.id,
+    plan_type: planType,
+    platform,
+    purchase_token: purchaseToken,
+    order_id: subscription.latestOrderId || orderId,
+    product_id: resolvedProductId,
+    starts_at: startTime.toISOString(),
+    expires_at: expiryTime.toISOString(),
+    is_active: true,
+    auto_renewing: autoRenewing,
+    purchase_state: 0,
+    acknowledged: true,
+  })
+  .select()
+  .single();
 ```
 
-### Katman 4: `useMatchAnalysis.ts` Güncelleme
+### Sorun 3: `purchaseToken` Null Olabilir (@capgo/native-purchases)  (ORTA)
 
-Tahminler oluşturulduktan sonra, `marketScoring` utility'si ile her market için FMS hesapla:
+**Dosya:** `src/services/purchaseService.ts` satır 149-156
 
-1. `ml_model_stats`'dan market bazlı historical accuracy çek (mevcut `getAIMathWeights` ile paralel)
-2. Her prediction'a `marketScore`, `signalStrength`, `modelAgreement`, `historicalReliability`, `edgeClarity`, `riskLevel` ekle
-3. En yüksek `marketScore`'a sahip prediction'ı `isRecommended: true` olarak işaretle
-4. Predictions array'ini `marketScore` sırasına göre sırala
+`NativePurchases.purchaseProduct()` dönen `transaction` objesinin yapısı:
+```typescript
+const transaction = await NativePurchases.purchaseProduct({...});
+```
+Capgo dokümantasyonuna göre Android'de `purchaseToken` ve `transactionId` ikisi de mevcut. Mevcut kod `transaction?.purchaseToken || transaction?.transactionId` ile doğru fallback yapıyor. Ancak `purchaseProduct` dönen obje doğrudan `Transaction` mı yoksa sarmalayıcı bir obje mi bunu doğrulamak için ek log eklemek faydalı olacak.
 
-### Katman 5: `predictionService.ts` Güncelleme
+**Düzeltme:** Satın alma sonrası detaylı log ekle:
+```typescript
+console.log('PurchaseService: transaction result', JSON.stringify(transaction));
+```
 
-`selectBestPrediction` fonksiyonunu `marketScore` bazlı çalışacak şekilde güncelle:
-- `marketScore` varsa onu kullan
-- Yoksa mevcut Poisson probability fallback
+### Sorun 4: Satın Alma Hatası Kullanıcıya Yeterince Net İletilmiyor (DÜŞÜK)
 
-### Katman 6: UI Güncellemeleri
+`handlePurchase` fonksiyonlarında (PremiumUpgrade, Premium.tsx), Google Play ödeme başarılı olsa bile verify-purchase hata dönerse kullanıcıya "Satın alma başarısız" toast gösteriliyor. Kullanıcı "ödeme alındı ama premium olmadım" diye düşünüyor çünkü Google Play tarafı başarılı, ama backend verification başarısız.
 
-**AIRecommendationCard**: En yüksek `marketScore`'lu prediction'ı göster (zaten `sortedPredictions[0]` mantığı var, sıralama `marketScore`'a geçecek)
-
-**PredictionCard**: Market Score progress bar'ı ekle + risk level badge
-
-**PredictionPillSelector**: Sıralamayı `marketScore` bazlı yap, recommended pill'e özel badge ekle
-
----
+**Düzeltme:** Hata mesajını daha spesifik yap: "Ödemeniz alındı ancak aktivasyon başarısız oldu. 'Satın Almaları Geri Yükle' ile tekrar deneyin."
 
 ## Değişecek Dosyalar
 
-1. **`src/utils/marketScoring.ts`** — YENİ: Market scoring engine
-2. **`src/utils/predictionEngine.ts`** — Confidence eşiklerini market-spesifik güncelle
-3. **`src/types/match.ts`** — Prediction interface genişlet
-4. **`src/hooks/useMatchAnalysis.ts`** — Market scoring entegrasyonu + historical reliability fetch
-5. **`src/services/predictionService.ts`** — `selectBestPrediction` güncelle
-6. **`src/lib/utils.ts`** — `getHybridConfidence`'ı marketScore-aware yap
-7. **`src/components/analysis/AIRecommendationCard.tsx`** — marketScore sıralama
-8. **`src/components/PredictionCard.tsx`** — Market score bar + risk badge
-9. **`src/components/analysis/PredictionPillSelector.tsx`** — marketScore sıralama + recommended badge
+| Dosya | Değişiklik |
+|-------|-----------|
+| `supabase/functions/verify-purchase/index.ts` | Acknowledge'ı v1 endpoint'e düzelt (subscriptionId opsiyonel), upsert→insert değiştir |
+| `src/services/purchaseService.ts` | Detaylı transaction logging ekle |
+| `src/components/premium/PremiumUpgrade.tsx` | Verification hata mesajını iyileştir |
+| `src/pages/Premium.tsx` | Verification hata mesajını iyileştir |
 
-## Korunacaklar
+## Akış Özeti
 
-- Mevcut 3 katmanlı hibrit mimari (AI + Math + ML) aynen kalacak
-- `prediction_features` ve `ml_model_stats` tablo yapıları değişmeyecek
-- Edge function'lar değişmeyecek
-- Confidence değerleri sahte dengeleme yapılmayacak — gerçek farklar korunacak
+Mevcut durumda verify-purchase fonksiyonu **deploy edilmiş ve çalışıyor** (test ettik, 400 döndü — beklenen davranış). Ancak:
+1. Acknowledge yanlış endpoint kullanıyor → 3 gün sonra Google iptal eder
+2. Upsert her seferinde hata veriyor, fallback insert'e düşüyor → bu path çalışıyorsa DB'ye kayıt yazılıyor olmalı
+3. Edge function loglarında hiç kayıt yok → kullanıcı henüz bu kod versiyonuyla gerçek satın alma denememiş olabilir
 
-## Continuous Learning Altyapısı
-
-Zaten mevcut olan `ml_model_stats` tablosu market bazlı accuracy takibi yapıyor. Yeni `historicalReliability` bileşeni bu veriyi aktif olarak kullanarak market selection'ı sürekli iyileştirecek. `train-ml-model` edge function haftalık çalışmaya devam edecek.
+En kritik düzeltme **acknowledge endpoint**'dir — bu düzeltilmezse kullanıcının satın alması 3 gün sonra otomatik iptal edilir.
 
