@@ -221,7 +221,6 @@ const LivePage: React.FC = () => {
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
         {/* League Filter */}
         <motion.div {...fadeInUp}>
-          <h3 className="text-xs sm:text-sm font-medium text-muted-foreground mb-2 sm:mb-3">Lig Filtresi</h3>
           <LeagueGrid 
             selectedLeague={selectedLeague} 
             onLeagueSelect={(code) => setSelectedLeague(code === selectedLeague ? '' : code)}

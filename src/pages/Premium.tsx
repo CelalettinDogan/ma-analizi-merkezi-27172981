@@ -131,16 +131,47 @@ const Premium = () => {
   }
 
   if (isPremium || isAdmin) {
+    const currentPlan = plans.find(p => p.id === planType) || plans[1];
     return (
       <div className="h-screen bg-background flex flex-col">
         <AppHeader />
-        <main className="flex-1 flex items-center justify-center px-4 overflow-y-auto" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
-          <div className="w-full max-w-sm text-center p-6 rounded-xl border border-border bg-card">
-            <Crown className="h-10 w-10 text-amber-500 mx-auto mb-3" />
-            <h2 className="text-lg font-bold mb-1">Zaten Premium</h2>
-            <p className="text-sm text-muted-foreground">
-              {isAdmin ? 'Admin olarak tüm özelliklere erişebilirsiniz.' : 'Premium aboneliğiniz aktif.'}
-            </p>
+        <main className="flex-1 overflow-y-auto px-4 py-4" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
+          <div className="w-full max-w-sm mx-auto space-y-4">
+            {/* Active Plan Card */}
+            <div className="text-center p-5 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <Crown className="h-6 w-6 text-primary" />
+              </div>
+              <h2 className="text-lg font-bold mb-0.5">
+                {isAdmin ? 'Admin Erişimi' : (currentPlan?.name || 'Premium')}
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {isAdmin ? 'Tüm özelliklere tam erişim' : 'Aktif abonelik'}
+              </p>
+            </div>
+
+            {/* Features Grid */}
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { icon: Brain, label: 'Sınırsız Analiz', desc: 'Günlük limit yok' },
+                { icon: MessageSquare, label: 'AI Asistan', desc: `${currentPlan?.chatLimit || '∞'} mesaj/gün` },
+                { icon: Ban, label: 'Reklamsız', desc: 'Temiz deneyim' },
+                { icon: History, label: 'Geçmiş Erişimi', desc: 'Tüm analizler' },
+              ].map(f => (
+                <div key={f.label} className="p-3 rounded-xl bg-muted/20 border border-border/30">
+                  <f.icon className="w-4 h-4 text-primary mb-1.5" />
+                  <p className="text-xs font-semibold">{f.label}</p>
+                  <p className="text-micro text-muted-foreground">{f.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Plan details */}
+            <div className="p-3 rounded-xl bg-muted/10 border border-border/20 text-center">
+              <p className="text-micro text-muted-foreground">
+                Abonelik Google Play üzerinden yönetilir
+              </p>
+            </div>
           </div>
         </main>
       </div>

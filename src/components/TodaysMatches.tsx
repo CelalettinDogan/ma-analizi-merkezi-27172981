@@ -299,7 +299,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                 disabled={isAnyLoading}
                 className={cn(
                   "w-full flex items-center gap-2 px-3 py-3 rounded-xl transition-colors text-left",
-                  "min-h-[48px]",
+                  "min-h-[52px]",
                   isAnyLoading && !isThisLoading && "opacity-40",
                   isThisLoading && "bg-primary/5",
                   !isAnyLoading && "active:bg-muted/30"

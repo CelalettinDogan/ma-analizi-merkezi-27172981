@@ -135,7 +135,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             onChange={(e) => setMessage(e.target.value.slice(0, maxLength + 50))}
             onKeyDown={handleKeyDown}
             onFocus={() => {
-              setShowQuickPrompts(true);
+              setShowQuickPrompts(false);
               setIsFocused(true);
             }}
             onBlur={() => setIsFocused(false)}

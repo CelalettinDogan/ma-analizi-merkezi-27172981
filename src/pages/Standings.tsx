@@ -138,7 +138,6 @@ const StandingsPage: React.FC = () => {
       <div className="container mx-auto px-3 md:px-4 py-4 md:py-6 space-y-4 md:space-y-6">
         {/* League Selector */}
         <motion.div {...fadeInUp}>
-          <h3 className="text-xs md:text-sm font-medium text-muted-foreground mb-2 md:mb-3">Lig Seçin</h3>
           <LeagueGrid 
             selectedLeague={selectedLeague} 
             onLeagueSelect={(code) => code && setSelectedLeague(code)}
