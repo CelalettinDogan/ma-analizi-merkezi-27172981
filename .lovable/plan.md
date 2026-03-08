@@ -1,61 +1,135 @@
 
 
-# Bottom Navigation — Premium Native Yeniden Tasarım
+# Hibrit Market Selection Engine — Refactor Planı
 
-## Mevcut Durum
-Ekran görüntüsünde görüldüğü gibi BottomNav çalışıyor ama:
-- Active state çok zayıf (sadece renk + hafif bg)
-- İkonlar ince ve generic
-- AI sekmesi diğerlerinden ayırt edilemiyor
-- Touch feedback sadece global CSS opacity ile sağlanıyor
-- Genel hissiyat "web template" kalitesinde
+## Mevcut Sorunlar
 
-## Yapılacak Değişiklikler
+1. **Eşitsiz confidence eşikleri**: `predictionEngine.ts`'de 1X2 marketi `>55%` ile "yüksek" olurken, BTTS `>65%` gerektiriyor. 1X2 doğası gereği daha polarize olduğu için neredeyse her maçta "yüksek" çıkıyor.
 
-**Tek dosya:** `src/components/navigation/BottomNav.tsx`
+2. **`mathConfidenceToNumber` sabit mapping**: `yüksek=0.8`, `orta=0.6`, `düşük=0.4` — market türünden bağımsız. 1X2'nin "yüksek"i ile BTTS'nin "orta"sı arasında gerçek sinyal gücü farkı yansımıyor.
 
-### 1. Active State — Pill Indicator
-- Aktif sekme ikonu üstüne **compact pill background** (`bg-primary/12 rounded-full px-4 py-1.5`) ekle
-- Pill sadece ikon etrafını sarsın, tüm hücreyi değil — iOS/Android native tab bar gibi
-- `layoutId="navPill"` ile sekmeler arası smooth animasyon
-- Aktif ikon: `strokeWidth: 2.25`, `fill: currentColor`, `fillOpacity: 0.2`
-- Pasif ikon: `strokeWidth: 1.8`, renk `text-muted-foreground/60`
+3. **`selectBestPrediction`** en yüksek raw Poisson olasılığını seçiyor. 1X2'nin ham olasılığı (%55-65) doğal olarak BTTS'den (%50-60) yüksek çıkar, ama bu "daha güvenilir sinyal" demek değil.
 
-### 2. AI Tab Vurgulama
-- AI sekmesi (Sparkles) aktif olmasa bile `text-primary/80` ile hafif renk farkı
-- AI aktifken pill background'a subtle gradient: `bg-gradient-to-r from-primary/15 to-primary/8`
-- Premium badge varsa ikon yanında küçük dot indicator
+4. **Market reliability / historical accuracy** hiç kullanılmıyor. `ml_model_stats` tablosunda market bazlı doğruluk verileri var ama ana tahmin seçiminde değerlendirilmiyor.
 
-### 3. Touch Feedback — Framer Motion
-- `whileTap={{ scale: 0.92 }}` ile anında press feedback
-- `transition: { duration: 0.1 }` — hızlı ve native hissiyat
-- Global CSS `button:active { opacity: 0.85 }` zaten var, motion scale bunu tamamlar
+---
 
-### 4. Spacing & Ergonomi
-- İkon boyutu: `w-[22px] h-[22px]` (24'ten küçült — pill ile birlikte daha dengeli)
-- İkon-label gap: `gap-0.5` (1'den 0.5'e — daha sıkı)
-- Label: `text-[10px]` korunur, aktif `font-semibold`, pasif `font-medium`
-- Nav yüksekliği: `py-1` (1.5'ten düşür — daha kompakt)
-- Min touch target `min-h-[52px]` korunur
+## Yeni Mimari: Market-Aware Hybrid Scoring
 
-### 5. Container Güncellemesi
-- Border: `border-t border-border/20` (daha subtle)
-- Background: `bg-card/98 backdrop-blur-3xl` (daha solid, daha az şeffaf)
-- Üst kenar shadow: `shadow-[0_-1px_3px_rgba(0,0,0,0.04)]` — hafif elevation
+### Katman 1: `src/utils/marketScoring.ts` (YENİ DOSYA)
 
-### 6. Hover Kaldırma
-- Hiçbir hover state yok — tamamen touch-first
-- Tüm transition'lar 100-150ms — native hızında
+Her market için bağımsız bir **Final Market Score (FMS)** hesaplayan utility:
 
-## Görsel Sonuç
-```text
-┌──────────────────────────────────┐
-│  ┌──────┐                        │
-│  │🏠 Ana │  📡    ✨    📊  👑  👤  │
-│  └──────┘ Canlı  AI   Lig  Pro Profil│
-│   pill bg   muted colors          │
-└──────────────────────────────────┘
+```
+FMS = (signalStrength × 0.35) + (modelAgreement × 0.25) + (historicalReliability × 0.20) + (edgeClarity × 0.20)
 ```
 
-Active tab'ın ikonu pill içinde, diğerleri düz — tek bakışta hangi sayfada olduğun belli.
+Bileşenler:
+- **signalStrength**: Poisson olasılığının market-spesifik "kesinlik" eşiğinden ne kadar uzakta olduğu. 1X2'de %50 belirsizlik noktası, BTTS'de %50, O/U'da %50. Mesafe ne kadar büyükse sinyal o kadar güçlü.
+- **modelAgreement**: AI, Math ve ML'nin aynı yönde mi gösterdiği (0 veya 1, kısmi uyum 0.5)
+- **historicalReliability**: `ml_model_stats` tablosundan market bazlı accuracy oranı (0-1)
+- **edgeClarity**: Olasılığın belirsizlik bölgesinden (45-55%) ne kadar uzak olduğu, normalized
+
+Market-spesifik kalibrasyon config'i:
+
+```typescript
+const MARKET_CONFIG = {
+  'Maç Sonucu': { 
+    uncertaintyCenter: 33.3, // 3 yönlü market
+    volatilityPenalty: 0.15, // 3 sonuçlu → daha volatil
+    minEdgeThreshold: 12,    // %33+12 = %45'in altında edge yok
+  },
+  'Toplam Gol Alt/Üst': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  'Karşılıklı Gol': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  // ... diğer marketler
+};
+```
+
+1X2'ye `volatilityPenalty` uygulanması, 3 yönlü marketin doğal avantajını dengeler.
+
+### Katman 2: `predictionEngine.ts` Güncelleme
+
+Confidence eşiklerini market-spesifik ve simetrik hale getir:
+
+| Market | Yüksek | Orta | Düşük |
+|--------|--------|------|-------|
+| 1X2 (mevcut) | >55% | >45% | rest |
+| 1X2 (yeni) | >58% | >45% | rest |
+| BTTS (mevcut) | >65% | >55% | rest |
+| BTTS (yeni) | >60% | >52% | rest |
+| O/U (mevcut) | >60% | >55% | rest |
+| O/U (yeni) | >58% | >52% | rest |
+
+Not: Değerler yapay dengeleme değil, market doğasına uygun kalibrasyon. BTTS eşikleri düşürülüyor çünkü binary markette %60 zaten güçlü sinyal.
+
+### Katman 3: `Prediction` type genişletme (`types/match.ts`)
+
+```typescript
+export interface Prediction {
+  // ... mevcut alanlar
+  marketScore?: number;        // Final Market Score (0-100)
+  signalStrength?: number;     // Sinyal gücü (0-100)
+  modelAgreement?: number;     // Model uyumu (0-100)
+  historicalReliability?: number; // Tarihsel güvenilirlik (0-100)
+  edgeClarity?: number;        // Edge netliği (0-100)
+  riskLevel?: 'low' | 'medium' | 'high';
+  isRecommended?: boolean;     // En iyi market mi?
+}
+```
+
+### Katman 4: `useMatchAnalysis.ts` Güncelleme
+
+Tahminler oluşturulduktan sonra, `marketScoring` utility'si ile her market için FMS hesapla:
+
+1. `ml_model_stats`'dan market bazlı historical accuracy çek (mevcut `getAIMathWeights` ile paralel)
+2. Her prediction'a `marketScore`, `signalStrength`, `modelAgreement`, `historicalReliability`, `edgeClarity`, `riskLevel` ekle
+3. En yüksek `marketScore`'a sahip prediction'ı `isRecommended: true` olarak işaretle
+4. Predictions array'ini `marketScore` sırasına göre sırala
+
+### Katman 5: `predictionService.ts` Güncelleme
+
+`selectBestPrediction` fonksiyonunu `marketScore` bazlı çalışacak şekilde güncelle:
+- `marketScore` varsa onu kullan
+- Yoksa mevcut Poisson probability fallback
+
+### Katman 6: UI Güncellemeleri
+
+**AIRecommendationCard**: En yüksek `marketScore`'lu prediction'ı göster (zaten `sortedPredictions[0]` mantığı var, sıralama `marketScore`'a geçecek)
+
+**PredictionCard**: Market Score progress bar'ı ekle + risk level badge
+
+**PredictionPillSelector**: Sıralamayı `marketScore` bazlı yap, recommended pill'e özel badge ekle
+
+---
+
+## Değişecek Dosyalar
+
+1. **`src/utils/marketScoring.ts`** — YENİ: Market scoring engine
+2. **`src/utils/predictionEngine.ts`** — Confidence eşiklerini market-spesifik güncelle
+3. **`src/types/match.ts`** — Prediction interface genişlet
+4. **`src/hooks/useMatchAnalysis.ts`** — Market scoring entegrasyonu + historical reliability fetch
+5. **`src/services/predictionService.ts`** — `selectBestPrediction` güncelle
+6. **`src/lib/utils.ts`** — `getHybridConfidence`'ı marketScore-aware yap
+7. **`src/components/analysis/AIRecommendationCard.tsx`** — marketScore sıralama
+8. **`src/components/PredictionCard.tsx`** — Market score bar + risk badge
+9. **`src/components/analysis/PredictionPillSelector.tsx`** — marketScore sıralama + recommended badge
+
+## Korunacaklar
+
+- Mevcut 3 katmanlı hibrit mimari (AI + Math + ML) aynen kalacak
+- `prediction_features` ve `ml_model_stats` tablo yapıları değişmeyecek
+- Edge function'lar değişmeyecek
+- Confidence değerleri sahte dengeleme yapılmayacak — gerçek farklar korunacak
+
+## Continuous Learning Altyapısı
+
+Zaten mevcut olan `ml_model_stats` tablosu market bazlı accuracy takibi yapıyor. Yeni `historicalReliability` bileşeni bu veriyi aktif olarak kullanarak market selection'ı sürekli iyileştirecek. `train-ml-model` edge function haftalık çalışmaya devam edecek.
 
