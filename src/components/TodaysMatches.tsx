@@ -454,11 +454,14 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
             </div>
           </div>
 
+          {/* AI Preview Badge */}
+          <AIPreviewBadge match={featuredMatch} />
+
           {/* CTA row */}
           <div className="flex items-center justify-center gap-1.5 mt-4 pt-3 border-t border-border/20">
             <span className="inline-flex items-center gap-1.5 bg-primary/10 rounded-full px-3 py-1">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-medium text-primary">Analiz Et</span>
+              <span className="text-xs font-medium text-primary">AI Analizi Gör</span>
               <ChevronRight className="w-3.5 h-3.5 text-primary" />
             </span>
           </div>
