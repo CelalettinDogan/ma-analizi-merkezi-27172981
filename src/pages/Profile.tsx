@@ -320,7 +320,7 @@ const Profile = () => {
                         const resultBadge = getResultBadge(analysis.is_correct, analysis.verified_at);
                         const hasScore = analysis.home_score !== null && analysis.away_score !== null;
                         return (
-                          <div key={analysis.id} className="p-2.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                          <div key={analysis.id} className="p-2.5 rounded-xl bg-muted/30 active:bg-muted/50 transition-colors">
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">

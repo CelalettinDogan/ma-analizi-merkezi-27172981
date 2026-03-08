@@ -1,108 +1,135 @@
 
 
-# GolMetrik AI — Profesyonel Mobil UI/UX Denetim Raporu
+# Hibrit Market Selection Engine — Refactor Planı
+
+## Mevcut Sorunlar
+
+1. **Eşitsiz confidence eşikleri**: `predictionEngine.ts`'de 1X2 marketi `>55%` ile "yüksek" olurken, BTTS `>65%` gerektiriyor. 1X2 doğası gereği daha polarize olduğu için neredeyse her maçta "yüksek" çıkıyor.
+
+2. **`mathConfidenceToNumber` sabit mapping**: `yüksek=0.8`, `orta=0.6`, `düşük=0.4` — market türünden bağımsız. 1X2'nin "yüksek"i ile BTTS'nin "orta"sı arasında gerçek sinyal gücü farkı yansımıyor.
+
+3. **`selectBestPrediction`** en yüksek raw Poisson olasılığını seçiyor. 1X2'nin ham olasılığı (%55-65) doğal olarak BTTS'den (%50-60) yüksek çıkar, ama bu "daha güvenilir sinyal" demek değil.
+
+4. **Market reliability / historical accuracy** hiç kullanılmıyor. `ml_model_stats` tablosunda market bazlı doğruluk verileri var ama ana tahmin seçiminde değerlendirilmiyor.
 
 ---
 
-## A) Genel Puan: 7.2 / 10
+## Yeni Mimari: Market-Aware Hybrid Scoring
 
-**Ozet:** Uygulama teknik altyapisi saglam, layout sistemi dogru kurulmus, font scaling korumalari yerinde. Ancak gorsel olarak "iyi bir indie app" seviyesinde — premium top-tier degil. Bazi alanlar hala template/webview hissi veriyor, bilgi hiyerarsisi zayif, ve AI odakli urun kimligini yeterince tasiyamiyor.
+### Katman 1: `src/utils/marketScoring.ts` (YENİ DOSYA)
+
+Her market için bağımsız bir **Final Market Score (FMS)** hesaplayan utility:
+
+```
+FMS = (signalStrength × 0.35) + (modelAgreement × 0.25) + (historicalReliability × 0.20) + (edgeClarity × 0.20)
+```
+
+Bileşenler:
+- **signalStrength**: Poisson olasılığının market-spesifik "kesinlik" eşiğinden ne kadar uzakta olduğu. 1X2'de %50 belirsizlik noktası, BTTS'de %50, O/U'da %50. Mesafe ne kadar büyükse sinyal o kadar güçlü.
+- **modelAgreement**: AI, Math ve ML'nin aynı yönde mi gösterdiği (0 veya 1, kısmi uyum 0.5)
+- **historicalReliability**: `ml_model_stats` tablosundan market bazlı accuracy oranı (0-1)
+- **edgeClarity**: Olasılığın belirsizlik bölgesinden (45-55%) ne kadar uzak olduğu, normalized
+
+Market-spesifik kalibrasyon config'i:
+
+```typescript
+const MARKET_CONFIG = {
+  'Maç Sonucu': { 
+    uncertaintyCenter: 33.3, // 3 yönlü market
+    volatilityPenalty: 0.15, // 3 sonuçlu → daha volatil
+    minEdgeThreshold: 12,    // %33+12 = %45'in altında edge yok
+  },
+  'Toplam Gol Alt/Üst': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  'Karşılıklı Gol': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  // ... diğer marketler
+};
+```
+
+1X2'ye `volatilityPenalty` uygulanması, 3 yönlü marketin doğal avantajını dengeler.
+
+### Katman 2: `predictionEngine.ts` Güncelleme
+
+Confidence eşiklerini market-spesifik ve simetrik hale getir:
+
+| Market | Yüksek | Orta | Düşük |
+|--------|--------|------|-------|
+| 1X2 (mevcut) | >55% | >45% | rest |
+| 1X2 (yeni) | >58% | >45% | rest |
+| BTTS (mevcut) | >65% | >55% | rest |
+| BTTS (yeni) | >60% | >52% | rest |
+| O/U (mevcut) | >60% | >55% | rest |
+| O/U (yeni) | >58% | >52% | rest |
+
+Not: Değerler yapay dengeleme değil, market doğasına uygun kalibrasyon. BTTS eşikleri düşürülüyor çünkü binary markette %60 zaten güçlü sinyal.
+
+### Katman 3: `Prediction` type genişletme (`types/match.ts`)
+
+```typescript
+export interface Prediction {
+  // ... mevcut alanlar
+  marketScore?: number;        // Final Market Score (0-100)
+  signalStrength?: number;     // Sinyal gücü (0-100)
+  modelAgreement?: number;     // Model uyumu (0-100)
+  historicalReliability?: number; // Tarihsel güvenilirlik (0-100)
+  edgeClarity?: number;        // Edge netliği (0-100)
+  riskLevel?: 'low' | 'medium' | 'high';
+  isRecommended?: boolean;     // En iyi market mi?
+}
+```
+
+### Katman 4: `useMatchAnalysis.ts` Güncelleme
+
+Tahminler oluşturulduktan sonra, `marketScoring` utility'si ile her market için FMS hesapla:
+
+1. `ml_model_stats`'dan market bazlı historical accuracy çek (mevcut `getAIMathWeights` ile paralel)
+2. Her prediction'a `marketScore`, `signalStrength`, `modelAgreement`, `historicalReliability`, `edgeClarity`, `riskLevel` ekle
+3. En yüksek `marketScore`'a sahip prediction'ı `isRecommended: true` olarak işaretle
+4. Predictions array'ini `marketScore` sırasına göre sırala
+
+### Katman 5: `predictionService.ts` Güncelleme
+
+`selectBestPrediction` fonksiyonunu `marketScore` bazlı çalışacak şekilde güncelle:
+- `marketScore` varsa onu kullan
+- Yoksa mevcut Poisson probability fallback
+
+### Katman 6: UI Güncellemeleri
+
+**AIRecommendationCard**: En yüksek `marketScore`'lu prediction'ı göster (zaten `sortedPredictions[0]` mantığı var, sıralama `marketScore`'a geçecek)
+
+**PredictionCard**: Market Score progress bar'ı ekle + risk level badge
+
+**PredictionPillSelector**: Sıralamayı `marketScore` bazlı yap, recommended pill'e özel badge ekle
 
 ---
 
-## B) Alt Baslik Puanlari
+## Değişecek Dosyalar
 
-| Kategori | Puan | Aciklama |
-|----------|------|----------|
-| Gorsel kalite | 7/10 | Temiz ama flat, derinlik ve katman hissi zayif |
-| Native hissi | 7.5/10 | Hover kalintilari temizlenmis, touch feedback var ama mikro-etkileşimler yetersiz |
-| Responsive guvenlik | 8/10 | 320px'de bile kirilma yok, teknik olarak saglam |
-| Typography dayanikliligi | 8.5/10 | textZoom:100 + CSS korumasi ile bulletproof |
-| Bilgi hiyerarsisi | 6/10 | En zayif alan — featured card'da AI preview yok, kartlar sadece saat gosteriyor |
-| Etkilesim kalitesi | 6.5/10 | whileTap var ama haptic feedback hissi yok, gecisler mekanik |
-| Premium/profesyonel gorunum | 6.5/10 | "Zaten Premium" sayfasi bos beyaz alan, profil sayfasi generic |
+1. **`src/utils/marketScoring.ts`** — YENİ: Market scoring engine
+2. **`src/utils/predictionEngine.ts`** — Confidence eşiklerini market-spesifik güncelle
+3. **`src/types/match.ts`** — Prediction interface genişlet
+4. **`src/hooks/useMatchAnalysis.ts`** — Market scoring entegrasyonu + historical reliability fetch
+5. **`src/services/predictionService.ts`** — `selectBestPrediction` güncelle
+6. **`src/lib/utils.ts`** — `getHybridConfidence`'ı marketScore-aware yap
+7. **`src/components/analysis/AIRecommendationCard.tsx`** — marketScore sıralama
+8. **`src/components/PredictionCard.tsx`** — Market score bar + risk badge
+9. **`src/components/analysis/PredictionPillSelector.tsx`** — marketScore sıralama + recommended badge
 
----
+## Korunacaklar
 
-## C) Guclu Yonler
+- Mevcut 3 katmanlı hibrit mimari (AI + Math + ML) aynen kalacak
+- `prediction_features` ve `ml_model_stats` tablo yapıları değişmeyecek
+- Edge function'lar değişmeyecek
+- Confidence değerleri sahte dengeleme yapılmayacak — gerçek farklar korunacak
 
-1. **Teknik altyapi mukemmel.** TabShell mimarisi, h-screen + overflow-hidden, safe-area padding'ler, ErrorBoundary izolasyonu — bunlar production-grade.
-2. **Font scaling tamamen korunmus.** textZoom:100 + CSS text-size-adjust ile Android'de font buyutme kaynaklı kirilma imkansiz.
-3. **320px'de bile tasmia yok.** Truncation, min-w-0, flex-shrink-0 dogru kullanilmis.
-4. **BottomNav kaliteli.** Skeleton fallback, layoutId animasyonu, optimistik cache — native seviyede.
-5. **Renk paleti tutarli.** Primary green, secondary gold, muted tonlar sistematik.
+## Continuous Learning Altyapısı
 
----
-
-## D) Zayif Yonler
-
-1. **Featured match card'da AI bilgisi sifir.** Bu bir AI analiz uygulamasi ama featured card sadece takim + saat gosteriyor. "Analiz Et" CTA'si karar verme icin bilgi vermiyor. Kullanici neden tiklasin?
-
-2. **"Zaten Premium" sayfasi felaket.** Ekranin %60'i bos beyaz alan, ortada tek bir kart. Native app'te bu kabul edilemez — bu sayfa kullaniciya deger saglamali (ozellik ozeti, istatistik, rozet).
-
-3. **Profil sayfasi generic.** Buyuk avatar + isim + email kalıbı her template'de var. Analysis history listesi "hover:bg-muted/50" class'i hala var (web kalintisi). Kart icerisinde bilgi yogunlugu dengesiz.
-
-4. **Hero section cok yer kapliyor.** Mobil ekranin %40'ini kaplayip sadece "Mac Sec, AI ile Analiz Yap" diyor. Kullanici zaten uygulamayi acmis, bunu biliyor. Above-the-fold iceriğe (maclar) yer kalmıyor.
-
-5. **Lig secici'de "Lig Secin" label'i gereksiz.** Basligini kendi kendine anlatmak zorunda olmayan bir UI bileseninin ustune label koymak amatordur.
-
-6. **Live sayfasinda "Lig Filtresi" + "Lig Secin" cift baslik.** Ayni sey iki kere soyleniyor.
-
-7. **Match list satirlarinda takim isimleri cok kucuk.** `text-xs` ile 12px font, 4px crest icon'lari — mobilde okunabilirlik sinirda.
-
-8. **Chat sayfasinda smart prompt chip'leri ekranin %15'ini kaplayip input'u asagi itiyor.** Kullanici mesaj yazmak istediginde chip'ler kaybolmuyor.
-
-9. **Standings tablosu horizontally scrollable degil.** Dar ekranda "O", "Av", "P" sutunlari cok dar, takim isimleri truncate oluyor.
-
-10. **Gecis animasyonlari yok.** Tab switch'lerinde sayfa aninda display:block/none ile degisiyor — hiç gecis yok. Native app'lerde en azindan fade-in var.
-
----
-
-## E) Sert Elestiri
-
-Bu tasarim neden 9/10 degil:
-
-**AI kimliği yok.** Bu uygulama kendini "AI ile Analiz Yap" diye tanitiyor ama ana sayfada AI'in varligini gosteren TEK bir gorsel eleman yok. Mac kartlarina bakildiginda bu bir API'den mac saati ceken herhangi bir spor uygulamasi. Kullaniciyi AI analizine cekmek icin kartlarda en azindan "Inter favori - %72 guven" gibi bir preview olmali. `cached_ai_predictions` tablosu mevcut ama kullanilmiyor.
-
-**Bos alan yonetimi zayif.** Premium sayfasi (premium kullanicida), Live sayfasi (mac yokken) ve profil sayfasinin alt yarisi bos beyaz alan. Native uygulamalarda bos alan "nefes almak icin" olur, burada ise "icerik yok" hissi veriyor.
-
-**Mikro-etkilesimler mekanik.** whileTap scale:0.98 her yerde ayni — monoton. Farkli bilesenler icin farkli feedback turleri yok. Bir butonun press feedback'i ile bir kartinki ayni olmamali.
-
-**Gorsel derinlik eksik.** Kartlar flat, golge yok denecek kadar az (shadow-sm). 2026 standartlarinda kartlarin "havada durma" hissi vermesi bekleniyor — subtle elevation hierarchy.
-
----
-
-## F) Gelistirme Alanlari — En Kritik 10 Iyilestirme
-
-1. **Featured match card'a AI preview ekle.** `cached_ai_predictions` tablosundan tahmin ozeti + guven yuzdesi cek, kart icinde "AI: Inter favori · %72" goster. Bu tek degisiklik uygulamanin AI kimligini %50 arttirir.
-
-2. **Hero section'i %40 kucult veya kaldır.** Trust badge + CTA'yi header'a tasiyarak above-the-fold alani maclara birak. Kullanici uygulamayi actığında macları gormeli, marketing banner'ını degil.
-
-3. **"Zaten Premium" sayfasını yeniden tasarla.** Bos sayfa yerine: ozelliklerin ozeti, kullanim istatistikleri, plan detaylari, abonelik yonetimi goster.
-
-4. **Match list satirlarinda font boyutunu artir.** `text-xs` → `text-sm`, crest icon'larini `w-5 h-5` yap, satir yuksekligini `min-h-[52px]` yap.
-
-5. **Live sayfasindaki cift baslik ("Lig Filtresi" + "Lig Secin") temizle.** Sadece bir tane yeterli.
-
-6. **Profil sayfasindaki `hover:bg-muted/50` class'ini `active:bg-muted/30` ile degistir.** Web kalıntısı.
-
-7. **Tab gecislerine fade animasyonu ekle.** TabShell'de display:block gecisinde 150ms opacity transition ekle.
-
-8. **Kart elevation hiyerarsisi olustur.** Featured card: shadow-md, list items: shadow-none, modal: shadow-lg — net katman hissi.
-
-9. **Standings tablosunu horizontal scroll yapilabilir yap.** Dar ekranlarda tablo iceriginin kesilmemesi icin ScrollArea ekle.
-
-10. **Smart prompt chip'lerini input focus'ta gizle.** Chat input'a odaklanildiginda chip'ler animasyonla kaybolsun, alan kazanilsin.
-
----
-
-## G) Final Karar
-
-Bu tasarım su an: **Iyi Indie App** seviyesinde.
-
-- Amatör degil — teknik altyapı saglam, tutarlı renk paleti var, responsive korunmuş.
-- Profesyonel degil — bilgi hiyerarsisi zayif, AI kimligi gorsel olarak yok, bos alan yonetimi kalitesiz, mikro-etkilesimler monoton.
-- Premium top-tier kesinlikle degil — gorsel derinlik, katman hissi, icerik yogunlugu ve kullanici yonlendirmesi bu seviyenin cok altında.
-
-**7.2 → 9.0'a cikmak icin:** Yukaridaki ilk 5 madde uygulanırsa gorsel kalite ve bilgi hiyerarsisi ciddi sekilde atlar. Ozellikle AI preview entegrasyonu (madde 1) ve Hero section optimizasyonu (madde 2) tek basina 1+ puan arttirir.
+Zaten mevcut olan `ml_model_stats` tablosu market bazlı accuracy takibi yapıyor. Yeni `historicalReliability` bileşeni bu veriyi aktif olarak kullanarak market selection'ı sürekli iyileştirecek. `train-ml-model` edge function haftalık çalışmaya devam edecek.
 
