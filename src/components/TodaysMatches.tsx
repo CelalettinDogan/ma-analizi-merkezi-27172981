@@ -250,7 +250,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
             {/* Away */}
             <div className="flex-1 flex items-center gap-2 sm:gap-3 min-w-0 justify-end">
               <span className="font-medium text-sm leading-tight line-clamp-2 min-w-0 text-right">
-                {featuredMatch.awayTeam.shortName || featuredMatch.awayTeam.tla || featuredMatch.awayTeam.name}
+                {cleanTeamName(featuredMatch.awayTeam)}
               </span>
               <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {featuredMatch.awayTeam.crest ? (
