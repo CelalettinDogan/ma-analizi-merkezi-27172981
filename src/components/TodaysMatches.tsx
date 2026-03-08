@@ -8,6 +8,7 @@ import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import H2HSummaryBadge from '@/components/match/H2HSummaryBadge';
 import { useH2HPreview } from '@/hooks/useH2HPreview';
+import { useMatchAIPreview, useMatchAIPreviewExists } from '@/hooks/useMatchAIPreview';
 
 const TEAM_OVERRIDES: Record<string, string> = {
   // Serie A
@@ -234,6 +235,54 @@ const FeaturedMatchH2H: React.FC<{ match: Match }> = ({ match }) => {
   );
 };
 
+// AI Preview Badge for featured match card
+const AIPreviewBadge: React.FC<{ match: Match }> = ({ match }) => {
+  const matchDate = match.utcDate.split('T')[0];
+  const { topPredictions, hasData } = useMatchAIPreview(
+    match.homeTeam.name,
+    match.awayTeam.name,
+    matchDate
+  );
+
+  if (!hasData) return null;
+
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/8 mt-3">
+      <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
+      <span className="text-micro font-medium text-primary/80">AI Tahmin</span>
+      <div className="flex items-center gap-2 ml-auto">
+        {topPredictions.map((pred, i) => (
+          <React.Fragment key={pred.type}>
+            {i > 0 && <span className="text-muted-foreground/30 text-micro">•</span>}
+            <span className="text-xs font-semibold text-foreground/80">
+              {pred.type}: <span className="text-primary">{pred.confidence}%</span>
+            </span>
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Micro AI indicator for list items
+const AIIndicatorDot: React.FC<{ match: Match }> = ({ match }) => {
+  const matchDate = match.utcDate.split('T')[0];
+  const hasAI = useMatchAIPreviewExists(
+    match.homeTeam.name,
+    match.awayTeam.name,
+    matchDate
+  );
+
+  if (!hasAI) return null;
+
+  return (
+    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-primary/10 shrink-0">
+      <Sparkles className="w-2.5 h-2.5 text-primary" />
+      <span className="text-micro font-medium text-primary">AI</span>
+    </span>
+  );
+};
+
 const TodaysMatches: React.FC<TodaysMatchesProps> = ({ 
   matches, 
   isLoading = false, 
@@ -405,11 +454,14 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
             </div>
           </div>
 
+          {/* AI Preview Badge */}
+          <AIPreviewBadge match={featuredMatch} />
+
           {/* CTA row */}
           <div className="flex items-center justify-center gap-1.5 mt-4 pt-3 border-t border-border/20">
             <span className="inline-flex items-center gap-1.5 bg-primary/10 rounded-full px-3 py-1">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-medium text-primary">Analiz Et</span>
+              <span className="text-xs font-medium text-primary">AI Analizi Gör</span>
               <ChevronRight className="w-3.5 h-3.5 text-primary" />
             </span>
           </div>
@@ -479,7 +531,8 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                   )}
                 </div>
 
-                {/* League code */}
+                {/* AI indicator + League code */}
+                <AIIndicatorDot match={match} />
                 <span className="text-micro text-muted-foreground/60 shrink-0">
                   {match.competition.code}
                 </span>
