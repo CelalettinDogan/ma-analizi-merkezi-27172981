@@ -132,9 +132,9 @@ const Premium = () => {
 
   if (isPremium || isAdmin) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="h-screen bg-background flex flex-col">
         <AppHeader />
-        <main className="flex-1 flex items-center justify-center px-4">
+        <main className="flex-1 flex items-center justify-center px-4 overflow-y-auto" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
           <div className="w-full max-w-sm text-center p-6 rounded-xl border border-border bg-card">
             <Crown className="h-10 w-10 text-amber-500 mx-auto mb-3" />
             <h2 className="text-lg font-bold mb-1">Zaten Premium</h2>
