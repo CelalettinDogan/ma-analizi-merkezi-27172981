@@ -13,7 +13,7 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ className }) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setStatusIndex((prev) => (prev + 1) % statuses.length);
+      setStatusIndex((prev) => (prev + 1) % STATUSES.length);
     }, 2000);
     return () => clearInterval(interval);
   }, []);
