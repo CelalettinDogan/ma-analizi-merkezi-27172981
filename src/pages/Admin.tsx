@@ -50,7 +50,7 @@ const AdminPage: React.FC = () => {
     sendNotification,
     activityLogs,
     refreshActivityLogs,
-  } = useAdminData();
+  } = useAdminData(activeSection);
 
   const isAuthorized = user && isAdmin;
   const isCheckingAuth = authLoading || roleLoading;

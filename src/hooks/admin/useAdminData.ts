@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -71,9 +71,14 @@ interface LogEntry {
   createdAt: string;
 }
 
-export const useAdminData = () => {
+type AdminSection = 'dashboard' | 'users' | 'premium' | 'ai' | 'notifications' | 'logs';
+
+export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
+
+  // Track which sections have been loaded
+  const loadedSections = useRef<Set<AdminSection>>(new Set());
 
   // Dashboard
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
@@ -103,10 +108,8 @@ export const useAdminData = () => {
 
   // ========== ANALYTICS-BASED FETCHERS ==========
 
-  // Fetch dashboard from admin_daily_analytics (cached) with live fallback
   const fetchDashboard = useCallback(async () => {
     try {
-      // Try cached analytics first
       const { data: analytics } = await supabase
         .from('admin_daily_analytics' as any)
         .select('*')
@@ -129,8 +132,6 @@ export const useAdminData = () => {
         });
         return;
       }
-
-      // Fallback to live calculation
       await fetchDashboardLive();
     } catch (e) {
       console.error('Dashboard fetch error, falling back to live:', e);
@@ -138,7 +139,6 @@ export const useAdminData = () => {
     }
   }, []);
 
-  // Live fallback for dashboard
   const fetchDashboardLive = useCallback(async () => {
     try {
       const { count: totalUsers } = await supabase
@@ -200,10 +200,8 @@ export const useAdminData = () => {
     }
   }, []);
 
-  // Fetch league stats from analytics or fallback
   const fetchLeagueStats = useCallback(async () => {
     try {
-      // Try cached
       const { data: analytics } = await supabase
         .from('admin_daily_analytics' as any)
         .select('league_stats')
@@ -215,8 +213,6 @@ export const useAdminData = () => {
         setLeagueStats((analytics as any).league_stats as LeagueStats[]);
         return;
       }
-
-      // Fallback
       await fetchLeagueStatsLive();
     } catch {
       await fetchLeagueStatsLive();
@@ -241,9 +237,7 @@ export const useAdminData = () => {
 
         const stats: LeagueStats[] = Object.entries(grouped)
           .map(([league, { total, correct }]) => ({
-            league,
-            total,
-            correct,
+            league, total, correct,
             accuracy: total > 0 ? (correct / total) * 100 : 0,
           }))
           .sort((a, b) => b.total - a.total);
@@ -255,7 +249,6 @@ export const useAdminData = () => {
     }
   }, []);
 
-  // Fetch plan stats from analytics or fallback
   const fetchPlanStats = useCallback(async () => {
     try {
       const { data: analytics } = await supabase
@@ -274,15 +267,13 @@ export const useAdminData = () => {
         };
 
         const stats: PlanStats[] = Object.entries(byPlan).map(([planType, count]) => ({
-          planType,
-          count,
+          planType, count,
           revenue: count * (priceMap[planType] || 0),
         }));
 
         setPlanStats(stats);
         return;
       }
-
       await fetchPlanStatsLive();
     } catch {
       await fetchPlanStatsLive();
@@ -309,8 +300,7 @@ export const useAdminData = () => {
       };
 
       const stats: PlanStats[] = Object.entries(counts).map(([planType, count]) => ({
-        planType,
-        count,
+        planType, count,
         revenue: count * (priceMap[planType] || 0),
       }));
 
@@ -320,7 +310,6 @@ export const useAdminData = () => {
     }
   }, []);
 
-  // Trigger edge function to refresh analytics now
   const triggerAnalyticsRefresh = useCallback(async () => {
     try {
       toast.info('Analytics hesaplanıyor...');
@@ -341,7 +330,6 @@ export const useAdminData = () => {
       if (!response.ok) throw new Error('Analytics hesaplama başarısız');
 
       toast.success('Analytics güncellendi');
-      // Re-fetch from cache
       await Promise.all([fetchDashboard(), fetchLeagueStats(), fetchPlanStats()]);
     } catch (e) {
       console.error('Analytics refresh error:', e);
@@ -349,9 +337,8 @@ export const useAdminData = () => {
     }
   }, [fetchDashboard, fetchLeagueStats, fetchPlanStats]);
 
-  // ========== NON-CACHED FETCHERS (unchanged) ==========
+  // ========== NON-CACHED FETCHERS ==========
 
-  // Fetch users via edge function (gets real emails from auth.users)
   const fetchUsers = useCallback(async () => {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -382,10 +369,8 @@ export const useAdminData = () => {
     }
   }, [usersPage]);
 
-  // Fetch prediction stats
   const fetchPredictionStats = useCallback(async () => {
     try {
-      // Try cached first
       const { data: analytics } = await supabase
         .from('admin_daily_analytics' as any)
         .select('prediction_stats')
@@ -398,7 +383,6 @@ export const useAdminData = () => {
         return;
       }
 
-      // Fallback
       const { data } = await supabase
         .from('prediction_stats')
         .select('*');
@@ -417,7 +401,6 @@ export const useAdminData = () => {
     }
   }, []);
 
-  // Fetch system prompt
   const fetchSystemPrompt = useCallback(async () => {
     try {
       const { data } = await supabase
@@ -435,7 +418,6 @@ export const useAdminData = () => {
     }
   }, []);
 
-  // Fetch notifications
   const fetchNotifications = useCallback(async () => {
     try {
       const { data } = await supabase
@@ -465,7 +447,6 @@ export const useAdminData = () => {
     }
   }, []);
 
-  // Fetch activity logs
   const fetchActivityLogs = useCallback(async () => {
     try {
       const { data } = await supabase
@@ -490,7 +471,6 @@ export const useAdminData = () => {
     }
   }, []);
 
-  // Log admin action
   const logAction = useCallback(async (action: string, targetType?: string, targetId?: string, details?: Record<string, any>) => {
     if (!user) return;
     
@@ -507,23 +487,49 @@ export const useAdminData = () => {
     }
   }, [user]);
 
-  // Actions
+  // ========== ACTIONS ==========
+
+  // Fixed: Check existing subscription, use correct plan_type format
   const assignPremium = useCallback(async (userId: string, planType: string, durationDays: number) => {
+    const dbPlanType = planType.startsWith('premium_') ? planType : `premium_${planType}`;
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + durationDays);
 
-    const { error } = await supabase.from('premium_subscriptions').upsert({
-      user_id: userId,
-      plan_type: planType,
-      is_active: true,
-      starts_at: new Date().toISOString(),
-      expires_at: expiresAt.toISOString(),
-      platform: 'admin',
-    }, { onConflict: 'user_id' });
+    // Check for existing active subscription
+    const { data: existing } = await supabase
+      .from('premium_subscriptions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .gte('expires_at', new Date().toISOString())
+      .limit(1)
+      .maybeSingle();
 
-    if (error) throw error;
+    if (existing) {
+      // Update existing
+      const { error } = await supabase.from('premium_subscriptions')
+        .update({
+          plan_type: dbPlanType,
+          expires_at: expiresAt.toISOString(),
+          starts_at: new Date().toISOString(),
+          platform: 'admin',
+        })
+        .eq('id', existing.id);
+      if (error) throw error;
+    } else {
+      // Insert new
+      const { error } = await supabase.from('premium_subscriptions').insert({
+        user_id: userId,
+        plan_type: dbPlanType,
+        is_active: true,
+        starts_at: new Date().toISOString(),
+        expires_at: expiresAt.toISOString(),
+        platform: 'admin',
+      });
+      if (error) throw error;
+    }
     
-    await logAction('assign_premium', 'user', userId, { planType, durationDays });
+    await logAction('assign_premium', 'user', userId, { planType: dbPlanType, durationDays });
     await fetchUsers();
     await fetchPlanStats();
   }, [logAction, fetchUsers, fetchPlanStats]);
@@ -603,28 +609,55 @@ export const useAdminData = () => {
     await fetchNotifications();
   }, [user, logAction, fetchNotifications]);
 
-  // Initial load
+  // ========== LAZY LOADING BY SECTION ==========
+
+  const loadSection = useCallback(async (section: AdminSection) => {
+    if (loadedSections.current.has(section)) return;
+    
+    loadedSections.current.add(section);
+
+    switch (section) {
+      case 'dashboard':
+        await fetchDashboard();
+        break;
+      case 'users':
+        await fetchUsers();
+        break;
+      case 'premium':
+        await fetchPlanStats();
+        break;
+      case 'ai':
+        await Promise.all([fetchPredictionStats(), fetchLeagueStats(), fetchSystemPrompt()]);
+        break;
+      case 'notifications':
+        await fetchNotifications();
+        break;
+      case 'logs':
+        await fetchActivityLogs();
+        break;
+    }
+  }, [fetchDashboard, fetchUsers, fetchPlanStats, fetchPredictionStats, fetchLeagueStats, fetchSystemPrompt, fetchNotifications, fetchActivityLogs]);
+
+  // Initial load: only dashboard
   useEffect(() => {
-    const loadAll = async () => {
+    const init = async () => {
       setIsLoading(true);
-      await Promise.all([
-        fetchDashboard(),
-        fetchUsers(),
-        fetchPlanStats(),
-        fetchPredictionStats(),
-        fetchLeagueStats(),
-        fetchSystemPrompt(),
-        fetchNotifications(),
-        fetchActivityLogs(),
-      ]);
+      await loadSection('dashboard');
       setIsLoading(false);
     };
-    loadAll();
+    init();
   }, []);
 
-  // Reload users when page changes
+  // Load section data when activeSection changes
   useEffect(() => {
-    fetchUsers();
+    loadSection(activeSection);
+  }, [activeSection, loadSection]);
+
+  // Reload users when page changes (skip initial since loadSection handles it)
+  useEffect(() => {
+    if (loadedSections.current.has('users')) {
+      fetchUsers();
+    }
   }, [usersPage, fetchUsers]);
 
   return {

@@ -169,13 +169,17 @@ const UserManagement: React.FC<UserManagementProps> = ({
       return <Badge variant="secondary">Free</Badge>;
     }
     const planColors: Record<string, string> = {
+      premium_basic: 'bg-blue-500/20 text-blue-500 border-blue-500/30',
+      premium_plus: 'bg-purple-500/20 text-purple-500 border-purple-500/30',
+      premium_pro: 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30',
       basic: 'bg-blue-500/20 text-blue-500 border-blue-500/30',
       plus: 'bg-purple-500/20 text-purple-500 border-purple-500/30',
       pro: 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30',
     };
+    const displayName = planType?.replace('premium_', '').toUpperCase() || 'BASIC';
     return (
       <Badge className={planColors[planType || 'basic'] || planColors.basic}>
-        {planType?.toUpperCase() || 'BASIC'}
+        {displayName}
       </Badge>
     );
   };
