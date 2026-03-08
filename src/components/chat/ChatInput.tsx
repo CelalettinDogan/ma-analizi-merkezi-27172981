@@ -90,8 +90,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: index * 0.03 }}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => handleQuickPrompt(prompt.text)}
                   disabled={isLoading}
                   className={cn(
