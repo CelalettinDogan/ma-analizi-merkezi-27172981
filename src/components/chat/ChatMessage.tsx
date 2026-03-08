@@ -184,50 +184,47 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                 >
                   {/* Copy button */}
                   <motion.button
-                    whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={handleCopy}
-                    className="p-2 rounded-md hover:bg-muted transition-colors touch-manipulation"
+                    className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl active:bg-muted transition-colors touch-manipulation"
                     title="Kopyala"
                   >
                     {copied ? (
-                      <Check className="w-3 h-3 text-emerald-500" />
+                      <Check className="w-4 h-4 text-emerald-500" />
                     ) : (
-                      <Copy className="w-3 h-3 text-muted-foreground" />
+                      <Copy className="w-4 h-4 text-muted-foreground" />
                     )}
                   </motion.button>
 
                   {/* Feedback buttons */}
                   <motion.button
-                    whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleFeedback(true)}
                     disabled={feedback !== null}
                     className={cn(
-                      "p-2 rounded-md transition-colors touch-manipulation",
+                      "p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl transition-colors touch-manipulation",
                       feedback === 'positive' 
                         ? "bg-emerald-500/20 text-emerald-500" 
-                        : "hover:bg-muted text-muted-foreground"
+                        : "active:bg-muted text-muted-foreground"
                     )}
                     title="Faydalı"
                   >
-                    <ThumbsUp className="w-3 h-3" />
+                    <ThumbsUp className="w-4 h-4" />
                   </motion.button>
                   
                   <motion.button
-                    whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => handleFeedback(false)}
                     disabled={feedback !== null}
                     className={cn(
-                      "p-2 rounded-md transition-colors touch-manipulation",
+                      "p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl transition-colors touch-manipulation",
                       feedback === 'negative' 
                         ? "bg-destructive/20 text-destructive" 
-                        : "hover:bg-muted text-muted-foreground"
+                        : "active:bg-muted text-muted-foreground"
                     )}
                     title="Geliştirilmeli"
                   >
-                    <ThumbsDown className="w-3 h-3" />
+                    <ThumbsDown className="w-4 h-4" />
                   </motion.button>
                 </motion.div>
               )}

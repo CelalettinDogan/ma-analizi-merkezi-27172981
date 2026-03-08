@@ -114,7 +114,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-7 w-28 rounded-full bg-muted/40 animate-pulse shrink-0"
+              className="h-[44px] w-28 rounded-full bg-muted/40 animate-pulse shrink-0"
             />
           ))}
         </div>

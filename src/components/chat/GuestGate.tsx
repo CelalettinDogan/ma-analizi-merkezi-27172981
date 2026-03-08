@@ -99,24 +99,28 @@ const GuestGate: React.FC<GuestGateProps> = ({ onClose }) => {
 
           {/* CTA Buttons */}
           <div className="space-y-3">
-            <Button
-              onClick={handleLogin}
-              className="w-full h-14 text-lg"
-              size="lg"
-            >
-              <LogIn className="w-5 h-5 mr-2" />
-              Giriş Yap
-            </Button>
+            <motion.div whileTap={{ scale: 0.97 }}>
+              <Button
+                onClick={handleLogin}
+                className="w-full h-14 text-lg rounded-2xl"
+                size="lg"
+              >
+                <LogIn className="w-5 h-5 mr-2" />
+                Giriş Yap
+              </Button>
+            </motion.div>
             
-            <Button
-              variant="outline"
-              onClick={handleSignup}
-              className="w-full h-12"
-              size="lg"
-            >
-              <UserPlus className="w-5 h-5 mr-2" />
-              Hesap Oluştur
-            </Button>
+            <motion.div whileTap={{ scale: 0.97 }}>
+              <Button
+                variant="outline"
+                onClick={handleSignup}
+                className="w-full h-12 rounded-2xl"
+                size="lg"
+              >
+                <UserPlus className="w-5 h-5 mr-2" />
+                Hesap Oluştur
+              </Button>
+            </motion.div>
           </div>
 
           {/* Info text */}

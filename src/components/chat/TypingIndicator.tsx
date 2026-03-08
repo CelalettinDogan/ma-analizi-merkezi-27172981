@@ -59,7 +59,7 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ className }) => {
           animate={{ opacity: 1 }}
           className="text-micro text-muted-foreground"
         >
-          {statuses[statusIndex]}...
+          {STATUSES[statusIndex]}...
         </motion.span>
       </motion.div>
     </motion.div>

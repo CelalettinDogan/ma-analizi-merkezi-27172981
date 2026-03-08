@@ -193,7 +193,7 @@ const ScrollToBottomButton: React.FC<{ onClick: () => void; visible: boolean }> 
           "absolute bottom-3 left-1/2 -translate-x-1/2 z-10",
           "flex items-center gap-1.5 px-3 py-1.5 rounded-full",
           "bg-primary text-primary-foreground shadow-md",
-          "hover:shadow-lg transition-shadow text-xs font-medium"
+          "active:shadow-lg transition-shadow text-xs font-medium"
         )}
       >
         <ArrowDown className="w-3.5 h-3.5" />

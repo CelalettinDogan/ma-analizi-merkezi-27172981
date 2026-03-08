@@ -261,6 +261,8 @@ const Chat: React.FC = () => {
                     Basic
                   </Badge>
                 )}
+                </div>
+                <span className="text-micro text-emerald-500 font-medium">AI Asistan</span>
               </div>
             </div>
           </div>
