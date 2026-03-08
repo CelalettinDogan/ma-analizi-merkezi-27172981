@@ -127,6 +127,10 @@ const TabShell: React.FC = () => {
       {TAB_PATHS.map((path) => {
         const Component = TAB_COMPONENTS[path];
         const isActive = path === activeTab;
+        const wasVisited = visitedTabs.has(path);
+
+        // Don't mount tabs that have never been visited
+        if (!wasVisited) return null;
 
         return (
           <div
