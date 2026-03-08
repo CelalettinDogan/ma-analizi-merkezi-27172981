@@ -531,7 +531,8 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                   )}
                 </div>
 
-                {/* League code */}
+                {/* AI indicator + League code */}
+                <AIIndicatorDot match={match} />
                 <span className="text-micro text-muted-foreground/60 shrink-0">
                   {match.competition.code}
                 </span>
