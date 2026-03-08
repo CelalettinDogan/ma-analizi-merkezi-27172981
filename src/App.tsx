@@ -27,7 +27,17 @@ import NotFound from "./pages/NotFound";
 import BottomNav from "@/components/navigation/BottomNav";
 import TabShell from "@/components/navigation/TabShell";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 2 * 60 * 1000,       // 2 min — avoid refetch on every mount
+      gcTime: 10 * 60 * 1000,          // 10 min garbage collection
+      retry: 1,                         // single retry on mobile
+      refetchOnWindowFocus: false,      // Capacitor WebView triggers focus on every tab switch
+      refetchOnReconnect: true,         // refetch when back online
+    },
+  },
+});
 
 const HIDE_BOTTOM_NAV_ROUTES = ['/auth', '/reset-password', '/terms', '/privacy', '/delete-account', '/admin', '/callback'];
 

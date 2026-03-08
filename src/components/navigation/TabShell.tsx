@@ -109,8 +109,8 @@ const TabShell: React.FC = () => {
   // If current path is not a tab, hide entire shell (non-tab route is active)
   if (!activeTab) {
     return (
-      <div style={{ display: 'none' }}>
-        {TAB_PATHS.map((path) => {
+    <div style={{ display: 'none' }}>
+        {TAB_PATHS.filter(path => visitedTabs.has(path)).map((path) => {
           const Component = TAB_COMPONENTS[path];
           return (
             <div key={path} ref={setTabRef(path)}>

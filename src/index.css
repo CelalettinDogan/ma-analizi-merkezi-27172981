@@ -248,22 +248,22 @@
     @apply absolute inset-0 bg-gradient-to-br from-primary/3 via-transparent to-secondary/3 pointer-events-none;
   }
 
-  /* Button glow on hover */
+  /* Button glow on press (mobile-native) */
   .btn-glow {
-    @apply transition-all duration-300;
+    @apply transition-all duration-200;
   }
 
-  .btn-glow:hover {
+  .btn-glow:active {
     box-shadow: var(--shadow-glow);
     transform: translateY(-1px);
   }
 
-  /* Card with premium glow */
+  /* Card with premium glow on press */
   .card-premium-glow {
-    @apply transition-all duration-300;
+    @apply transition-all duration-200;
   }
 
-  .card-premium-glow:hover {
+  .card-premium-glow:active {
     box-shadow: var(--shadow-premium);
   }
 }
