@@ -276,73 +276,31 @@ Deno.serve(async (req) => {
       console.warn("Failed to deactivate old subscriptions:", deactivateError);
     }
     
-    // Upsert subscription
-    const { data: subscriptionData, error: upsertError } = await supabaseAdmin
+    // Insert new subscription (old ones already deactivated above)
+    const { data: subscriptionData, error: insertError } = await supabaseAdmin
       .from("premium_subscriptions")
-      .upsert(
-        {
-          user_id: user.id,
-          plan_type: planType,
-          platform: platform,
-          purchase_token: purchaseToken,
-          order_id: subscription.latestOrderId || orderId,
-          product_id: resolvedProductId,
-          starts_at: startTime.toISOString(),
-          expires_at: expiryTime.toISOString(),
-          is_active: true,
-          auto_renewing: autoRenewing,
-          purchase_state: 0,
-          acknowledged: true,
-        },
-        { onConflict: "order_id", ignoreDuplicates: false }
-      )
+      .insert({
+        user_id: user.id,
+        plan_type: planType,
+        platform: platform,
+        purchase_token: purchaseToken,
+        order_id: subscription.latestOrderId || orderId,
+        product_id: resolvedProductId,
+        starts_at: startTime.toISOString(),
+        expires_at: expiryTime.toISOString(),
+        is_active: true,
+        auto_renewing: autoRenewing,
+        purchase_state: 0,
+        acknowledged: true,
+      })
       .select()
       .single();
     
-    if (upsertError) {
-      console.error("Database error:", upsertError);
-      
-      // Fallback: try insert without onConflict (order_id might not exist yet)
-      const { data: insertData, error: insertError } = await supabaseAdmin
-        .from("premium_subscriptions")
-        .insert({
-          user_id: user.id,
-          plan_type: planType,
-          platform: platform,
-          purchase_token: purchaseToken,
-          order_id: subscription.latestOrderId || orderId,
-          product_id: resolvedProductId,
-          starts_at: startTime.toISOString(),
-          expires_at: expiryTime.toISOString(),
-          is_active: true,
-          auto_renewing: autoRenewing,
-          purchase_state: 0,
-          acknowledged: true,
-        })
-        .select()
-        .single();
-      
-      if (insertError) {
-        console.error("Insert fallback also failed:", insertError);
-        return new Response(
-          JSON.stringify({ error: "Abonelik kaydedilemedi", code: "DB_ERROR" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      
-      console.log("Subscription saved via fallback insert:", insertData?.id);
+    if (insertError) {
+      console.error("Database insert failed:", insertError);
       return new Response(
-        JSON.stringify({
-          success: true,
-          valid: true,
-          subscription: {
-            id: insertData.id,
-            planType,
-            expiresAt: expiryTime.toISOString(),
-            autoRenewing,
-          },
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Abonelik kaydedilemedi", code: "DB_ERROR" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     

@@ -83,7 +83,12 @@ const Premium = () => {
           toast.success(`${planName} aktif edildi! 🎉`);
           refetch();
         } else {
-          toast.error(result.error || 'Satın alma başarısız');
+          const isActivationError = result.error?.includes('doğrulanamadı') || result.error?.includes('kaydedilemedi');
+          if (isActivationError) {
+            toast.error('Ödemeniz alındı ancak aktivasyon başarısız oldu. "Geri yükle" ile tekrar deneyin.');
+          } else {
+            toast.error(result.error || 'Satın alma başarısız');
+          }
         }
       } else {
         toast.info('Gerçek satın alma için mobil uygulama gerekli');
