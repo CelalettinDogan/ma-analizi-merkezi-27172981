@@ -462,21 +462,21 @@ const Profile = () => {
             <SheetDescription>Uygulama görünümünü kişiselleştirin</SheetDescription>
           </SheetHeader>
           <RadioGroup value={theme} onValueChange={setTheme} className="space-y-3 pb-6">
-            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border active:bg-muted/30 transition-colors">
               <RadioGroupItem value="light" id="light" />
               <Label htmlFor="light" className="flex-1 cursor-pointer">
                 <span className="font-medium text-sm">☀️ Açık Tema</span>
                 <p className="text-xs text-muted-foreground">Gündüz kullanımı için ideal</p>
               </Label>
             </div>
-            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border active:bg-muted/30 transition-colors">
               <RadioGroupItem value="dark" id="dark" />
               <Label htmlFor="dark" className="flex-1 cursor-pointer">
                 <span className="font-medium text-sm">🌙 Koyu Tema</span>
                 <p className="text-xs text-muted-foreground">Göz yorgunluğunu azaltır</p>
               </Label>
             </div>
-            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+            <div className="flex items-center space-x-3 p-3 rounded-lg border border-border active:bg-muted/30 transition-colors">
               <RadioGroupItem value="system" id="system" />
               <Label htmlFor="system" className="flex-1 cursor-pointer">
                 <span className="font-medium text-sm">📱 Sistem</span>
