@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Search, Shield } from 'lucide-react';
+import { ArrowRight, Search, Shield, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface HeroStats {
@@ -55,11 +55,16 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           {/* Left: Trust badge + title compact */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              {stats.accuracy >= 65 && (
+              {stats.accuracy >= 65 ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/12 text-xs border border-primary/20">
                   <Shield className="w-3.5 h-3.5 text-primary" />
                   <span className="font-semibold text-primary">%{animatedAccuracy}</span>
                   <span className="text-muted-foreground font-medium">· {animatedPredictions.toLocaleString()}+ analiz</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/8 text-xs">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
+                  <span className="font-medium text-foreground/80">AI destekli maç analizi</span>
                 </span>
               )}
               {stats.liveCount > 0 && (

@@ -170,7 +170,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
           className={cn(
             "relative w-full text-left rounded-2xl p-4 transition-all",
             "bg-card/60 backdrop-blur-sm shadow-md",
-            "border border-border/30",
+            "border border-border/50",
             loadingMatchId === featuredMatch.id && "opacity-80",
             loadingMatchId && loadingMatchId !== featuredMatch.id && "opacity-40"
           )}
@@ -225,7 +225,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                 )}
               </div>
               <span className="font-medium text-sm leading-tight line-clamp-2 min-w-0">
-                {featuredMatch.homeTeam.tla || featuredMatch.homeTeam.shortName || featuredMatch.homeTeam.name}
+                {featuredMatch.homeTeam.shortName || featuredMatch.homeTeam.tla || featuredMatch.homeTeam.name}
               </span>
             </div>
 
@@ -242,7 +242,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
             {/* Away */}
             <div className="flex-1 flex items-center gap-2 sm:gap-3 min-w-0 justify-end">
               <span className="font-medium text-sm leading-tight line-clamp-2 min-w-0 text-right">
-                {featuredMatch.awayTeam.tla || featuredMatch.awayTeam.shortName || featuredMatch.awayTeam.name}
+                {featuredMatch.awayTeam.shortName || featuredMatch.awayTeam.tla || featuredMatch.awayTeam.name}
               </span>
               <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {featuredMatch.awayTeam.crest ? (
@@ -319,11 +319,11 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                     <img src={match.homeTeam.crest} alt="" className="w-5 h-5 object-contain shrink-0" />
                   )}
                   <span className="text-sm truncate min-w-0">
-                    {match.homeTeam.tla || match.homeTeam.shortName || match.homeTeam.name}
+                    {match.homeTeam.shortName || match.homeTeam.tla || match.homeTeam.name}
                   </span>
-                  <span className="text-muted-foreground/30 text-xs shrink-0">–</span>
+                  <span className="text-muted-foreground/50 text-xs shrink-0">–</span>
                   <span className="text-sm truncate min-w-0">
-                    {match.awayTeam.tla || match.awayTeam.shortName || match.awayTeam.name}
+                    {match.awayTeam.shortName || match.awayTeam.tla || match.awayTeam.name}
                   </span>
                   {match.awayTeam.crest && (
                     <img src={match.awayTeam.crest} alt="" className="w-5 h-5 object-contain shrink-0" />
