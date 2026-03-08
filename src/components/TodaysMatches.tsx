@@ -9,6 +9,14 @@ import { cn } from '@/lib/utils';
 import H2HSummaryBadge from '@/components/match/H2HSummaryBadge';
 import { useH2HPreview } from '@/hooks/useH2HPreview';
 
+const TEAM_PREFIXES = /^(US |AC |FC |ACF |AS |SS |SSC |SSD |UC |RC |CA |CF |CD |RCD |SD |UD |SC |BSC |TSG |VfB |VfL |1\. |Borussia |Sporting |Atlético |Athletic )/i;
+
+const cleanTeamName = (team: { shortName?: string; tla?: string; name: string }): string => {
+  const raw = team.shortName || team.name;
+  const cleaned = raw.replace(TEAM_PREFIXES, '').trim();
+  return cleaned || raw;
+};
+
 interface TodaysMatchesProps {
   matches: Match[];
   isLoading?: boolean;
@@ -225,7 +233,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                 )}
               </div>
               <span className="font-medium text-sm leading-tight line-clamp-2 min-w-0">
-                {featuredMatch.homeTeam.shortName || featuredMatch.homeTeam.tla || featuredMatch.homeTeam.name}
+                {cleanTeamName(featuredMatch.homeTeam)}
               </span>
             </div>
 
@@ -242,7 +250,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
             {/* Away */}
             <div className="flex-1 flex items-center gap-2 sm:gap-3 min-w-0 justify-end">
               <span className="font-medium text-sm leading-tight line-clamp-2 min-w-0 text-right">
-                {featuredMatch.awayTeam.shortName || featuredMatch.awayTeam.tla || featuredMatch.awayTeam.name}
+                {cleanTeamName(featuredMatch.awayTeam)}
               </span>
               <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {featuredMatch.awayTeam.crest ? (
@@ -319,11 +327,11 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                     <img src={match.homeTeam.crest} alt="" className="w-5 h-5 object-contain shrink-0" />
                   )}
                   <span className="text-sm truncate min-w-0">
-                    {match.homeTeam.shortName || match.homeTeam.tla || match.homeTeam.name}
+                    {cleanTeamName(match.homeTeam)}
                   </span>
                   <span className="text-muted-foreground/50 text-xs shrink-0">–</span>
                   <span className="text-sm truncate min-w-0">
-                    {match.awayTeam.shortName || match.awayTeam.tla || match.awayTeam.name}
+                    {cleanTeamName(match.awayTeam)}
                   </span>
                   {match.awayTeam.crest && (
                     <img src={match.awayTeam.crest} alt="" className="w-5 h-5 object-contain shrink-0" />
