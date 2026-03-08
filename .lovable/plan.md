@@ -1,96 +1,135 @@
 
 
-# WebView Hissi Veren Sayfalar — Kapsamlı Audit
+# Hibrit Market Selection Engine — Refactor Planı
 
-## Genel Değerlendendirme
-Ana ekranlar (Index, Live, Chat, Standings, Profile, Premium) büyük ölçüde native hissiyata ulaşmış. Ancak **ikincil sayfalar** ve bazı **kalıntı web pattern'leri** hâlâ WebView hissi veriyor.
+## Mevcut Sorunlar
 
----
+1. **Eşitsiz confidence eşikleri**: `predictionEngine.ts`'de 1X2 marketi `>55%` ile "yüksek" olurken, BTTS `>65%` gerektiriyor. 1X2 doğası gereği daha polarize olduğu için neredeyse her maçta "yüksek" çıkıyor.
 
-## Sorunlu Sayfalar ve Detaylar
+2. **`mathConfidenceToNumber` sabit mapping**: `yüksek=0.8`, `orta=0.6`, `düşük=0.4` — market türünden bağımsız. 1X2'nin "yüksek"i ile BTTS'nin "orta"sı arasında gerçek sinyal gücü farkı yansımıyor.
 
-### 1. `ResetPassword.tsx` — EN KÖTÜ (WebView skoru: 3/10)
-- `min-h-screen` kullanıyor — TabShell dışında olduğu için sorun değil ama `Card` component'i tamamen web template
-- `CardHeader`, `CardTitle`, `CardDescription` — generic web form kartı
-- `hover:bg-primary/90` ve `hover:text-foreground` — web hover state'leri
-- Input'lar standart — `pl-10` padding, border-based, premium styling yok
-- `text-2xl` başlık — web ölçeğinde
-- Touch target'lar küçük (şifre göster butonu `p-0`)
-- Hiçbir mikro etkileşim yok (framer-motion sadece container'da)
+3. **`selectBestPrediction`** en yüksek raw Poisson olasılığını seçiyor. 1X2'nin ham olasılığı (%55-65) doğal olarak BTTS'den (%50-60) yüksek çıkar, ama bu "daha güvenilir sinyal" demek değil.
 
-### 2. `NotFound.tsx` — KÖTÜ (WebView skoru: 2/10)
-- Tamamen minimal web sayfası — hiçbir brand öğesi yok
-- `underline hover:text-primary/90` — klasik web link stili
-- Logo, ikon, animasyon yok
-- Native bir 404 sayfası gibi değil
-
-### 3. `Privacy.tsx` ve `Terms.tsx` — ORTA (WebView skoru: 5/10)
-- `min-h-screen pb-24` — BottomNav padding sabit, `calc()` kullanılmamış
-- Back buton touch target'ı `h-9 w-9` — 36px, minimum 44px olmalı
-- `Card > CardContent > p-6 prose` — web blog layout hissi
-- `hover:underline` link'ler var (Privacy L129)
-- Header yüksekliği `py-4` — native standartlarda `h-14` olmalı
-
-### 4. `DeleteAccount.tsx` — ORTA (WebView skoru: 5/10)
-- Aynı `min-h-screen pb-24` sorunu
-- Back buton `h-9 w-9` — küçük touch target
-- `hover:underline` link'ler var
-- `Card` based layout — web template hissi
-
-### 5. `AnalysisHistory.tsx` — ORTA (WebView skoru: 5/10)
-- `min-h-screen pb-24` — sabit padding
-- Back buton küçük touch target
-- `Select` dropdown'lar web-native — native sheet olmalı
-
-### 6. `Standings.tsx` — İYİ ama sorunlu noktalar (7/10)
-- `hover:bg-muted/20` tablo satırlarında — web hover kalıntısı
-- Radix `TabsList/TabsTrigger` — generic web tabs, custom segmented control olmalı (Premium ve Auth'daki gibi)
-
-### 7. `Profile.tsx` — İYİ ama sorunlu noktalar (8/10)
-- Settings butonlarında `hover:text-destructive hover:bg-destructive/10` — web hover kalıntısı
-- `cursor-pointer` kullanımı (tema sheet) — mobilde gereksiz
-
-### 8. `Premium.tsx` — İYİ ama bir sorun (8.5/10)
-- CTA butonunda `hover:opacity-90` — web kalıntısı
+4. **Market reliability / historical accuracy** hiç kullanılmıyor. `ml_model_stats` tablosunda market bazlı doğruluk verileri var ama ana tahmin seçiminde değerlendirilmiyor.
 
 ---
 
-## Yaygın Sorun Patternleri
+## Yeni Mimari: Market-Aware Hybrid Scoring
 
-| Sorun | Etkilenen Dosyalar |
-|-------|-------------------|
-| `hover:` state'ler | Standings, Profile, Premium, ResetPassword, NotFound, Privacy, DeleteAccount |
-| `min-h-screen pb-24` (sabit padding) | Privacy, Terms, AnalysisHistory, DeleteAccount |
-| Back buton < 44px | Privacy, Terms, AnalysisHistory, DeleteAccount |
-| `Card/CardHeader/CardTitle` web template | ResetPassword, NotFound, Privacy, Terms, DeleteAccount |
-| `cursor-pointer` | Profile |
-| Radix TabsList (generic web tabs) | Standings |
+### Katman 1: `src/utils/marketScoring.ts` (YENİ DOSYA)
+
+Her market için bağımsız bir **Final Market Score (FMS)** hesaplayan utility:
+
+```
+FMS = (signalStrength × 0.35) + (modelAgreement × 0.25) + (historicalReliability × 0.20) + (edgeClarity × 0.20)
+```
+
+Bileşenler:
+- **signalStrength**: Poisson olasılığının market-spesifik "kesinlik" eşiğinden ne kadar uzakta olduğu. 1X2'de %50 belirsizlik noktası, BTTS'de %50, O/U'da %50. Mesafe ne kadar büyükse sinyal o kadar güçlü.
+- **modelAgreement**: AI, Math ve ML'nin aynı yönde mi gösterdiği (0 veya 1, kısmi uyum 0.5)
+- **historicalReliability**: `ml_model_stats` tablosundan market bazlı accuracy oranı (0-1)
+- **edgeClarity**: Olasılığın belirsizlik bölgesinden (45-55%) ne kadar uzak olduğu, normalized
+
+Market-spesifik kalibrasyon config'i:
+
+```typescript
+const MARKET_CONFIG = {
+  'Maç Sonucu': { 
+    uncertaintyCenter: 33.3, // 3 yönlü market
+    volatilityPenalty: 0.15, // 3 sonuçlu → daha volatil
+    minEdgeThreshold: 12,    // %33+12 = %45'in altında edge yok
+  },
+  'Toplam Gol Alt/Üst': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  'Karşılıklı Gol': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  // ... diğer marketler
+};
+```
+
+1X2'ye `volatilityPenalty` uygulanması, 3 yönlü marketin doğal avantajını dengeler.
+
+### Katman 2: `predictionEngine.ts` Güncelleme
+
+Confidence eşiklerini market-spesifik ve simetrik hale getir:
+
+| Market | Yüksek | Orta | Düşük |
+|--------|--------|------|-------|
+| 1X2 (mevcut) | >55% | >45% | rest |
+| 1X2 (yeni) | >58% | >45% | rest |
+| BTTS (mevcut) | >65% | >55% | rest |
+| BTTS (yeni) | >60% | >52% | rest |
+| O/U (mevcut) | >60% | >55% | rest |
+| O/U (yeni) | >58% | >52% | rest |
+
+Not: Değerler yapay dengeleme değil, market doğasına uygun kalibrasyon. BTTS eşikleri düşürülüyor çünkü binary markette %60 zaten güçlü sinyal.
+
+### Katman 3: `Prediction` type genişletme (`types/match.ts`)
+
+```typescript
+export interface Prediction {
+  // ... mevcut alanlar
+  marketScore?: number;        // Final Market Score (0-100)
+  signalStrength?: number;     // Sinyal gücü (0-100)
+  modelAgreement?: number;     // Model uyumu (0-100)
+  historicalReliability?: number; // Tarihsel güvenilirlik (0-100)
+  edgeClarity?: number;        // Edge netliği (0-100)
+  riskLevel?: 'low' | 'medium' | 'high';
+  isRecommended?: boolean;     // En iyi market mi?
+}
+```
+
+### Katman 4: `useMatchAnalysis.ts` Güncelleme
+
+Tahminler oluşturulduktan sonra, `marketScoring` utility'si ile her market için FMS hesapla:
+
+1. `ml_model_stats`'dan market bazlı historical accuracy çek (mevcut `getAIMathWeights` ile paralel)
+2. Her prediction'a `marketScore`, `signalStrength`, `modelAgreement`, `historicalReliability`, `edgeClarity`, `riskLevel` ekle
+3. En yüksek `marketScore`'a sahip prediction'ı `isRecommended: true` olarak işaretle
+4. Predictions array'ini `marketScore` sırasına göre sırala
+
+### Katman 5: `predictionService.ts` Güncelleme
+
+`selectBestPrediction` fonksiyonunu `marketScore` bazlı çalışacak şekilde güncelle:
+- `marketScore` varsa onu kullan
+- Yoksa mevcut Poisson probability fallback
+
+### Katman 6: UI Güncellemeleri
+
+**AIRecommendationCard**: En yüksek `marketScore`'lu prediction'ı göster (zaten `sortedPredictions[0]` mantığı var, sıralama `marketScore`'a geçecek)
+
+**PredictionCard**: Market Score progress bar'ı ekle + risk level badge
+
+**PredictionPillSelector**: Sıralamayı `marketScore` bazlı yap, recommended pill'e özel badge ekle
 
 ---
 
-## Uygulama Planı
+## Değişecek Dosyalar
 
-### Tier 1 — Kritik (Web hissi çok belirgin)
+1. **`src/utils/marketScoring.ts`** — YENİ: Market scoring engine
+2. **`src/utils/predictionEngine.ts`** — Confidence eşiklerini market-spesifik güncelle
+3. **`src/types/match.ts`** — Prediction interface genişlet
+4. **`src/hooks/useMatchAnalysis.ts`** — Market scoring entegrasyonu + historical reliability fetch
+5. **`src/services/predictionService.ts`** — `selectBestPrediction` güncelle
+6. **`src/lib/utils.ts`** — `getHybridConfidence`'ı marketScore-aware yap
+7. **`src/components/analysis/AIRecommendationCard.tsx`** — marketScore sıralama
+8. **`src/components/PredictionCard.tsx`** — Market score bar + risk badge
+9. **`src/components/analysis/PredictionPillSelector.tsx`** — marketScore sıralama + recommended badge
 
-**`ResetPassword.tsx`**: Card layout'u kaldır, Auth.tsx ile aynı premium input styling uygula (`rounded-2xl bg-muted/20 h-[52px]`), hover state'leri `active:` ile değiştir, `whileTap` ekle, touch target'ları 44px'e çıkar.
+## Korunacaklar
 
-**`NotFound.tsx`**: Logo ekle, branded 404 tasarımı, `underline hover:` yerine `Button` component, animasyon ekle.
+- Mevcut 3 katmanlı hibrit mimari (AI + Math + ML) aynen kalacak
+- `prediction_features` ve `ml_model_stats` tablo yapıları değişmeyecek
+- Edge function'lar değişmeyecek
+- Confidence değerleri sahte dengeleme yapılmayacak — gerçek farklar korunacak
 
-### Tier 2 — Orta (Tutarlılık sorunları)
+## Continuous Learning Altyapısı
 
-**`Privacy.tsx`, `Terms.tsx`, `DeleteAccount.tsx`, `AnalysisHistory.tsx`**: 
-- `pb-24` → `calc(80px + env(safe-area-inset-bottom))` 
-- Back buton `min-w-[44px] min-h-[44px]`
-- `hover:underline` → `active:opacity-70`
-- Card wrapper'ları kaldır, doğrudan content render
-
-### Tier 3 — İnce ayar
-
-**`Standings.tsx`**: `hover:bg-muted/20` kaldır, Radix TabsList → custom segmented control (Auth.tsx'deki gibi)
-
-**`Profile.tsx`**: `hover:text-destructive hover:bg-destructive/10` → `active:bg-destructive/10`, `cursor-pointer` kaldır
-
-**`Premium.tsx`**: `hover:opacity-90` kaldır
-
-**Toplam: 9 dosya değişiklik**
+Zaten mevcut olan `ml_model_stats` tablosu market bazlı accuracy takibi yapıyor. Yeni `historicalReliability` bileşeni bu veriyi aktif olarak kullanarak market selection'ı sürekli iyileştirecek. `train-ml-model` edge function haftalık çalışmaya devam edecek.
 

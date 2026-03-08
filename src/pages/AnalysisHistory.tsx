@@ -110,38 +110,36 @@ const AnalysisHistory: React.FC = () => {
   }, [analysisSlips]);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border pt-safe">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate(-1)}
-                className="h-9 w-9"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-xl font-bold">Analiz Geçmişi</h1>
-                <p className="text-sm text-muted-foreground">
-                  {stats.total} analiz • {stats.correct} doğru
-                </p>
-              </div>
-            </div>
+        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => refetch()}
-              disabled={isRefetching}
-              className="gap-2"
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="min-w-[44px] min-h-[44px]"
             >
-              <RefreshCw className={`h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
-              Güncelle
+              <ArrowLeft className="h-5 w-5" />
             </Button>
+            <div>
+              <h1 className="text-xl font-bold">Analiz Geçmişi</h1>
+              <p className="text-sm text-muted-foreground">
+                {stats.total} analiz • {stats.correct} doğru
+              </p>
+            </div>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isRefetching}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
+            Güncelle
+          </Button>
         </div>
       </div>
 

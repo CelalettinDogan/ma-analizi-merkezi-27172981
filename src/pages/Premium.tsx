@@ -354,7 +354,7 @@ const Premium = () => {
             <Button
               onClick={handlePurchase}
               disabled={isLoading}
-              className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-primary to-accent hover:opacity-90 relative overflow-hidden rounded-xl"
+              className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-primary to-accent active:opacity-90 relative overflow-hidden rounded-xl"
               style={{ boxShadow: '0 0 20px -4px hsl(var(--primary) / 0.3)' }}
               size="lg"
             >

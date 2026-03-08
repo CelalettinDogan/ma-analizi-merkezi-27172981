@@ -434,11 +434,11 @@ const Profile = () => {
 
                 <div className="border-t border-border/50 my-2" />
 
-                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setShowDeleteAccountSheet(true)}>
+                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl text-destructive active:bg-destructive/10" onClick={() => setShowDeleteAccountSheet(true)}>
                   <span className="flex items-center gap-2.5"><Trash2 className="h-4 w-4" />Hesabı Sil</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" className="w-full justify-start gap-2.5 h-11 text-sm rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleSignOut}>
+                <Button variant="ghost" className="w-full justify-start gap-2.5 h-11 text-sm rounded-xl text-destructive active:bg-destructive/10" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4" /><span>Çıkış Yap</span>
                 </Button>
               </CardContent>
@@ -464,21 +464,21 @@ const Profile = () => {
           <RadioGroup value={theme} onValueChange={setTheme} className="space-y-3 pb-6">
             <div className="flex items-center space-x-3 p-3 rounded-lg border border-border active:bg-muted/30 transition-colors">
               <RadioGroupItem value="light" id="light" />
-              <Label htmlFor="light" className="flex-1 cursor-pointer">
+              <Label htmlFor="light" className="flex-1">
                 <span className="font-medium text-sm">☀️ Açık Tema</span>
                 <p className="text-xs text-muted-foreground">Gündüz kullanımı için ideal</p>
               </Label>
             </div>
             <div className="flex items-center space-x-3 p-3 rounded-lg border border-border active:bg-muted/30 transition-colors">
               <RadioGroupItem value="dark" id="dark" />
-              <Label htmlFor="dark" className="flex-1 cursor-pointer">
+              <Label htmlFor="dark" className="flex-1">
                 <span className="font-medium text-sm">🌙 Koyu Tema</span>
                 <p className="text-xs text-muted-foreground">Göz yorgunluğunu azaltır</p>
               </Label>
             </div>
             <div className="flex items-center space-x-3 p-3 rounded-lg border border-border active:bg-muted/30 transition-colors">
               <RadioGroupItem value="system" id="system" />
-              <Label htmlFor="system" className="flex-1 cursor-pointer">
+              <Label htmlFor="system" className="flex-1">
                 <span className="font-medium text-sm">📱 Sistem</span>
                 <p className="text-xs text-muted-foreground">Cihaz ayarlarını takip eder</p>
               </Label>
