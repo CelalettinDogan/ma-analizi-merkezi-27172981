@@ -132,7 +132,7 @@ const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ onQuickPrompt }) => {
                 className={cn(
                   "p-3 rounded-xl text-left",
                   "bg-card/80 backdrop-blur-sm border border-border/50",
-                  "hover:bg-muted hover:border-primary/30 transition-all",
+                  "active:bg-muted active:border-primary/30 transition-all",
                   "flex flex-col gap-1"
                 )}
               >
