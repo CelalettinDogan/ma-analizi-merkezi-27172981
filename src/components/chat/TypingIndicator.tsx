@@ -6,9 +6,10 @@ interface TypingIndicatorProps {
   className?: string;
 }
 
+const STATUSES = ["Düşünüyor", "Analiz yapıyor", "Hazırlanıyor"];
+
 const TypingIndicator: React.FC<TypingIndicatorProps> = ({ className }) => {
   const [statusIndex, setStatusIndex] = useState(0);
-  const statuses = ["Düşünüyor", "Analiz yapıyor", "Hazırlanıyor"];
 
   useEffect(() => {
     const interval = setInterval(() => {
