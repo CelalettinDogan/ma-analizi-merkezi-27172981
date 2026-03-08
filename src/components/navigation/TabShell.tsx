@@ -39,6 +39,15 @@ const TabShell: React.FC = () => {
   const tabRefs = useRef<Map<TabPath, HTMLDivElement | null>>(new Map());
 
   // Track whether we've done the initial mount (skip animation on first render)
+  // Lazy mount: only mount tabs that have been visited at least once
+  const [visitedTabs, setVisitedTabs] = useState<Set<TabPath>>(new Set(['/']));
+
+  useEffect(() => {
+    if (activeTab && !visitedTabs.has(activeTab)) {
+      setVisitedTabs(prev => new Set(prev).add(activeTab));
+    }
+  }, [activeTab]);
+
   const [initialRender, setInitialRender] = useState(true);
   useEffect(() => {
     if (initialRender) {
