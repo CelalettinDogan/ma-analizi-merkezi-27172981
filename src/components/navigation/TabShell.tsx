@@ -39,6 +39,15 @@ const TabShell: React.FC = () => {
   const tabRefs = useRef<Map<TabPath, HTMLDivElement | null>>(new Map());
 
   // Track whether we've done the initial mount (skip animation on first render)
+  // Lazy mount: only mount tabs that have been visited at least once
+  const [visitedTabs, setVisitedTabs] = useState<Set<TabPath>>(new Set(['/']));
+
+  useEffect(() => {
+    if (activeTab && !visitedTabs.has(activeTab)) {
+      setVisitedTabs(prev => new Set(prev).add(activeTab));
+    }
+  }, [activeTab]);
+
   const [initialRender, setInitialRender] = useState(true);
   useEffect(() => {
     if (initialRender) {
@@ -100,8 +109,8 @@ const TabShell: React.FC = () => {
   // If current path is not a tab, hide entire shell (non-tab route is active)
   if (!activeTab) {
     return (
-      <div style={{ display: 'none' }}>
-        {TAB_PATHS.map((path) => {
+    <div style={{ display: 'none' }}>
+        {TAB_PATHS.filter(path => visitedTabs.has(path)).map((path) => {
           const Component = TAB_COMPONENTS[path];
           return (
             <div key={path} ref={setTabRef(path)}>
@@ -118,6 +127,10 @@ const TabShell: React.FC = () => {
       {TAB_PATHS.map((path) => {
         const Component = TAB_COMPONENTS[path];
         const isActive = path === activeTab;
+        const wasVisited = visitedTabs.has(path);
+
+        // Don't mount tabs that have never been visited
+        if (!wasVisited) return null;
 
         return (
           <div

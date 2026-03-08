@@ -1,95 +1,135 @@
 
 
-# GolMetrik AI — Kapsamlı Mobil Uygulama Denetim Raporu ve İyileştirme Planı
+# Hibrit Market Selection Engine — Refactor Planı
 
-## Uzman Değerlendirmesi
+## Mevcut Sorunlar
 
-Bu analiz, uygulamayı Play Store'da yayınlanan profesyonel bir Android native app standartlarında değerlendirmektedir.
+1. **Eşitsiz confidence eşikleri**: `predictionEngine.ts`'de 1X2 marketi `>55%` ile "yüksek" olurken, BTTS `>65%` gerektiriyor. 1X2 doğası gereği daha polarize olduğu için neredeyse her maçta "yüksek" çıkıyor.
 
----
+2. **`mathConfidenceToNumber` sabit mapping**: `yüksek=0.8`, `orta=0.6`, `düşük=0.4` — market türünden bağımsız. 1X2'nin "yüksek"i ile BTTS'nin "orta"sı arasında gerçek sinyal gücü farkı yansımıyor.
 
-## 1. Kritik Sorunlar (Acil Düzeltilmeli)
+3. **`selectBestPrediction`** en yüksek raw Poisson olasılığını seçiyor. 1X2'nin ham olasılığı (%55-65) doğal olarak BTTS'den (%50-60) yüksek çıkar, ama bu "daha güvenilir sinyal" demek değil.
 
-### 1.1 QueryClient Yapılandırması Yok
-`App.tsx` satır 30'da `new QueryClient()` hiçbir opsiyon olmadan oluşturuluyor. Bu durumda:
-- **Retry**: Başarısız istekler 3 kez tekrarlanır (mobilde gereksiz bant genişliği)
-- **refetchOnWindowFocus**: `true` (Capacitor WebView'da her tab geçişinde gereksiz refetch)
-- **staleTime**: `0` (her mount'ta yeniden sorgu)
-
-**Düzeltme**: Mobil-optimized QueryClient config ekle: `staleTime: 2min`, `retry: 1`, `refetchOnWindowFocus: false`, `gcTime: 10min`.
-
-### 1.2 Çevrimdışı (Offline) Durumu Yok
-Uygulama ağ bağlantısı kesildiğinde hiçbir geri bildirim vermiyor. Kullanıcı neden veri gelmediğini anlamıyor. `@capacitor/network` veya `navigator.onLine` ile bir global offline banner gösterilmeli.
-
-### 1.3 Google Login Auth Callback'de `signInWithGoogle` Yok
-`Auth.tsx`'te Google ile giriş butonu yok. `AuthContext`'te `signInWithGoogle` fonksiyonu mevcut ama Auth sayfasında çağrılmıyor. Social login Android'de çok önemli bir edinim kanalı.
-
-### 1.4 CSS'te Kalan `hover:` Kalıntıları
-`index.css` satır 251-268'de `.btn-glow:hover` ve `.card-premium-glow:hover` gibi web-only hover stilleri var. Bunlar mobilde 300ms gecikmeye ve yapışkan hover state'e neden olur.
+4. **Market reliability / historical accuracy** hiç kullanılmıyor. `ml_model_stats` tablosunda market bazlı doğruluk verileri var ama ana tahmin seçiminde değerlendirilmiyor.
 
 ---
 
-## 2. Performans İyileştirmeleri
+## Yeni Mimari: Market-Aware Hybrid Scoring
 
-### 2.1 TabShell — Tüm Sayfalar Aynı Anda Mount Ediliyor
-`TabShell.tsx` satır 118: 6 sayfa (`Index`, `Live`, `Chat`, `Standings`, `Premium`, `Profile`) uygulama açıldığında **hepsi aynı anda** mount oluyor. Her biri kendi veritabanı sorgularını çalıştırıyor. Bu, ilk açılışta 15-20 paralel Supabase sorgusu demek.
+### Katman 1: `src/utils/marketScoring.ts` (YENİ DOSYA)
 
-**Düzeltme**: Lazy mount stratejisi — sadece bir kez ziyaret edilen tab'lar mount edilsin. `visitedTabs` set'i tutup, henüz ziyaret edilmemiş tab'ları render etme.
+Her market için bağımsız bir **Final Market Score (FMS)** hesaplayan utility:
 
-### 2.2 `useHomeData` — Manuel Polling, React Query Değil
-`useHomeData.ts` `useState` + `setInterval` ile manuel veri çekme yapıyor. Bu, React Query'nin cache/dedup avantajlarından yararlanamıyor ve tab geçişlerinde gereksiz refetch'e neden oluyor.
+```
+FMS = (signalStrength × 0.35) + (modelAgreement × 0.25) + (historicalReliability × 0.20) + (edgeClarity × 0.20)
+```
 
-### 2.3 Profil Sayfası — Gereksiz Sorgular
-`Profile.tsx` satır 76-106: `upcoming-matches-profile` ve `recent-analyses-profile` sorguları her mount'ta çalışıyor. Profil sayfası açılmadan bu verilere ihtiyaç yok ama TabShell yüzünden app açılışında çalışıyor.
+Bileşenler:
+- **signalStrength**: Poisson olasılığının market-spesifik "kesinlik" eşiğinden ne kadar uzakta olduğu. 1X2'de %50 belirsizlik noktası, BTTS'de %50, O/U'da %50. Mesafe ne kadar büyükse sinyal o kadar güçlü.
+- **modelAgreement**: AI, Math ve ML'nin aynı yönde mi gösterdiği (0 veya 1, kısmi uyum 0.5)
+- **historicalReliability**: `ml_model_stats` tablosundan market bazlı accuracy oranı (0-1)
+- **edgeClarity**: Olasılığın belirsizlik bölgesinden (45-55%) ne kadar uzak olduğu, normalized
+
+Market-spesifik kalibrasyon config'i:
+
+```typescript
+const MARKET_CONFIG = {
+  'Maç Sonucu': { 
+    uncertaintyCenter: 33.3, // 3 yönlü market
+    volatilityPenalty: 0.15, // 3 sonuçlu → daha volatil
+    minEdgeThreshold: 12,    // %33+12 = %45'in altında edge yok
+  },
+  'Toplam Gol Alt/Üst': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  'Karşılıklı Gol': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  // ... diğer marketler
+};
+```
+
+1X2'ye `volatilityPenalty` uygulanması, 3 yönlü marketin doğal avantajını dengeler.
+
+### Katman 2: `predictionEngine.ts` Güncelleme
+
+Confidence eşiklerini market-spesifik ve simetrik hale getir:
+
+| Market | Yüksek | Orta | Düşük |
+|--------|--------|------|-------|
+| 1X2 (mevcut) | >55% | >45% | rest |
+| 1X2 (yeni) | >58% | >45% | rest |
+| BTTS (mevcut) | >65% | >55% | rest |
+| BTTS (yeni) | >60% | >52% | rest |
+| O/U (mevcut) | >60% | >55% | rest |
+| O/U (yeni) | >58% | >52% | rest |
+
+Not: Değerler yapay dengeleme değil, market doğasına uygun kalibrasyon. BTTS eşikleri düşürülüyor çünkü binary markette %60 zaten güçlü sinyal.
+
+### Katman 3: `Prediction` type genişletme (`types/match.ts`)
+
+```typescript
+export interface Prediction {
+  // ... mevcut alanlar
+  marketScore?: number;        // Final Market Score (0-100)
+  signalStrength?: number;     // Sinyal gücü (0-100)
+  modelAgreement?: number;     // Model uyumu (0-100)
+  historicalReliability?: number; // Tarihsel güvenilirlik (0-100)
+  edgeClarity?: number;        // Edge netliği (0-100)
+  riskLevel?: 'low' | 'medium' | 'high';
+  isRecommended?: boolean;     // En iyi market mi?
+}
+```
+
+### Katman 4: `useMatchAnalysis.ts` Güncelleme
+
+Tahminler oluşturulduktan sonra, `marketScoring` utility'si ile her market için FMS hesapla:
+
+1. `ml_model_stats`'dan market bazlı historical accuracy çek (mevcut `getAIMathWeights` ile paralel)
+2. Her prediction'a `marketScore`, `signalStrength`, `modelAgreement`, `historicalReliability`, `edgeClarity`, `riskLevel` ekle
+3. En yüksek `marketScore`'a sahip prediction'ı `isRecommended: true` olarak işaretle
+4. Predictions array'ini `marketScore` sırasına göre sırala
+
+### Katman 5: `predictionService.ts` Güncelleme
+
+`selectBestPrediction` fonksiyonunu `marketScore` bazlı çalışacak şekilde güncelle:
+- `marketScore` varsa onu kullan
+- Yoksa mevcut Poisson probability fallback
+
+### Katman 6: UI Güncellemeleri
+
+**AIRecommendationCard**: En yüksek `marketScore`'lu prediction'ı göster (zaten `sortedPredictions[0]` mantığı var, sıralama `marketScore`'a geçecek)
+
+**PredictionCard**: Market Score progress bar'ı ekle + risk level badge
+
+**PredictionPillSelector**: Sıralamayı `marketScore` bazlı yap, recommended pill'e özel badge ekle
 
 ---
 
-## 3. UX İyileştirmeleri
+## Değişecek Dosyalar
 
-### 3.1 Pull-to-Refresh Yok
-Native Android'de en temel beklenti olan pull-to-refresh mekanizması hiçbir sayfada yok. Ana sayfa, Canlı maçlar ve Lig tablosunda olmalı.
+1. **`src/utils/marketScoring.ts`** — YENİ: Market scoring engine
+2. **`src/utils/predictionEngine.ts`** — Confidence eşiklerini market-spesifik güncelle
+3. **`src/types/match.ts`** — Prediction interface genişlet
+4. **`src/hooks/useMatchAnalysis.ts`** — Market scoring entegrasyonu + historical reliability fetch
+5. **`src/services/predictionService.ts`** — `selectBestPrediction` güncelle
+6. **`src/lib/utils.ts`** — `getHybridConfidence`'ı marketScore-aware yap
+7. **`src/components/analysis/AIRecommendationCard.tsx`** — marketScore sıralama
+8. **`src/components/PredictionCard.tsx`** — Market score bar + risk badge
+9. **`src/components/analysis/PredictionPillSelector.tsx`** — marketScore sıralama + recommended badge
 
-### 3.2 Boş Durum (Empty State) Tutarsızlıkları
-Profil'de "Henüz analiz yapılmamış" var ama Live'da boş durum kartı aşırı büyük ve detaylı. Tutarlı, minimal empty state bileşeni kullanılmalı.
+## Korunacaklar
 
-### 3.3 Auth Sayfasında Google Sign-In Butonu Eksik
-Mobil uygulamalarda social login dönüşüm oranını %40-60 artırır. `signInWithGoogle` fonksiyonu hazır ama UI'da yok.
+- Mevcut 3 katmanlı hibrit mimari (AI + Math + ML) aynen kalacak
+- `prediction_features` ve `ml_model_stats` tablo yapıları değişmeyecek
+- Edge function'lar değişmeyecek
+- Confidence değerleri sahte dengeleme yapılmayacak — gerçek farklar korunacak
 
----
+## Continuous Learning Altyapısı
 
-## 4. Native Polish Eksikleri
-
-### 4.1 Keyboard Handling
-`@capacitor/keyboard` paketi kurulu değil. Capacitor config'de `Keyboard.resize: 'body'` var ama gerçek paket yok. Chat sayfasında klavye açıldığında layout kayması olabilir.
-
-### 4.2 Error Reporting Yok
-Üretim hatalarını yakalamak için hiçbir error tracking sistemi yok. `ErrorBoundary` sadece kullanıcıya mesaj gösteriyor, hatayı hiçbir yere loglamıyor.
-
----
-
-## Uygulama Planı (Öncelik Sırasıyla)
-
-### Adım 1: QueryClient Mobil Optimizasyonu
-`App.tsx`'te QueryClient'a mobil-uyumlu defaults ekle.
-
-### Adım 2: TabShell Lazy Mount
-`TabShell.tsx`'te `visitedTabs` state'i ile sadece ziyaret edilen tab'ları mount et. İlk açılışta sadece `/` (Index) mount olsun.
-
-### Adım 3: Hover Kalıntılarını Temizle
-`index.css`'teki `.btn-glow:hover` ve `.card-premium-glow:hover`'ı `active:` ile değiştir.
-
-### Adım 4: Auth Sayfasına Google Sign-In Ekle
-`Auth.tsx`'e Google ile giriş butonu ekle (native `signInWithGoogle` kullanarak).
-
-### Adım 5: Offline Banner
-Basit bir `useOnlineStatus` hook ve global offline banner bileşeni ekle. `navigator.onLine` + `online/offline` event listener'ları ile.
-
-### Adım 6: Pull-to-Refresh
-Ana sayfa ve Canlı maçlara basit bir touch-based pull-to-refresh mekanizması ekle.
-
-### Toplam Etki
-- **6 dosya değişikliği**, 1-2 yeni dosya
-- Cloud balance etkisi: İlk açılış sorgu sayısı ~%70 azalır (lazy mount)
-- Refetch fırtınası önlenir (QueryClient config)
-- UX: Native hissi pekişir (pull-to-refresh, offline feedback, Google login)
+Zaten mevcut olan `ml_model_stats` tablosu market bazlı accuracy takibi yapıyor. Yeni `historicalReliability` bileşeni bu veriyi aktif olarak kullanarak market selection'ı sürekli iyileştirecek. `train-ml-model` edge function haftalık çalışmaya devam edecek.
 
