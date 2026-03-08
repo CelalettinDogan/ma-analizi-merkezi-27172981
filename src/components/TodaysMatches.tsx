@@ -318,12 +318,12 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                   {match.homeTeam.crest && (
                     <img src={match.homeTeam.crest} alt="" className="w-5 h-5 object-contain shrink-0" />
                   )}
-                  <span className="text-sm truncate">
-                    {match.homeTeam.shortName || match.homeTeam.name}
+                  <span className="text-sm truncate min-w-0">
+                    {match.homeTeam.tla || match.homeTeam.shortName || match.homeTeam.name}
                   </span>
-                  <span className="text-muted-foreground/30 text-xs">–</span>
-                  <span className="text-sm truncate">
-                    {match.awayTeam.shortName || match.awayTeam.name}
+                  <span className="text-muted-foreground/30 text-xs shrink-0">–</span>
+                  <span className="text-sm truncate min-w-0">
+                    {match.awayTeam.tla || match.awayTeam.shortName || match.awayTeam.name}
                   </span>
                   {match.awayTeam.crest && (
                     <img src={match.awayTeam.crest} alt="" className="w-5 h-5 object-contain shrink-0" />
