@@ -120,6 +120,7 @@ const AppContent = () => {
   return (
     <BrowserRouter>
       <DeepLinkHandler />
+      <OfflineBanner />
       <ErrorBoundary>
         {/* Non-tab routes — normal mount/unmount */}
         <Routes>
