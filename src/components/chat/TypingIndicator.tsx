@@ -6,13 +6,14 @@ interface TypingIndicatorProps {
   className?: string;
 }
 
+const STATUSES = ["Düşünüyor", "Analiz yapıyor", "Hazırlanıyor"];
+
 const TypingIndicator: React.FC<TypingIndicatorProps> = ({ className }) => {
   const [statusIndex, setStatusIndex] = useState(0);
-  const statuses = ["Düşünüyor", "Analiz yapıyor", "Hazırlanıyor"];
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setStatusIndex((prev) => (prev + 1) % statuses.length);
+      setStatusIndex((prev) => (prev + 1) % STATUSES.length);
     }, 2000);
     return () => clearInterval(interval);
   }, []);
@@ -58,7 +59,7 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({ className }) => {
           animate={{ opacity: 1 }}
           className="text-micro text-muted-foreground"
         >
-          {statuses[statusIndex]}...
+          {STATUSES[statusIndex]}...
         </motion.span>
       </motion.div>
     </motion.div>

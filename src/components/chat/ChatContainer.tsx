@@ -127,13 +127,12 @@ const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ onQuickPrompt }) => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 + index * 0.05 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => onQuickPrompt?.(prompt.text)}
                 className={cn(
                   "p-3 rounded-xl text-left",
                   "bg-card/80 backdrop-blur-sm border border-border/50",
-                  "hover:bg-muted hover:border-primary/30 transition-all",
+                  "active:bg-muted active:border-primary/30 transition-all",
                   "flex flex-col gap-1"
                 )}
               >
@@ -194,7 +193,7 @@ const ScrollToBottomButton: React.FC<{ onClick: () => void; visible: boolean }> 
           "absolute bottom-3 left-1/2 -translate-x-1/2 z-10",
           "flex items-center gap-1.5 px-3 py-1.5 rounded-full",
           "bg-primary text-primary-foreground shadow-md",
-          "hover:shadow-lg transition-shadow text-xs font-medium"
+          "active:shadow-lg transition-shadow text-xs font-medium"
         )}
       >
         <ArrowDown className="w-3.5 h-3.5" />

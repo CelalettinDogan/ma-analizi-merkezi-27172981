@@ -235,8 +235,9 @@ const Chat: React.FC = () => {
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-background" />
               </div>
               
-              <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                <h1 className="font-semibold text-sm">VARio</h1>
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <h1 className="font-semibold text-sm">VARio</h1>
                 {isAdmin && (
                   <Badge variant="secondary" className="text-micro min-h-[16px] h-auto px-1.5 bg-amber-500/20 text-amber-600 border-0">
                     <Crown className="w-2.5 h-2.5 mr-0.5" />
@@ -260,6 +261,8 @@ const Chat: React.FC = () => {
                     Basic
                   </Badge>
                 )}
+                </div>
+                <span className="text-micro text-emerald-500 font-medium">AI Asistan</span>
               </div>
             </div>
           </div>

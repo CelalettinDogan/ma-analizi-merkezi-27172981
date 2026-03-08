@@ -1,107 +1,135 @@
 
 
-# Chatbot Ekranı — Kapsamlı Analiz Raporu
+# Hibrit Market Selection Engine — Refactor Planı
 
-## Genel Değerlendirme: 8/10 — Güçlü ama İyileştirilmesi Gereken Noktalar Var
+## Mevcut Sorunlar
 
----
+1. **Eşitsiz confidence eşikleri**: `predictionEngine.ts`'de 1X2 marketi `>55%` ile "yüksek" olurken, BTTS `>65%` gerektiriyor. 1X2 doğası gereği daha polarize olduğu için neredeyse her maçta "yüksek" çıkıyor.
 
-## 1. Native iOS/Android Uyumluluğu
+2. **`mathConfidenceToNumber` sabit mapping**: `yüksek=0.8`, `orta=0.6`, `düşük=0.4` — market türünden bağımsız. 1X2'nin "yüksek"i ile BTTS'nin "orta"sı arasında gerçek sinyal gücü farkı yansımıyor.
 
-**Güçlü Yönler:**
-- `h-screen` flex layout — keyboard açılınca stabil kalır
-- `pt-safe` ve `paddingBottom: calc(80px + env(safe-area-inset-bottom))` — safe area koruması var
-- 44px minimum touch target'lar tüm butonlarda mevcut
-- `touch-manipulation` input prompt'larında uygulanmış
-- `backdrop-blur-xl` glassmorphism header'da doğru kullanılmış
+3. **`selectBestPrediction`** en yüksek raw Poisson olasılığını seçiyor. 1X2'nin ham olasılığı (%55-65) doğal olarak BTTS'den (%50-60) yüksek çıkar, ama bu "daha güvenilir sinyal" demek değil.
 
-**Sorunlar:**
-- **ChatInput**: Quick prompt butonlarında `whileHover={{ scale: 1.02 }}` ve `hover:bg-muted hover:border-primary/30` var — mobilde gereksiz, dokunmada yapışkan hover state oluşturabilir
-- **ChatMessage**: Action butonlarında `whileHover={{ scale: 1.1 }}` ve `hover:bg-muted` var — aynı sorun
-- **ScrollToBottomButton**: `hover:shadow-lg` var — web kalıntısı
-- **ChatContainer WelcomeMessage**: Smart prompt kartlarında `whileHover={{ scale: 1.02 }}` ve `hover:bg-muted hover:border-primary/30` — mobilde gereksiz
-- **GuestGate**: CTA butonlarında hover state temizlenmemiş, touch target'lar (`h-14`, `h-12`) iyi ama `rounded-md` kullanılmış — diğer ekranlarla uyumsuz (`rounded-2xl` olmalı)
-
-## 2. Kod Hataları ve Uyarılar
-
-**Potansiyel Sorunlar:**
-- **ChatMessage L82**: `onTouchStart={() => setShowActions(prev => !prev)}` — tüm mesaj div'ine bağlanmış. Kullanıcı mesajı kaydırırken de tetiklenir (touchstart vs scroll çakışması). `onClick` veya bir debounce mekanizması daha uygun olur
-- **ChatInput L135**: `e.target.value.slice(0, maxLength + 50)` — 50 karakter fazladan izin veriyor ama `isOverLimit` kontrolü `maxLength` üzerinden yapılıyor. Bu tutarsızlık kafa karıştırıcı, kullanıcı 550 karakter yazabilir ama 500'den sonra gönderemez
-- **TypingIndicator L15**: `statuses` array her renderda yeniden oluşturuluyor — component dışına taşınmalı (minor performans)
-- **useChatbot L100**: `loadHistory`'deki `filter(h => h.role !== 'system')` — type assertion `h.role as 'user' | 'assistant'` güvenli ama TypeScript strict mode'da uyarı verebilir
-
-**Eksik Error Boundary:**
-- ChatContainer'da individual mesaj render hatası tüm chat'i kırabilir. Mesaj bazlı error boundary yok
-
-## 3. Responsive Tasarım
-
-**Güçlü Yönler:**
-- Message balonları `max-w-[75%]` ile doğru sınırlandırılmış
-- `word-break: normal` ve `overflow-wrap: break-word` ile metin taşması önlenmiş
-- Quick prompt'lar `overflow-x-auto scrollbar-hide` ile horizontal scroll yapıyor
-- Welcome mesajı `max-w-sm` grid ile sınırlı
-
-**Sorunlar:**
-- **320px ekran**: Quick prompt chip'leri `max-w-[180px]` truncate ile kesilecek ama `min-h-[44px]` + `px-3 py-2.5` birleşince prompt skeleton'ları (`h-7 w-28`) gerçek boyutla uyumsuz (44px vs 28px)
-- **ChatLimitSheet**: `max-h-[85vh]` iyi ama içerik 320px'de sığmayabilir — scroll yok
-- **GuestGate**: `max-w-md` + `p-6` padding — 320px'de sıkışabilir
-
-## 4. 2026 Premium Uygulama Standartları
-
-**Uyumlu:**
-- Mesaj balonları `rounded-[20px]` asimetrik köşeler — modern
-- Glassmorphism header (`bg-background/80 backdrop-blur-xl`)
-- Gradient user avatar ve emerald shadow — marka tutarlılığı
-- TypingIndicator animasyonlu dot'lar + durum metni — premium hissi
-- DateDivider minimal pill tasarımı
-- UsageMeter progress bar animasyonu
-
-**Eksikler:**
-- **Haptic feedback yok**: Mesaj gönderme, prompt tıklama gibi aksiyonlarda Capacitor `Haptics` API kullanılmıyor
-- **Input alanı**: `rounded-3xl` ve `bg-background/80` iyi ama focus state çok zayıf — sadece `ring-1 ring-primary/20`. 2026 standartlarında daha belirgin glow ring beklenir
-- **Send butonu**: Disabled state'te `opacity-50` çok sert — `opacity-40` + `scale-95` daha modern
-- **Welcome ekranı**: League flag'leri inline emoji — native'de SVG veya resim tercih edilir (rendering farklılıkları)
-- **Feedback butonları**: 3px icon'lar (`w-3 h-3`) çok küçük — touch target `p-2` ile 28px, minimum 44px olmalı
-
-## 5. Hiyerarşi ve Bilgi Mimarisi
-
-**Güçlü Yönler:**
-- Header → Content → Input üçlü hiyerarşi net
-- Plan badge'leri (Admin/Pro/Plus/Basic) renk kodlu ayrım
-- Kullanım sayacı (UsageMeter) doğru konumda — input üstünde, rahatsız edici değil
-
-**İyileştirilmesi Gerekenler:**
-- **Header'da "VARio" yazısı tek başına**: Altında "AI Asistan" veya "Online" gibi subtitle yok — boş alan
-- **GuestGate vs PremiumGate tutarsızlığı**: GuestGate `Card` component kullanıyor, PremiumGate kullanmıyor. Tasarım dili farklı
-- **ChatInput'ta çift prompt sistemi**: Hem ChatInput hem WelcomeMessage smart prompt gösteriyor — gereksiz tekrar, ilk açılışta WelcomeMessage prompt'ları, mesaj sonrası ChatInput prompt'ları göstermeli (şu an zaten böyle çalışıyor ama `useSmartPrompts` iki kez çağrılıyor = iki ayrı network isteği)
+4. **Market reliability / historical accuracy** hiç kullanılmıyor. `ml_model_stats` tablosunda market bazlı doğruluk verileri var ama ana tahmin seçiminde değerlendirilmiyor.
 
 ---
 
-## Yapılacak İyileştirmeler
+## Yeni Mimari: Market-Aware Hybrid Scoring
 
-### Dosya: `src/components/chat/ChatMessage.tsx`
-1. Tüm `whileHover` prop'larını kaldır
-2. `onTouchStart` toggle'ını `onClick` ile değiştir (scroll çakışması)
-3. Feedback/copy buton touch target'larını 44px'e çıkar (`p-3` + `min-w-[44px] min-h-[44px]`)
+### Katman 1: `src/utils/marketScoring.ts` (YENİ DOSYA)
 
-### Dosya: `src/components/chat/ChatInput.tsx`
-1. Quick prompt'lardan `whileHover` ve `hover:` class'larını kaldır
-2. `maxLength + 50` slice'ı kaldır, doğrudan `maxLength` ile sınırla
-3. Focus state'i güçlendir: `ring-2 ring-primary/30` + subtle glow
-4. Prompt skeleton yüksekliğini gerçek boyutla eşle (`h-[44px]`)
+Her market için bağımsız bir **Final Market Score (FMS)** hesaplayan utility:
 
-### Dosya: `src/components/chat/ChatContainer.tsx`
-1. WelcomeMessage prompt kartlarından `whileHover` kaldır
-2. ScrollToBottomButton'dan `hover:shadow-lg` kaldır
+```
+FMS = (signalStrength × 0.35) + (modelAgreement × 0.25) + (historicalReliability × 0.20) + (edgeClarity × 0.20)
+```
 
-### Dosya: `src/components/chat/TypingIndicator.tsx`
-1. `statuses` array'ini component dışına taşı (minor)
+Bileşenler:
+- **signalStrength**: Poisson olasılığının market-spesifik "kesinlik" eşiğinden ne kadar uzakta olduğu. 1X2'de %50 belirsizlik noktası, BTTS'de %50, O/U'da %50. Mesafe ne kadar büyükse sinyal o kadar güçlü.
+- **modelAgreement**: AI, Math ve ML'nin aynı yönde mi gösterdiği (0 veya 1, kısmi uyum 0.5)
+- **historicalReliability**: `ml_model_stats` tablosundan market bazlı accuracy oranı (0-1)
+- **edgeClarity**: Olasılığın belirsizlik bölgesinden (45-55%) ne kadar uzak olduğu, normalized
 
-### Dosya: `src/components/chat/GuestGate.tsx`
-1. CTA butonlarını `rounded-2xl` yap (app geneli ile uyumlu)
-2. Hover state'leri kaldır, `active:scale-[0.97]` ekle
+Market-spesifik kalibrasyon config'i:
 
-### Dosya: `src/pages/Chat.tsx`
-1. Header'a "Online" veya "AI Asistan" subtitle ekle (VARio altında)
+```typescript
+const MARKET_CONFIG = {
+  'Maç Sonucu': { 
+    uncertaintyCenter: 33.3, // 3 yönlü market
+    volatilityPenalty: 0.15, // 3 sonuçlu → daha volatil
+    minEdgeThreshold: 12,    // %33+12 = %45'in altında edge yok
+  },
+  'Toplam Gol Alt/Üst': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  'Karşılıklı Gol': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  // ... diğer marketler
+};
+```
 
-**Toplam: 6 dosya, ~25 satır değişiklik**
+1X2'ye `volatilityPenalty` uygulanması, 3 yönlü marketin doğal avantajını dengeler.
+
+### Katman 2: `predictionEngine.ts` Güncelleme
+
+Confidence eşiklerini market-spesifik ve simetrik hale getir:
+
+| Market | Yüksek | Orta | Düşük |
+|--------|--------|------|-------|
+| 1X2 (mevcut) | >55% | >45% | rest |
+| 1X2 (yeni) | >58% | >45% | rest |
+| BTTS (mevcut) | >65% | >55% | rest |
+| BTTS (yeni) | >60% | >52% | rest |
+| O/U (mevcut) | >60% | >55% | rest |
+| O/U (yeni) | >58% | >52% | rest |
+
+Not: Değerler yapay dengeleme değil, market doğasına uygun kalibrasyon. BTTS eşikleri düşürülüyor çünkü binary markette %60 zaten güçlü sinyal.
+
+### Katman 3: `Prediction` type genişletme (`types/match.ts`)
+
+```typescript
+export interface Prediction {
+  // ... mevcut alanlar
+  marketScore?: number;        // Final Market Score (0-100)
+  signalStrength?: number;     // Sinyal gücü (0-100)
+  modelAgreement?: number;     // Model uyumu (0-100)
+  historicalReliability?: number; // Tarihsel güvenilirlik (0-100)
+  edgeClarity?: number;        // Edge netliği (0-100)
+  riskLevel?: 'low' | 'medium' | 'high';
+  isRecommended?: boolean;     // En iyi market mi?
+}
+```
+
+### Katman 4: `useMatchAnalysis.ts` Güncelleme
+
+Tahminler oluşturulduktan sonra, `marketScoring` utility'si ile her market için FMS hesapla:
+
+1. `ml_model_stats`'dan market bazlı historical accuracy çek (mevcut `getAIMathWeights` ile paralel)
+2. Her prediction'a `marketScore`, `signalStrength`, `modelAgreement`, `historicalReliability`, `edgeClarity`, `riskLevel` ekle
+3. En yüksek `marketScore`'a sahip prediction'ı `isRecommended: true` olarak işaretle
+4. Predictions array'ini `marketScore` sırasına göre sırala
+
+### Katman 5: `predictionService.ts` Güncelleme
+
+`selectBestPrediction` fonksiyonunu `marketScore` bazlı çalışacak şekilde güncelle:
+- `marketScore` varsa onu kullan
+- Yoksa mevcut Poisson probability fallback
+
+### Katman 6: UI Güncellemeleri
+
+**AIRecommendationCard**: En yüksek `marketScore`'lu prediction'ı göster (zaten `sortedPredictions[0]` mantığı var, sıralama `marketScore`'a geçecek)
+
+**PredictionCard**: Market Score progress bar'ı ekle + risk level badge
+
+**PredictionPillSelector**: Sıralamayı `marketScore` bazlı yap, recommended pill'e özel badge ekle
+
+---
+
+## Değişecek Dosyalar
+
+1. **`src/utils/marketScoring.ts`** — YENİ: Market scoring engine
+2. **`src/utils/predictionEngine.ts`** — Confidence eşiklerini market-spesifik güncelle
+3. **`src/types/match.ts`** — Prediction interface genişlet
+4. **`src/hooks/useMatchAnalysis.ts`** — Market scoring entegrasyonu + historical reliability fetch
+5. **`src/services/predictionService.ts`** — `selectBestPrediction` güncelle
+6. **`src/lib/utils.ts`** — `getHybridConfidence`'ı marketScore-aware yap
+7. **`src/components/analysis/AIRecommendationCard.tsx`** — marketScore sıralama
+8. **`src/components/PredictionCard.tsx`** — Market score bar + risk badge
+9. **`src/components/analysis/PredictionPillSelector.tsx`** — marketScore sıralama + recommended badge
+
+## Korunacaklar
+
+- Mevcut 3 katmanlı hibrit mimari (AI + Math + ML) aynen kalacak
+- `prediction_features` ve `ml_model_stats` tablo yapıları değişmeyecek
+- Edge function'lar değişmeyecek
+- Confidence değerleri sahte dengeleme yapılmayacak — gerçek farklar korunacak
+
+## Continuous Learning Altyapısı
+
+Zaten mevcut olan `ml_model_stats` tablosu market bazlı accuracy takibi yapıyor. Yeni `historicalReliability` bileşeni bu veriyi aktif olarak kullanarak market selection'ı sürekli iyileştirecek. `train-ml-model` edge function haftalık çalışmaya devam edecek.
+

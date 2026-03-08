@@ -90,13 +90,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: index * 0.03 }}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => handleQuickPrompt(prompt.text)}
                   disabled={isLoading}
                   className={cn(
                     "px-3 py-2.5 text-micro rounded-full transition-all flex items-center gap-1.5 shrink-0 min-h-[44px] touch-manipulation",
-                    "bg-muted/50 border hover:bg-muted hover:border-primary/30",
+                    "bg-muted/50 border active:bg-muted active:border-primary/30",
                     getPromptBorderColor(prompt.text)
                   )}
                 >
@@ -115,7 +114,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-7 w-28 rounded-full bg-muted/40 animate-pulse shrink-0"
+              className="h-[44px] w-28 rounded-full bg-muted/40 animate-pulse shrink-0"
             />
           ))}
         </div>
@@ -126,13 +125,13 @@ const ChatInput: React.FC<ChatInputProps> = ({
         <div 
           className={cn(
             "flex-1 relative rounded-3xl transition-all duration-200",
-            isFocused && "ring-1 ring-primary/20"
+            isFocused && "ring-2 ring-primary/30 shadow-[0_0_12px_hsl(var(--primary)/0.1)]"
           )}
         >
           <Textarea
             ref={textareaRef}
             value={message}
-            onChange={(e) => setMessage(e.target.value.slice(0, maxLength + 50))}
+            onChange={(e) => setMessage(e.target.value.slice(0, maxLength))}
             onKeyDown={handleKeyDown}
             onFocus={() => {
               setShowQuickPrompts(false);
