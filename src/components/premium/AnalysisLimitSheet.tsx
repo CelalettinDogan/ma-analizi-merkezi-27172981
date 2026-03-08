@@ -33,6 +33,7 @@ const AnalysisLimitSheet: React.FC<AnalysisLimitSheetProps> = ({
 }) => {
   const navigate = useNavigate();
   const [timeUntilReset, setTimeUntilReset] = useState('');
+  const { cheapestMonthlyPrice } = useStoreProducts();
 
   // Calculate time until midnight
   const calculateTimeUntilMidnight = useCallback(() => {
