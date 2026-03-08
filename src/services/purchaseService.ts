@@ -153,6 +153,7 @@ class PurchaseService {
         quantity: 1,
       });
 
+      console.log('PurchaseService: transaction result', JSON.stringify(transaction));
       const purchaseToken = transaction?.purchaseToken || transaction?.transactionId;
       const orderId = transaction?.orderId;
 

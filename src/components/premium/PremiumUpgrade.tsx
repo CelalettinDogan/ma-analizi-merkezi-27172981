@@ -96,7 +96,12 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
           toast.success(`${planName} üyeliğin aktif edildi!`);
           onClose?.();
         } else {
-          toast.error(result.error || 'Satın alma başarısız');
+          const isActivationError = result.error?.includes('doğrulanamadı') || result.error?.includes('kaydedilemedi');
+          if (isActivationError) {
+            toast.error('Ödemeniz alındı ancak aktivasyon başarısız oldu. "Satın Almaları Geri Yükle" ile tekrar deneyin.');
+          } else {
+            toast.error(result.error || 'Satın alma başarısız');
+          }
         }
       } else {
         // Development/preview ortamında sessizce geç
