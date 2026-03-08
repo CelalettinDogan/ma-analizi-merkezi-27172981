@@ -10,6 +10,7 @@ import H2HSummaryBadge from '@/components/match/H2HSummaryBadge';
 import { useH2HPreview } from '@/hooks/useH2HPreview';
 
 const TEAM_OVERRIDES: Record<string, string> = {
+  // Serie A
   'FC Internazionale Milano': 'Inter',
   'Internazionale Milano': 'Inter',
   'Inter Milan': 'Inter',
@@ -33,6 +34,8 @@ const TEAM_OVERRIDES: Record<string, string> = {
   'Genoa CFC': 'Genoa',
   'Bologna FC 1909': 'Bologna',
   'UC Sampdoria': 'Sampdoria',
+  'AC Monza': 'Monza',
+  // La Liga
   'Atletico de Madrid': 'Atlético',
   'Atlético de Madrid': 'Atlético',
   'Athletic Club': 'Athletic',
@@ -41,6 +44,20 @@ const TEAM_OVERRIDES: Record<string, string> = {
   'Rayo Vallecano de Madrid': 'Rayo Vallecano',
   'RCD Espanyol de Barcelona': 'Espanyol',
   'Real Betis Balompié': 'Betis',
+  'Villarreal CF': 'Villarreal',
+  'Getafe CF': 'Getafe',
+  'CA Osasuna': 'Osasuna',
+  'Deportivo Alavés': 'Alavés',
+  'Real Valladolid CF': 'Valladolid',
+  'UD Las Palmas': 'Las Palmas',
+  'Girona FC': 'Girona',
+  'Real Mallorca': 'Mallorca',
+  'Cádiz CF': 'Cádiz',
+  'Sevilla FC': 'Sevilla',
+  'Valencia CF': 'Valencia',
+  'CD Leganés': 'Leganés',
+  'FC Barcelona': 'Barcelona',
+  // Bundesliga
   'Borussia Dortmund': 'Dortmund',
   'Borussia Mönchengladbach': 'Gladbach',
   'VfB Stuttgart': 'Stuttgart',
@@ -56,14 +73,36 @@ const TEAM_OVERRIDES: Record<string, string> = {
   'FC Augsburg': 'Augsburg',
   'SV Werder Bremen': 'Werder Bremen',
   'Eintracht Frankfurt': 'Frankfurt',
+  'FC Bayern München': 'Bayern',
+  'FC St. Pauli 1910': 'St. Pauli',
+  'Holstein Kiel': 'Kiel',
+  'SV Darmstadt 98': 'Darmstadt',
+  // Ligue 1
   'Paris Saint-Germain FC': 'PSG',
   'Paris Saint-Germain': 'PSG',
   'AS Monaco FC': 'Monaco',
+  'AS Monaco': 'Monaco',
   'Olympique de Marseille': 'Marseille',
   'Olympique Lyonnais': 'Lyon',
   'LOSC Lille': 'Lille',
   'Stade Rennais FC 1901': 'Rennes',
   'RC Strasbourg Alsace': 'Strasbourg',
+  'Racing Club de Lens': 'Lens',
+  'RC Lens': 'Lens',
+  'Stade Brestois 29': 'Brest',
+  'Stade de Reims': 'Reims',
+  'OGC Nice': 'Nice',
+  'AJ Auxerre': 'Auxerre',
+  'Le Havre AC': 'Le Havre',
+  'Angers SCO': 'Angers',
+  'FC Nantes': 'Nantes',
+  'Toulouse FC': 'Toulouse',
+  'Montpellier HSC': 'Montpellier',
+  'AS Saint-Étienne': 'Saint-Étienne',
+  'FC Lorient': 'Lorient',
+  'FC Metz': 'Metz',
+  'Clermont Foot 63': 'Clermont',
+  // Premier League
   'Manchester United FC': 'Man United',
   'Manchester City FC': 'Man City',
   'Tottenham Hotspur FC': 'Tottenham',
@@ -84,10 +123,30 @@ const TEAM_OVERRIDES: Record<string, string> = {
   'Brentford FC': 'Brentford',
   'Ipswich Town FC': 'Ipswich',
   'Southampton FC': 'Southampton',
+  // Champions League / European clubs
+  'SL Benfica': 'Benfica',
+  'Sporting CP': 'Sporting',
+  'FC Porto': 'Porto',
+  'AFC Ajax': 'Ajax',
+  'PSV Eindhoven': 'PSV',
+  'Feyenoord Rotterdam': 'Feyenoord',
+  'FC Salzburg': 'Salzburg',
+  'SK Sturm Graz': 'Sturm Graz',
+  'Celtic FC': 'Celtic',
+  'Rangers FC': 'Rangers',
+  'Club Brugge KV': 'Club Brugge',
+  'BSC Young Boys': 'Young Boys',
+  'FK Crvena Zvezda': 'Crvena Zvezda',
+  'GNK Dinamo Zagreb': 'Dinamo Zagreb',
+  'Shakhtar Donetsk': 'Shakhtar',
+  'Galatasaray SK': 'Galatasaray',
+  'Fenerbahçe SK': 'Fenerbahçe',
+  'Beşiktaş JK': 'Beşiktaş',
+  'Trabzonspor': 'Trabzonspor',
 };
 
-const TEAM_PREFIXES = /^(US |AC |FC |ACF |AS |SS |SSC |SSD |UC |RC |CA |CF |CD |RCD |SD |UD |SC |BSC |TSG |VfB |VfL |SV |1\. |Borussia |Sporting |Atlético |Athletic |LOSC )/i;
-const TEAM_SUFFIXES = / (Calcio|FC|SC|CF|BC|SFC|AFC|CFC|1913|1909|1907|1899|1846|1901|05|04|de Fútbol|Balompié)$/i;
+const TEAM_PREFIXES = /^(US |AC |FC |ACF |AS |SS |SSC |SSD |UC |RC |CA |CF |CD |RCD |SD |UD |SC |BSC |TSG |VfB |VfL |SV |1\. |Borussia |Sporting |Atlético |Athletic |LOSC |OGC |AJ |SL |FK |GNK |Racing Club de |Stade de |Stade )/i;
+const TEAM_SUFFIXES = / (Calcio|FC|SC|CF|BC|SFC|AFC|CFC|HSC|SCO|AC|KV|CP|JK|SK|1913|1910|1909|1907|1899|1846|1901|98|63|29|05|04|de Fútbol|Balompié)$/i;
 
 const cleanTeamName = (team: { shortName?: string; tla?: string; name: string }): string => {
   // Check overrides first (against all available names)
