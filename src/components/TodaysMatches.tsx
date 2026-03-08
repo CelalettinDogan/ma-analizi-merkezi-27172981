@@ -170,7 +170,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
           className={cn(
             "relative w-full text-left rounded-2xl p-4 transition-all",
             "bg-card/60 backdrop-blur-sm shadow-md",
-            "border border-border/30",
+            "border border-border/50",
             loadingMatchId === featuredMatch.id && "opacity-80",
             loadingMatchId && loadingMatchId !== featuredMatch.id && "opacity-40"
           )}
