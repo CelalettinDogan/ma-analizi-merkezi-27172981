@@ -37,6 +37,7 @@ const GuestGate: React.FC<GuestGateProps> = ({ onClose }) => {
               variant="ghost"
               size="icon"
               onClick={onClose || (() => navigate(-1))}
+              className="rounded-full min-w-[44px] min-h-[44px] w-auto h-auto"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
