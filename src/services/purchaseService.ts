@@ -185,8 +185,11 @@ class PurchaseService {
     orderId?: string
   ): Promise<PurchaseResult> {
     try {
+      const payload = { purchaseToken, productId, orderId, platform: 'android' };
+      console.log('PurchaseService: sending verify payload', JSON.stringify(payload));
+      
       const { data, error } = await supabase.functions.invoke('verify-purchase', {
-        body: { purchaseToken, productId, orderId, platform: 'android' },
+        body: payload,
       });
 
       if (error) {
