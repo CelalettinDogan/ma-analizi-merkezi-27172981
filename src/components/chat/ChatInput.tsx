@@ -95,7 +95,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   disabled={isLoading}
                   className={cn(
                     "px-3 py-2.5 text-micro rounded-full transition-all flex items-center gap-1.5 shrink-0 min-h-[44px] touch-manipulation",
-                    "bg-muted/50 border hover:bg-muted hover:border-primary/30",
+                    "bg-muted/50 border active:bg-muted active:border-primary/30",
                     getPromptBorderColor(prompt.text)
                   )}
                 >
