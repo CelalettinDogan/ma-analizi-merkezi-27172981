@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -13,7 +13,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import logoImg from '@/assets/logo.png';
 
+type AuthTab = 'login' | 'register';
+
 const Auth: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<AuthTab>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
@@ -23,6 +26,9 @@ const Auth: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Focus tracking for icon color
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -45,17 +51,13 @@ const Auth: React.FC = () => {
     setIsLoading(true);
     const { error } = await signIn(loginEmail, loginPassword);
     if (error) {
-      let msg = error.message === 'Invalid login credentials' 
-        ? 'E-posta veya şifre hatalı' 
+      let msg = error.message === 'Invalid login credentials'
+        ? 'E-posta veya şifre hatalı'
         : error.message;
       if (error.message.toLowerCase().includes('rate limit') || error.message.includes('429')) {
         msg = 'Çok fazla giriş denemesi. Lütfen birkaç dakika bekleyin.';
       }
-      toast({
-        title: 'Giriş Hatası',
-        description: msg,
-        variant: 'destructive',
-      });
+      toast({ title: 'Giriş Hatası', description: msg, variant: 'destructive' });
       setIsLoading(false);
     }
   };
@@ -63,20 +65,12 @@ const Auth: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!termsAccepted) {
-      toast({
-        title: 'Onay Gerekli',
-        description: 'Gizlilik Politikası ve Kullanım Şartları\'nı kabul etmelisiniz.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Onay Gerekli', description: 'Gizlilik Politikası ve Kullanım Şartları\'nı kabul etmelisiniz.', variant: 'destructive' });
       return;
     }
     setIsLoading(true);
     if (registerPassword.length < 6) {
-      toast({
-        title: 'Şifre Hatası',
-        description: 'Şifre en az 6 karakter olmalıdır.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Şifre Hatası', description: 'Şifre en az 6 karakter olmalıdır.', variant: 'destructive' });
       setIsLoading(false);
       return;
     }
@@ -86,38 +80,22 @@ const Auth: React.FC = () => {
       if (error.message.toLowerCase().includes('rate limit') || error.message.includes('429')) {
         msg = 'Çok fazla deneme yaptınız. Lütfen birkaç dakika bekleyin.';
       }
-      toast({
-        title: 'Kayıt Hatası',
-        description: msg,
-        variant: 'destructive',
-      });
+      toast({ title: 'Kayıt Hatası', description: msg, variant: 'destructive' });
       setIsLoading(false);
       return;
     }
-
-    // Var olan e-posta kontrolü
     if (data?.user?.identities?.length === 0) {
-      toast({
-        title: 'Bu e-posta zaten kayıtlı',
-        description: 'Giriş Yap sekmesinden giriş yapın.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Bu e-posta zaten kayıtlı', description: 'Giriş Yap sekmesinden giriş yapın.', variant: 'destructive' });
       setIsLoading(false);
       return;
     }
-
-    // Başarılı kayıt
-    toast({
-      title: 'Kayıt Başarılı',
-      description: 'E-posta adresinize doğrulama bağlantısı gönderildi.',
-    });
+    toast({ title: 'Kayıt Başarılı', description: 'E-posta adresinize doğrulama bağlantısı gönderildi.' });
     setRegisterEmail('');
     setRegisterPassword('');
     setRegisterName('');
     setTermsAccepted(false);
     setIsLoading(false);
   };
-
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,129 +111,195 @@ const Auth: React.FC = () => {
     setIsResetting(false);
   };
 
+  const inputClassName = "pl-11 h-[52px] rounded-2xl bg-muted/20 border-0 text-[15px] transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:bg-muted/30";
+
   return (
     <div className="h-screen overflow-hidden bg-gradient-to-b from-background via-background to-muted/30 flex flex-col pt-safe">
-      {/* Logo & Brand Section */}
-      <div className="flex-shrink-0 flex flex-col items-center justify-center py-2 xs:py-3 sm:py-6 px-6">
-        <img src={logoImg} alt="GolMetrik AI" className="w-12 h-12 xs:w-14 xs:h-14 sm:w-20 sm:h-20 aspect-square object-contain mb-1 rounded-2xl shadow-lg" />
-        <h1 className="font-display font-bold text-2xl sm:text-3xl text-foreground">GolMetrik AI</h1>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-0">Akıllı Futbol Analizi</p>
+      {/* Brand */}
+      <div className="flex-shrink-0 flex flex-col items-center justify-center py-4 sm:py-8 px-7">
+        <img
+          src={logoImg}
+          alt="GolMetrik AI"
+          className="w-16 h-16 sm:w-20 sm:h-20 aspect-square object-contain rounded-2xl shadow-[0_0_30px_hsl(var(--primary)/0.15)]"
+        />
+        <h1 className="font-display font-bold text-[28px] sm:text-3xl text-foreground tracking-tight mt-3">
+          GolMetrik AI
+        </h1>
+        <p className="text-[13px] text-muted-foreground/70 tracking-widest uppercase mt-0.5">
+          Akıllı Futbol Analizi
+        </p>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden px-6 pb-2 max-w-md mx-auto w-full">
-        {/* Tabs */}
-        <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-muted/40 rounded-xl h-10">
-            <TabsTrigger value="login" className="rounded-lg text-sm">Giriş Yap</TabsTrigger>
-            <TabsTrigger value="register" className="rounded-lg text-sm">Kayıt Ol</TabsTrigger>
-          </TabsList>
+      <div className="flex-1 overflow-hidden px-7 pb-2 max-w-md mx-auto w-full">
+        {/* Segmented Control */}
+        <div className="bg-muted/20 rounded-2xl p-1 flex relative mb-5">
+          {(['login', 'register'] as AuthTab[]).map((tab) => (
+            <motion.button
+              key={tab}
+              type="button"
+              onClick={() => setActiveTab(tab)}
+              whileTap={{ scale: 0.97 }}
+              className="relative flex-1 py-2.5 text-sm font-medium z-10 rounded-xl transition-colors duration-200"
+              style={{ color: activeTab === tab ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}
+            >
+              {tab === 'login' ? 'Giriş Yap' : 'Kayıt Ol'}
+              {activeTab === tab && (
+                <motion.div
+                  layoutId="authSegment"
+                  className="absolute inset-0 bg-card rounded-xl shadow-sm -z-10"
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                />
+              )}
+            </motion.button>
+          ))}
+        </div>
 
-          {/* Login */}
-          <TabsContent value="login">
-            <form onSubmit={handleLogin} className="space-y-3 mt-4">
+        {/* Forms */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'login' ? (
+            <motion.form
+              key="login"
+              initial={{ opacity: 0, x: -16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 16 }}
+              transition={{ duration: 0.2 }}
+              onSubmit={handleLogin}
+              className="space-y-4"
+            >
               <div className="space-y-2">
-                <Label htmlFor="login-email" className="text-sm">E-posta</Label>
+                <Label htmlFor="login-email" className={`text-sm transition-colors duration-200 ${focusedField === 'login-email' ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  E-posta
+                </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-200 ${focusedField === 'login-email' ? 'text-primary' : 'text-muted-foreground'}`} />
                   <Input
                     id="login-email"
                     type="email"
                     placeholder="ornek@email.com"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    className="pl-11 h-12 rounded-xl bg-muted/30 border-border/50"
+                    onFocus={() => setFocusedField('login-email')}
+                    onBlur={() => setFocusedField(null)}
+                    className={inputClassName}
                     required
                   />
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="login-password" className="text-sm">Şifre</Label>
+                  <Label htmlFor="login-password" className={`text-sm transition-colors duration-200 ${focusedField === 'login-password' ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    Şifre
+                  </Label>
                   <button
                     type="button"
                     onClick={() => setShowResetDialog(true)}
-                    className="text-xs text-primary hover:underline touch-manipulation"
+                    className="text-[11px] text-muted-foreground/60 active:text-primary touch-manipulation transition-colors"
                   >
                     Şifremi Unuttum
                   </button>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-200 ${focusedField === 'login-password' ? 'text-primary' : 'text-muted-foreground'}`} />
                   <Input
                     id="login-password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
-                    className="pl-11 pr-11 h-12 rounded-xl bg-muted/30 border-border/50"
+                    onFocus={() => setFocusedField('login-password')}
+                    onBlur={() => setFocusedField(null)}
+                    className={`${inputClassName} pr-11`}
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 touch-manipulation"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground active:text-foreground p-1 touch-manipulation"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
-              <Button type="submit" className="w-full h-12 rounded-xl text-base font-medium" disabled={isLoading}>
-                {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Giriş yapılıyor...</> : 'Giriş Yap'}
-              </Button>
-            </form>
-          </TabsContent>
-
-          {/* Register */}
-          <TabsContent value="register">
-            <form onSubmit={handleRegister} className="space-y-2 mt-2">
+              <motion.div whileTap={{ scale: 0.97 }}>
+                <Button
+                  type="submit"
+                  className="w-full h-[52px] rounded-2xl text-[15px] font-semibold shadow-[0_4px_16px_hsl(var(--primary)/0.3)]"
+                  disabled={isLoading}
+                >
+                  {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Giriş yapılıyor...</> : 'Giriş Yap'}
+                </Button>
+              </motion.div>
+            </motion.form>
+          ) : (
+            <motion.form
+              key="register"
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.2 }}
+              onSubmit={handleRegister}
+              className="space-y-3"
+            >
               <div className="space-y-1.5">
-                <Label htmlFor="register-name" className="text-sm">İsim</Label>
+                <Label htmlFor="register-name" className={`text-sm transition-colors duration-200 ${focusedField === 'register-name' ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  İsim
+                </Label>
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <User className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-200 ${focusedField === 'register-name' ? 'text-primary' : 'text-muted-foreground'}`} />
                   <Input
                     id="register-name"
                     type="text"
                     placeholder="Adınız"
                     value={registerName}
                     onChange={(e) => setRegisterName(e.target.value)}
-                    className="pl-11 h-10 rounded-xl bg-muted/30 border-border/50"
+                    onFocus={() => setFocusedField('register-name')}
+                    onBlur={() => setFocusedField(null)}
+                    className={`${inputClassName} h-11`}
                   />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="register-email" className="text-sm">E-posta</Label>
+                <Label htmlFor="register-email" className={`text-sm transition-colors duration-200 ${focusedField === 'register-email' ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  E-posta
+                </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-200 ${focusedField === 'register-email' ? 'text-primary' : 'text-muted-foreground'}`} />
                   <Input
                     id="register-email"
                     type="email"
                     placeholder="ornek@email.com"
                     value={registerEmail}
                     onChange={(e) => setRegisterEmail(e.target.value)}
-                    className="pl-11 h-10 rounded-xl bg-muted/30 border-border/50"
+                    onFocus={() => setFocusedField('register-email')}
+                    onBlur={() => setFocusedField(null)}
+                    className={`${inputClassName} h-11`}
                     required
                   />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="register-password" className="text-sm">Şifre</Label>
+                <Label htmlFor="register-password" className={`text-sm transition-colors duration-200 ${focusedField === 'register-password' ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  Şifre
+                </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-200 ${focusedField === 'register-password' ? 'text-primary' : 'text-muted-foreground'}`} />
                   <Input
                     id="register-password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="En az 6 karakter"
                     value={registerPassword}
                     onChange={(e) => setRegisterPassword(e.target.value)}
-                    className="pl-11 pr-11 h-10 rounded-xl bg-muted/30 border-border/50"
+                    onFocus={() => setFocusedField('register-password')}
+                    onBlur={() => setFocusedField(null)}
+                    className={`${inputClassName} h-11 pr-11`}
                     required
                     minLength={6}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 touch-manipulation"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground active:text-foreground p-1 touch-manipulation"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -263,32 +307,38 @@ const Auth: React.FC = () => {
               </div>
 
               <div className="flex items-start gap-3">
-                <Checkbox 
-                  id="terms" 
-                  checked={termsAccepted} 
+                <Checkbox
+                  id="terms"
+                  checked={termsAccepted}
                   onCheckedChange={(checked) => setTermsAccepted(checked === true)}
                   className="mt-0.5"
                 />
                 <label htmlFor="terms" className="text-xs text-muted-foreground leading-tight">
-                  <button type="button" onClick={() => setShowPrivacySheet(true)} className="text-primary hover:underline">
+                  <button type="button" onClick={() => setShowPrivacySheet(true)} className="text-primary active:opacity-70">
                     Gizlilik Politikası
                   </button>
                   {' '}ve{' '}
-                  <button type="button" onClick={() => setShowTermsSheet(true)} className="text-primary hover:underline">
+                  <button type="button" onClick={() => setShowTermsSheet(true)} className="text-primary active:opacity-70">
                     Kullanım Şartları
                   </button>
                   'nı kabul ediyorum.
                 </label>
               </div>
 
-              <Button type="submit" className="w-full h-10 rounded-xl text-base font-medium" disabled={isLoading || !termsAccepted}>
-                {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Kayıt yapılıyor...</> : 'Kayıt Ol'}
-              </Button>
-            </form>
-          </TabsContent>
-        </Tabs>
+              <motion.div whileTap={{ scale: 0.97 }}>
+                <Button
+                  type="submit"
+                  className="w-full h-11 rounded-2xl text-[15px] font-semibold shadow-[0_4px_16px_hsl(var(--primary)/0.3)]"
+                  disabled={isLoading || !termsAccepted}
+                >
+                  {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Kayıt yapılıyor...</> : 'Kayıt Ol'}
+                </Button>
+              </motion.div>
+            </motion.form>
+          )}
+        </AnimatePresence>
 
-        <p className="text-micro text-muted-foreground text-center mt-2 pb-0">
+        <p className="text-[10px] text-muted-foreground/40 text-center mt-3 pb-0">
           İçerikler bilgilendirme amaçlıdır ve tavsiye niteliği taşımaz.
         </p>
       </div>
