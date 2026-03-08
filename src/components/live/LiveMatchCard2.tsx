@@ -18,13 +18,12 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
 
   return (
     <motion.button
-      whileHover={cardHover}
       whileTap={cardTap}
       onClick={onClick}
       className={cn(
-        "w-full max-w-full p-3 sm:p-4 rounded-2xl text-left transition-all duration-300 overflow-hidden",
+        "w-full max-w-full p-3 sm:p-4 rounded-2xl text-left transition-colors duration-200 overflow-hidden",
         "bg-card border border-border/50 shadow-sm",
-        "hover:border-border"
+        "active:bg-muted/30"
       )}
     >
       {/* Live Header */}
