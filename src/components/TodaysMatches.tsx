@@ -327,11 +327,11 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                     <img src={match.homeTeam.crest} alt="" className="w-5 h-5 object-contain shrink-0" />
                   )}
                   <span className="text-sm truncate min-w-0">
-                    {match.homeTeam.shortName || match.homeTeam.tla || match.homeTeam.name}
+                    {cleanTeamName(match.homeTeam)}
                   </span>
                   <span className="text-muted-foreground/50 text-xs shrink-0">–</span>
                   <span className="text-sm truncate min-w-0">
-                    {match.awayTeam.shortName || match.awayTeam.tla || match.awayTeam.name}
+                    {cleanTeamName(match.awayTeam)}
                   </span>
                   {match.awayTeam.crest && (
                     <img src={match.awayTeam.crest} alt="" className="w-5 h-5 object-contain shrink-0" />
