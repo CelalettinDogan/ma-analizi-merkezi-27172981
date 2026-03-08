@@ -211,10 +211,10 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
             <FeaturedMatchH2H match={featuredMatch} />
           </div>
 
-          {/* Teams row */}
-          <div className="flex items-center gap-3">
+          {/* Teams row — stacked on narrow, side-by-side on wider */}
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Home */}
-            <div className="flex-1 flex items-center gap-3 min-w-0">
+            <div className="flex-1 flex items-center gap-2 sm:gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {featuredMatch.homeTeam.crest ? (
                   <img src={featuredMatch.homeTeam.crest} alt="" className="w-7 h-7 object-contain" />
@@ -224,13 +224,13 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                   </span>
                 )}
               </div>
-              <span className="font-medium text-sm truncate">
-                {featuredMatch.homeTeam.shortName || featuredMatch.homeTeam.name}
+              <span className="font-medium text-sm leading-tight line-clamp-2 min-w-0">
+                {featuredMatch.homeTeam.tla || featuredMatch.homeTeam.shortName || featuredMatch.homeTeam.name}
               </span>
             </div>
 
             {/* Center: Time */}
-            <div className="flex flex-col items-center flex-shrink-0 px-2">
+            <div className="flex flex-col items-center flex-shrink-0 px-1 sm:px-2">
               <span className="text-lg font-semibold text-primary tabular-nums">
                 {format(new Date(featuredMatch.utcDate), 'HH:mm')}
               </span>
@@ -240,9 +240,9 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
             </div>
 
             {/* Away */}
-            <div className="flex-1 flex items-center gap-3 min-w-0 justify-end">
-              <span className="font-medium text-sm truncate text-right">
-                {featuredMatch.awayTeam.shortName || featuredMatch.awayTeam.name}
+            <div className="flex-1 flex items-center gap-2 sm:gap-3 min-w-0 justify-end">
+              <span className="font-medium text-sm leading-tight line-clamp-2 min-w-0 text-right">
+                {featuredMatch.awayTeam.tla || featuredMatch.awayTeam.shortName || featuredMatch.awayTeam.name}
               </span>
               <div className="w-10 h-10 rounded-xl bg-muted/30 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {featuredMatch.awayTeam.crest ? (
