@@ -125,7 +125,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         <div 
           className={cn(
             "flex-1 relative rounded-3xl transition-all duration-200",
-            isFocused && "ring-1 ring-primary/20"
+            isFocused && "ring-2 ring-primary/30 shadow-[0_0_12px_hsl(var(--primary)/0.1)]"
           )}
         >
           <Textarea
