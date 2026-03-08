@@ -1,108 +1,135 @@
 
 
-# Mobil Production-Ready Audit & Düzeltme Planı
+# Hibrit Market Selection Engine — Refactor Planı
 
-## Genel Değerlendendirme
+## Mevcut Sorunlar
 
-Mevcut arayüz büyük ölçüde iyi yapılandırılmış. `textZoom: 100` Capacitor ayarı, `text-size-adjust: none`, safe-area padding'ler, `overflow-x: hidden`, `user-select: none` ve `min-width: 0` gibi kritik korumalar zaten mevcut. 320px'de de UI temiz çalışıyor.
+1. **Eşitsiz confidence eşikleri**: `predictionEngine.ts`'de 1X2 marketi `>55%` ile "yüksek" olurken, BTTS `>65%` gerektiriyor. 1X2 doğası gereği daha polarize olduğu için neredeyse her maçta "yüksek" çıkıyor.
 
-Ancak aşağıdaki riskli alanlar tespit edildi:
+2. **`mathConfidenceToNumber` sabit mapping**: `yüksek=0.8`, `orta=0.6`, `düşük=0.4` — market türünden bağımsız. 1X2'nin "yüksek"i ile BTTS'nin "orta"sı arasında gerçek sinyal gücü farkı yansımıyor.
 
-## Tespit Edilen Sorunlar
+3. **`selectBestPrediction`** en yüksek raw Poisson olasılığını seçiyor. 1X2'nin ham olasılığı (%55-65) doğal olarak BTTS'den (%50-60) yüksek çıkar, ama bu "daha güvenilir sinyal" demek değil.
 
-### 1. TabShell — `minHeight: 100vh` yerine `height: 100vh` kullanılmalı (KRİTİK)
+4. **Market reliability / historical accuracy** hiç kullanılmıyor. `ml_model_stats` tablosunda market bazlı doğruluk verileri var ama ana tahmin seçiminde değerlendirilmiyor.
 
-**Dosya:** `src/components/navigation/TabShell.tsx` satır 134
+---
 
-Mevcut: `minHeight: '100vh'` — bu, içerik tab'ın altındaki BottomNav'ın arkasına doğru uzamasına izin verir ve iç scroll container'lar (`overflow-y-auto`) body seviyesinde scroll yerine kendi içinde scroll yapamaz. Memory'de "height: 100vh + overflow: hidden" olması gerektiği belirtilmiş ama kodda `minHeight` kullanılıyor.
+## Yeni Mimari: Market-Aware Hybrid Scoring
 
-**Düzeltme:** `minHeight: '100vh'` → `height: '100vh'`, `overflow: 'hidden'` ekle. Her tab'ın kendi iç `main` elemanı zaten `flex-1 overflow-y-auto` ile scroll'u yönetiyor.
+### Katman 1: `src/utils/marketScoring.ts` (YENİ DOSYA)
 
-### 2. Premium Sayfası — `min-h-screen` Layout Sorunu (YÜKSEK)
+Her market için bağımsız bir **Final Market Score (FMS)** hesaplayan utility:
 
-**Dosya:** `src/pages/Premium.tsx` satır 151
+```
+FMS = (signalStrength × 0.35) + (modelAgreement × 0.25) + (historicalReliability × 0.20) + (edgeClarity × 0.20)
+```
 
-Premium sayfası `min-h-screen` kullanıyor ama TabShell içinde render ediliyor. `h-screen flex flex-col` olması gerekiyor (diğer sayfalarla tutarlı). Ayrıca "Zaten Premium" durumu da aynı sorundan muzdarip (satır 135).
+Bileşenler:
+- **signalStrength**: Poisson olasılığının market-spesifik "kesinlik" eşiğinden ne kadar uzakta olduğu. 1X2'de %50 belirsizlik noktası, BTTS'de %50, O/U'da %50. Mesafe ne kadar büyükse sinyal o kadar güçlü.
+- **modelAgreement**: AI, Math ve ML'nin aynı yönde mi gösterdiği (0 veya 1, kısmi uyum 0.5)
+- **historicalReliability**: `ml_model_stats` tablosundan market bazlı accuracy oranı (0-1)
+- **edgeClarity**: Olasılığın belirsizlik bölgesinden (45-55%) ne kadar uzak olduğu, normalized
 
-**Düzeltme:** Her iki layout path'i de `h-screen bg-background flex flex-col` kullanmalı; main'e de `overflow-y-auto` + BottomNav safe-area padding eklenmeli.
+Market-spesifik kalibrasyon config'i:
 
-### 3. LeagueGrid — Tooltip Mobilde Gereksiz DOM (ORTA)
+```typescript
+const MARKET_CONFIG = {
+  'Maç Sonucu': { 
+    uncertaintyCenter: 33.3, // 3 yönlü market
+    volatilityPenalty: 0.15, // 3 sonuçlu → daha volatil
+    minEdgeThreshold: 12,    // %33+12 = %45'in altında edge yok
+  },
+  'Toplam Gol Alt/Üst': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  'Karşılıklı Gol': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  // ... diğer marketler
+};
+```
 
-**Dosya:** `src/components/league/LeagueGrid.tsx`
+1X2'ye `volatilityPenalty` uygulanması, 3 yönlü marketin doğal avantajını dengeler.
 
-`TooltipProvider` ve `Tooltip` bileşenleri mobilde çalışmaz (hover yok), gereksiz DOM katmanı oluşturur. Memory'de kaldırılması planlanmıştı.
+### Katman 2: `predictionEngine.ts` Güncelleme
 
-**Düzeltme:** Tooltip sarmalayıcılarını kaldır, `motion.button`'ları doğrudan render et.
+Confidence eşiklerini market-spesifik ve simetrik hale getir:
 
-### 4. LeagueGrid — `whileHover` Mobilde Gereksiz (DÜŞÜK)
+| Market | Yüksek | Orta | Düşük |
+|--------|--------|------|-------|
+| 1X2 (mevcut) | >55% | >45% | rest |
+| 1X2 (yeni) | >58% | >45% | rest |
+| BTTS (mevcut) | >65% | >55% | rest |
+| BTTS (yeni) | >60% | >52% | rest |
+| O/U (mevcut) | >60% | >55% | rest |
+| O/U (yeni) | >58% | >52% | rest |
 
-`whileHover={{ scale: 1.02 }}` sadece masaüstü tarayıcıda çalışır, mobilde sticky hover state bırakabilir.
+Not: Değerler yapay dengeleme değil, market doğasına uygun kalibrasyon. BTTS eşikleri düşürülüyor çünkü binary markette %60 zaten güçlü sinyal.
 
-**Düzeltme:** `whileHover` kaldır, sadece `whileTap` bırak.
+### Katman 3: `Prediction` type genişletme (`types/match.ts`)
 
-### 5. LiveMatchCard2 — `whileHover` Mobilde Sorunlu (DÜŞÜK)
+```typescript
+export interface Prediction {
+  // ... mevcut alanlar
+  marketScore?: number;        // Final Market Score (0-100)
+  signalStrength?: number;     // Sinyal gücü (0-100)
+  modelAgreement?: number;     // Model uyumu (0-100)
+  historicalReliability?: number; // Tarihsel güvenilirlik (0-100)
+  edgeClarity?: number;        // Edge netliği (0-100)
+  riskLevel?: 'low' | 'medium' | 'high';
+  isRecommended?: boolean;     // En iyi market mi?
+}
+```
 
-**Dosya:** `src/components/live/LiveMatchCard2.tsx` satır 21
+### Katman 4: `useMatchAnalysis.ts` Güncelleme
 
-`whileHover={cardHover}` ve `hover:border-border` CSS kullanıyor — bu mobilde sticky state yaratır.
+Tahminler oluşturulduktan sonra, `marketScoring` utility'si ile her market için FMS hesapla:
 
-**Düzeltme:** `whileHover` kaldır.
+1. `ml_model_stats`'dan market bazlı historical accuracy çek (mevcut `getAIMathWeights` ile paralel)
+2. Her prediction'a `marketScore`, `signalStrength`, `modelAgreement`, `historicalReliability`, `edgeClarity`, `riskLevel` ekle
+3. En yüksek `marketScore`'a sahip prediction'ı `isRecommended: true` olarak işaretle
+4. Predictions array'ini `marketScore` sırasına göre sırala
 
-### 6. MatchCarousel — Desktop Nav Butonları Gereksiz (DÜŞÜK)
+### Katman 5: `predictionService.ts` Güncelleme
 
-**Dosya:** `src/components/match/MatchCarousel.tsx` satır 194-209
+`selectBestPrediction` fonksiyonunu `marketScore` bazlı çalışacak şekilde güncelle:
+- `marketScore` varsa onu kullan
+- Yoksa mevcut Poisson probability fallback
 
-Desktop-only nav butonları `hidden md:flex` ve `group-hover:opacity-100` ile kontrol ediliyor. Bu uygulamanın sadece Android native olduğu düşünüldüğünde tamamen gereksiz DOM.
+### Katman 6: UI Güncellemeleri
 
-**Düzeltme:** Desktop nav butonlarını kaldır.
+**AIRecommendationCard**: En yüksek `marketScore`'lu prediction'ı göster (zaten `sortedPredictions[0]` mantığı var, sıralama `marketScore`'a geçecek)
 
-### 7. Chat Sayfası — BottomNav Padding Çakışması (ORTA)
+**PredictionCard**: Market Score progress bar'ı ekle + risk level badge
 
-**Dosya:** `src/pages/Chat.tsx` satır 324
+**PredictionPillSelector**: Sıralamayı `marketScore` bazlı yap, recommended pill'e özel badge ekle
 
-Chat sayfası `paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))'` kullanıyor, ama chat input zaten `main`'in alt kısmında sticky olarak render ediliyor. Bu çift padding, input'un gereğinden fazla yukarıda kalmasına neden olabilir. Chat sayfası kendi header'ını kullandığı ve BottomNav Chat sayfasında da görünüyor olduğu için bu padding doğru.
-
-Ancak Chat input alanının keyboard açıldığında düzgün çalışması için `Keyboard.resize: 'body'` Capacitor ayarı zaten var — bu kısım sorunsuz.
-
-### 8. Featured Match Card — H2H Badge Taşma Riski (ORTA)
-
-**Dosya:** `src/components/TodaysMatches.tsx` satır 193
-
-Featured match header satırında `justify-between` ile badge ve H2H yan yana. Dar ekranda (320px) uzun bir "Büyük Maç" badge + H2H dots + tarih taşabilir. Memory'de bu düzeltildiği belirtilmiş ama mevcut kodda `flex-wrap` yok.
-
-**Düzeltme:** Header satırına `flex-wrap gap-1.5` ekle.
-
-### 9. `glass-card-hover` — Hover Class'ı Temizle (DÜŞÜK)
-
-**Dosya:** `src/index.css` satır 209-216
-
-`.glass-card-hover:hover` CSS tanımı var — mobilde sticky kalır.
-
-**Düzeltme:** `:hover` → `:active` veya kaldır (kullanılıyorsa kontrol et).
+---
 
 ## Değişecek Dosyalar
 
-| Dosya | Değişiklik |
-|-------|-----------|
-| `src/components/navigation/TabShell.tsx` | `minHeight` → `height: 100vh`, `overflow: hidden` |
-| `src/pages/Premium.tsx` | `min-h-screen` → `h-screen flex flex-col`, main'e safe-area padding |
-| `src/components/league/LeagueGrid.tsx` | Tooltip wrapper kaldır, `whileHover` kaldır |
-| `src/components/live/LiveMatchCard2.tsx` | `whileHover` kaldır, `hover:` class temizle |
-| `src/components/match/MatchCarousel.tsx` | Desktop nav butonları kaldır, `whileHover` temizle |
-| `src/components/TodaysMatches.tsx` | Featured header'a `flex-wrap` ekle |
-| `src/index.css` | `.glass-card-hover:hover` → `:active` veya media query ile sınırla |
+1. **`src/utils/marketScoring.ts`** — YENİ: Market scoring engine
+2. **`src/utils/predictionEngine.ts`** — Confidence eşiklerini market-spesifik güncelle
+3. **`src/types/match.ts`** — Prediction interface genişlet
+4. **`src/hooks/useMatchAnalysis.ts`** — Market scoring entegrasyonu + historical reliability fetch
+5. **`src/services/predictionService.ts`** — `selectBestPrediction` güncelle
+6. **`src/lib/utils.ts`** — `getHybridConfidence`'ı marketScore-aware yap
+7. **`src/components/analysis/AIRecommendationCard.tsx`** — marketScore sıralama
+8. **`src/components/PredictionCard.tsx`** — Market score bar + risk badge
+9. **`src/components/analysis/PredictionPillSelector.tsx`** — marketScore sıralama + recommended badge
 
-## Capacitor Paketleme Cevabı
+## Korunacaklar
 
-> Bu arayüz Capacitor ile paketlenip gerçek Android/iPhone cihazlarda kullanıldığında herhangi bir ekran boyutunda, font büyütme senaryosunda veya uzun içerikte taşma/bozulma üretir mi?
+- Mevcut 3 katmanlı hibrit mimari (AI + Math + ML) aynen kalacak
+- `prediction_features` ve `ml_model_stats` tablo yapıları değişmeyecek
+- Edge function'lar değişmeyecek
+- Confidence değerleri sahte dengeleme yapılmayacak — gerçek farklar korunacak
 
-**Font scaling:** `textZoom: 100` ve CSS `text-size-adjust: none !important` ile sistem font ölçeklendirmesi tamamen devre dışı — bu kısım güvenli.
+## Continuous Learning Altyapısı
 
-**Ekran boyutu:** 320px'den 414px+'ya kadar test ettim, taşma yok. Ancak TabShell'in `minHeight` sorunu düzeltilmezse, bazı cihazlarda çift scroll (body + container) oluşabilir.
-
-**Premium sayfası:** `min-h-screen` layout'u TabShell içinde sorunlu — düzeltilmeli.
-
-**Hover states:** Android WebView'da hover state sticky kalabilir — yukarıdaki `whileHover` düzeltmeleri uygulanmalı.
-
-Toplam 7 dosya, hepsi küçük ama etkili düzeltmeler.
+Zaten mevcut olan `ml_model_stats` tablosu market bazlı accuracy takibi yapıyor. Yeni `historicalReliability` bileşeni bu veriyi aktif olarak kullanarak market selection'ı sürekli iyileştirecek. `train-ml-model` edge function haftalık çalışmaya devam edecek.
 
