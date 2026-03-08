@@ -26,6 +26,7 @@ import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFound";
 import BottomNav from "@/components/navigation/BottomNav";
 import TabShell from "@/components/navigation/TabShell";
+import OfflineBanner from "@/components/OfflineBanner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
