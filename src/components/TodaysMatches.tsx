@@ -515,20 +515,26 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({
                 </span>
 
                 {/* Teams */}
-                <div className="flex-1 min-w-0 flex items-center gap-1.5">
-                  {match.homeTeam.crest && (
-                    <img src={match.homeTeam.crest} alt="" className="w-5 h-5 object-contain shrink-0" />
-                  )}
-                  <span className="text-sm truncate min-w-0">
-                    {cleanTeamName(match.homeTeam)}
-                  </span>
-                  <span className="text-muted-foreground/50 text-xs shrink-0">–</span>
-                  <span className="text-sm truncate min-w-0">
-                    {cleanTeamName(match.awayTeam)}
-                  </span>
-                  {match.awayTeam.crest && (
-                    <img src={match.awayTeam.crest} alt="" className="w-5 h-5 object-contain shrink-0" />
-                  )}
+                <div className="flex-1 min-w-0 flex items-center gap-1">
+                  {/* Home */}
+                  <div className="flex items-center gap-1 min-w-0 flex-1">
+                    {match.homeTeam.crest && (
+                      <img src={match.homeTeam.crest} alt="" className="w-4 h-4 object-contain shrink-0" />
+                    )}
+                    <span className="text-sm truncate min-w-0">
+                      {cleanTeamName(match.homeTeam)}
+                    </span>
+                  </div>
+                  <span className="text-muted-foreground/50 text-xs shrink-0 px-0.5">–</span>
+                  {/* Away */}
+                  <div className="flex items-center gap-1 min-w-0 flex-1">
+                    <span className="text-sm truncate min-w-0">
+                      {cleanTeamName(match.awayTeam)}
+                    </span>
+                    {match.awayTeam.crest && (
+                      <img src={match.awayTeam.crest} alt="" className="w-4 h-4 object-contain shrink-0" />
+                    )}
+                  </div>
                 </div>
 
                 {/* AI indicator + League code */}
