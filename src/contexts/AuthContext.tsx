@@ -6,6 +6,12 @@ import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 
 const LOVABLE_CLOUD_URL = 'https://id-preview--a043c351-80f7-4404-bfb0-4355af0b4d37.lovable.app';
+const PUBLISHED_URL = 'https://golmetrikapp.lovable.app';
+
+const getRedirectUrl = () => {
+  if (Capacitor.isNativePlatform()) return PUBLISHED_URL;
+  return window.location.origin;
+};
 
 interface AuthContextType {
   user: User | null;
