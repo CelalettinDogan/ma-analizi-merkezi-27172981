@@ -6,6 +6,11 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
+const NATIVE_SCHEME = 'golmetrik://';
+
+const isMobileUserAgent = () =>
+  /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
 const ResetPassword = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
