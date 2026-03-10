@@ -57,27 +57,29 @@ const DeepLinkHandler = () => {
       const deepLinkListener = CapApp.addListener('appUrlOpen', async (event: URLOpenListenerEvent) => {
         try {
           const url = new URL(event.url);
+          const hashParams = new URLSearchParams(url.hash.substring(1));
+          const searchParams = url.searchParams;
           
-          const isCallback = url.protocol === 'golmetrik:' || url.host === 'callback' || url.pathname === '/callback';
-          if (isCallback) {
-            const hashParams = new URLSearchParams(url.hash.substring(1));
-            const searchParams = url.searchParams;
-            
-            const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
-            const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
-            
-            if (accessToken && refreshToken) {
-              const { error } = await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken,
-              });
-              if (!error) {
-                // Close the external browser that was opened for OAuth
-                try { await Browser.close(); } catch {}
-                navigate('/', { replace: true });
+          const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
+
+          const isCallback = url.protocol === 'golmetrik:' && (url.host === 'callback' || url.pathname === '/callback');
+          const isResetPassword = url.protocol === 'golmetrik:' && (url.host === 'reset-password' || url.pathname === '/reset-password');
+
+          if ((isCallback || isResetPassword) && accessToken && refreshToken) {
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+            if (!error) {
+              try { await Browser.close(); } catch {}
+              if (isResetPassword) {
+                navigate('/reset-password', { replace: true });
               } else {
-                console.error('Deep link session error:', error);
+                navigate('/', { replace: true });
               }
+            } else {
+              console.error('Deep link session error:', error);
             }
           }
         } catch (error) {

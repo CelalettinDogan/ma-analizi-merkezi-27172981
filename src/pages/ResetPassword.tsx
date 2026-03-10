@@ -6,6 +6,11 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
+const NATIVE_SCHEME = 'golmetrik://';
+
+const isMobileUserAgent = () =>
+  /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
 const ResetPassword = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -23,8 +28,16 @@ const ResetPassword = () => {
     const checkSession = async () => {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
       const type = hashParams.get('type');
       
+      // If recovery tokens present and on mobile browser → redirect to native app
+      if (type === 'recovery' && accessToken && refreshToken && isMobileUserAgent()) {
+        const nativeUrl = `${NATIVE_SCHEME}reset-password?access_token=${encodeURIComponent(accessToken)}&refresh_token=${encodeURIComponent(refreshToken)}&type=recovery`;
+        window.location.href = nativeUrl;
+        return;
+      }
+
       if (type === 'recovery' && accessToken) {
         setIsValidSession(true);
         setIsCheckingSession(false);

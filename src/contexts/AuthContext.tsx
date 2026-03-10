@@ -6,6 +6,12 @@ import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 
 const LOVABLE_CLOUD_URL = 'https://id-preview--a043c351-80f7-4404-bfb0-4355af0b4d37.lovable.app';
+const PUBLISHED_URL = 'https://golmetrikapp.lovable.app';
+
+const getRedirectUrl = () => {
+  if (Capacitor.isNativePlatform()) return PUBLISHED_URL;
+  return window.location.origin;
+};
 
 interface AuthContextType {
   user: User | null;
@@ -55,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: `${getRedirectUrl()}/callback`,
         data: {
           display_name: displayName,
         },
@@ -85,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const params = new URLSearchParams({
           provider: 'google',
-          redirect_uri: `${LOVABLE_CLOUD_URL}/callback?platform=native`,
+          redirect_uri: `${PUBLISHED_URL}/callback?platform=native`,
           state,
         });
 
@@ -121,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${getRedirectUrl()}/reset-password`,
     });
     return { error: error as Error | null };
   };

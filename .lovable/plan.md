@@ -1,77 +1,135 @@
 
 
-# Native Auth Linkleri Düzeltme Planı
+# Hibrit Market Selection Engine — Refactor Planı
 
-## Sorunlar
+## Mevcut Sorunlar
 
-### Kök Neden
-Capacitor uygulamasında `window.location.origin` değeri `https://golmetrik.app` döner (capacitor.config.ts'deki hostname). Bu gerçek bir domain değil — Supabase'in gönderdiği e-posta linkleri bu adrese yönlendirdiğinde hiçbir yerde açılmaz.
+1. **Eşitsiz confidence eşikleri**: `predictionEngine.ts`'de 1X2 marketi `>55%` ile "yüksek" olurken, BTTS `>65%` gerektiriyor. 1X2 doğası gereği daha polarize olduğu için neredeyse her maçta "yüksek" çıkıyor.
 
-Etkilenen 3 akış:
-1. **Kayıt ol → e-posta doğrulama linki**: `emailRedirectTo: window.location.origin` → `https://golmetrik.app` → açılmaz
-2. **Şifremi unuttum → reset linki**: `redirectTo: ${window.location.origin}/reset-password` → `https://golmetrik.app/reset-password` → açılmaz
-3. **Google ile giriş**: OAuth callback `LOVABLE_CLOUD_URL/callback?platform=native` → Bu sayfa token'ları `golmetrik://callback`'e yönlendiriyor, ama deep link'in çalışması Android manifest'te intent-filter'a bağlı (bu kısım Capacitor tarafında yapılmış olmalı)
+2. **`mathConfidenceToNumber` sabit mapping**: `yüksek=0.8`, `orta=0.6`, `düşük=0.4` — market türünden bağımsız. 1X2'nin "yüksek"i ile BTTS'nin "orta"sı arasında gerçek sinyal gücü farkı yansımıyor.
 
-## Çözüm
+3. **`selectBestPrediction`** en yüksek raw Poisson olasılığını seçiyor. 1X2'nin ham olasılığı (%55-65) doğal olarak BTTS'den (%50-60) yüksek çıkar, ama bu "daha güvenilir sinyal" demek değil.
 
-### Strateji
-E-posta linklerini yayınlanmış web URL'sine yönlendir → Web sayfası token'ları algılayıp native uygulamaya deep link ile ilet.
-
-### 1. `AuthContext.tsx` — Redirect URL'lerini düzelt
-
-`window.location.origin` yerine published URL kullan:
-```
-const PUBLISHED_URL = 'https://golmetrikapp.lovable.app';
-```
-
-- `signUp` → `emailRedirectTo: PUBLISHED_URL`  
-- `resetPassword` → `redirectTo: ${PUBLISHED_URL}/reset-password`
-
-Native'de çalışırken `window.location.origin` yerine sabit published URL kullanılacak. Web dev ortamında ise `window.location.origin` korunacak.
-
-### 2. `AuthCallback.tsx` — E-posta doğrulama linklerini de native'e yönlendir
-
-Şu an sadece `platform=native` query param'ı ile gelen OAuth callback'leri native'e yönlendiriyor. E-posta doğrulama linkleri ise `type=signup` veya `type=magiclink` hash parametresi ile gelir.
-
-Eklenmesi gereken mantık:
-- Hash'te `type=signup` veya `type=magiclink` varsa ve user-agent mobil ise → `golmetrik://callback?access_token=...&refresh_token=...` şeklinde native redirect yap
-- Bu sayede kayıt doğrulama linki tıklandığında native app açılır
-
-### 3. `ResetPassword.tsx` — Native deep link desteği
-
-Şifre sıfırlama e-postası kullanıcıyı `published-url/reset-password#access_token=...&type=recovery` adresine yönlendirir. Bu sayfa tarayıcıda açılır ama native app'te değil.
-
-Eklenmesi gereken mantık:
-- Sayfa yüklendiğinde `type=recovery` ve token'lar varsa, mobil user-agent kontrolü yap
-- Mobil ise: `golmetrik://reset-password?access_token=...&refresh_token=...&type=recovery` şeklinde native'e yönlendir
-- Native app'teki DeepLinkHandler bu yeni path'i de karşılayacak
-
-### 4. `DeepLinkHandler` (App.tsx) — Reset password deep link desteği
-
-Mevcut handler sadece `golmetrik://callback` dinliyor. Eklenmesi gereken:
-- `golmetrik://reset-password` path'ini de dinle
-- Token'ları URL'den çıkar, `supabase.auth.setSession()` yap
-- Ardından `/reset-password` sayfasına navigate et (in-app)
-
-### 5. `signInWithGoogle` — Native OAuth redirect URL düzeltmesi
-
-Mevcut: `redirect_uri: ${LOVABLE_CLOUD_URL}/callback?platform=native`
-
-Bu doğru çalışıyor olmalı — AuthCallback sayfası `platform=native` görünce `golmetrik://` scheme'e yönlendiriyor. Eğer Google giriş çalışmıyorsa sorun Android manifest'teki intent-filter eksikliği olabilir (Capacitor tarafı, repo dışı).
-
-Ama redirect URL'yi de published URL'ye çekmek daha güvenilir:
-`redirect_uri: ${PUBLISHED_URL}/callback?platform=native`
+4. **Market reliability / historical accuracy** hiç kullanılmıyor. `ml_model_stats` tablosunda market bazlı doğruluk verileri var ama ana tahmin seçiminde değerlendirilmiyor.
 
 ---
 
-## Dosya Değişiklikleri
+## Yeni Mimari: Market-Aware Hybrid Scoring
 
-| Dosya | Değişiklik |
-|---|---|
-| `src/contexts/AuthContext.tsx` | `PUBLISHED_URL` sabiti ekle, redirect URL'leri düzelt |
-| `src/pages/AuthCallback.tsx` | Mobil user-agent tespiti + e-posta doğrulama için native redirect |
-| `src/pages/ResetPassword.tsx` | Mobil user-agent tespiti + native deep link redirect |
-| `src/App.tsx` (DeepLinkHandler) | `golmetrik://reset-password` path desteği ekle |
+### Katman 1: `src/utils/marketScoring.ts` (YENİ DOSYA)
 
-**Toplam: 4 dosya değişikliği, yeni dosya yok**
+Her market için bağımsız bir **Final Market Score (FMS)** hesaplayan utility:
+
+```
+FMS = (signalStrength × 0.35) + (modelAgreement × 0.25) + (historicalReliability × 0.20) + (edgeClarity × 0.20)
+```
+
+Bileşenler:
+- **signalStrength**: Poisson olasılığının market-spesifik "kesinlik" eşiğinden ne kadar uzakta olduğu. 1X2'de %50 belirsizlik noktası, BTTS'de %50, O/U'da %50. Mesafe ne kadar büyükse sinyal o kadar güçlü.
+- **modelAgreement**: AI, Math ve ML'nin aynı yönde mi gösterdiği (0 veya 1, kısmi uyum 0.5)
+- **historicalReliability**: `ml_model_stats` tablosundan market bazlı accuracy oranı (0-1)
+- **edgeClarity**: Olasılığın belirsizlik bölgesinden (45-55%) ne kadar uzak olduğu, normalized
+
+Market-spesifik kalibrasyon config'i:
+
+```typescript
+const MARKET_CONFIG = {
+  'Maç Sonucu': { 
+    uncertaintyCenter: 33.3, // 3 yönlü market
+    volatilityPenalty: 0.15, // 3 sonuçlu → daha volatil
+    minEdgeThreshold: 12,    // %33+12 = %45'in altında edge yok
+  },
+  'Toplam Gol Alt/Üst': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  'Karşılıklı Gol': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  // ... diğer marketler
+};
+```
+
+1X2'ye `volatilityPenalty` uygulanması, 3 yönlü marketin doğal avantajını dengeler.
+
+### Katman 2: `predictionEngine.ts` Güncelleme
+
+Confidence eşiklerini market-spesifik ve simetrik hale getir:
+
+| Market | Yüksek | Orta | Düşük |
+|--------|--------|------|-------|
+| 1X2 (mevcut) | >55% | >45% | rest |
+| 1X2 (yeni) | >58% | >45% | rest |
+| BTTS (mevcut) | >65% | >55% | rest |
+| BTTS (yeni) | >60% | >52% | rest |
+| O/U (mevcut) | >60% | >55% | rest |
+| O/U (yeni) | >58% | >52% | rest |
+
+Not: Değerler yapay dengeleme değil, market doğasına uygun kalibrasyon. BTTS eşikleri düşürülüyor çünkü binary markette %60 zaten güçlü sinyal.
+
+### Katman 3: `Prediction` type genişletme (`types/match.ts`)
+
+```typescript
+export interface Prediction {
+  // ... mevcut alanlar
+  marketScore?: number;        // Final Market Score (0-100)
+  signalStrength?: number;     // Sinyal gücü (0-100)
+  modelAgreement?: number;     // Model uyumu (0-100)
+  historicalReliability?: number; // Tarihsel güvenilirlik (0-100)
+  edgeClarity?: number;        // Edge netliği (0-100)
+  riskLevel?: 'low' | 'medium' | 'high';
+  isRecommended?: boolean;     // En iyi market mi?
+}
+```
+
+### Katman 4: `useMatchAnalysis.ts` Güncelleme
+
+Tahminler oluşturulduktan sonra, `marketScoring` utility'si ile her market için FMS hesapla:
+
+1. `ml_model_stats`'dan market bazlı historical accuracy çek (mevcut `getAIMathWeights` ile paralel)
+2. Her prediction'a `marketScore`, `signalStrength`, `modelAgreement`, `historicalReliability`, `edgeClarity`, `riskLevel` ekle
+3. En yüksek `marketScore`'a sahip prediction'ı `isRecommended: true` olarak işaretle
+4. Predictions array'ini `marketScore` sırasına göre sırala
+
+### Katman 5: `predictionService.ts` Güncelleme
+
+`selectBestPrediction` fonksiyonunu `marketScore` bazlı çalışacak şekilde güncelle:
+- `marketScore` varsa onu kullan
+- Yoksa mevcut Poisson probability fallback
+
+### Katman 6: UI Güncellemeleri
+
+**AIRecommendationCard**: En yüksek `marketScore`'lu prediction'ı göster (zaten `sortedPredictions[0]` mantığı var, sıralama `marketScore`'a geçecek)
+
+**PredictionCard**: Market Score progress bar'ı ekle + risk level badge
+
+**PredictionPillSelector**: Sıralamayı `marketScore` bazlı yap, recommended pill'e özel badge ekle
+
+---
+
+## Değişecek Dosyalar
+
+1. **`src/utils/marketScoring.ts`** — YENİ: Market scoring engine
+2. **`src/utils/predictionEngine.ts`** — Confidence eşiklerini market-spesifik güncelle
+3. **`src/types/match.ts`** — Prediction interface genişlet
+4. **`src/hooks/useMatchAnalysis.ts`** — Market scoring entegrasyonu + historical reliability fetch
+5. **`src/services/predictionService.ts`** — `selectBestPrediction` güncelle
+6. **`src/lib/utils.ts`** — `getHybridConfidence`'ı marketScore-aware yap
+7. **`src/components/analysis/AIRecommendationCard.tsx`** — marketScore sıralama
+8. **`src/components/PredictionCard.tsx`** — Market score bar + risk badge
+9. **`src/components/analysis/PredictionPillSelector.tsx`** — marketScore sıralama + recommended badge
+
+## Korunacaklar
+
+- Mevcut 3 katmanlı hibrit mimari (AI + Math + ML) aynen kalacak
+- `prediction_features` ve `ml_model_stats` tablo yapıları değişmeyecek
+- Edge function'lar değişmeyecek
+- Confidence değerleri sahte dengeleme yapılmayacak — gerçek farklar korunacak
+
+## Continuous Learning Altyapısı
+
+Zaten mevcut olan `ml_model_stats` tablosu market bazlı accuracy takibi yapıyor. Yeni `historicalReliability` bileşeni bu veriyi aktif olarak kullanarak market selection'ı sürekli iyileştirecek. `train-ml-model` edge function haftalık çalışmaya devam edecek.
 

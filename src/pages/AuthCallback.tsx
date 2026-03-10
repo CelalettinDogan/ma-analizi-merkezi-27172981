@@ -3,6 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 
+const NATIVE_SCHEME = 'golmetrik://';
+
+const isMobileUserAgent = () =>
+  /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
 const AuthCallback = () => {
   const navigate = useNavigate();
 
@@ -14,16 +19,19 @@ const AuthCallback = () => {
 
         const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
+        const type = hashParams.get('type') || searchParams.get('type');
 
-        // Detect native platform from BOTH state parameter AND query param (dual fallback)
+        // Detect native platform from state, query param, OR mobile user-agent with email verification
         const state = hashParams.get('state') || searchParams.get('state') || '';
         const platformParam = searchParams.get('platform');
         const isNativePlatform = state.startsWith('native:') || platformParam === 'native';
+        const isEmailVerification = type === 'signup' || type === 'magiclink' || type === 'email';
+        const shouldRedirectToNative = isNativePlatform || (isEmailVerification && isMobileUserAgent());
 
         if (accessToken && refreshToken) {
           // Native platform: redirect tokens to custom scheme so the app picks them up
-          if (isNativePlatform) {
-            const nativeUrl = `golmetrik://callback?access_token=${encodeURIComponent(accessToken)}&refresh_token=${encodeURIComponent(refreshToken)}`;
+          if (shouldRedirectToNative) {
+            const nativeUrl = `${NATIVE_SCHEME}callback?access_token=${encodeURIComponent(accessToken)}&refresh_token=${encodeURIComponent(refreshToken)}`;
             window.location.href = nativeUrl;
             return;
           }
