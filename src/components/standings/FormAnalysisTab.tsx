@@ -214,39 +214,6 @@ const FormAnalysisTab: React.FC<FormAnalysisTabProps> = ({ standings, isLoading 
         </CardContent>
       </Card>
 
-      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Flame className="w-4 h-4 text-orange-500" />
-            Galibiyet Serisi
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">Üst üste kazanan takımlar</p>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {!hasRealForm ? <StreakUnavailable /> : hotStreaks.length > 0 ? (
-            hotStreaks.map((t, i) => renderTeamRow(t, i, `${t.winStreak} galibiyet`))
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">Şu an galibiyet serisinde takım yok</p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Snowflake className="w-4 h-4 text-cyan-500" />
-            Galibiyetsiz Seri
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">Galibiyet alamayan takımlar</p>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {!hasRealForm ? <StreakUnavailable /> : coldStreaks.length > 0 ? (
-            coldStreaks.map((t, i) => renderTeamRow(t, i, `${t.noWinStreak} maç galibiyetsiz`))
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">Şu an galibiyetsiz seride takım yok</p>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 };
