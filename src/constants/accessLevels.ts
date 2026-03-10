@@ -158,20 +158,20 @@ export const PLAN_DISPLAY_NAMES: Record<PlanType, string> = {
 } as const;
 
 /**
- * Plan fiyatları (TRY)
+ * Plan fiyatları (TRY - KDV dahil, %20)
  */
 export const PLAN_PRICES = {
   premium_basic: {
-    monthly: 49,
-    yearly: 399, // 2 ay bedava
+    monthly: 58.99,
+    yearly: 478.99, // 2 ay bedava
   },
   premium_plus: {
-    monthly: 79,
-    yearly: 649, // 2 ay bedava
+    monthly: 94.99,
+    yearly: 778.99, // 2 ay bedava
   },
   premium_pro: {
-    monthly: 99,
-    yearly: 799, // 2 ay bedava
+    monthly: 118.99,
+    yearly: 958.99, // 2 ay bedava
   },
 } as const;
 
