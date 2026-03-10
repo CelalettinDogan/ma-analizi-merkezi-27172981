@@ -6,6 +6,9 @@ import { StatusBar, Style } from "@capacitor/status-bar";
 import App from "./App.tsx";
 import "./index.css";
 
+// Lock root font-size to prevent OS-level font scaling
+document.documentElement.style.fontSize = '16px';
+
 // Native platform initialization
 const initializeNative = async () => {
   if (Capacitor.isNativePlatform()) {
