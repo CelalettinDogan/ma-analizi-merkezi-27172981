@@ -1,0 +1,2 @@
+ALTER TABLE public.premium_subscriptions DROP CONSTRAINT IF EXISTS premium_subscriptions_plan_type_check;
+ALTER TABLE public.premium_subscriptions ADD CONSTRAINT premium_subscriptions_plan_type_check CHECK (plan_type IN ('monthly', 'yearly', 'trial', 'premium_basic', 'premium_plus', 'premium_pro'));
