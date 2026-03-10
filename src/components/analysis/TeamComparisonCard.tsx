@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Zap, Shield, Activity, Users, Home, Plane } from 'lucide-react';
 import { TeamStats, TeamPower } from '@/types/match';
 import { cn } from '@/lib/utils';
-import { Progress } from '@/components/ui/progress';
 
 interface TeamComparisonCardProps {
   homeTeam: string;
@@ -14,11 +13,7 @@ interface TeamComparisonCardProps {
   awayPower?: TeamPower;
 }
 
-interface FormBadgeProps {
-  result: string;
-}
-
-const FormBadge = memo<FormBadgeProps>(({ result }) => {
+const FormBadge = memo<{ result: string }>(({ result }) => {
   const config = {
     W: { label: 'G', bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/30' },
     L: { label: 'M', bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30' },
@@ -28,7 +23,7 @@ const FormBadge = memo<FormBadgeProps>(({ result }) => {
   
   return (
     <span className={cn(
-      "w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-micro md:text-xs font-bold border",
+      "w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold border",
       c.bg, c.text, c.border
     )}>
       {c.label}
@@ -38,7 +33,6 @@ const FormBadge = memo<FormBadgeProps>(({ result }) => {
 
 FormBadge.displayName = 'FormBadge';
 
-// Comparison Row Component
 const ComparisonRow = memo<{
   label: string;
   homeValue: number;
@@ -59,9 +53,9 @@ const ComparisonRow = memo<{
         <span className={cn("font-semibold tabular-nums", homeWins ? "text-primary" : "text-muted-foreground")}>
           {formatValue(homeValue)}
         </span>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
           {icon}
-          <span>{label}</span>
+          <span className="truncate">{label}</span>
         </div>
         <span className={cn("font-semibold tabular-nums", awayWins ? "text-secondary" : "text-muted-foreground")}>
           {formatValue(awayValue)}
@@ -69,17 +63,11 @@ const ComparisonRow = memo<{
       </div>
       <div className="flex h-1.5 rounded-full overflow-hidden bg-muted/30">
         <div 
-          className={cn(
-            "transition-all rounded-l-full",
-            homeWins ? "bg-primary" : "bg-muted-foreground/40"
-          )}
+          className={cn("transition-all rounded-l-full", homeWins ? "bg-primary" : "bg-muted-foreground/40")}
           style={{ width: `${homePercentage}%` }}
         />
         <div 
-          className={cn(
-            "transition-all rounded-r-full",
-            awayWins ? "bg-secondary" : "bg-muted-foreground/40"
-          )}
+          className={cn("transition-all rounded-r-full", awayWins ? "bg-secondary" : "bg-muted-foreground/40")}
           style={{ width: `${100 - homePercentage}%` }}
         />
       </div>
@@ -89,7 +77,6 @@ const ComparisonRow = memo<{
 
 ComparisonRow.displayName = 'ComparisonRow';
 
-// Form Tabs: Home/Away split
 const FormTabs = memo<{
   homeTeam: string;
   awayTeam: string;
@@ -105,12 +92,12 @@ const FormTabs = memo<{
 
   return (
     <div className="mb-5">
-      {/* Tab buttons */}
       <div className="flex gap-1 p-1 rounded-xl bg-muted/30 mb-3">
         <button
           onClick={() => setTab('home')}
           className={cn(
-            "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors touch-manipulation",
+            "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all touch-manipulation min-h-[44px]",
+            "active:scale-95",
             tab === 'home' ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
           )}
         >
@@ -120,7 +107,8 @@ const FormTabs = memo<{
         <button
           onClick={() => setTab('away')}
           className={cn(
-            "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors touch-manipulation",
+            "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all touch-manipulation min-h-[44px]",
+            "active:scale-95",
             tab === 'away' ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
           )}
         >
@@ -129,10 +117,9 @@ const FormTabs = memo<{
         </button>
       </div>
 
-      {/* Form badges */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <p className="text-xs text-muted-foreground mb-2">
+          <p className="text-xs text-muted-foreground mb-2 truncate">
             {homeTeam} {tab === 'home' ? 'İç Saha' : 'Deplasman'}
           </p>
           <div className="flex gap-1 flex-wrap">
@@ -154,7 +141,7 @@ const FormTabs = memo<{
           )}
         </div>
         <div className="flex flex-col items-end">
-          <p className="text-xs text-muted-foreground mb-2">
+          <p className="text-xs text-muted-foreground mb-2 truncate">
             {awayTeam} {tab === 'home' ? 'İç Saha' : 'Deplasman'}
           </p>
           <div className="flex gap-1 flex-wrap">
@@ -173,14 +160,8 @@ const FormTabs = memo<{
 FormTabs.displayName = 'FormTabs';
 
 const TeamComparisonCard: React.FC<TeamComparisonCardProps> = ({
-  homeTeam,
-  awayTeam,
-  homeStats,
-  awayStats,
-  homePower,
-  awayPower,
+  homeTeam, awayTeam, homeStats, awayStats, homePower, awayPower,
 }) => {
-  // Null safety for stats
   const homeForm = homeStats?.form ?? [];
   const awayForm = awayStats?.form ?? [];
   const homeGoalsScored = homeStats?.goalsScored ?? 0;
@@ -193,7 +174,6 @@ const TeamComparisonCard: React.FC<TeamComparisonCardProps> = ({
   const awayAvgScored = awayGoalsScored / 5;
   const awayAvgConceded = awayGoalsConceded / 5;
 
-  // Calculate advantage
   const hasAdvantage = homePower && awayPower;
   const advantageDiff = hasAdvantage ? homePower.overallPower - awayPower.overallPower : 0;
 
@@ -229,22 +209,21 @@ const TeamComparisonCard: React.FC<TeamComparisonCardProps> = ({
         )}
       </div>
 
-      {/* Team Headers */}
-      <div className="grid grid-cols-3 gap-2 mb-4 text-center">
-        <div className="text-left">
+      {/* Team Headers — fixed grid */}
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-2 mb-4 text-center">
+        <div className="text-left min-w-0">
           <p className="text-sm font-medium text-foreground truncate">{homeTeam}</p>
           <p className="text-xs text-muted-foreground">Ev Sahibi</p>
         </div>
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center px-2">
           <span className="text-xs text-muted-foreground">vs</span>
         </div>
-        <div className="text-right">
+        <div className="text-right min-w-0">
           <p className="text-sm font-medium text-foreground truncate">{awayTeam}</p>
           <p className="text-xs text-muted-foreground">Deplasman</p>
         </div>
       </div>
 
-      {/* Form Display — Home/Away Split */}
       <FormTabs
         homeTeam={homeTeam}
         awayTeam={awayTeam}
@@ -254,44 +233,15 @@ const TeamComparisonCard: React.FC<TeamComparisonCardProps> = ({
         awayStats={awayStats}
       />
 
-      {/* Stats Comparison Table */}
       <div className="space-y-3 pt-3 border-t border-border/50">
-        <ComparisonRow 
-          label="Atılan Gol Ort."
-          homeValue={homeAvgScored}
-          awayValue={awayAvgScored}
-          icon={<TrendingUp className="w-3 h-3" />}
-          format="decimal"
-        />
-        <ComparisonRow 
-          label="Yenen Gol Ort."
-          homeValue={homeAvgConceded}
-          awayValue={awayAvgConceded}
-          icon={<TrendingDown className="w-3 h-3" />}
-          format="decimal"
-        />
+        <ComparisonRow label="Atılan Gol Ort." homeValue={homeAvgScored} awayValue={awayAvgScored} icon={<TrendingUp className="w-3 h-3" />} format="decimal" />
+        <ComparisonRow label="Yenen Gol Ort." homeValue={homeAvgConceded} awayValue={awayAvgConceded} icon={<TrendingDown className="w-3 h-3" />} format="decimal" />
         
-        {/* Power Stats if available */}
         {homePower && awayPower && (
           <>
-            <ComparisonRow 
-              label="Hücum Gücü"
-              homeValue={homePower.attackIndex}
-              awayValue={awayPower.attackIndex}
-              icon={<Zap className="w-3 h-3" />}
-            />
-            <ComparisonRow 
-              label="Savunma Gücü"
-              homeValue={homePower.defenseIndex}
-              awayValue={awayPower.defenseIndex}
-              icon={<Shield className="w-3 h-3" />}
-            />
-            <ComparisonRow 
-              label="Form Skoru"
-              homeValue={homePower.formScore}
-              awayValue={awayPower.formScore}
-              icon={<Activity className="w-3 h-3" />}
-            />
+            <ComparisonRow label="Hücum Gücü" homeValue={homePower.attackIndex} awayValue={awayPower.attackIndex} icon={<Zap className="w-3 h-3" />} />
+            <ComparisonRow label="Savunma Gücü" homeValue={homePower.defenseIndex} awayValue={awayPower.defenseIndex} icon={<Shield className="w-3 h-3" />} />
+            <ComparisonRow label="Form Skoru" homeValue={homePower.formScore} awayValue={awayPower.formScore} icon={<Activity className="w-3 h-3" />} />
           </>
         )}
       </div>

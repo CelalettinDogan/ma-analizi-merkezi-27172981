@@ -12,24 +12,23 @@ interface PredictionPillSelectorProps {
   matchInput: MatchInput;
 }
 
-// Confidence level config - simplified
 const confidenceConfig = {
   'yüksek': { 
     icon: Star, 
     color: 'text-emerald-400',
-    pillClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20',
+    pillClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
     inSlipClass: 'bg-emerald-500/30 text-emerald-300 border-emerald-400'
   },
   'orta': { 
     icon: Info, 
     color: 'text-amber-400',
-    pillClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20',
+    pillClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
     inSlipClass: 'bg-amber-500/30 text-amber-300 border-amber-400'
   },
   'düşük': { 
     icon: AlertTriangle, 
     color: 'text-muted-foreground',
-    pillClass: 'bg-muted/50 text-muted-foreground border-border hover:bg-muted',
+    pillClass: 'bg-muted/50 text-muted-foreground border-border',
     inSlipClass: 'bg-muted text-foreground border-muted-foreground'
   },
 };
@@ -38,7 +37,6 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const { addToSet, items } = useAnalysisSet();
 
-  // Sort predictions by marketScore (if available) or hybrid confidence
   const sortedPredictions = useMemo(() => {
     return [...predictions].sort((a, b) => {
       if (a.marketScore !== undefined && b.marketScore !== undefined) {
@@ -77,10 +75,9 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
       transition={{ delay: 0.2 }}
       className="space-y-4"
     >
-      {/* Section Title */}
       <h4 className="text-sm font-medium text-muted-foreground">Diğer Tahminler</h4>
 
-      {/* Pills Container - Horizontal Scroll on Mobile with hint */}
+      {/* Pills — horizontal scroll */}
       <div className="relative">
         <div className="overflow-x-auto pb-2 -mx-1 px-1 scrollbar-none">
           <div className="flex gap-2 min-w-max">
@@ -96,8 +93,8 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
                 key={index}
                 onClick={() => setSelectedIndex(isSelected ? null : index)}
                 className={cn(
-                  "relative px-3 py-2 rounded-xl text-sm font-medium transition-all border whitespace-nowrap",
-                  "active:scale-95",
+                  "relative px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all border whitespace-nowrap min-h-[44px]",
+                  "active:scale-95 touch-manipulation",
                   isSelected 
                     ? "bg-primary/20 text-primary border-primary/50 shadow-lg shadow-primary/10" 
                     : inSet 
@@ -116,11 +113,11 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
           })}
           </div>
         </div>
-        {/* Scroll hint gradient for mobile */}
-        <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-card to-transparent pointer-events-none md:hidden" />
+        {/* Scroll hint — matches parent bg */}
+        <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-card to-card/0 pointer-events-none" />
       </div>
 
-      {/* Expanded Detail - Slide Up Animation */}
+      {/* Expanded Detail */}
       <AnimatePresence>
         {selectedIndex !== null && sortedPredictions[selectedIndex] && (
           <motion.div
@@ -137,14 +134,14 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
               const inSet = isInSet(selectedPrediction);
               
               return (
-                <div className="p-4 rounded-xl bg-card border border-border/50 space-y-4">
-                  {/* Prediction Header - Cleaner */}
+                <div className="p-4 rounded-xl bg-card border border-border/50 space-y-4 active:scale-[0.98] transition-transform">
+                  {/* Header */}
                   <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-semibold text-foreground">{selectedPrediction.type}</h4>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-semibold text-foreground truncate">{selectedPrediction.type}</h4>
                       <p className="text-xs text-muted-foreground mt-0.5">Tahmin Detayı</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right shrink-0 ml-2">
                       <div className="text-xl font-bold text-foreground">
                         {selectedPrediction.prediction}
                       </div>
@@ -154,7 +151,7 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
                     </div>
                   </div>
 
-                  {/* Market Score or Hybrid Progress Bar */}
+                  {/* Progress */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
@@ -178,20 +175,14 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
                     onClick={() => handleAddToSetClick(selectedPrediction)}
                     disabled={inSet}
                     className={cn(
-                      "w-full gap-2",
+                      "w-full gap-2 min-h-[44px] touch-manipulation",
                       inSet && "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
                     )}
                   >
                     {inSet ? (
-                      <>
-                        <Check className="w-4 h-4" />
-                        Sette
-                      </>
+                      <><Check className="w-4 h-4" /> Sette</>
                     ) : (
-                      <>
-                        <Plus className="w-4 h-4" />
-                        Analize Ekle
-                      </>
+                      <><Plus className="w-4 h-4" /> Analize Ekle</>
                     )}
                   </Button>
                 </div>

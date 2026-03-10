@@ -26,18 +26,14 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showFullReasoning, setShowFullReasoning] = useState(false);
   
-  // Sort predictions by marketScore (if available) or hybrid confidence
   const sortedPredictions = [...predictions].sort((a, b) => {
     if (a.marketScore !== undefined && b.marketScore !== undefined) {
       return (b.marketScore || 0) - (a.marketScore || 0);
     }
-    const aHybrid = getHybridConfidence(a);
-    const bHybrid = getHybridConfidence(b);
-    return bHybrid - aHybrid;
+    return getHybridConfidence(b) - getHybridConfidence(a);
   });
   
   const mainPrediction = sortedPredictions[0];
-  
   if (!mainPrediction) return null;
 
   const hybridConfidence = getHybridConfidence(mainPrediction);
@@ -74,10 +70,8 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
       transition={{ delay: 0.1 }}
       className="relative overflow-hidden rounded-2xl bg-primary/5 border border-primary/20"
     >
-      {/* Removed excessive gradient overlays */}
-
-      <div className="relative z-10 p-4 md:p-5">
-        {/* Compact Header */}
+      <div className="relative z-10 p-4">
+        {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
@@ -85,19 +79,18 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
             </div>
             <span className="text-sm font-medium text-muted-foreground">AI Önerisi</span>
           </div>
-          {/* Single Confidence Badge */}
           <div className={cn("px-3 py-1.5 rounded-full text-sm font-semibold flex items-center gap-1.5", bg, color)}>
             <ConfidenceIcon className="w-3.5 h-3.5" />
             {confidenceLabel}
           </div>
         </div>
 
-        {/* Main Prediction - Cleaner */}
+        {/* Main Prediction */}
         <div className="text-center mb-5">
-          <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
+          <h3 className="text-2xl font-bold text-foreground mb-1">
             {mainPrediction.prediction}
           </h3>
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-2 flex-wrap">
             <p className="text-sm text-muted-foreground">{mainPrediction.type}</p>
             {mainPrediction.riskLevel && (
               <span className={cn(
@@ -113,7 +106,7 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
           </div>
         </div>
 
-        {/* Market Score or Hybrid Confidence Bar + Tooltip */}
+        {/* Progress Bar */}
         <div className="mb-5">
           <div className="flex items-center justify-between text-xs mb-2">
             <div className="flex items-center gap-1.5">
@@ -124,10 +117,10 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
             </div>
             <span className={cn("font-bold text-sm", color)}>%{Math.round(hybridConfidence)}</span>
           </div>
-          <Progress value={hybridConfidence} className="h-2.5" />
+          <Progress value={hybridConfidence} className="h-2" />
         </div>
 
-        {/* Reasoning - Expandable */}
+        {/* Reasoning */}
         {reasoning && (
           <div className="mb-4">
             <p className={cn(
@@ -139,7 +132,7 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
             {isLongReasoning && (
               <button
                 onClick={() => setShowFullReasoning(!showFullReasoning)}
-                className="min-h-[44px] text-xs text-primary hover:underline mt-1 touch-manipulation flex items-center"
+                className="min-h-[44px] text-xs text-primary active:opacity-70 mt-1 touch-manipulation flex items-center transition-opacity"
               >
                 {showFullReasoning ? 'Daha az göster' : 'Devamını oku'}
               </button>
@@ -147,10 +140,10 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
           </div>
         )}
 
-        {/* Collapsible Disclaimer */}
+        {/* Disclaimer */}
         <button
           onClick={() => setShowDisclaimer(!showDisclaimer)}
-          className="w-full min-h-[44px] flex items-center justify-between text-xs text-amber-400/70 hover:text-amber-400 transition-colors mb-4 touch-manipulation"
+          className="w-full min-h-[44px] flex items-center justify-between text-xs text-amber-400/70 active:bg-muted/20 rounded-lg px-1 transition-colors mb-4 touch-manipulation"
         >
           <span className="flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5" />
@@ -177,8 +170,8 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
           )}
         </AnimatePresence>
 
-        {/* Action Buttons - Simplified with single CTA */}
-        <div className="flex items-center gap-2">
+        {/* Actions */}
+        <div className="flex items-center gap-2 flex-wrap">
           <Button 
             onClick={handleAddToSetClick}
             disabled={isInSet}
@@ -191,19 +184,12 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
             )}
           >
             {isInSet ? (
-              <>
-                <Star className="w-4 h-4" />
-                Sette
-              </>
+              <><Star className="w-4 h-4" /> Sette</>
             ) : (
-              <>
-                <Plus className="w-4 h-4" />
-                Analize Ekle
-              </>
+              <><Plus className="w-4 h-4" /> Analize Ekle</>
             )}
           </Button>
 
-          {/* Share Icon - Compact */}
           <ShareCard
             homeTeam={matchInput.homeTeam}
             awayTeam={matchInput.awayTeam}

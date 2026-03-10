@@ -19,9 +19,18 @@ interface AnalysisDrawerProps {
   onClose: () => void;
 }
 
-const SNAP_PEEK = 0.4;   // 40% of viewport
-const SNAP_FULL = 0.93;  // 93% of viewport
+const SNAP_PEEK = 0.48;
+const SNAP_FULL = 0.93;
 const VELOCITY_THRESHOLD = 0.5;
+
+const getAppHeight = () => {
+  const cssVar = getComputedStyle(document.documentElement).getPropertyValue('--app-height');
+  if (cssVar) {
+    const parsed = parseFloat(cssVar);
+    if (!isNaN(parsed) && parsed > 0) return parsed;
+  }
+  return window.innerHeight;
+};
 
 const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClose }) => {
   const [mounted, setMounted] = useState(false);
@@ -30,7 +39,7 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
   const drawerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Touch tracking (drag handle)
+  // Touch tracking (drag handle only)
   const touchStartY = useRef(0);
   const touchStartTime = useRef(0);
   const currentTranslateY = useRef(0);
@@ -40,7 +49,6 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
   const peekTouchStartY = useRef(0);
   const peekTouchMoved = useRef(false);
 
-  // Mount → forced reflow → animate in
   useEffect(() => {
     let rafId: number;
     if (isOpen && analysis) {
@@ -48,9 +56,7 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
       setSnapPoint(SNAP_PEEK);
       rafId = requestAnimationFrame(() => {
         drawerRef.current?.offsetHeight;
-        requestAnimationFrame(() => {
-          setVisible(true);
-        });
+        requestAnimationFrame(() => setVisible(true));
       });
       return () => cancelAnimationFrame(rafId);
     } else {
@@ -63,7 +69,6 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
     }
   }, [isOpen, analysis]);
 
-  // Lock body scroll
   useEffect(() => {
     if (visible) {
       document.body.style.overflow = 'hidden';
@@ -74,43 +79,32 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
   }, [visible]);
 
   const getDrawerHeight = useCallback(() => {
-    return snapPoint * window.innerHeight;
+    return snapPoint * getAppHeight();
   }, [snapPoint]);
 
-  const expandToFull = useCallback(() => {
-    setSnapPoint(SNAP_FULL);
-  }, []);
+  const expandToFull = useCallback(() => setSnapPoint(SNAP_FULL), []);
 
-  // Touch handlers for drag handle area
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    // Only drag from handle area or when scroll is at top
-    const scrollEl = scrollRef.current;
-    const isAtTop = !scrollEl || scrollEl.scrollTop <= 0;
-    
-    if (!isAtTop && snapPoint === SNAP_FULL) return;
-    
+  // Drag handle touch handlers
+  const handleDragStart = useCallback((e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
     touchStartTime.current = Date.now();
     currentTranslateY.current = 0;
     isDragging.current = true;
-  }, [snapPoint]);
+  }, []);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+  const handleDragMove = useCallback((e: React.TouchEvent) => {
     if (!isDragging.current) return;
-    
     const deltaY = e.touches[0].clientY - touchStartY.current;
     currentTranslateY.current = deltaY;
-
     if (drawerRef.current && deltaY > 0) {
       drawerRef.current.style.transform = `translateY(${deltaY}px)`;
       drawerRef.current.style.transition = 'none';
     }
   }, []);
 
-  const handleTouchEnd = useCallback(() => {
+  const handleDragEnd = useCallback(() => {
     if (!isDragging.current) return;
     isDragging.current = false;
-
     const deltaY = currentTranslateY.current;
     const elapsed = (Date.now() - touchStartTime.current) / 1000;
     const velocity = Math.abs(deltaY) / elapsed;
@@ -120,7 +114,6 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
       drawerRef.current.style.transition = '';
     }
 
-    // Swipe down → close or collapse
     if (deltaY > 50 || (deltaY > 20 && velocity > VELOCITY_THRESHOLD)) {
       if (snapPoint === SNAP_FULL) {
         setSnapPoint(SNAP_PEEK);
@@ -130,15 +123,22 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
       return;
     }
 
-    // Swipe up → expand
     if (deltaY < -50 || (deltaY < -20 && velocity > VELOCITY_THRESHOLD)) {
-      if (snapPoint === SNAP_PEEK) {
-        setSnapPoint(SNAP_FULL);
-      }
+      if (snapPoint === SNAP_PEEK) setSnapPoint(SNAP_FULL);
     }
   }, [snapPoint, onClose]);
 
-  // Peek tap-to-expand handlers
+  // Scroll-area drag (only when scrolled to top in full mode)
+  const handleScrollTouchStart = useCallback((e: React.TouchEvent) => {
+    const scrollEl = scrollRef.current;
+    if (!scrollEl || scrollEl.scrollTop > 0) return;
+    touchStartY.current = e.touches[0].clientY;
+    touchStartTime.current = Date.now();
+    currentTranslateY.current = 0;
+    isDragging.current = true;
+  }, []);
+
+  // Peek tap-to-expand
   const INTERACTIVE_SELECTOR = 'button, a, input, textarea, select, [role="button"], [role="link"], [role="tab"], [data-interactive], [contenteditable="true"]';
   const PEEK_DRAG_THRESHOLD = 8;
 
@@ -149,15 +149,13 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
 
   const handlePeekTouchMove = useCallback((e: React.TouchEvent) => {
     if (peekTouchMoved.current) return;
-    const delta = Math.abs(e.touches[0].clientY - peekTouchStartY.current);
-    if (delta > PEEK_DRAG_THRESHOLD) {
+    if (Math.abs(e.touches[0].clientY - peekTouchStartY.current) > PEEK_DRAG_THRESHOLD) {
       peekTouchMoved.current = true;
     }
   }, []);
 
   const isInteractiveTarget = useCallback((target: HTMLElement, container: HTMLElement) => {
     const interactive = target.closest(INTERACTIVE_SELECTOR);
-    // If the matched interactive element is the wrapper itself, it's not a nested interactive
     return interactive !== null && interactive !== container;
   }, []);
 
@@ -198,7 +196,7 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
       {/* Drawer */}
       <div
         ref={drawerRef}
-        className={`fixed inset-x-0 bottom-0 z-50 bg-background/95 backdrop-blur-xl rounded-t-2xl overflow-hidden flex flex-col transition-all duration-300 ease-out ${
+        className={`fixed inset-x-0 bottom-0 z-50 bg-background/95 backdrop-blur-xl rounded-t-3xl overflow-hidden flex flex-col transition-all duration-300 ease-out ${
           visible ? 'translate-y-0' : 'translate-y-full'
         }`}
         style={{
@@ -208,12 +206,12 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
           boxShadow: '0 -8px 32px rgba(0,0,0,0.3)',
         }}
       >
-        {/* Drag handle + Close */}
+        {/* Drag handle + Close — isolated from scroll */}
         <div
           className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0 cursor-grab active:cursor-grabbing"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDragMove}
+          onTouchEnd={handleDragEnd}
         >
           <div className="flex-1 flex justify-center">
             <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
@@ -222,9 +220,9 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="h-8 w-8 rounded-full absolute right-3 top-3"
+            className="min-h-[44px] min-w-[44px] h-11 w-11 rounded-full absolute right-3 top-3"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </Button>
         </div>
 
@@ -232,7 +230,6 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
         {analysis && (
           <>
             {isPeek ? (
-              /* Peek mode: Hero Summary — tap anywhere to expand */
               <div
                 role="button"
                 tabIndex={0}
@@ -247,14 +244,13 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
                 <AnalysisHeroSummary analysis={analysis} />
               </div>
             ) : (
-              /* Full mode: All content */
               <div
                 ref={scrollRef}
                 className="flex-1 overflow-y-auto overscroll-contain"
                 style={{ WebkitOverflowScrolling: 'touch' }}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
+                onTouchStart={handleScrollTouchStart}
+                onTouchMove={handleDragMove}
+                onTouchEnd={handleDragEnd}
               >
                 <div className="px-4 py-4 space-y-4" style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }}>
                   <MatchHeroCard
@@ -264,7 +260,7 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
                     awayTeamCrest={analysis.input.awayTeamCrest}
                   />
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <AIRecommendationCard
                       predictions={analysis.predictions}
                       matchInput={analysis.input}
@@ -292,7 +288,6 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
                     awayTeam={analysis.input.awayTeam}
                   />
 
-                  {/* Advanced Analysis — Accordion */}
                   <CollapsibleAnalysis analysis={analysis} />
 
                   <LegalDisclaimer />
