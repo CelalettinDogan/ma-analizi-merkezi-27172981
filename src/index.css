@@ -114,14 +114,10 @@
     text-size-adjust: 100% !important;
   }
 
-  /* Android font scaling koruması - kritik UI elemanları */
-  button,
-  [role="tab"],
-  [role="tablist"],
-  nav,
-  .bottom-nav-text {
-    -webkit-text-size-adjust: none !important;
-    text-size-adjust: none !important;
+  /* Android font scaling koruması - tüm elementler */
+  * {
+    -webkit-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
   }
 
   * {
