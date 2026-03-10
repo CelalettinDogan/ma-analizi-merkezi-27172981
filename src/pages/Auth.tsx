@@ -89,8 +89,8 @@ const Auth: React.FC = () => {
       setIsLoading(false);
       return;
     }
-    toast({ title: 'Doğrulama Linki Gönderildi', description: `${registerEmail} adresine doğrulama linki gönderildi. Lütfen e-postanızı kontrol edin.` });
-    setIsLoading(false);
+    toast({ title: 'Kayıt Başarılı!', description: 'Hoş geldiniz! Ana sayfaya yönlendiriliyorsunuz.' });
+    navigate('/');
   };
 
 
