@@ -140,44 +140,6 @@ const FormAnalysisTab: React.FC<FormAnalysisTabProps> = ({ standings, isLoading 
     ) : null
   );
 
-  // Streak cards: only show real streaks if form data exists
-  const getWinStreak = (form: string | null): number => {
-    if (!form) return 0;
-    let streak = 0;
-    for (const r of form.split(',')) {
-      if (r.trim().toUpperCase() === 'W') streak++; else break;
-    }
-    return streak;
-  };
-
-  const getNoWinStreak = (form: string | null): number => {
-    if (!form) return 0;
-    let streak = 0;
-    for (const r of form.split(',')) {
-      if (r.trim().toUpperCase() !== 'W') streak++; else break;
-    }
-    return streak;
-  };
-
-  const hotStreaks = hasRealForm
-    ? [...teamsWithFormData]
-        .map(t => ({ ...t, winStreak: getWinStreak(t.form) }))
-        .filter(t => t.winStreak >= 2)
-        .sort((a, b) => b.winStreak - a.winStreak)
-        .slice(0, 5)
-    : [];
-
-  const coldStreaks = hasRealForm
-    ? [...teamsWithFormData]
-        .map(t => ({ ...t, noWinStreak: getNoWinStreak(t.form) }))
-        .filter(t => t.noWinStreak >= 2)
-        .sort((a, b) => b.noWinStreak - a.noWinStreak)
-        .slice(0, 5)
-    : [];
-
-  const StreakUnavailable = () => (
-    <div className="flex flex-col items-center gap-2 py-4 text-center">
-      <Info className="w-5 h-5 text-muted-foreground" />
       <p className="text-sm text-muted-foreground">
         Form verisi mevcut değil – genel performansa göre sıralama gösteriliyor
       </p>
