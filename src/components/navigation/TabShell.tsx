@@ -84,11 +84,13 @@ const TabShell: React.FC = () => {
   }, []);
 
   // Auth guard — redirect to login (must be before early returns)
+  // Skip redirect for public routes like /callback, /reset-password, /auth
+  const PUBLIC_ROUTES = ['/auth', '/callback', '/reset-password', '/terms', '/privacy', '/delete-account'];
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && !user && !PUBLIC_ROUTES.includes(location.pathname)) {
       navigate('/auth', { replace: true });
     }
-  }, [isLoading, user, navigate]);
+  }, [isLoading, user, navigate, location.pathname]);
 
   // Auth guard — loading
   if (isLoading) {
