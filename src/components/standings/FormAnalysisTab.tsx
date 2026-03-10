@@ -140,11 +140,7 @@ const FormAnalysisTab: React.FC<FormAnalysisTabProps> = ({ standings, isLoading 
     ) : null
   );
 
-      <p className="text-sm text-muted-foreground">
-        Form verisi mevcut değil – genel performansa göre sıralama gösteriliyor
-      </p>
-    </div>
-  );
+
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
