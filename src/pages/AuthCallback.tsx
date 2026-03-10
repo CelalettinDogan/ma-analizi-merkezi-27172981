@@ -93,9 +93,9 @@ const AuthCallback = () => {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 15 }}
-            className="mx-auto w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center"
+            className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center"
           >
-            <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+            <CheckCircle2 className="h-10 w-10 text-primary" />
           </motion.div>
 
           {/* Text */}
