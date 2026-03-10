@@ -11,7 +11,7 @@ const NATIVE_SCHEME = 'golmetrik://';
 const isMobileUserAgent = () =>
   /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-type CallbackState = 'loading' | 'verified-mobile' | 'error';
+type CallbackState = 'loading' | 'verified' | 'error';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -25,16 +25,8 @@ const AuthCallback = () => {
 
         const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
-        const type = hashParams.get('type') || searchParams.get('type');
-
-        const state = hashParams.get('state') || searchParams.get('state') || '';
-        const platformParam = searchParams.get('platform');
-        const isNativePlatform = state.startsWith('native:') || platformParam === 'native';
-        const isEmailVerification = type === 'signup' || type === 'magiclink' || type === 'email';
-        const isMobile = isMobileUserAgent();
 
         if (accessToken && refreshToken) {
-          // Always set the session so the email gets verified
           const { error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
@@ -42,18 +34,12 @@ const AuthCallback = () => {
 
           if (error) {
             console.error('Session error:', error);
-            navigate('/auth', { replace: true });
+            setState('error');
             return;
           }
 
-          // Mobile email verification → show success page
-          if ((isNativePlatform || (isEmailVerification && isMobile))) {
-            setState('verified-mobile');
-            return;
-          }
-
-          // Web: go to home
-          navigate('/', { replace: true });
+          // Always show success page
+          setState('verified');
           return;
         }
 
