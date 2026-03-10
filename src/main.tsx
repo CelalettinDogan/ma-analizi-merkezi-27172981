@@ -28,6 +28,14 @@ window.addEventListener('resize', lockRootFontSize);
 document.addEventListener('visibilitychange', lockRootFontSize);
 if (document.body) lockRootFontSize();
 
+// Dynamic viewport height — fixes Android 100vh bug (nav bars, keyboard)
+function setAppHeight() {
+  document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
+}
+window.addEventListener('resize', setAppHeight);
+window.addEventListener('orientationchange', () => setTimeout(setAppHeight, 150));
+setAppHeight();
+
 // Native platform initialization
 const initializeNative = async () => {
   if (Capacitor.isNativePlatform()) {
