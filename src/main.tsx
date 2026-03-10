@@ -6,8 +6,27 @@ import { StatusBar, Style } from "@capacitor/status-bar";
 import App from "./App.tsx";
 import "./index.css";
 
-// Lock root font-size to prevent OS-level font scaling
-document.documentElement.style.fontSize = '16px';
+// Counter-scaling: detect and neutralize Android system font scaling
+function lockRootFontSize() {
+  if (!document.body) return;
+  const test = document.createElement('div');
+  test.style.cssText = 'font-size:16px;position:absolute;visibility:hidden;pointer-events:none;left:-9999px';
+  document.body.appendChild(test);
+  const actual = parseFloat(getComputedStyle(test).fontSize);
+  document.body.removeChild(test);
+
+  if (actual && actual !== 16) {
+    document.documentElement.style.fontSize = ((16 / actual) * 16) + 'px';
+  } else {
+    document.documentElement.style.fontSize = '16px';
+  }
+}
+
+// Run on load, resize, visibility change
+document.addEventListener('DOMContentLoaded', lockRootFontSize);
+window.addEventListener('resize', lockRootFontSize);
+document.addEventListener('visibilitychange', lockRootFontSize);
+if (document.body) lockRootFontSize();
 
 // Native platform initialization
 const initializeNative = async () => {
