@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, User, Loader2, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,10 +9,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import logoImg from '@/assets/logo.png';
 
 type AuthTab = 'login' | 'register';
@@ -29,13 +27,6 @@ const Auth: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // OTP verification state
-  const [showOtpScreen, setShowOtpScreen] = useState(false);
-  const [pendingEmail, setPendingEmail] = useState('');
-  const [otpCode, setOtpCode] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-
   // Focus tracking for icon color
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
@@ -45,14 +36,6 @@ const Auth: React.FC = () => {
       navigate(from, { replace: true });
     }
   }, [user, navigate, location.state]);
-
-  // Resend cooldown timer
-  useEffect(() => {
-    if (resendCooldown > 0) {
-      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendCooldown]);
 
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -106,54 +89,10 @@ const Auth: React.FC = () => {
       setIsLoading(false);
       return;
     }
-    // Show OTP verification screen
-    setPendingEmail(registerEmail);
-    setShowOtpScreen(true);
-    setResendCooldown(60);
-    toast({ title: 'Doğrulama Kodu Gönderildi', description: `${registerEmail} adresine 6 haneli kod gönderildi.` });
+    toast({ title: 'Doğrulama Linki Gönderildi', description: `${registerEmail} adresine doğrulama linki gönderildi. Lütfen e-postanızı kontrol edin.` });
     setIsLoading(false);
   };
 
-  const handleVerifyOtp = async () => {
-    if (otpCode.length !== 6) return;
-    setIsVerifying(true);
-    try {
-      const { error } = await supabase.auth.verifyOtp({
-        email: pendingEmail,
-        token: otpCode,
-        type: 'signup',
-      });
-      if (error) {
-        toast({ title: 'Doğrulama Hatası', description: 'Kod hatalı veya süresi dolmuş. Tekrar deneyin.', variant: 'destructive' });
-      } else {
-        toast({ title: 'Hesap Doğrulandı', description: 'Hesabınız başarıyla oluşturuldu!' });
-        setShowOtpScreen(false);
-        setOtpCode('');
-        setPendingEmail('');
-      }
-    } catch {
-      toast({ title: 'Hata', description: 'Bir sorun oluştu. Tekrar deneyin.', variant: 'destructive' });
-    }
-    setIsVerifying(false);
-  };
-
-  const handleResendOtp = async () => {
-    if (resendCooldown > 0) return;
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: pendingEmail,
-      });
-      if (error) {
-        toast({ title: 'Hata', description: error.message, variant: 'destructive' });
-      } else {
-        setResendCooldown(60);
-        toast({ title: 'Kod Gönderildi', description: 'Yeni doğrulama kodu e-posta adresinize gönderildi.' });
-      }
-    } catch {
-      toast({ title: 'Hata', description: 'Kod gönderilemedi.', variant: 'destructive' });
-    }
-  };
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,81 +109,6 @@ const Auth: React.FC = () => {
   };
 
   const inputClassName = "pl-11 h-[52px] rounded-2xl bg-muted/20 border-0 text-[15px] transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:bg-muted/30";
-
-  // OTP Verification Screen
-  if (showOtpScreen) {
-    return (
-      <div className="h-screen overflow-hidden bg-gradient-to-b from-background via-background to-muted/30 flex flex-col pt-safe">
-        <div className="flex-shrink-0 px-7 pt-4">
-          <button
-            onClick={() => {
-              setShowOtpScreen(false);
-              setOtpCode('');
-            }}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground active:text-foreground touch-manipulation"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Geri
-          </button>
-        </div>
-
-        <div className="flex-1 flex flex-col items-center justify-center px-7 -mt-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-sm text-center space-y-6"
-          >
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Mail className="h-7 w-7 text-primary" />
-            </div>
-
-            <div>
-              <h2 className="text-xl font-bold text-foreground">E-posta Doğrulama</h2>
-              <p className="text-sm text-muted-foreground mt-2">
-                <span className="font-medium text-foreground">{pendingEmail}</span> adresine gönderilen 6 haneli kodu girin.
-              </p>
-            </div>
-
-            <div className="flex justify-center">
-              <InputOTP
-                maxLength={6}
-                value={otpCode}
-                onChange={setOtpCode}
-                onComplete={handleVerifyOtp}
-              >
-                <InputOTPGroup>
-                  <InputOTPSlot index={0} className="h-12 w-12 rounded-xl border-border/50 text-lg" />
-                  <InputOTPSlot index={1} className="h-12 w-12 rounded-xl border-border/50 text-lg" />
-                  <InputOTPSlot index={2} className="h-12 w-12 rounded-xl border-border/50 text-lg" />
-                  <InputOTPSlot index={3} className="h-12 w-12 rounded-xl border-border/50 text-lg" />
-                  <InputOTPSlot index={4} className="h-12 w-12 rounded-xl border-border/50 text-lg" />
-                  <InputOTPSlot index={5} className="h-12 w-12 rounded-xl border-border/50 text-lg" />
-                </InputOTPGroup>
-              </InputOTP>
-            </div>
-
-            <motion.div whileTap={{ scale: 0.97 }}>
-              <Button
-                onClick={handleVerifyOtp}
-                className="w-full h-[52px] rounded-2xl text-[15px] font-semibold shadow-[0_4px_16px_hsl(var(--primary)/0.3)]"
-                disabled={isVerifying || otpCode.length !== 6}
-              >
-                {isVerifying ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Doğrulanıyor...</> : 'Doğrula'}
-              </Button>
-            </motion.div>
-
-            <button
-              onClick={handleResendOtp}
-              disabled={resendCooldown > 0}
-              className="text-sm text-muted-foreground active:text-primary disabled:opacity-50 touch-manipulation"
-            >
-              {resendCooldown > 0 ? `Tekrar gönder (${resendCooldown}s)` : 'Kodu tekrar gönder'}
-            </button>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="h-screen overflow-hidden bg-gradient-to-b from-background via-background to-muted/30 flex flex-col pt-safe">
