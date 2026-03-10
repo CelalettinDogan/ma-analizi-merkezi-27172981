@@ -1,11 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { lovable } from '@/integrations/lovable/index';
 import { Capacitor } from '@capacitor/core';
-import { Browser } from '@capacitor/browser';
 
-const LOVABLE_CLOUD_URL = 'https://id-preview--a043c351-80f7-4404-bfb0-4355af0b4d37.lovable.app';
 const PUBLISHED_URL = 'https://golmetrikapp.lovable.app';
 
 const getRedirectUrl = () => {
@@ -19,7 +16,6 @@ interface AuthContextType {
   isLoading: boolean;
   signUp: (email: string, password: string, displayName?: string) => Promise<{ error: Error | null; data: any }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signInWithGoogle: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
 }
@@ -33,19 +29,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const initialized = useRef(false);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        // Only set isLoading=false from listener AFTER initialization
         if (initialized.current) {
           setIsLoading(false);
         }
       }
     );
 
-    // THEN check for existing session — this is the authoritative init
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -78,45 +71,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: error as Error | null };
   };
 
-  const signInWithGoogle = async () => {
-    if (Capacitor.isNativePlatform()) {
-      // Native: Manuel OAuth URL + harici tarayıcı
-      try {
-        const nonce = crypto.getRandomValues(new Uint8Array(16))
-          .reduce((s, b) => s + b.toString(16).padStart(2, '0'), '');
-
-        // Embed native flag in BOTH state AND redirect_uri query param
-        // State may be overridden by Lovable Cloud, so query param is the fallback
-        const state = `native:${nonce}`;
-
-        const params = new URLSearchParams({
-          provider: 'google',
-          redirect_uri: `${PUBLISHED_URL}/callback?platform=native`,
-          state,
-        });
-
-        const oauthUrl = `${LOVABLE_CLOUD_URL}/~oauth/initiate?${params}`;
-        await Browser.open({ url: oauthUrl });
-        // Native'de harici tarayıcı açıldı — uygulama arka plana geçecek
-        // DeepLinkHandler token'ları yakalayıp oturumu kuracak
-        return { error: null };
-      } catch (e) {
-        return { error: e instanceof Error ? e : new Error(String(e)) };
-      }
-    } else {
-      // Web: Lovable Cloud managed OAuth
-      const redirectUri = window.location.origin;
-      const { error } = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: redirectUri,
-      });
-      return { error: error as Error | null };
-    }
-  };
-
   const signOut = async () => {
     setUser(null);
     setSession(null);
-    // Clear cached role/premium data for clean next-user experience
     try {
       localStorage.removeItem('nav_access_cache');
       localStorage.removeItem('cached_user_roles');
@@ -138,7 +95,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading,
     signUp,
     signIn,
-    signInWithGoogle,
     signOut,
     resetPassword,
   };
