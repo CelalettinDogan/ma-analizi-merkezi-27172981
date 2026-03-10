@@ -27,13 +27,6 @@ const Auth: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // OTP verification state
-  const [showOtpScreen, setShowOtpScreen] = useState(false);
-  const [pendingEmail, setPendingEmail] = useState('');
-  const [otpCode, setOtpCode] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-
   // Focus tracking for icon color
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
