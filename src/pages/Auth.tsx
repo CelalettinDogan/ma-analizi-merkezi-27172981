@@ -89,11 +89,7 @@ const Auth: React.FC = () => {
       setIsLoading(false);
       return;
     }
-    // Show OTP verification screen
-    setPendingEmail(registerEmail);
-    setShowOtpScreen(true);
-    setResendCooldown(60);
-    toast({ title: 'Doğrulama Kodu Gönderildi', description: `${registerEmail} adresine 6 haneli kod gönderildi.` });
+    toast({ title: 'Doğrulama Linki Gönderildi', description: `${registerEmail} adresine doğrulama linki gönderildi. Lütfen e-postanızı kontrol edin.` });
     setIsLoading(false);
   };
 
