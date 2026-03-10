@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Info } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface StandingData {
   team_name: string;
@@ -52,37 +52,29 @@ const generateFallbackForm = (team: StandingData): string[] => {
 };
 
 const getFormIcon = (result: string) => {
-  switch (result.trim().toUpperCase()) {
-    case 'W': return <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold border border-primary/30">G</span>;
-    case 'D': return <span className="w-6 h-6 rounded-full bg-secondary/20 text-secondary flex items-center justify-center text-xs font-bold border border-secondary/30">B</span>;
-    case 'L': return <span className="w-6 h-6 rounded-full bg-destructive/20 text-destructive flex items-center justify-center text-xs font-bold border border-destructive/30">M</span>;
-    default: return <span className="w-6 h-6 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs">-</span>;
+  const r = result.trim().toUpperCase();
+  switch (r) {
+    case 'W': return <span className="w-5 h-5 rounded-full bg-primary/15 text-primary flex items-center justify-center text-[10px] font-bold">G</span>;
+    case 'D': return <span className="w-5 h-5 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-[10px] font-bold">B</span>;
+    case 'L': return <span className="w-5 h-5 rounded-full bg-destructive/15 text-destructive flex items-center justify-center text-[10px] font-bold">M</span>;
+    default: return <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px]">-</span>;
   }
 };
 
 const FormAnalysisTab: React.FC<FormAnalysisTabProps> = ({ standings, isLoading }) => {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[1, 2, 3, 4].map((i) => (
-          <Card key={i} className="border-border/50">
-            <CardHeader className="pb-2">
-              <div className="h-5 w-32 bg-muted/50 rounded animate-pulse" />
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {[1, 2, 3, 4, 5].map((j) => (
-                <div key={j} className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-muted/50 rounded-full animate-pulse" />
-                  <div className="flex-1 h-4 bg-muted/50 rounded animate-pulse" />
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((k) => (
-                      <div key={k} className="w-6 h-6 bg-muted/50 rounded-full animate-pulse" />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+      <div className="space-y-3">
+        {[1, 2].map((i) => (
+          <div key={i} className="rounded-xl border border-border/30 bg-card p-4 space-y-3">
+            <div className="h-4 w-28 bg-muted/50 rounded animate-pulse" />
+            {[1, 2, 3, 4, 5].map((j) => (
+              <div key={j} className="flex items-center gap-3">
+                <div className="w-6 h-6 bg-muted/50 rounded-full animate-pulse" />
+                <div className="flex-1 h-3 bg-muted/50 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
         ))}
       </div>
     );
@@ -97,33 +89,24 @@ const FormAnalysisTab: React.FC<FormAnalysisTabProps> = ({ standings, isLoading 
     formArray: team.form ? team.form.split(',').slice(0, 5) : generateFallbackForm(team),
   }));
 
-  const risingTeams = [...teamsWithFormData]
-    .sort((a, b) => b.pointsPerGame - a.pointsPerGame)
-    .slice(0, 5);
-
-  const fallingTeams = [...teamsWithFormData]
-    .sort((a, b) => a.pointsPerGame - b.pointsPerGame)
-    .slice(0, 5);
+  const risingTeams = [...teamsWithFormData].sort((a, b) => b.pointsPerGame - a.pointsPerGame).slice(0, 5);
+  const fallingTeams = [...teamsWithFormData].sort((a, b) => a.pointsPerGame - b.pointsPerGame).slice(0, 5);
 
   const renderTeamRow = (team: typeof teamsWithFormData[0], index: number, badge: string) => (
     <motion.div
       key={team.team_name}
-      initial={{ opacity: 0, x: -10 }}
+      initial={{ opacity: 0, x: -8 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.05 }}
-      className="flex items-center gap-3"
+      transition={{ delay: index * 0.04 }}
+      className="flex items-center gap-3 py-1.5"
     >
-      <span className="text-xs font-semibold text-muted-foreground w-5">{index + 1}</span>
-      {team.team_crest && (
-        <img src={team.team_crest} alt="" className="w-5 h-5 object-contain" />
-      )}
+      <span className="text-[10px] font-bold text-muted-foreground w-4 text-center">{index + 1}</span>
+      {team.team_crest && <img src={team.team_crest} alt="" className="w-6 h-6 object-contain flex-shrink-0" />}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">
-          {team.team_short_name || team.team_name}
-        </p>
-        <span className="text-xs text-muted-foreground">{badge}</span>
+        <p className="text-sm font-medium truncate">{team.team_short_name || team.team_name}</p>
+        <span className="text-[10px] text-muted-foreground">{badge}</span>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5">
         {team.formArray.map((result, i) => (
           <React.Fragment key={i}>{getFormIcon(result)}</React.Fragment>
         ))}
@@ -131,47 +114,34 @@ const FormAnalysisTab: React.FC<FormAnalysisTabProps> = ({ standings, isLoading 
     </motion.div>
   );
 
-  const FallbackNotice = () => (
-    !hasRealForm ? (
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
-        <Info className="w-3 h-3" />
-        <span>Sezon geneli performansa göre hesaplanmıştır</span>
-      </div>
-    ) : null
-  );
-
-
+  const sections = [
+    { title: 'Yükselen Takımlar', subtitle: 'En iyi maç başı puan ortalaması', icon: TrendingUp, iconColor: 'text-primary', teams: risingTeams },
+    { title: 'Düşüşte Olanlar', subtitle: 'En düşük maç başı puan ortalaması', icon: TrendingDown, iconColor: 'text-destructive', teams: fallingTeams },
+  ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <TrendingUp className="w-4 h-4 text-primary" />
-            Yükselen Takımlar
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">En iyi maç başı puan ortalaması</p>
-          <FallbackNotice />
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {risingTeams.map((t, i) => renderTeamRow(t, i, `${t.pointsPerGame.toFixed(2)} puan/maç`))}
-        </CardContent>
-      </Card>
-
-      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <TrendingDown className="w-4 h-4 text-destructive" />
-            Düşüşte Olanlar
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">En düşük maç başı puan ortalaması</p>
-          <FallbackNotice />
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {fallingTeams.map((t, i) => renderTeamRow(t, i, `${t.pointsPerGame.toFixed(2)} puan/maç`))}
-        </CardContent>
-      </Card>
-
+    <div className="space-y-3">
+      {sections.map((section) => {
+        const Icon = section.icon;
+        return (
+          <div key={section.title} className="rounded-xl border border-border/30 bg-card p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Icon className={cn("w-4 h-4", section.iconColor)} />
+              <h3 className="text-sm font-semibold">{section.title}</h3>
+            </div>
+            <p className="text-[10px] text-muted-foreground mb-3">{section.subtitle}</p>
+            {!hasRealForm && (
+              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-2">
+                <Info className="w-3 h-3" />
+                <span>Sezon geneli performansa göre hesaplanmıştır</span>
+              </div>
+            )}
+            <div className="space-y-1">
+              {section.teams.map((t, i) => renderTeamRow(t, i, `${t.pointsPerGame.toFixed(2)} puan/maç`))}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };
