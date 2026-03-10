@@ -109,8 +109,9 @@
 
 @layer base {
   html {
-    -webkit-text-size-adjust: none;
-    text-size-adjust: none;
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
   }
 
   /* Android font scaling koruması - kritik UI elemanları */
