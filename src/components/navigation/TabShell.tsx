@@ -144,7 +144,7 @@ const TabShell: React.FC = () => {
               opacity: isActive ? 1 : 0,
               transform: isActive ? 'translateY(0)' : 'translateY(4px)',
               transition: initialRender ? 'none' : 'opacity 0.2s ease-out, transform 0.2s ease-out',
-              height: '100vh',
+              height: 'var(--app-height, 100vh)',
               overflow: 'hidden',
             }}
           >
