@@ -93,46 +93,6 @@ const Auth: React.FC = () => {
     setIsLoading(false);
   };
 
-  const handleVerifyOtp = async () => {
-    if (otpCode.length !== 6) return;
-    setIsVerifying(true);
-    try {
-      const { error } = await supabase.auth.verifyOtp({
-        email: pendingEmail,
-        token: otpCode,
-        type: 'signup',
-      });
-      if (error) {
-        toast({ title: 'Doğrulama Hatası', description: 'Kod hatalı veya süresi dolmuş. Tekrar deneyin.', variant: 'destructive' });
-      } else {
-        toast({ title: 'Hesap Doğrulandı', description: 'Hesabınız başarıyla oluşturuldu!' });
-        setShowOtpScreen(false);
-        setOtpCode('');
-        setPendingEmail('');
-      }
-    } catch {
-      toast({ title: 'Hata', description: 'Bir sorun oluştu. Tekrar deneyin.', variant: 'destructive' });
-    }
-    setIsVerifying(false);
-  };
-
-  const handleResendOtp = async () => {
-    if (resendCooldown > 0) return;
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: pendingEmail,
-      });
-      if (error) {
-        toast({ title: 'Hata', description: error.message, variant: 'destructive' });
-      } else {
-        setResendCooldown(60);
-        toast({ title: 'Kod Gönderildi', description: 'Yeni doğrulama kodu e-posta adresinize gönderildi.' });
-      }
-    } catch {
-      toast({ title: 'Hata', description: 'Kod gönderilemedi.', variant: 'destructive' });
-    }
-  };
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
