@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Flame, Snowflake, Info } from 'lucide-react';
+import { TrendingUp, TrendingDown, Info } from 'lucide-react';
 
 interface StandingData {
   team_name: string;
@@ -140,49 +140,7 @@ const FormAnalysisTab: React.FC<FormAnalysisTabProps> = ({ standings, isLoading 
     ) : null
   );
 
-  // Streak cards: only show real streaks if form data exists
-  const getWinStreak = (form: string | null): number => {
-    if (!form) return 0;
-    let streak = 0;
-    for (const r of form.split(',')) {
-      if (r.trim().toUpperCase() === 'W') streak++; else break;
-    }
-    return streak;
-  };
 
-  const getNoWinStreak = (form: string | null): number => {
-    if (!form) return 0;
-    let streak = 0;
-    for (const r of form.split(',')) {
-      if (r.trim().toUpperCase() !== 'W') streak++; else break;
-    }
-    return streak;
-  };
-
-  const hotStreaks = hasRealForm
-    ? [...teamsWithFormData]
-        .map(t => ({ ...t, winStreak: getWinStreak(t.form) }))
-        .filter(t => t.winStreak >= 2)
-        .sort((a, b) => b.winStreak - a.winStreak)
-        .slice(0, 5)
-    : [];
-
-  const coldStreaks = hasRealForm
-    ? [...teamsWithFormData]
-        .map(t => ({ ...t, noWinStreak: getNoWinStreak(t.form) }))
-        .filter(t => t.noWinStreak >= 2)
-        .sort((a, b) => b.noWinStreak - a.noWinStreak)
-        .slice(0, 5)
-    : [];
-
-  const StreakUnavailable = () => (
-    <div className="flex flex-col items-center gap-2 py-4 text-center">
-      <Info className="w-5 h-5 text-muted-foreground" />
-      <p className="text-sm text-muted-foreground">
-        Form verisi mevcut değil – genel performansa göre sıralama gösteriliyor
-      </p>
-    </div>
-  );
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -214,39 +172,6 @@ const FormAnalysisTab: React.FC<FormAnalysisTabProps> = ({ standings, isLoading 
         </CardContent>
       </Card>
 
-      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Flame className="w-4 h-4 text-orange-500" />
-            Galibiyet Serisi
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">Üst üste kazanan takımlar</p>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {!hasRealForm ? <StreakUnavailable /> : hotStreaks.length > 0 ? (
-            hotStreaks.map((t, i) => renderTeamRow(t, i, `${t.winStreak} galibiyet`))
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">Şu an galibiyet serisinde takım yok</p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Snowflake className="w-4 h-4 text-cyan-500" />
-            Galibiyetsiz Seri
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">Galibiyet alamayan takımlar</p>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {!hasRealForm ? <StreakUnavailable /> : coldStreaks.length > 0 ? (
-            coldStreaks.map((t, i) => renderTeamRow(t, i, `${t.noWinStreak} maç galibiyetsiz`))
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">Şu an galibiyetsiz seride takım yok</p>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 };
