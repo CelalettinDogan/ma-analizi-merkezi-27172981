@@ -31,8 +31,8 @@ const ConfidenceBreakdownTooltip: React.FC<ConfidenceBreakdownTooltipProps> = ({
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-muted/50 text-muted-foreground hover:text-foreground transition-colors touch-manipulation">
-            <Info className="w-3 h-3" />
+          <button className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-full text-muted-foreground active:text-foreground transition-colors touch-manipulation">
+            <Info className="w-4 h-4" />
           </button>
         </TooltipTrigger>
         <TooltipContent side="top" className="w-56 p-3 space-y-2.5">

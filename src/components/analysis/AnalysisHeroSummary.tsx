@@ -10,7 +10,6 @@ interface AnalysisHeroSummaryProps {
 }
 
 const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) => {
-  // Best prediction
   const sortedPredictions = [...analysis.predictions].sort(
     (a, b) => getHybridConfidence(b) - getHybridConfidence(a)
   );
@@ -20,15 +19,12 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
   const hybridConfidence = getHybridConfidence(mainPrediction);
   const confidenceLevel = getConfidenceLevel(hybridConfidence);
 
-  // xG total
   const xGTotal = analysis.poissonData
     ? (analysis.poissonData.expectedHomeGoals + analysis.poissonData.expectedAwayGoals)
     : null;
 
-  // Most likely score
   const mostLikelyScore = analysis.poissonData?.scoreProbabilities?.[0];
 
-  // Confidence color
   const confColor = {
     yüksek: 'text-emerald-400',
     orta: 'text-amber-400',
@@ -45,21 +41,21 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
   const dashOffset = circumference - (hybridConfidence / 100) * circumference;
 
   return (
-    <div className="px-4 pb-4 space-y-4">
+    <div className="px-4 pb-4 space-y-3">
       {/* Teams row */}
-      <div className="flex items-center justify-center gap-3 pt-2">
+      <div className="flex items-center justify-center gap-2.5 pt-2 min-w-0">
         {analysis.input.homeTeamCrest && (
-          <img src={analysis.input.homeTeamCrest} alt="" className="w-8 h-8 object-contain" />
+          <img src={analysis.input.homeTeamCrest} alt="" className="w-8 h-8 object-contain shrink-0" />
         )}
-        <span className="text-sm font-medium text-foreground break-words min-w-0 text-center">
+        <span className="text-sm font-medium text-foreground truncate max-w-[120px] text-center">
           {analysis.input.homeTeam}
         </span>
-        <span className="text-xs text-muted-foreground">vs</span>
-        <span className="text-sm font-medium text-foreground break-words min-w-0 text-center">
+        <span className="text-xs text-muted-foreground shrink-0">vs</span>
+        <span className="text-sm font-medium text-foreground truncate max-w-[120px] text-center">
           {analysis.input.awayTeam}
         </span>
         {analysis.input.awayTeamCrest && (
-          <img src={analysis.input.awayTeamCrest} alt="" className="w-8 h-8 object-contain" />
+          <img src={analysis.input.awayTeamCrest} alt="" className="w-8 h-8 object-contain shrink-0" />
         )}
       </div>
 
@@ -81,7 +77,7 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="flex items-center justify-center gap-6"
+        className="flex items-center justify-center gap-4 flex-wrap"
       >
         {/* Circular confidence */}
         <div className="flex flex-col items-center gap-1">
@@ -97,6 +93,7 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
                 initial={{ strokeDashoffset: circumference }}
                 animate={{ strokeDashoffset: dashOffset }}
                 transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
+                style={{ willChange: 'stroke-dashoffset' }}
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
@@ -134,12 +131,9 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
         )}
       </motion.div>
 
-      {/* Tap affordance hint */}
-      <div className="flex flex-col items-center gap-1 pt-2 pb-1">
-        <ChevronUp
-          className="w-5 h-5 text-muted-foreground/40 animate-bounce"
-          style={{ animationDuration: '2s' }}
-        />
+      {/* Tap hint — static chevron */}
+      <div className="flex flex-col items-center gap-1 pt-1 pb-1">
+        <ChevronUp className="w-5 h-5 text-muted-foreground/40" />
         <span className="text-[10px] text-muted-foreground/40 tracking-wide">
           Detaylar için dokun
         </span>

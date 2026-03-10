@@ -29,15 +29,14 @@ const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights, homeTeam
   const TeamLogo = ({ crest, teamName, gradient }: { crest?: string; teamName: string; gradient: string }) => {
     if (crest) {
       return (
-        <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-2 rounded-xl bg-background/50 flex items-center justify-center border border-border/30 p-2">
+        <div className="w-14 h-14 mx-auto mb-2 rounded-xl bg-background/50 flex items-center justify-center border border-border/30 p-2">
           <img 
             src={crest} 
             alt={teamName}
             className="w-full h-full object-contain"
             onError={(e) => {
-              // Fallback to letter if image fails
               e.currentTarget.style.display = 'none';
-              e.currentTarget.parentElement!.innerHTML = `<span class="text-xl md:text-2xl font-bold ${gradient.includes('primary') ? 'text-primary' : 'text-secondary'}">${teamName.charAt(0)}</span>`;
+              e.currentTarget.parentElement!.innerHTML = `<span class="text-xl font-bold ${gradient.includes('primary') ? 'text-primary' : 'text-secondary'}">${teamName.charAt(0)}</span>`;
             }}
           />
         </div>
@@ -45,8 +44,8 @@ const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights, homeTeam
     }
     
     return (
-      <div className={`w-12 h-12 md:w-16 md:h-16 mx-auto mb-2 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center border ${gradient.includes('primary') ? 'border-primary/20' : 'border-secondary/20'}`}>
-        <span className={`text-xl md:text-2xl font-bold ${gradient.includes('primary') ? 'text-primary' : 'text-secondary'}`}>
+      <div className={`w-14 h-14 mx-auto mb-2 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center border ${gradient.includes('primary') ? 'border-primary/20' : 'border-secondary/20'}`}>
+        <span className={`text-xl font-bold ${gradient.includes('primary') ? 'text-primary' : 'text-secondary'}`}>
           {teamName.charAt(0)}
         </span>
       </div>
@@ -57,22 +56,20 @@ const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights, homeTeam
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-muted/30 border border-border/50 p-4 md:p-6"
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-muted/30 border border-border/50 p-4"
     >
-      {/* Background decoration */}
+      {/* Simplified background — no blur-3xl elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
-      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-32 h-32 bg-secondary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
       {/* Content */}
       <div className="relative z-10">
-        {/* League and Date - Compact */}
+        {/* League and Date */}
         <div className="flex items-center justify-center gap-3 mb-4 text-sm">
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <MapPin className="w-3.5 h-3.5 text-primary" />
-            <span className="font-medium">{getLeagueName(match.league)}</span>
+            <span className="font-medium truncate max-w-[140px]">{getLeagueName(match.league)}</span>
           </div>
-          <span className="w-1 h-1 rounded-full bg-border" />
+          <span className="w-1 h-1 rounded-full bg-border shrink-0" />
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Calendar className="w-3.5 h-3.5 text-secondary" />
             <span>{formatDate(match.matchDate)}</span>
@@ -80,7 +77,7 @@ const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights, homeTeam
         </div>
 
         {/* Teams */}
-        <div className="flex items-center justify-center gap-3 md:gap-6">
+        <div className="flex items-center justify-center gap-3">
           {/* Home Team */}
           <div className="flex-1 text-center min-w-0">
             <TeamLogo 
@@ -88,14 +85,14 @@ const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights, homeTeam
               teamName={match.homeTeam} 
               gradient="from-primary/20 to-primary/10"
             />
-            <h2 className="text-sm md:text-base font-semibold text-foreground break-words min-w-0">{match.homeTeam}</h2>
+            <h2 className="text-sm font-semibold text-foreground break-words min-w-0">{match.homeTeam}</h2>
             <span className="text-xs text-muted-foreground">Ev Sahibi</span>
           </div>
 
-          {/* VS Badge */}
+          {/* VS Badge — fixed size */}
           <div className="flex flex-col items-center shrink-0">
-            <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-primary/20 via-muted to-secondary/20 flex items-center justify-center border border-border/50">
-              <span className="text-xs md:text-base font-bold text-muted-foreground">VS</span>
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 via-muted to-secondary/20 flex items-center justify-center border border-border/50">
+              <span className="text-xs font-bold text-muted-foreground">VS</span>
             </div>
           </div>
 
@@ -106,14 +103,14 @@ const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights, homeTeam
               teamName={match.awayTeam} 
               gradient="from-secondary/20 to-secondary/10"
             />
-            <h2 className="text-sm md:text-base font-semibold text-foreground break-words min-w-0">{match.awayTeam}</h2>
+            <h2 className="text-sm font-semibold text-foreground break-words min-w-0">{match.awayTeam}</h2>
             <span className="text-xs text-muted-foreground">Deplasman</span>
           </div>
         </div>
 
         {/* Insight Badges */}
         {insights && (
-          <div className="flex justify-center mt-4">
+          <div className="flex justify-center mt-4 flex-wrap gap-1.5">
             <MatchInsightBadges insights={insights} />
           </div>
         )}

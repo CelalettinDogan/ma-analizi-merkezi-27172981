@@ -1,93 +1,135 @@
 
 
-## Plan: Analiz Ekranı — 2026 Native Premium Revizyon
+# Hibrit Market Selection Engine — Refactor Planı
 
-### Sorunlar
+## Mevcut Sorunlar
 
-1. **AnalysisDrawer** — Peek modu %40 viewport yüksekliğinde, küçük ekranlarda (320px) içerik sığmıyor. Full modda drag handle + scroll çakışması var.
-2. **MatchHeroCard** — Takım logoları ve VS badge'i dar ekranlarda sıkışıyor. Background dekor elementleri gereksiz GPU yükü.
-3. **AIRecommendationCard** — Disclaimer bölümü görsel gürültü yaratıyor. Action butonları flex taşması riski.
-4. **PredictionPillSelector** — Horizontal scroll hint gradient'i parent card rengiyle uyumsuz. Pill'ler dar ekranda okunaksız.
-5. **TeamComparisonCard** — FormTabs içindeki grid dar ekranda form badge'leri kesiyor. ComparisonRow label'ları taşıyor.
-6. **H2HTimeline** — Match bubble'ları 320px'de üst üste biniyor. Timeline çizgisi yanlış konumlanıyor.
-7. **AnalysisHeroSummary** — Teams row'da uzun isimler taşıyor. Stat kutuları esnek değil.
-8. **CollapsibleAnalysis** — Section header'ları hover efektli (web pattern), native'de active state olmalı.
-9. **AnalysisLoadingState** — Skeleton cards grid 320px'de taşıyor.
-10. **Drawer snap point** — `--app-height` kullanmıyor, `window.innerHeight` doğrudan kullanılıyor.
+1. **Eşitsiz confidence eşikleri**: `predictionEngine.ts`'de 1X2 marketi `>55%` ile "yüksek" olurken, BTTS `>65%` gerektiriyor. 1X2 doğası gereği daha polarize olduğu için neredeyse her maçta "yüksek" çıkıyor.
 
-### Değişiklikler
+2. **`mathConfidenceToNumber` sabit mapping**: `yüksek=0.8`, `orta=0.6`, `düşük=0.4` — market türünden bağımsız. 1X2'nin "yüksek"i ile BTTS'nin "orta"sı arasında gerçek sinyal gücü farkı yansımıyor.
 
-**1. `src/components/analysis/AnalysisDrawer.tsx`**
-- Snap point hesaplamasında `window.innerHeight` yerine CSS `--app-height` değerini kullan
-- Peek snap'i %48'e yükselt (daha fazla hero summary alanı)
-- Full modda drag handle ayrı, scroll container'ı bağımsız tut (touch event çakışmasını düzelt)
-- `scrollRef`'e `onTouchStart/Move/End` bağlamayı kaldır — sadece drag handle'dan sürükleme
-- Drawer border-radius'u `rounded-t-3xl` yap (daha premium)
-- Close button boyutunu 44px minimum touch target'a yükselt
+3. **`selectBestPrediction`** en yüksek raw Poisson olasılığını seçiyor. 1X2'nin ham olasılığı (%55-65) doğal olarak BTTS'den (%50-60) yüksek çıkar, ama bu "daha güvenilir sinyal" demek değil.
 
-**2. `src/components/analysis/AnalysisHeroSummary.tsx`**
-- Teams row'u `flex-wrap` ile sarmalı yap, uzun isimler için `truncate max-w-[120px]` ekle
-- Stat kutuları (Güven, xG, Olası Skor) flex-wrap ile 320px'de alt satıra geç
-- Confidence ring animasyonunu `will-change: stroke-dashoffset` ile optimize et
-- "Detaylar için dokun" hint'ine subtle pulse yerine static chevron kullan (animasyon performansı)
+4. **Market reliability / historical accuracy** hiç kullanılmıyor. `ml_model_stats` tablosunda market bazlı doğruluk verileri var ama ana tahmin seçiminde değerlendirilmiyor.
 
-**3. `src/components/analysis/MatchHeroCard.tsx`**
-- Background dekor elementleri (blur-3xl divleri) kaldır, sadece gradient overlay bırak
-- TeamLogo boyutlarını sabit `w-14 h-14` yap (md breakpoint farkını kaldır — native app her zaman mobil)
-- VS badge boyutunu sabit `w-10 h-10` yap
-- Insight badges'e `flex-wrap` ve `gap-1.5` ekle
+---
 
-**4. `src/components/analysis/AIRecommendationCard.tsx`**
-- Action buttons container'ına `flex-wrap` ekle
-- Disclaimer toggle button'a `active:bg-muted/20` native touch feedback ekle
-- "Devamını oku" butonunu `active:` state'li yap
-- Progress bar yüksekliğini `h-2` yap (daha ince, daha modern)
+## Yeni Mimari: Market-Aware Hybrid Scoring
 
-**5. `src/components/analysis/PredictionPillSelector.tsx`**
-- Scroll hint gradient'ini `from-transparent` yerine `from-card/0 to-card` yap (parent card ile uyumlu)
-- Pill padding'i `px-3.5 py-2.5` yap (daha büyük touch target, min 44px yükseklik)
-- Expanded detail card'a `active:scale-[0.98]` touch feedback ekle
+### Katman 1: `src/utils/marketScoring.ts` (YENİ DOSYA)
 
-**6. `src/components/analysis/TeamComparisonCard.tsx`**
-- Team header grid'i `grid-cols-[1fr_auto_1fr]` yap (VS label sabit genişlikte)
-- FormBadge boyutlarını sabit `w-7 h-7` yap
-- ComparisonRow label'larına `truncate` ekle
-- FormTabs tab button'larına `active:scale-95` native feedback ekle
+Her market için bağımsız bir **Final Market Score (FMS)** hesaplayan utility:
 
-**7. `src/components/analysis/H2HTimeline.tsx`**
-- Match bubbles container'ına `overflow-x-auto` ve `scrollbar-hide` ekle
-- Bubble boyutlarını `w-11 h-11` sabit yap (küçült)
-- Timeline çizgisini container'a göre dinamik konumla
-- Ev/Deplasman indicator'larını kaldır (gereksiz, sonuç rengi yeterli)
+```
+FMS = (signalStrength × 0.35) + (modelAgreement × 0.25) + (historicalReliability × 0.20) + (edgeClarity × 0.20)
+```
 
-**8. `src/components/analysis/CollapsibleAnalysis.tsx`**
-- Section trigger'lardan `hover:bg-muted/30` kaldır
-- `active:bg-muted/20 active:scale-[0.99]` native touch feedback ekle
-- Section icon container'ını `w-9 h-9` yap (daha büyük touch target)
+Bileşenler:
+- **signalStrength**: Poisson olasılığının market-spesifik "kesinlik" eşiğinden ne kadar uzakta olduğu. 1X2'de %50 belirsizlik noktası, BTTS'de %50, O/U'da %50. Mesafe ne kadar büyükse sinyal o kadar güçlü.
+- **modelAgreement**: AI, Math ve ML'nin aynı yönde mi gösterdiği (0 veya 1, kısmi uyum 0.5)
+- **historicalReliability**: `ml_model_stats` tablosundan market bazlı accuracy oranı (0-1)
+- **edgeClarity**: Olasılığın belirsizlik bölgesinden (45-55%) ne kadar uzak olduğu, normalized
 
-**9. `src/components/analysis/AnalysisLoadingState.tsx`**
-- Skeleton cards grid'ini `grid-cols-3` yerine `flex overflow-x-auto gap-3 scrollbar-hide` yap
-- Her skeleton card'a `min-w-[100px] shrink-0` ekle
-- Shimmer animasyonu sayısını azalt (performans)
+Market-spesifik kalibrasyon config'i:
 
-**10. `src/components/analysis/ConfidenceBreakdownTooltip.tsx`**
-- Touch button boyutunu `w-6 h-6` yap (44px padding ile birlikte min touch target)
-- `min-h-[44px] min-w-[44px]` touch area ekle
+```typescript
+const MARKET_CONFIG = {
+  'Maç Sonucu': { 
+    uncertaintyCenter: 33.3, // 3 yönlü market
+    volatilityPenalty: 0.15, // 3 sonuçlu → daha volatil
+    minEdgeThreshold: 12,    // %33+12 = %45'in altında edge yok
+  },
+  'Toplam Gol Alt/Üst': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  'Karşılıklı Gol': { 
+    uncertaintyCenter: 50,
+    volatilityPenalty: 0,
+    minEdgeThreshold: 8,
+  },
+  // ... diğer marketler
+};
+```
 
-### Etkilenen Dosyalar
+1X2'ye `volatilityPenalty` uygulanması, 3 yönlü marketin doğal avantajını dengeler.
 
-| Dosya | Değişiklik Türü |
-|---|---|
-| `src/components/analysis/AnalysisDrawer.tsx` | Snap point, drag handle izolasyonu, `--app-height` |
-| `src/components/analysis/AnalysisHeroSummary.tsx` | Responsive wrap, truncate, animasyon opt |
-| `src/components/analysis/MatchHeroCard.tsx` | Dekor temizliği, sabit boyutlar |
-| `src/components/analysis/AIRecommendationCard.tsx` | Touch feedback, flex-wrap |
-| `src/components/analysis/PredictionPillSelector.tsx` | Gradient fix, touch targets |
-| `src/components/analysis/TeamComparisonCard.tsx` | Grid fix, touch feedback |
-| `src/components/analysis/H2HTimeline.tsx` | Overflow scroll, boyut fix |
-| `src/components/analysis/CollapsibleAnalysis.tsx` | Native touch states |
-| `src/components/analysis/AnalysisLoadingState.tsx` | Skeleton responsive fix |
-| `src/components/analysis/ConfidenceBreakdownTooltip.tsx` | Touch target büyütme |
+### Katman 2: `predictionEngine.ts` Güncelleme
 
-UI tasarımında köklü değişiklik yok. Sadece responsive düzeltmeler, native touch feedback ve 320px+ uyumluluk iyileştirmeleri.
+Confidence eşiklerini market-spesifik ve simetrik hale getir:
+
+| Market | Yüksek | Orta | Düşük |
+|--------|--------|------|-------|
+| 1X2 (mevcut) | >55% | >45% | rest |
+| 1X2 (yeni) | >58% | >45% | rest |
+| BTTS (mevcut) | >65% | >55% | rest |
+| BTTS (yeni) | >60% | >52% | rest |
+| O/U (mevcut) | >60% | >55% | rest |
+| O/U (yeni) | >58% | >52% | rest |
+
+Not: Değerler yapay dengeleme değil, market doğasına uygun kalibrasyon. BTTS eşikleri düşürülüyor çünkü binary markette %60 zaten güçlü sinyal.
+
+### Katman 3: `Prediction` type genişletme (`types/match.ts`)
+
+```typescript
+export interface Prediction {
+  // ... mevcut alanlar
+  marketScore?: number;        // Final Market Score (0-100)
+  signalStrength?: number;     // Sinyal gücü (0-100)
+  modelAgreement?: number;     // Model uyumu (0-100)
+  historicalReliability?: number; // Tarihsel güvenilirlik (0-100)
+  edgeClarity?: number;        // Edge netliği (0-100)
+  riskLevel?: 'low' | 'medium' | 'high';
+  isRecommended?: boolean;     // En iyi market mi?
+}
+```
+
+### Katman 4: `useMatchAnalysis.ts` Güncelleme
+
+Tahminler oluşturulduktan sonra, `marketScoring` utility'si ile her market için FMS hesapla:
+
+1. `ml_model_stats`'dan market bazlı historical accuracy çek (mevcut `getAIMathWeights` ile paralel)
+2. Her prediction'a `marketScore`, `signalStrength`, `modelAgreement`, `historicalReliability`, `edgeClarity`, `riskLevel` ekle
+3. En yüksek `marketScore`'a sahip prediction'ı `isRecommended: true` olarak işaretle
+4. Predictions array'ini `marketScore` sırasına göre sırala
+
+### Katman 5: `predictionService.ts` Güncelleme
+
+`selectBestPrediction` fonksiyonunu `marketScore` bazlı çalışacak şekilde güncelle:
+- `marketScore` varsa onu kullan
+- Yoksa mevcut Poisson probability fallback
+
+### Katman 6: UI Güncellemeleri
+
+**AIRecommendationCard**: En yüksek `marketScore`'lu prediction'ı göster (zaten `sortedPredictions[0]` mantığı var, sıralama `marketScore`'a geçecek)
+
+**PredictionCard**: Market Score progress bar'ı ekle + risk level badge
+
+**PredictionPillSelector**: Sıralamayı `marketScore` bazlı yap, recommended pill'e özel badge ekle
+
+---
+
+## Değişecek Dosyalar
+
+1. **`src/utils/marketScoring.ts`** — YENİ: Market scoring engine
+2. **`src/utils/predictionEngine.ts`** — Confidence eşiklerini market-spesifik güncelle
+3. **`src/types/match.ts`** — Prediction interface genişlet
+4. **`src/hooks/useMatchAnalysis.ts`** — Market scoring entegrasyonu + historical reliability fetch
+5. **`src/services/predictionService.ts`** — `selectBestPrediction` güncelle
+6. **`src/lib/utils.ts`** — `getHybridConfidence`'ı marketScore-aware yap
+7. **`src/components/analysis/AIRecommendationCard.tsx`** — marketScore sıralama
+8. **`src/components/PredictionCard.tsx`** — Market score bar + risk badge
+9. **`src/components/analysis/PredictionPillSelector.tsx`** — marketScore sıralama + recommended badge
+
+## Korunacaklar
+
+- Mevcut 3 katmanlı hibrit mimari (AI + Math + ML) aynen kalacak
+- `prediction_features` ve `ml_model_stats` tablo yapıları değişmeyecek
+- Edge function'lar değişmeyecek
+- Confidence değerleri sahte dengeleme yapılmayacak — gerçek farklar korunacak
+
+## Continuous Learning Altyapısı
+
+Zaten mevcut olan `ml_model_stats` tablosu market bazlı accuracy takibi yapıyor. Yeni `historicalReliability` bileşeni bu veriyi aktif olarak kullanarak market selection'ı sürekli iyileştirecek. `train-ml-model` edge function haftalık çalışmaya devam edecek.
 
