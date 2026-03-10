@@ -1,135 +1,55 @@
 
+Amaç: E-posta linkine tıklanınca kullanıcıyı oturum açmış hale getirmeden, herkese açık bir “Doğrulandı” sayfası göstermek. Şu an sorun `AuthCallback.tsx` içinde token’ları `setSession()` ile oturuma çevirmemiz; bu da kullanıcıyı giriş yapmış hale getirip ana akışa düşürüyor.
 
-# Hibrit Market Selection Engine — Refactor Planı
+Uygulama planı
 
-## Mevcut Sorunlar
+1. `AuthCallback.tsx` akışını “doğrulama landing page” olarak yeniden kuracağım
+- `access_token` / `refresh_token` geldiğinde artık `supabase.auth.setSession()` çağrılmayacak.
+- Token veya doğrulama success işareti varsa sayfa direkt `verified` durumuna geçecek.
+- Böylece link yalnızca doğrulama ekranını açacak, login oluşturmayacak.
 
-1. **Eşitsiz confidence eşikleri**: `predictionEngine.ts`'de 1X2 marketi `>55%` ile "yüksek" olurken, BTTS `>65%` gerektiriyor. 1X2 doğası gereği daha polarize olduğu için neredeyse her maçta "yüksek" çıkıyor.
+2. Sayfayı tamamen public ve bağımsız tutacağım
+- `/callback` zaten public route; bunu koruyacağım.
+- Sayfa, mevcut auth durumundan bağımsız çalışacak.
+- Giriş yapılmış olsa bile `/callback` her zaman kendi sade başarı ekranını gösterecek; anasayfaya akmayacak.
 
-2. **`mathConfidenceToNumber` sabit mapping**: `yüksek=0.8`, `orta=0.6`, `düşük=0.4` — market türünden bağımsız. 1X2'nin "yüksek"i ile BTTS'nin "orta"sı arasında gerçek sinyal gücü farkı yansımıyor.
+3. Başarı ekranını sade ama profesyonel hale getireceğim
+- Modern, responsive, native-2026 hissinde tek kartlı success layout
+- Başlık: “E-posta doğrulandı”
+- Kısa açıklama: hesabın doğrulandığını, uygulamadan giriş yapılabileceğini söyleyen metin
+- İsteğe bağlı tek bir aksiyon: “Uygulamayı Aç” veya “Giriş Sayfasına Git”
+- Görsel yapı sade tutulacak; kullanıcıyı otomatik yönlendiren davranış olmayacak
 
-3. **`selectBestPrediction`** en yüksek raw Poisson olasılığını seçiyor. 1X2'nin ham olasılığı (%55-65) doğal olarak BTTS'den (%50-60) yüksek çıkar, ama bu "daha güvenilir sinyal" demek değil.
+4. Hatalı / eksik link senaryosunu netleştireceğim
+- Token yoksa veya doğrulama parametresi yoksa `error` ya da kontrollü fallback gösterilecek
+- Geçersiz linkte kullanıcı yanlışlıkla giriş ekranına düşmek yerine anlaşılır bir durum mesajı görecek
 
-4. **Market reliability / historical accuracy** hiç kullanılmıyor. `ml_model_stats` tablosunda market bazlı doğruluk verileri var ama ana tahmin seçiminde değerlendirilmiyor.
+5. Güvenlik ve UX temizliği
+- Callback URL’deki hash/query token’larını başarı tespitinden sonra URL’den temizlemek iyi olur; tekrar kullanım ve görsel karmaşa azalır
+- Password reset akışına dokunmayacağım; sadece email verification landing davranışı değişecek
 
----
+Değişecek dosyalar
+- `src/pages/AuthCallback.tsx`
+  - `setSession()` kaldırılacak
+  - state mantığı sadeleştirilecek
+  - modern public doğrulama ekranı oluşturulacak
+  - gerekirse URL temizleme eklenecek
 
-## Yeni Mimari: Market-Aware Hybrid Scoring
+Muhtemel ek kontrol
+- `src/App.tsx` ve `src/components/navigation/TabShell.tsx`
+  - Mevcut public route yapısı doğru görünüyor; büyük olasılıkla kod değişikliği gerekmeyecek
+  - Ama `/callback` sırasında hiçbir otomatik ana sayfa davranışı kalmadığını doğrulayacağım
 
-### Katman 1: `src/utils/marketScoring.ts` (YENİ DOSYA)
-
-Her market için bağımsız bir **Final Market Score (FMS)** hesaplayan utility:
-
-```
-FMS = (signalStrength × 0.35) + (modelAgreement × 0.25) + (historicalReliability × 0.20) + (edgeClarity × 0.20)
-```
-
-Bileşenler:
-- **signalStrength**: Poisson olasılığının market-spesifik "kesinlik" eşiğinden ne kadar uzakta olduğu. 1X2'de %50 belirsizlik noktası, BTTS'de %50, O/U'da %50. Mesafe ne kadar büyükse sinyal o kadar güçlü.
-- **modelAgreement**: AI, Math ve ML'nin aynı yönde mi gösterdiği (0 veya 1, kısmi uyum 0.5)
-- **historicalReliability**: `ml_model_stats` tablosundan market bazlı accuracy oranı (0-1)
-- **edgeClarity**: Olasılığın belirsizlik bölgesinden (45-55%) ne kadar uzak olduğu, normalized
-
-Market-spesifik kalibrasyon config'i:
-
-```typescript
-const MARKET_CONFIG = {
-  'Maç Sonucu': { 
-    uncertaintyCenter: 33.3, // 3 yönlü market
-    volatilityPenalty: 0.15, // 3 sonuçlu → daha volatil
-    minEdgeThreshold: 12,    // %33+12 = %45'in altında edge yok
-  },
-  'Toplam Gol Alt/Üst': { 
-    uncertaintyCenter: 50,
-    volatilityPenalty: 0,
-    minEdgeThreshold: 8,
-  },
-  'Karşılıklı Gol': { 
-    uncertaintyCenter: 50,
-    volatilityPenalty: 0,
-    minEdgeThreshold: 8,
-  },
-  // ... diğer marketler
-};
+Beklenen sonuç
+```text
+Kullanıcı e-posta linkine tıklar
+→ /callback açılır
+→ oturum oluşturulmaz
+→ “E-posta doğrulandı” başarı sayfası görünür
+→ kullanıcı isterse uygulamaya veya giriş ekranına manuel devam eder
 ```
 
-1X2'ye `volatilityPenalty` uygulanması, 3 yönlü marketin doğal avantajını dengeler.
-
-### Katman 2: `predictionEngine.ts` Güncelleme
-
-Confidence eşiklerini market-spesifik ve simetrik hale getir:
-
-| Market | Yüksek | Orta | Düşük |
-|--------|--------|------|-------|
-| 1X2 (mevcut) | >55% | >45% | rest |
-| 1X2 (yeni) | >58% | >45% | rest |
-| BTTS (mevcut) | >65% | >55% | rest |
-| BTTS (yeni) | >60% | >52% | rest |
-| O/U (mevcut) | >60% | >55% | rest |
-| O/U (yeni) | >58% | >52% | rest |
-
-Not: Değerler yapay dengeleme değil, market doğasına uygun kalibrasyon. BTTS eşikleri düşürülüyor çünkü binary markette %60 zaten güçlü sinyal.
-
-### Katman 3: `Prediction` type genişletme (`types/match.ts`)
-
-```typescript
-export interface Prediction {
-  // ... mevcut alanlar
-  marketScore?: number;        // Final Market Score (0-100)
-  signalStrength?: number;     // Sinyal gücü (0-100)
-  modelAgreement?: number;     // Model uyumu (0-100)
-  historicalReliability?: number; // Tarihsel güvenilirlik (0-100)
-  edgeClarity?: number;        // Edge netliği (0-100)
-  riskLevel?: 'low' | 'medium' | 'high';
-  isRecommended?: boolean;     // En iyi market mi?
-}
-```
-
-### Katman 4: `useMatchAnalysis.ts` Güncelleme
-
-Tahminler oluşturulduktan sonra, `marketScoring` utility'si ile her market için FMS hesapla:
-
-1. `ml_model_stats`'dan market bazlı historical accuracy çek (mevcut `getAIMathWeights` ile paralel)
-2. Her prediction'a `marketScore`, `signalStrength`, `modelAgreement`, `historicalReliability`, `edgeClarity`, `riskLevel` ekle
-3. En yüksek `marketScore`'a sahip prediction'ı `isRecommended: true` olarak işaretle
-4. Predictions array'ini `marketScore` sırasına göre sırala
-
-### Katman 5: `predictionService.ts` Güncelleme
-
-`selectBestPrediction` fonksiyonunu `marketScore` bazlı çalışacak şekilde güncelle:
-- `marketScore` varsa onu kullan
-- Yoksa mevcut Poisson probability fallback
-
-### Katman 6: UI Güncellemeleri
-
-**AIRecommendationCard**: En yüksek `marketScore`'lu prediction'ı göster (zaten `sortedPredictions[0]` mantığı var, sıralama `marketScore`'a geçecek)
-
-**PredictionCard**: Market Score progress bar'ı ekle + risk level badge
-
-**PredictionPillSelector**: Sıralamayı `marketScore` bazlı yap, recommended pill'e özel badge ekle
-
----
-
-## Değişecek Dosyalar
-
-1. **`src/utils/marketScoring.ts`** — YENİ: Market scoring engine
-2. **`src/utils/predictionEngine.ts`** — Confidence eşiklerini market-spesifik güncelle
-3. **`src/types/match.ts`** — Prediction interface genişlet
-4. **`src/hooks/useMatchAnalysis.ts`** — Market scoring entegrasyonu + historical reliability fetch
-5. **`src/services/predictionService.ts`** — `selectBestPrediction` güncelle
-6. **`src/lib/utils.ts`** — `getHybridConfidence`'ı marketScore-aware yap
-7. **`src/components/analysis/AIRecommendationCard.tsx`** — marketScore sıralama
-8. **`src/components/PredictionCard.tsx`** — Market score bar + risk badge
-9. **`src/components/analysis/PredictionPillSelector.tsx`** — marketScore sıralama + recommended badge
-
-## Korunacaklar
-
-- Mevcut 3 katmanlı hibrit mimari (AI + Math + ML) aynen kalacak
-- `prediction_features` ve `ml_model_stats` tablo yapıları değişmeyecek
-- Edge function'lar değişmeyecek
-- Confidence değerleri sahte dengeleme yapılmayacak — gerçek farklar korunacak
-
-## Continuous Learning Altyapısı
-
-Zaten mevcut olan `ml_model_stats` tablosu market bazlı accuracy takibi yapıyor. Yeni `historicalReliability` bileşeni bu veriyi aktif olarak kullanarak market selection'ı sürekli iyileştirecek. `train-ml-model` edge function haftalık çalışmaya devam edecek.
-
+Teknik not
+- Backend tarafında yeni tablo / migration gerekmiyor
+- Sorun veritabanı değil; tamamen frontend callback mantığında
+- Mevcut problem, doğrulama token’ını “session login” gibi kullanmamızdan kaynaklanıyor
