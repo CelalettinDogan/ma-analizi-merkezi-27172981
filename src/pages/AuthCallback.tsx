@@ -58,7 +58,7 @@ const AuthCallback = () => {
   };
 
   // Mobile verification success page
-  if (state === 'verified-mobile') {
+  if (state === 'verified') {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30 flex flex-col items-center justify-center px-7">
         <motion.div
