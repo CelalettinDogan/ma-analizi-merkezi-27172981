@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Search, Shield, Sparkles } from 'lucide-react';
+import { Search, Shield, Sparkles, TrendingUp, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface HeroStats {
@@ -49,52 +49,94 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   const animatedPredictions = useCountUp(stats.totalPredictions);
 
   return (
-    <section className="relative pt-2 pb-2 overflow-hidden">
-      <div className="relative container mx-auto px-4">
-        <div className="flex items-center justify-between gap-3">
-          {/* Left: Trust badge + title compact */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              {stats.totalPredictions > 0 ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/12 text-xs border border-primary/20">
-                  <Shield className="w-3.5 h-3.5 text-primary" />
-                  <span className="font-semibold text-primary">%{animatedAccuracy}</span>
-                  <span className="text-muted-foreground font-medium">· {animatedPredictions.toLocaleString()}+ analiz</span>
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/8 text-xs">
-                  <Sparkles className="w-3.5 h-3.5 text-primary" />
-                  <span className="font-medium text-foreground/80">AI destekli maç analizi</span>
-                </span>
-              )}
+    <section className="relative px-4 pt-3 pb-1">
+      {/* AI Performance Card */}
+      {stats.totalPredictions > 0 ? (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl bg-gradient-to-br from-primary/8 via-primary/4 to-transparent border border-primary/10 p-4"
+        >
+          <div className="flex items-center justify-between">
+            {/* Left: Stats */}
+            <div className="flex items-center gap-3 min-w-0">
+              {/* Accuracy ring */}
+              <div className="relative w-12 h-12 shrink-0">
+                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
+                  <circle cx="24" cy="24" r="20" fill="none" stroke="hsl(var(--muted))" strokeWidth="3" opacity="0.2" />
+                  <circle
+                    cx="24" cy="24" r="20" fill="none"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(animatedAccuracy / 100) * 125.6} 125.6`}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary tabular-nums">%{animatedAccuracy}</span>
+                </div>
+              </div>
+              
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <span className="text-xs font-semibold text-foreground">AI Tahmin Doğruluğu</span>
+                </div>
+                <p className="text-micro text-muted-foreground mt-0.5">
+                  {animatedPredictions.toLocaleString()}+ maç analiz edildi
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Live badge or CTA */}
+            <div className="flex items-center gap-2 shrink-0">
               {stats.liveCount > 0 && (
                 <Link 
                   to="/live"
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-destructive/10 text-xs"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-destructive/10 border border-destructive/15"
                 >
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-destructive" />
                   </span>
-                  <span className="font-medium text-destructive">{stats.liveCount} Canlı</span>
+                  <span className="text-xs font-semibold text-destructive">{stats.liveCount}</span>
                 </Link>
               )}
+              <motion.div whileTap={{ scale: 0.94 }}>
+                <Button
+                  onClick={onAnalyzeClick}
+                  size="sm"
+                  className="gap-1.5 text-xs px-4 h-9 rounded-xl shadow-sm shadow-primary/10"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  Maç Ara
+                </Button>
+              </motion.div>
             </div>
           </div>
-
-          {/* Right: CTA button */}
-          <motion.div whileTap={{ scale: 0.96 }}>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between"
+        >
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/8 text-xs">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            <span className="font-medium text-foreground/80">AI destekli maç analizi</span>
+          </span>
+          <motion.div whileTap={{ scale: 0.94 }}>
             <Button
               onClick={onAnalyzeClick}
               size="sm"
-              className="gap-1.5 text-xs px-4 h-9 shadow-sm shadow-primary/10"
+              className="gap-1.5 text-xs px-4 h-9 rounded-xl shadow-sm shadow-primary/10"
             >
               <Search className="w-3.5 h-3.5" />
               Maç Ara
             </Button>
           </motion.div>
-        </div>
-      </div>
+        </motion.div>
+      )}
     </section>
   );
 };
