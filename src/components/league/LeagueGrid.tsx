@@ -52,7 +52,7 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
         id="leagues" 
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide"
+        className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide"
       >
         {SUPPORTED_COMPETITIONS.map((league) => {
           const isSelected = selectedLeague === league.code;
@@ -62,25 +62,25 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
             <motion.button
               key={league.code}
               onClick={() => onLeagueSelect(league.code)}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.94 }}
               className={cn(
-                "flex flex-col items-center gap-1.5 px-4 py-3 rounded-2xl",
-                "border flex-shrink-0 min-w-[72px] min-h-[72px]",
+                "flex flex-col items-center gap-2 px-4 py-3.5 rounded-2xl",
+                "border flex-shrink-0 min-w-[76px] min-h-[80px]",
                 "transition-all duration-200 touch-manipulation",
                 isSelected
-                  ? "bg-primary/10 border-primary/30 shadow-sm"
-                  : "bg-card border-border/30 active:bg-muted/50"
+                  ? "bg-primary/8 border-primary/25 shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
+                  : "bg-card/60 border-border/20 active:bg-muted/40"
               )}
             >
               <div className={cn(
-                "w-9 h-9 rounded-xl flex items-center justify-center text-xl",
-                isSelected ? "bg-primary/15" : "bg-muted/30"
+                "w-10 h-10 rounded-xl flex items-center justify-center text-xl",
+                isSelected ? "bg-primary/12" : "bg-muted/20"
               )}>
                 {league.flag}
               </div>
               <span className={cn(
                 "text-[10px] font-semibold leading-tight text-center",
-                isSelected ? "text-primary" : "text-muted-foreground"
+                isSelected ? "text-primary" : "text-muted-foreground/70"
               )}>
                 {league.name.length > 10 ? league.name.split(' ')[0] : league.name}
               </span>
@@ -103,7 +103,7 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
             animate={{ x: [0, 3, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           >
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground/40" />
           </motion.div>
         </div>
       )}
