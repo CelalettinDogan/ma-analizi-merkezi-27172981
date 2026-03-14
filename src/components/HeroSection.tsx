@@ -53,14 +53,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0 flex-1">
               {/* Compact accuracy ring */}
-              <div className="relative w-10 h-10 shrink-0">
-                <svg className="w-10 h-10 -rotate-90" viewBox="0 0 40 40">
-                  <circle cx="20" cy="20" r="16" fill="none" stroke="hsl(var(--muted))" strokeWidth="2.5" opacity="0.2" />
-                  <circle cx="20" cy="20" r="16" fill="none" stroke="hsl(var(--primary))" strokeWidth="2.5" strokeLinecap="round"
-                    strokeDasharray={`${(animatedAccuracy / 100) * 100.5} 100.5`} />
+              <div className="relative w-11 h-11 shrink-0">
+                <svg className="w-11 h-11 -rotate-90" viewBox="0 0 44 44">
+                  <circle cx="22" cy="22" r="18" fill="none" stroke="hsl(var(--muted))" strokeWidth="3" opacity="0.2" />
+                  <circle cx="22" cy="22" r="18" fill="none" stroke="hsl(var(--primary))" strokeWidth="3" strokeLinecap="round"
+                    strokeDasharray={`${(animatedAccuracy / 100) * 113.1} 113.1`} className="will-change-[stroke-dashoffset]" />
                 </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs font-bold text-primary tabular-nums">%{animatedAccuracy}</span>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-[8px] font-semibold text-primary/70 leading-none">%</span>
+                  <span className="text-[13px] leading-none font-extrabold text-primary tabular-nums">{animatedAccuracy}</span>
                 </div>
               </div>
               <div className="min-w-0">
