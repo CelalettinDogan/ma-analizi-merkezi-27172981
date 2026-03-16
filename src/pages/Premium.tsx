@@ -178,44 +178,44 @@ const Premium = () => {
     <div className="h-screen bg-background flex flex-col">
       <AppHeader />
 
-      <main className="flex-1 flex flex-col justify-center px-4 sm:px-6"
-        style={{ paddingBottom: 'calc(8.5rem + env(safe-area-inset-bottom, 0px))' }}
+      <main className="flex-1 overflow-y-auto px-4 sm:px-6 pt-4"
+        style={{ paddingBottom: 'calc(10rem + env(safe-area-inset-bottom, 0px))' }}
       >
-        <div className="w-full max-w-md mx-auto space-y-4">
+        <div className="w-full max-w-md mx-auto space-y-6">
 
-          {/* ── Mini Hero ── */}
+          {/* ── Hero Section ── */}
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center space-y-1"
+            className="text-center space-y-3 pt-2"
           >
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-primary p-[1.5px]">
-                <div className="w-full h-full rounded-xl bg-background flex items-center justify-center">
-                  <Crown className="w-4 h-4 text-primary" />
-                </div>
-              </div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-amber-400 via-primary to-accent bg-clip-text text-transparent">
-                GolMetrik AI Premium
-              </h1>
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400/20 to-primary/20 border border-primary/20 flex items-center justify-center mx-auto">
+              <Crown className="w-8 h-8 text-primary" />
             </div>
-            <p className="text-micro text-muted-foreground">
-              Gelişmiş analiz ve AI destekli içgörüler
-            </p>
+            <div className="space-y-1">
+              <h1 className="text-2xl font-extrabold tracking-tight">
+                <span className="bg-gradient-to-r from-amber-400 via-primary to-accent bg-clip-text text-transparent">
+                  AI Premium
+                </span>
+              </h1>
+              <p className="text-sm text-muted-foreground max-w-[260px] mx-auto leading-relaxed">
+                Gelişmiş analiz ve AI destekli içgörülerle maçları bir adım önde takip et
+              </p>
+            </div>
           </motion.div>
 
-          {/* ── Native Segmented Control (Aylık/Yıllık) ── */}
+          {/* ── Segmented Control (Aylık/Yıllık) ── */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.05 }}
             className="flex justify-center"
           >
-            <div className="relative inline-flex bg-muted/70 rounded-xl p-[3px] border border-border/50">
+            <div className="relative inline-flex bg-muted/70 rounded-2xl p-[3px] border border-border/50">
               <motion.div
                 layout
                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                className="absolute inset-y-[3px] rounded-[10px] bg-background shadow-sm border border-border/80"
+                className="absolute inset-y-[3px] rounded-[13px] bg-background shadow-sm border border-border/80"
                 style={{
                   width: 'calc(50% - 3px)',
                   left: isYearly ? 'calc(50%)' : '3px',
@@ -223,7 +223,7 @@ const Premium = () => {
               />
               <button
                 onClick={() => setIsYearly(false)}
-                className={`relative z-10 px-6 py-1.5 rounded-[10px] text-xs font-medium transition-colors ${
+                className={`relative z-10 px-7 py-2 rounded-[13px] text-xs font-semibold transition-colors ${
                   !isYearly ? 'text-foreground' : 'text-muted-foreground'
                 }`}
               >
@@ -231,130 +231,152 @@ const Premium = () => {
               </button>
               <button
                 onClick={() => setIsYearly(true)}
-                className={`relative z-10 px-6 py-1.5 rounded-[10px] text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                className={`relative z-10 px-7 py-2 rounded-[13px] text-xs font-semibold transition-colors flex items-center gap-1.5 ${
                   isYearly ? 'text-foreground' : 'text-muted-foreground'
                 }`}
               >
                 Yıllık
-                <span className="text-micro font-bold text-emerald-500">2 ay🎁</span>
+                <span className="text-micro font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">-17%</span>
               </button>
             </div>
           </motion.div>
 
-          {/* ── 3-Column Plan Cards ── */}
+          {/* ── Horizontal Scroll Plan Cards ── */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="grid grid-cols-3 gap-2"
+            className="-mx-4 px-4"
           >
-            {plans.map(plan => {
-              const isSelected = selectedPlan === plan.id;
-              const currentProductId = isYearly ? plan.yearlyId : plan.monthlyId;
-              const priceStr = getPrice(currentProductId);
-              const priceNum = getPriceAmount(currentProductId);
-              const Icon = plan.icon;
+            <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {plans.map(plan => {
+                const isSelected = selectedPlan === plan.id;
+                const currentProductId = isYearly ? plan.yearlyId : plan.monthlyId;
+                const priceStr = getPrice(currentProductId);
+                const priceNum = getPriceAmount(currentProductId);
+                const Icon = plan.icon;
 
-              return (
-                <motion.button
-                  key={plan.id}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => setSelectedPlan(plan.id)}
-                  className={`relative rounded-2xl border-2 transition-all duration-200 flex flex-col items-center text-center overflow-hidden ${
-                    plan.popular
-                      ? isSelected
-                        ? 'border-primary bg-primary/[0.06] shadow-[0_2px_20px_-4px_hsl(var(--primary)/0.3)]'
-                        : 'border-primary/40 bg-primary/[0.02]'
-                      : isSelected
-                        ? 'border-primary bg-primary/[0.04] shadow-md'
-                        : 'border-border/50 bg-card/60'
-                  }`}
-                >
-                  {/* Popüler banner */}
-                  {plan.popular && (
-                    <div className="w-full bg-primary text-primary-foreground text-micro font-bold py-1 flex items-center justify-center gap-0.5">
-                      <Sparkles className="w-2.5 h-2.5" />
-                      Popüler
-                    </div>
-                  )}
-
-                  <div className={`flex flex-col items-center w-full px-2 pb-3 ${plan.popular ? 'pt-2' : 'pt-3'}`}>
-                    {/* Icon */}
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-1.5 ${
-                      plan.popular ? 'bg-primary/15' : 'bg-muted'
-                    }`}>
-                      <Icon className={`w-4 h-4 ${plan.popular ? 'text-primary' : 'text-muted-foreground'}`} />
-                    </div>
-
-                    {/* Name */}
-                    <p className="font-bold text-xs">{plan.name}</p>
-
-                    {/* Price — from Google Play */}
-                    {pricesLoading ? (
-                      <Skeleton className="h-6 w-14 mt-1 rounded" />
-                    ) : (
-                      <>
-                        <p className="text-lg font-extrabold tracking-tight mt-0.5">
-                          {priceStr}
-                        </p>
-                        <p className="text-micro text-muted-foreground -mt-0.5">
-                          {isYearly ? '/yıl' : '/ay'}
-                        </p>
-                      </>
+                return (
+                  <motion.button
+                    key={plan.id}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => setSelectedPlan(plan.id)}
+                    className={`relative rounded-2xl border-2 transition-all duration-200 flex flex-col items-center text-center snap-center shrink-0 overflow-hidden ${
+                      plan.popular ? 'min-w-[140px]' : 'min-w-[130px]'
+                    } ${
+                      plan.popular
+                        ? isSelected
+                          ? 'border-primary bg-primary/[0.08] shadow-[0_4px_24px_-4px_hsl(var(--primary)/0.35)]'
+                          : 'border-primary/50 bg-primary/[0.03]'
+                        : isSelected
+                          ? 'border-primary bg-primary/[0.05] shadow-lg'
+                          : 'border-border/40 bg-card/50'
+                    }`}
+                  >
+                    {/* Popüler banner */}
+                    {plan.popular && (
+                      <div className="w-full bg-gradient-to-r from-primary to-accent text-primary-foreground text-micro font-bold py-1.5 flex items-center justify-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        Önerilen
+                      </div>
                     )}
 
-                    {isYearly && !pricesLoading && (
-                      <p className="text-micro text-emerald-500 font-medium mt-0.5">
-                        aylık ≈ ₺{Math.round(priceNum / 12)}
-                      </p>
-                    )}
+                    <div className={`flex flex-col items-center w-full px-4 pb-4 ${plan.popular ? 'pt-3' : 'pt-4'}`}>
+                      {/* Icon */}
+                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mb-2 ${
+                        plan.popular ? 'bg-primary/15' : 'bg-muted/80'
+                      }`}>
+                        <Icon className={`w-5 h-5 ${plan.popular ? 'text-primary' : 'text-muted-foreground'}`} />
+                      </div>
 
-                    {/* Key differentiator */}
-                    <p className="text-micro text-muted-foreground mt-1.5">
-                      {plan.tagline}
-                    </p>
+                      {/* Name */}
+                      <p className="font-bold text-sm">{plan.name}</p>
 
-                    {/* Selection dot */}
-                    <div className={`w-4 h-4 rounded-full border-2 mt-2 flex items-center justify-center transition-all ${
-                      isSelected ? 'border-primary bg-primary' : 'border-muted-foreground/25'
-                    }`}>
-                      {isSelected && <Check className="w-2.5 h-2.5 text-primary-foreground" />}
+                      {/* Price */}
+                      {pricesLoading ? (
+                        <Skeleton className="h-7 w-16 mt-2 rounded" />
+                      ) : (
+                        <div className="mt-2">
+                          <span className="text-xl font-extrabold tracking-tight">
+                            {priceStr}
+                          </span>
+                          <span className="text-xs text-muted-foreground ml-1">
+                            / {isYearly ? 'yıl' : 'ay'}
+                          </span>
+                        </div>
+                      )}
+
+                      {isYearly && !pricesLoading && (
+                        <p className="text-micro text-emerald-500 font-medium mt-1">
+                          aylık ≈ ₺{Math.round(priceNum / 12)}
+                        </p>
+                      )}
+
+                      {/* Tagline */}
+                      <div className="flex items-center gap-1 mt-3 px-2 py-1 rounded-full bg-muted/50">
+                        <MessageSquare className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-micro text-muted-foreground font-medium">{plan.tagline}</span>
+                      </div>
+
+                      {/* Selection indicator */}
+                      <div className={`w-5 h-5 rounded-full border-2 mt-3 flex items-center justify-center transition-all ${
+                        isSelected ? 'border-primary bg-primary' : 'border-muted-foreground/20'
+                      }`}>
+                        {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
+                      </div>
                     </div>
-                  </div>
-                </motion.button>
-              );
-            })}
+                  </motion.button>
+                );
+              })}
+            </div>
           </motion.div>
 
-          {/* ── Included in all plans ── */}
+          {/* ── Benefits Section ── */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="flex items-center justify-center gap-3 flex-wrap"
+            className="space-y-3"
           >
-            {includedFeatures.map(f => (
-              <div key={f.label} className="flex items-center gap-1">
-                <Check className="w-3 h-3 text-emerald-500" />
-                <span className="text-micro text-muted-foreground">{f.label}</span>
-              </div>
-            ))}
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
+              Tüm planlarda dahil
+            </p>
+            <div className="space-y-2.5">
+              {includedFeatures.map((f, i) => (
+                <motion.div
+                  key={f.label}
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.18 + i * 0.04 }}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-muted/20 border border-border/20"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <f.icon className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <span className="text-sm text-foreground/90 font-medium">{f.label}</span>
+                  <Check className="w-4 h-4 text-emerald-500 ml-auto shrink-0" />
+                </motion.div>
+              ))}
+            </div>
           </motion.div>
+
         </div>
       </main>
 
       {/* ── Fixed CTA — above BottomNav ── */}
       <div
-        className="fixed left-0 right-0 z-40 px-4 pt-2 bg-background/95 backdrop-blur-sm border-t border-border/30 lg:hidden"
-        style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))', paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))' }}
+        className="fixed left-0 right-0 z-40 px-4 pt-3 bg-background/95 backdrop-blur-lg border-t border-border/20"
+        style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))', paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
       >
-        <div className="max-w-md mx-auto space-y-1">
+        <div className="max-w-md mx-auto space-y-2">
           <motion.div whileTap={{ scale: 0.98 }}>
             <Button
               onClick={handlePurchase}
               disabled={isLoading}
-              className="w-full h-11 text-sm font-semibold bg-gradient-to-r from-primary to-accent active:opacity-90 relative overflow-hidden rounded-xl"
-              style={{ boxShadow: '0 0 20px -4px hsl(var(--primary) / 0.3)' }}
+              className="w-full h-13 text-base font-bold bg-gradient-to-r from-primary to-accent active:opacity-90 relative overflow-hidden rounded-2xl"
+              style={{ boxShadow: '0 4px 24px -4px hsl(var(--primary) / 0.4)' }}
               size="lg"
             >
               <motion.div
@@ -368,23 +390,22 @@ const Premium = () => {
                 </span>
               ) : (
                 <span className="flex items-center gap-2 relative">
-                  <Crown className="h-4 w-4" /> Premium'a Geç
+                  <Crown className="h-5 w-5" /> AI Premium'u Başlat
                 </span>
               )}
             </Button>
           </motion.div>
 
-          <div className="flex items-center justify-center gap-1 text-micro text-muted-foreground leading-tight">
+          <div className="flex items-center justify-center gap-1.5 text-micro text-muted-foreground leading-tight">
             <Shield className="w-3 h-3 text-emerald-500/70 shrink-0" />
-            <span>Google Play güvencesiyle • İstediğin zaman iptal</span>
+            <span>Google Play güvencesi • İstediğin zaman iptal</span>
             <span className="mx-0.5">•</span>
-            <button onClick={handleRestore} className="underline">Geri yükle</button>
+            <button onClick={handleRestore} className="underline active:opacity-70">Geri yükle</button>
           </div>
 
-          <p className="text-micro text-muted-foreground/60 text-center leading-tight">
-            Abonelik otomatik yenilenir.{' '}
+          <p className="text-micro text-muted-foreground/50 text-center leading-tight">
             <Link to="/terms" className="underline">Şartlar</Link> ve{' '}
-            <Link to="/privacy" className="underline">Gizlilik</Link>
+            <Link to="/privacy" className="underline">Gizlilik Politikası</Link> geçerlidir
           </p>
         </div>
       </div>
