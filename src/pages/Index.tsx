@@ -73,6 +73,7 @@ const Index: React.FC = () => {
   const [analysisDrawerOpen, setAnalysisDrawerOpen] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const drawerDelayRef = useRef<NodeJS.Timeout | null>(null);
+  const analyzedMatchesRef = useRef<Set<string>>(new Set());
 
   // Footer stats - derived from useHomeData
   const footerStats = {
