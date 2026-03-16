@@ -111,6 +111,11 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                       {item.badge === 'premium' && isAI && (
                         <span className="absolute -top-0.5 -right-1 w-1.5 h-1.5 bg-primary/50 rounded-full ring-2 ring-card/80" />
                       )}
+                      {item.badge === 'premium' && !isAI && (
+                        <span className="absolute -top-1.5 -right-3 bg-destructive text-destructive-foreground text-[8px] font-bold px-1 py-px rounded-full leading-none ring-2 ring-card/80">
+                          NEW
+                        </span>
+                      )}
                     </div>
                   </div>
                   <span className={cn("text-[10px] leading-none whitespace-nowrap transition-colors duration-150",
