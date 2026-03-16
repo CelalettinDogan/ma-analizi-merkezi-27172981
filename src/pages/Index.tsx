@@ -73,6 +73,7 @@ const Index: React.FC = () => {
   const [analysisDrawerOpen, setAnalysisDrawerOpen] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const drawerDelayRef = useRef<NodeJS.Timeout | null>(null);
+  const analyzedMatchesRef = useRef<Set<string>>(new Set());
 
   // Footer stats - derived from useHomeData
   const footerStats = {
@@ -213,9 +214,11 @@ const Index: React.FC = () => {
     try {
       await analyzeMatch(matchInput);
       
-      // Increment usage for non-premium users
-      if (user && !isPremium) {
+      // Increment usage for non-premium users (only for new matches)
+      const matchKey = `${matchInput.homeTeam}-${matchInput.awayTeam}-${matchInput.matchDate}`;
+      if (user && !isPremium && !analyzedMatchesRef.current.has(matchKey)) {
         await incrementUsage();
+        analyzedMatchesRef.current.add(matchKey);
       }
     } catch (error) {
       toast.error('Analiz yüklenirken hata oluştu');
