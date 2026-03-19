@@ -164,15 +164,16 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoadin
         ) : (
           <div className="flex flex-col items-center mt-3 min-w-0 max-w-full">
             {/* Price + period on ONE line, responsive font */}
-            <div className="flex items-baseline gap-0.5 whitespace-nowrap">
+            <div className="flex items-baseline gap-0.5 min-w-0 max-w-full overflow-hidden">
               <span
                 className={`font-extrabold tracking-tight leading-none ${
-                  isPopular ? 'text-[clamp(1.125rem,4.5vw,1.375rem)]' : 'text-[clamp(0.9375rem,3.8vw,1.125rem)]'
+                  isPopular ? 'text-lg' : 'text-[15px]'
                 }`}
+                style={{ fontSize: isPopular ? 'clamp(1rem, 4vw, 1.25rem)' : 'clamp(0.8rem, 3.2vw, 0.9375rem)' }}
               >
                 {cleanPrice(priceStr)}
               </span>
-              <span className="text-[11px] text-muted-foreground font-medium">
+              <span className="text-[10px] text-muted-foreground font-medium shrink-0">
                 {periodLabel}
               </span>
             </div>
