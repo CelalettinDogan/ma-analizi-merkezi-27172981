@@ -55,11 +55,8 @@ const trustItems = [
   { icon: Target, label: '%61 doğruluk oranı' },
 ];
 
-/** Extract just the numeric price from a formatted string like "₺478.99" or "$4.99" */
-const extractPriceNumber = (priceStr: string): string => {
-  // Keep currency symbol + digits + separators
-  return priceStr;
-};
+/** Strip trailing period text like "/yıl", "/ay" from price string if present */
+const cleanPrice = (s: string): string => s.replace(/\s*\/(yıl|ay|year|month)\s*$/i, '').trim();
 
 // ─── Active Plan View (for premium/admin users) ───────────
 const ActivePlanView = ({ plans: plansList, planType, isAdmin }: { plans: PlanConfig[]; planType: string; isAdmin: boolean }) => {
