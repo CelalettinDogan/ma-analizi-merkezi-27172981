@@ -145,16 +145,16 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoadin
         </div>
       )}
 
-      <div className={`flex flex-col items-center w-full px-2 pb-5 ${isPopular ? 'pt-6' : 'pt-5'}`}>
+      <div className={`flex flex-col items-center w-full px-1.5 pb-4 ${isPopular ? 'pt-5' : 'pt-4'}`}>
         {/* Icon */}
-        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mb-3 ${
+        <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-2 ${
           isPopular ? 'bg-primary/10' : 'bg-muted/50'
         }`}>
-          <Icon className={`w-5 h-5 ${isPopular ? 'text-primary' : 'text-muted-foreground'}`} />
+          <Icon className={`w-4 h-4 ${isPopular ? 'text-primary' : 'text-muted-foreground'}`} />
         </div>
 
         {/* Name */}
-        <p className={`font-bold truncate max-w-full ${isPopular ? 'text-base' : 'text-sm'}`}>
+        <p className={`font-bold truncate max-w-full ${isPopular ? 'text-sm' : 'text-xs'}`}>
           {plan.name}
         </p>
 
