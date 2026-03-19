@@ -55,9 +55,12 @@ const trustItems = [
   { icon: Target, label: '%61 doğruluk oranı' },
 ];
 
+/** Strip trailing period text like "/yıl", "/ay" from price string if present */
+const cleanPrice = (s: string): string => s.replace(/\s*\/(yıl|ay|year|month)\s*$/i, '').trim();
+
 // ─── Active Plan View (for premium/admin users) ───────────
-const ActivePlanView = ({ plans, planType, isAdmin }: { plans: PlanConfig[]; planType: string; isAdmin: boolean }) => {
-  const currentPlan = plans.find(p => p.id === planType) || plans[1];
+const ActivePlanView = ({ plans: plansList, planType, isAdmin }: { plans: PlanConfig[]; planType: string; isAdmin: boolean }) => {
+  const currentPlan = plansList.find(p => p.id === planType) || plansList[1];
   return (
     <div className="h-screen bg-background flex flex-col">
       <AppHeader />
@@ -96,6 +99,107 @@ const ActivePlanView = ({ plans, planType, isAdmin }: { plans: PlanConfig[]; pla
         </div>
       </main>
     </div>
+  );
+};
+
+// ─── Plan Card Component ──────────────────────────────────
+interface PlanCardProps {
+  plan: PlanConfig;
+  isSelected: boolean;
+  isYearly: boolean;
+  priceStr: string;
+  priceNum: number;
+  pricesLoading: boolean;
+  onSelect: () => void;
+}
+
+const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoading, onSelect }: PlanCardProps) => {
+  const Icon = plan.icon;
+  const isPopular = plan.popular;
+  const periodLabel = isYearly ? '/yıl' : '/ay';
+
+  return (
+    <motion.button
+      whileTap={{ scale: 0.97 }}
+      onClick={onSelect}
+      className={`relative flex flex-col items-center text-center rounded-2xl border-[1.5px] transition-all duration-300 overflow-visible ${
+        isPopular ? 'flex-[1.2] z-10' : 'flex-1 z-0'
+      } ${
+        isPopular
+          ? isSelected
+            ? 'border-primary bg-card shadow-[0_8px_40px_-8px_hsl(var(--primary)/0.2)]'
+            : 'border-primary/30 bg-card shadow-[0_4px_20px_-4px_hsl(var(--primary)/0.12)]'
+          : isSelected
+            ? 'border-primary/50 bg-card shadow-[0_4px_16px_-4px_hsl(var(--foreground)/0.08)]'
+            : 'border-border/40 bg-card shadow-[0_2px_8px_-2px_hsl(var(--foreground)/0.04)]'
+      }`}
+      style={{ minWidth: 0 }}
+    >
+      {/* Popular badge — floating above card */}
+      {isPopular && (
+        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20">
+          <div className="bg-gradient-to-r from-primary to-accent text-primary-foreground text-[10px] font-bold px-4 py-1 rounded-full shadow-[0_4px_12px_-2px_hsl(var(--primary)/0.35)] flex items-center gap-1 whitespace-nowrap">
+            <Sparkles className="w-3 h-3" />
+            Popüler
+          </div>
+        </div>
+      )}
+
+      <div className={`flex flex-col items-center w-full px-1.5 pb-4 ${isPopular ? 'pt-5' : 'pt-4'}`}>
+        {/* Icon */}
+        <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-2 ${
+          isPopular ? 'bg-primary/10' : 'bg-muted/50'
+        }`}>
+          <Icon className={`w-4 h-4 ${isPopular ? 'text-primary' : 'text-muted-foreground'}`} />
+        </div>
+
+        {/* Name */}
+        <p className={`font-bold truncate max-w-full ${isPopular ? 'text-sm' : 'text-xs'}`}>
+          {plan.name}
+        </p>
+
+        {/* Price block — NEVER wraps */}
+        {pricesLoading ? (
+          <Skeleton className="h-8 w-14 mt-3 rounded-lg" />
+        ) : (
+          <div className="flex flex-col items-center mt-3 min-w-0 max-w-full">
+            {/* Price + period on ONE line, responsive font */}
+            <div className="flex items-baseline gap-0.5 min-w-0 max-w-full overflow-hidden">
+              <span
+                className={`font-extrabold tracking-tight leading-none ${
+                  isPopular ? 'text-lg' : 'text-[15px]'
+                }`}
+                style={{ fontSize: isPopular ? 'clamp(1rem, 4vw, 1.25rem)' : 'clamp(0.8rem, 3.2vw, 0.9375rem)' }}
+              >
+                {cleanPrice(priceStr)}
+              </span>
+              <span className="text-[10px] text-muted-foreground font-medium shrink-0">
+                {periodLabel}
+              </span>
+            </div>
+
+            {/* Yearly → monthly equivalent */}
+            {isYearly && priceNum > 0 && (
+              <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1.5 whitespace-nowrap">
+                ≈ ₺{Math.round(priceNum / 12)}/ay
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Tagline */}
+        <p className="text-[11px] text-muted-foreground mt-3 whitespace-nowrap">
+          {plan.tagline}
+        </p>
+
+        {/* Selection radio */}
+        <div className={`w-5 h-5 rounded-full border-2 mt-4 flex items-center justify-center transition-all duration-200 ${
+          isSelected ? 'border-primary bg-primary scale-110' : 'border-muted-foreground/20'
+        }`}>
+          {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
+        </div>
+      </div>
+    </motion.button>
   );
 };
 
@@ -156,13 +260,13 @@ const Premium = () => {
       <div className="min-h-screen bg-background">
         <AppHeader />
         <div className="flex items-center justify-center flex-1 py-20">
-          <div className="animate-pulse space-y-3 w-full max-w-sm px-4">
+          <div className="animate-pulse space-y-4 w-full max-w-sm px-4">
             <div className="h-10 bg-muted rounded-xl" />
             <div className="h-8 bg-muted rounded-full w-40 mx-auto" />
-            <div className="grid grid-cols-3 gap-2">
-              <div className="h-28 bg-muted rounded-xl" />
-              <div className="h-32 bg-muted rounded-xl" />
-              <div className="h-28 bg-muted rounded-xl" />
+            <div className="flex gap-3">
+              <div className="h-44 bg-muted rounded-2xl flex-1" />
+              <div className="h-48 bg-muted rounded-2xl flex-[1.2]" />
+              <div className="h-44 bg-muted rounded-2xl flex-1" />
             </div>
           </div>
         </div>
@@ -177,32 +281,32 @@ const Premium = () => {
 
   // ── Free user — subscription screen ──
   return (
-    <div className="h-screen bg-muted/30 flex flex-col">
+    <div className="h-screen bg-background flex flex-col">
       <AppHeader />
 
       <main
-        className="flex-1 overflow-y-auto px-4 sm:px-6"
-        style={{ paddingBottom: 'calc(10rem + env(safe-area-inset-bottom, 0px))' }}
+        className="flex-1 overflow-y-auto"
+        style={{ paddingBottom: 'calc(11rem + env(safe-area-inset-bottom, 0px))' }}
       >
-        <div className="w-full max-w-md mx-auto space-y-5 py-4">
+        <div className="w-full max-w-md mx-auto px-3 sm:px-5 space-y-6 py-5">
 
-          {/* ── Mini Hero ── */}
+          {/* ── Hero ── */}
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center space-y-1.5"
+            className="text-center space-y-2"
           >
             <div className="flex items-center justify-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-primary p-[1.5px]">
-                <div className="w-full h-full rounded-xl bg-background flex items-center justify-center">
-                  <Crown className="w-4.5 h-4.5 text-primary" />
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-primary p-[1.5px]">
+                <div className="w-full h-full rounded-2xl bg-background flex items-center justify-center">
+                  <Crown className="w-5 h-5 text-primary" />
                 </div>
               </div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-amber-400 via-primary to-accent bg-clip-text text-transparent">
                 Premium
               </h1>
             </div>
-            <p className="text-xs text-muted-foreground max-w-[260px] mx-auto">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Gelişmiş analiz ve AI destekli içgörülerle fark yarat
             </p>
           </motion.div>
@@ -214,19 +318,19 @@ const Premium = () => {
             transition={{ delay: 0.05 }}
             className="flex justify-center"
           >
-            <div className="relative inline-flex bg-muted/70 rounded-xl p-[3px] border border-border/50">
+            <div className="relative inline-flex bg-muted/50 rounded-2xl p-1 border border-border/30">
               <motion.div
                 layout
                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                className="absolute inset-y-[3px] rounded-[10px] bg-background shadow-sm border border-border/80"
+                className="absolute inset-y-1 rounded-xl bg-card shadow-sm border border-border/50"
                 style={{
-                  width: 'calc(50% - 3px)',
-                  left: isYearly ? 'calc(50%)' : '3px',
+                  width: 'calc(50% - 4px)',
+                  left: isYearly ? 'calc(50%)' : '4px',
                 }}
               />
               <button
                 onClick={() => setIsYearly(false)}
-                className={`relative z-10 px-6 py-1.5 rounded-[10px] text-xs font-medium transition-colors ${
+                className={`relative z-10 px-7 py-2 rounded-xl text-xs font-semibold transition-colors ${
                   !isYearly ? 'text-foreground' : 'text-muted-foreground'
                 }`}
               >
@@ -234,105 +338,36 @@ const Premium = () => {
               </button>
               <button
                 onClick={() => setIsYearly(true)}
-                className={`relative z-10 px-6 py-1.5 rounded-[10px] text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                className={`relative z-10 px-7 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 ${
                   isYearly ? 'text-foreground' : 'text-muted-foreground'
                 }`}
               >
                 Yıllık
-                <span className="text-[10px] font-bold text-emerald-500">2 ay 🎁</span>
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">2 ay 🎁</span>
               </button>
             </div>
           </motion.div>
 
           {/* ── Plan Cards ── */}
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="flex items-center justify-center gap-2.5"
+            className="flex items-stretch gap-2 pt-2"
           >
             {plans.map((plan) => {
-              const isSelected = selectedPlan === plan.id;
               const currentProductId = isYearly ? plan.yearlyId : plan.monthlyId;
-              const priceStr = getPrice(currentProductId);
-              const priceNum = getPriceAmount(currentProductId);
-              const Icon = plan.icon;
-              const isPopular = plan.popular;
-
               return (
-                <motion.button
+                <PlanCard
                   key={plan.id}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => setSelectedPlan(plan.id)}
-                  className={`relative flex flex-col items-center text-center rounded-2xl border transition-all duration-200 min-w-0 ${
-                    isPopular
-                      ? 'flex-[1.15] z-10'
-                      : 'flex-1 z-0'
-                  } ${
-                    isPopular
-                      ? isSelected
-                        ? 'border-primary bg-card shadow-[0_8px_32px_-8px_hsl(var(--primary)/0.25)] scale-[1.03]'
-                        : 'border-primary/40 bg-card shadow-lg'
-                      : isSelected
-                        ? 'border-primary/60 bg-card shadow-md'
-                        : 'border-border/40 bg-card/80 shadow-sm opacity-90'
-                  }`}
-                >
-                  {/* Popular badge */}
-                  {isPopular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
-                      <div className="bg-gradient-to-r from-primary to-emerald-500 text-primary-foreground text-[10px] font-bold px-3 py-0.5 rounded-full shadow-[0_2px_8px_-2px_hsl(var(--primary)/0.4)] flex items-center gap-1 whitespace-nowrap">
-                        <Sparkles className="w-2.5 h-2.5" />
-                        Popüler
-                      </div>
-                    </div>
-                  )}
-
-                  <div className={`flex flex-col items-center w-full px-3 pb-4 ${isPopular ? 'pt-5' : 'pt-4'}`}>
-                    {/* Icon */}
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-2 ${
-                      isPopular ? 'bg-primary/10' : 'bg-muted/60'
-                    }`}>
-                      <Icon className={`w-4.5 h-4.5 ${isPopular ? 'text-primary' : 'text-muted-foreground'}`} />
-                    </div>
-
-                    {/* Name */}
-                    <p className="font-bold text-sm truncate max-w-full">{plan.name}</p>
-
-                    {/* Price */}
-                    {pricesLoading ? (
-                      <Skeleton className="h-7 w-16 mt-2 rounded" />
-                    ) : (
-                      <div className="flex flex-col items-center mt-1.5">
-                        <p className="text-xl font-extrabold tracking-tight whitespace-nowrap leading-tight">
-                          {priceStr}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground font-medium">
-                          {isYearly ? '/yıl' : '/ay'}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Yearly monthly equivalent */}
-                    {isYearly && !pricesLoading && priceNum > 0 && (
-                      <p className="text-[10px] text-emerald-500 font-semibold mt-1 whitespace-nowrap">
-                        ≈ ₺{Math.round(priceNum / 12)}/ay
-                      </p>
-                    )}
-
-                    {/* Tagline */}
-                    <p className="text-[11px] text-muted-foreground mt-2 whitespace-nowrap">
-                      {plan.tagline}
-                    </p>
-
-                    {/* Selection indicator */}
-                    <div className={`w-5 h-5 rounded-full border-2 mt-3 flex items-center justify-center transition-all ${
-                      isSelected ? 'border-primary bg-primary' : 'border-muted-foreground/20'
-                    }`}>
-                      {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
-                    </div>
-                  </div>
-                </motion.button>
+                  plan={plan}
+                  isSelected={selectedPlan === plan.id}
+                  isYearly={isYearly}
+                  priceStr={getPrice(currentProductId)}
+                  priceNum={getPriceAmount(currentProductId)}
+                  pricesLoading={pricesLoading}
+                  onSelect={() => setSelectedPlan(plan.id)}
+                />
               );
             })}
           </motion.div>
@@ -347,10 +382,10 @@ const Premium = () => {
             {includedFeatures.map(f => (
               <div
                 key={f.label}
-                className="flex items-center gap-1.5 bg-primary/8 text-primary rounded-full px-3 py-1.5"
+                className="flex items-center gap-1.5 bg-primary/[0.08] text-primary rounded-full px-3.5 py-2"
               >
-                <f.icon className="w-3 h-3" />
-                <span className="text-[11px] font-medium whitespace-nowrap">{f.label}</span>
+                <f.icon className="w-3.5 h-3.5 shrink-0" />
+                <span className="text-[11px] font-semibold whitespace-nowrap">{f.label}</span>
               </div>
             ))}
           </motion.div>
@@ -360,17 +395,17 @@ const Premium = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="space-y-2"
+            className="space-y-2.5 pt-1"
           >
             {trustItems.map(item => (
               <div key={item.label} className="flex items-center justify-center gap-2">
-                <item.icon className="w-3.5 h-3.5 text-emerald-500" />
+                <item.icon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span className="text-xs text-muted-foreground font-medium">{item.label}</span>
               </div>
             ))}
             {isYearly && (
               <div className="flex items-center justify-center gap-2">
-                <Gift className="w-3.5 h-3.5 text-amber-500" />
+                <Gift className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                 <span className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
                   2 ay ücretsiz · sınırlı teklif
                 </span>
@@ -382,42 +417,42 @@ const Premium = () => {
 
       {/* ── Fixed CTA ── */}
       <div
-        className="fixed left-0 right-0 z-40 px-4 pt-3 bg-background/95 backdrop-blur-md border-t border-border/20 lg:hidden"
+        className="fixed left-0 right-0 z-40 px-5 pt-4 bg-background/95 backdrop-blur-xl border-t border-border/15 lg:hidden"
         style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))', paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
       >
-        <div className="max-w-md mx-auto space-y-2">
+        <div className="max-w-md mx-auto space-y-2.5">
           <motion.div whileTap={{ scale: 0.97 }}>
             <Button
               onClick={handlePurchase}
               disabled={isLoading}
-              className="w-full h-12 text-sm font-semibold bg-gradient-to-r from-primary via-emerald-500 to-primary active:opacity-90 relative overflow-hidden rounded-xl shadow-[0_4px_24px_-4px_hsl(var(--primary)/0.4)]"
+              className="w-full h-14 text-[15px] font-bold bg-gradient-to-r from-primary to-emerald-600 active:opacity-90 relative overflow-hidden rounded-2xl shadow-[0_6px_28px_-4px_hsl(var(--primary)/0.35)] border-0"
               size="lg"
             >
               <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.07] to-transparent"
                 animate={{ x: ['-100%', '100%'] }}
-                transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 2 }}
+                transition={{ duration: 3, repeat: Infinity, repeatDelay: 2.5 }}
               />
               {isLoading ? (
                 <span className="flex items-center gap-2 relative">
                   <span className="animate-spin">⏳</span> İşleniyor...
                 </span>
               ) : (
-                <span className="flex items-center gap-2 relative">
-                  <Crown className="h-4 w-4" /> Premium'a Geç
+                <span className="flex items-center gap-2.5 relative">
+                  <Crown className="h-5 w-5" /> Premium'a Geç
                 </span>
               )}
             </Button>
           </motion.div>
 
-          <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground leading-tight">
-            <Shield className="w-3 h-3 text-emerald-500/70 shrink-0" />
+          <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground/70 leading-tight">
+            <Shield className="w-3 h-3 text-emerald-600/60 dark:text-emerald-400/60 shrink-0" />
             <span>Google Play güvencesiyle · İstediğin zaman iptal</span>
             <span className="mx-0.5">·</span>
             <button onClick={handleRestore} className="underline">Geri yükle</button>
           </div>
 
-          <p className="text-[10px] text-muted-foreground/60 text-center leading-tight">
+          <p className="text-[10px] text-muted-foreground/50 text-center leading-tight">
             Abonelik otomatik yenilenir.{' '}
             <Link to="/terms" className="underline">Şartlar</Link> ve{' '}
             <Link to="/privacy" className="underline">Gizlilik</Link>
