@@ -170,7 +170,7 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoadin
                   isPopular ? 'text-[clamp(1.125rem,4.5vw,1.375rem)]' : 'text-[clamp(0.9375rem,3.8vw,1.125rem)]'
                 }`}
               >
-                {extractPriceNumber(priceStr)}
+                {cleanPrice(priceStr)}
               </span>
               <span className="text-[11px] text-muted-foreground font-medium">
                 {periodLabel}
