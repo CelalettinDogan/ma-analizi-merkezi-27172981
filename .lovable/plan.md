@@ -1,51 +1,49 @@
 
 
-## Plan: Premium Screen — 2026 Native Redesign
+## Plan: Premium Sayfası — Tek Ekran, Scroll'suz Native Layout
 
-### Current Issues (from screenshot)
-- Price text "₺478.99/yıl" wraps awkwardly on one line with period suffix
-- All 3 cards are equally sized — no visual hierarchy for the popular plan
-- Cards lack padding, shadows, and premium feel
-- No social proof or trust elements
-- Feature list is plain text, not pill badges
-- CTA button is decent but could be more premium
+### Sorun
+Mevcut tasarımda içerik `overflow-y-auto` ile scroll gerektiriyor. Trust items, feature pills ve CTA butonu alt kısımda kalıyor. Mobil app'te bu sayfa scroll ettirmeden tek ekrana sığmalı — Spotify/Revolut abonelik ekranları gibi.
 
-### Changes (single file: `src/pages/Premium.tsx`)
+### Yaklaşım
+Tüm içeriği viewport yüksekliğine sığdırmak için `flex-col` + `justify-between` yapısı kullanılacak. Her bölüm esnek spacing ile dağıtılacak. `overflow-y-auto` kaldırılacak. CTA butonu fixed pozisyondan çıkarılıp doğal flow'a dahil edilecek.
 
-**1. Plan Cards Layout**
-- Switch from `grid-cols-3 gap-2` to a flex layout with the center Plus card scaled up (`scale-105`, `z-10`) and side cards slightly smaller/faded (`opacity-80`)
-- Add more internal padding (`p-4` instead of `px-2 pb-3`)
-- White background with soft shadow: `bg-white dark:bg-card shadow-lg` on popular, `shadow-sm` on others
-- Round corners `rounded-2xl`
+### Değişiklikler (`src/pages/Premium.tsx`)
 
-**2. Price Typography**
-- Split price into two lines using flex-col: big bold price on top, muted period text below
-- Price: `text-xl font-extrabold whitespace-nowrap`
-- Period: `text-xs text-muted-foreground`
-- No wrapping — price and suffix never on same line
+**1. Ana layout — scroll'u kaldır, flex dağılımı yap**
+- `<main>` → `overflow-y-auto` kaldır, `flex-1 flex flex-col justify-between` yap
+- `paddingBottom` hesaplamasını sadece BottomNav clearance'a düşür
+- İç container `space-y-6` → `space-y-0`, her section'a kontrollü `gap` ver
 
-**3. Popular Badge**
-- Gradient pill: `bg-gradient-to-r from-primary to-emerald-500` with rounded-full, slight shadow
-- Positioned at top-center of card with negative margin overlay
+**2. Fixed CTA'yı flow'a dahil et**
+- Mevcut `fixed left-0 right-0 z-40` CTA bloğunu kaldır
+- CTA butonunu ve altındaki trust/legal text'i `<main>` içinde `mt-auto` ile en alta yerleştir
+- Bu sayede scroll gerekmez, CTA her zaman alt kısımda görünür
 
-**4. Trust & Social Proof Section**
-- Add below feature pills: three trust lines
-  - "10.000+ kullanici guveniyor"
-  - "%61 dogruluk orani"  
-  - "2 ay ucretsiz (sinirli teklif)" for yearly
+**3. Section spacing'leri sıkılaştır**
+- Hero: padding azalt (`py-3` → `py-1`), icon `w-9 h-9`, title `text-lg`
+- Period toggle: margin azalt
+- Plan cards: `gap-2` koru, card iç padding azalt (`pb-4 pt-5` → `pb-3 pt-4`)
+- Feature pills: 2x2 grid yerine tek satır `flex-nowrap overflow-x-auto`
+- Trust items: sadece 2 satır, spacing azalt
 
-**5. Feature Pills**
-- Convert `includedFeatures` from check+text to pill badges with icon inside
-- Style: `bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-medium`
+**4. Compact card iç düzeni**
+- Plan card tagline + radio arasındaki `mt-4` → `mt-2`
+- Icon container `w-8 h-8` → `w-7 h-7`
+- Yearly equivalent text margin azalt
 
-**6. CTA Enhancement**
-- Keep existing gradient button
-- Add stronger shadow: `shadow-[0_4px_24px_-4px_hsl(var(--primary)/0.4)]`
+**5. Feature pills → inline compact**
+- `flex-wrap` → `flex-nowrap gap-1.5`, pill padding `px-3 py-1.5`, font `text-[10px]`
+- Horizontal scroll ile tüm ekranlarda tek satırda kalır
 
-**7. Responsive Safety**
-- All text containers use `truncate` or `whitespace-nowrap`
-- Cards use `min-w-0` to prevent overflow
-- On screens < 360px, cards shrink gracefully via flex layout
+### Sonuç
+- Tüm içerik 320px-414px yükseklikte (BottomNav hariç) tek ekrana sığar
+- Scroll yok
+- CTA butonu her zaman görünür (fixed değil, flow'da)
+- Native app hissi: Spotify subscription screen benzeri
 
-No functionality changes. No color palette changes. Only layout, typography, and spacing improvements.
+### Dosyalar
+| Dosya | Değişiklik |
+|---|---|
+| `src/pages/Premium.tsx` | Layout restructure, fixed CTA → flow, spacing compact |
 
