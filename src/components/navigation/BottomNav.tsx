@@ -46,13 +46,13 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
   if (!isResolved) {
     return (
       <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden" ref={ref}>
-        <div className="mx-2 mb-1.5 rounded-2xl bg-card/80 backdrop-blur-2xl border border-border/15 shadow-[0_-2px_16px_rgba(0,0,0,0.06)]"
+        <div className="mx-3 mb-3 rounded-[22px] bg-card/70 backdrop-blur-2xl border border-border/10 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          <div className="flex items-center py-1 px-0.5">
+          <div className="flex items-center py-2 px-1">
             {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="flex-1 flex flex-col items-center justify-center py-1.5 min-h-[48px] gap-0.5">
-                <div className="w-[22px] h-[22px] rounded-md bg-muted animate-pulse" />
-                <div className="w-5 h-2 rounded bg-muted animate-pulse" />
+              <div key={i} className="flex-1 flex flex-col items-center justify-center py-2 min-h-[52px] gap-1">
+                <div className="w-[24px] h-[24px] rounded-lg bg-muted animate-pulse" />
+                <div className="w-6 h-2.5 rounded bg-muted animate-pulse" />
               </div>
             ))}
           </div>
@@ -63,59 +63,92 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden" ref={ref}>
-      <div className="mx-2 mb-1.5 rounded-2xl bg-card/80 backdrop-blur-2xl border border-border/15 shadow-[0_-2px_16px_rgba(0,0,0,0.06)]"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="flex items-center py-1 px-0.5">
+      <div
+        className="mx-3 mb-3 rounded-[22px] bg-card/75 backdrop-blur-2xl border border-border/10 shadow-[0_4px_32px_-4px_rgba(0,0,0,0.12),0_-2px_12px_rgba(0,0,0,0.04)]"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        <div className="flex items-center py-1.5 px-1">
           {computedItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
             const isAI = item.isAI;
+
             return (
               <motion.button
                 key={item.path}
                 onClick={(e) => handleClick(item, e)}
                 aria-label={item.label}
                 aria-current={isActive ? 'page' : undefined}
-                whileTap={{ scale: 0.9 }}
-                transition={{ duration: 0.1 }}
+                whileTap={{ scale: 0.92 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                 className={cn(
                   "relative flex flex-col items-center justify-center py-1.5",
-                  "flex-1 min-h-[48px]",
-                  "touch-manipulation rounded-xl select-none"
+                  "flex-1 min-h-[52px]",
+                  "touch-manipulation rounded-2xl select-none"
                 )}
               >
-                <div className="relative z-10 flex flex-col items-center gap-0.5">
+                <div className="relative z-10 flex flex-col items-center gap-1">
                   <div className="relative">
+                    {/* Active pill bg */}
                     {isActive && !isAI && (
-                      <motion.div layoutId="navPill"
-                        className="absolute -inset-x-3 -inset-y-1 rounded-xl bg-primary/10"
-                        transition={{ type: "spring", stiffness: 500, damping: 35 }} />
+                      <motion.div
+                        layoutId="navPill"
+                        className="absolute -inset-x-3.5 -inset-y-1.5 rounded-2xl bg-primary/12"
+                        transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                      />
                     )}
+
+                    {/* AI special bg */}
                     {isAI && (
                       <motion.div
-                        className={cn("absolute -inset-x-3.5 -inset-y-1.5 rounded-xl",
-                          isActive ? "bg-gradient-to-br from-primary/18 to-primary/6" : "bg-primary/5"
+                        className={cn(
+                          "absolute -inset-x-4 -inset-y-2 rounded-2xl",
+                          isActive
+                            ? "bg-gradient-to-br from-primary/15 to-primary/6 shadow-[0_0_12px_hsl(var(--primary)/0.15)]"
+                            : "bg-primary/5"
                         )}
                         layoutId={isActive ? "navPill" : undefined}
-                        transition={{ type: "spring", stiffness: 500, damping: 35 }} />
+                        transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                      />
                     )}
-                    <div className="relative">
-                      <Icon className={cn("transition-colors duration-150",
-                        isAI ? "w-[24px] h-[24px]" : "w-[22px] h-[22px]",
-                        isActive ? "text-primary" : isAI ? "text-primary/60" : "text-muted-foreground/50"
-                      )} strokeWidth={isActive ? 2.25 : 1.75}
-                        {...(isActive ? { fill: "currentColor", fillOpacity: 0.15 } : {})} />
+
+                    <motion.div
+                      className="relative"
+                      animate={{ scale: isActive ? 1.12 : 1 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                    >
+                      <Icon
+                        className={cn(
+                          "transition-colors duration-200",
+                          isAI ? "w-[26px] h-[26px]" : "w-[24px] h-[24px]",
+                          isActive
+                            ? "text-primary"
+                            : isAI
+                              ? "text-primary/50"
+                              : "text-muted-foreground/45"
+                        )}
+                        strokeWidth={isActive ? 2.3 : 1.7}
+                        {...(isActive ? { fill: 'currentColor', fillOpacity: 0.12 } : {})}
+                      />
                       {item.badge === 'live' && (
                         <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-destructive rounded-full animate-pulse ring-2 ring-card/80" />
                       )}
                       {item.badge === 'premium' && isAI && (
                         <span className="absolute -top-0.5 -right-1 w-1.5 h-1.5 bg-primary/50 rounded-full ring-2 ring-card/80" />
                       )}
-                    </div>
+                    </motion.div>
                   </div>
-                  <span className={cn("text-[10px] leading-none whitespace-nowrap transition-colors duration-150",
-                    isActive ? "text-primary font-semibold" : isAI ? "text-primary/60 font-medium" : "text-muted-foreground/50 font-medium"
-                  )}>{item.label}</span>
+
+                  <span className={cn(
+                    "text-[10px] leading-none whitespace-nowrap transition-all duration-200",
+                    isActive
+                      ? "text-primary font-bold"
+                      : isAI
+                        ? "text-primary/50 font-medium"
+                        : "text-muted-foreground/45 font-medium"
+                  )}>
+                    {item.label}
+                  </span>
                 </div>
               </motion.button>
             );
