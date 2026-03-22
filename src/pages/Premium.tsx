@@ -337,7 +337,7 @@ const Premium = () => {
                 }`}
               >
                 Yıllık
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">2 ay 🎁</span>
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">Tasarruf</span>
               </button>
             </div>
           </motion.div>
