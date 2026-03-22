@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
-import { Crown, Check, Sparkles, Zap, Shield, Brain, MessageSquare, Ban, History, Users, Target, Gift } from 'lucide-react';
+import { Crown, Check, Sparkles, Zap, Shield, Brain, MessageSquare, Ban, History, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
