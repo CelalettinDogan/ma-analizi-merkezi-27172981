@@ -50,10 +50,6 @@ const includedFeatures = [
   { icon: MessageSquare, label: 'AI yorumlar' },
 ];
 
-const trustItems = [
-  { icon: Users, label: '10.000+ kullanıcı güveniyor' },
-  { icon: Target, label: '%61 doğruluk oranı' },
-];
 
 /** Strip trailing period text like "/yıl", "/ay" from price string if present */
 const cleanPrice = (s: string): string => s.replace(/\s*\/(yıl|ay|year|month)\s*$/i, '').trim();
