@@ -1,51 +1,44 @@
 
 
-## Plan: Premium Screen — 2026 Native Redesign
+## Plan: Premium Screen — Final 2026 Native Polish
 
-### Current Issues (from screenshot)
-- Price text "₺478.99/yıl" wraps awkwardly on one line with period suffix
-- All 3 cards are equally sized — no visual hierarchy for the popular plan
-- Cards lack padding, shadows, and premium feel
-- No social proof or trust elements
-- Feature list is plain text, not pill badges
-- CTA button is decent but could be more premium
+### Değişiklikler (`src/pages/Premium.tsx`)
 
-### Changes (single file: `src/pages/Premium.tsx`)
+**1. Card Hierarchy & Depth**
+- Popular (Plus) card: `scale-[1.05]` ekle, shadow'u güçlendir: `shadow-[0_12px_48px_-8px_hsl(var(--primary)/0.25)]`
+- Side cards: `opacity-90` ekle, shadow hafif: `shadow-[0_2px_12px_-2px_hsl(var(--foreground)/0.06)]`
+- Selected non-popular card'a orta seviye shadow
 
-**1. Plan Cards Layout**
-- Switch from `grid-cols-3 gap-2` to a flex layout with the center Plus card scaled up (`scale-105`, `z-10`) and side cards slightly smaller/faded (`opacity-80`)
-- Add more internal padding (`p-4` instead of `px-2 pb-3`)
-- White background with soft shadow: `bg-white dark:bg-card shadow-lg` on popular, `shadow-sm` on others
-- Round corners `rounded-2xl`
+**2. Popüler Badge Glow**
+- Shadow'u güçlendir: `shadow-[0_4px_16px_-2px_hsl(var(--primary)/0.5)]`
+- `ring-2 ring-primary/20` ile soft glow efekti
 
-**2. Price Typography**
-- Split price into two lines using flex-col: big bold price on top, muted period text below
-- Price: `text-xl font-extrabold whitespace-nowrap`
-- Period: `text-xs text-muted-foreground`
-- No wrapping — price and suffix never on same line
+**3. CTA Button Enhancement**
+- Gradient: `from-primary via-emerald-600 to-emerald-500` (daha depth)
+- Shadow: `shadow-[0_8px_32px_-4px_hsl(var(--primary)/0.45)]`
+- `whileTap={{ scale: 0.95 }}` (daha belirgin tap)
 
-**3. Popular Badge**
-- Gradient pill: `bg-gradient-to-r from-primary to-emerald-500` with rounded-full, slight shadow
-- Positioned at top-center of card with negative margin overlay
+**4. Urgency Text**
+- CTA üstüne: `⚡ Sınırlı teklif: 2 ay ücretsiz` (yearly seçiliyken)
+- `text-amber-600 font-semibold text-xs` animasyonlu
 
-**4. Trust & Social Proof Section**
-- Add below feature pills: three trust lines
-  - "10.000+ kullanici guveniyor"
-  - "%61 dogruluk orani"  
-  - "2 ay ucretsiz (sinirli teklif)" for yearly
+**5. Social Proof Güçlendirme**
+- Trust text'i: "10.000+ kullanıcı GolMetrik AI Premium kullanıyor"
+- Background card ile vurgula: `bg-muted/30 rounded-xl p-3`
 
-**5. Feature Pills**
-- Convert `includedFeatures` from check+text to pill badges with icon inside
-- Style: `bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-medium`
+**6. Feature Pills**
+- Padding artır: `px-4 py-2.5`
+- Border ekle: `border border-primary/10`
+- Gap artır: `gap-2.5`
 
-**6. CTA Enhancement**
-- Keep existing gradient button
-- Add stronger shadow: `shadow-[0_4px_24px_-4px_hsl(var(--primary)/0.4)]`
+**7. Spacing**
+- Ana container `space-y-6` → `space-y-7`
+- Plan cards üstü `pt-2` → `pt-3`
+- Feature pills ve trust arası breathing room
 
-**7. Responsive Safety**
-- All text containers use `truncate` or `whitespace-nowrap`
-- Cards use `min-w-0` to prevent overflow
-- On screens < 360px, cards shrink gracefully via flex layout
+**8. Card Internal Padding**
+- `px-1.5 pb-4` → `px-2.5 pb-5`
+- `pt-5/pt-4` → `pt-6/pt-5`
 
-No functionality changes. No color palette changes. Only layout, typography, and spacing improvements.
+Tek dosya değişikliği. Fonksiyonalite değişmez.
 
