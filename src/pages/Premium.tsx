@@ -393,8 +393,11 @@ const Premium = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="space-y-2.5 pt-1"
+            className="bg-muted/30 rounded-xl p-3 space-y-2.5"
           >
+            <p className="text-[11px] text-center font-medium text-muted-foreground">
+              10.000+ kullanıcı GolMetrik AI Premium kullanıyor
+            </p>
             {trustItems.map(item => (
               <div key={item.label} className="flex items-center justify-center gap-2">
                 <item.icon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
@@ -410,6 +413,18 @@ const Premium = () => {
               </div>
             )}
           </motion.div>
+
+          {/* Urgency text for yearly */}
+          {isYearly && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.25 }}
+              className="text-center text-xs font-semibold text-amber-600 dark:text-amber-400"
+            >
+              ⚡ Sınırlı teklif: 2 ay ücretsiz
+            </motion.p>
+          )}
         </div>
       </main>
 
