@@ -123,29 +123,29 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoadin
       whileTap={{ scale: 0.97 }}
       onClick={onSelect}
       className={`relative flex flex-col items-center text-center rounded-2xl border-[1.5px] transition-all duration-300 overflow-visible ${
-        isPopular ? 'flex-[1.2] z-10' : 'flex-1 z-0'
+        isPopular ? 'flex-[1.2] z-10 scale-[1.05]' : 'flex-1 z-0 opacity-90'
       } ${
         isPopular
           ? isSelected
-            ? 'border-primary bg-card shadow-[0_8px_40px_-8px_hsl(var(--primary)/0.2)]'
-            : 'border-primary/30 bg-card shadow-[0_4px_20px_-4px_hsl(var(--primary)/0.12)]'
+            ? 'border-primary bg-card shadow-[0_12px_48px_-8px_hsl(var(--primary)/0.25)]'
+            : 'border-primary/30 bg-card shadow-[0_8px_32px_-6px_hsl(var(--primary)/0.15)]'
           : isSelected
-            ? 'border-primary/50 bg-card shadow-[0_4px_16px_-4px_hsl(var(--foreground)/0.08)]'
-            : 'border-border/40 bg-card shadow-[0_2px_8px_-2px_hsl(var(--foreground)/0.04)]'
+            ? 'border-primary/50 bg-card shadow-[0_4px_20px_-4px_hsl(var(--foreground)/0.1)]'
+            : 'border-border/40 bg-card shadow-[0_2px_12px_-2px_hsl(var(--foreground)/0.06)]'
       }`}
       style={{ minWidth: 0 }}
     >
-      {/* Popular badge — floating above card */}
+      {/* Popular badge — floating above card with glow */}
       {isPopular && (
         <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20">
-          <div className="bg-gradient-to-r from-primary to-accent text-primary-foreground text-[10px] font-bold px-4 py-1 rounded-full shadow-[0_4px_12px_-2px_hsl(var(--primary)/0.35)] flex items-center gap-1 whitespace-nowrap">
+          <div className="bg-gradient-to-r from-primary to-accent text-primary-foreground text-[10px] font-bold px-4 py-1 rounded-full shadow-[0_4px_16px_-2px_hsl(var(--primary)/0.5)] ring-2 ring-primary/20 flex items-center gap-1 whitespace-nowrap">
             <Sparkles className="w-3 h-3" />
             Popüler
           </div>
         </div>
       )}
 
-      <div className={`flex flex-col items-center w-full px-1.5 pb-4 ${isPopular ? 'pt-5' : 'pt-4'}`}>
+      <div className={`flex flex-col items-center w-full px-2.5 pb-5 ${isPopular ? 'pt-6' : 'pt-5'}`}>
         {/* Icon */}
         <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-2 ${
           isPopular ? 'bg-primary/10' : 'bg-muted/50'
@@ -163,7 +163,6 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoadin
           <Skeleton className="h-8 w-14 mt-3 rounded-lg" />
         ) : (
           <div className="flex flex-col items-center mt-3 min-w-0 max-w-full">
-            {/* Price + period on ONE line, responsive font */}
             <div className="flex items-baseline gap-0.5 min-w-0 max-w-full overflow-hidden">
               <span
                 className={`font-extrabold tracking-tight leading-none ${
@@ -178,7 +177,6 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoadin
               </span>
             </div>
 
-            {/* Yearly → monthly equivalent */}
             {isYearly && priceNum > 0 && (
               <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1.5 whitespace-nowrap">
                 ≈ ₺{Math.round(priceNum / 12)}/ay
