@@ -434,11 +434,11 @@ const Premium = () => {
         style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))', paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
       >
         <div className="max-w-md mx-auto space-y-2.5">
-          <motion.div whileTap={{ scale: 0.97 }}>
+          <motion.div whileTap={{ scale: 0.95 }}>
             <Button
               onClick={handlePurchase}
               disabled={isLoading}
-              className="w-full h-14 text-[15px] font-bold bg-gradient-to-r from-primary to-emerald-600 active:opacity-90 relative overflow-hidden rounded-2xl shadow-[0_6px_28px_-4px_hsl(var(--primary)/0.35)] border-0"
+              className="w-full h-14 text-[15px] font-bold bg-gradient-to-r from-primary via-emerald-600 to-emerald-500 active:opacity-90 relative overflow-hidden rounded-2xl shadow-[0_8px_32px_-4px_hsl(var(--primary)/0.45)] border-0"
               size="lg"
             >
               <motion.div
