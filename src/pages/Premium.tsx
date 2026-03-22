@@ -286,7 +286,7 @@ const Premium = () => {
         className="flex-1 overflow-y-auto"
         style={{ paddingBottom: 'calc(11rem + env(safe-area-inset-bottom, 0px))' }}
       >
-        <div className="w-full max-w-md mx-auto px-3 sm:px-5 space-y-6 py-5">
+        <div className="w-full max-w-md mx-auto px-3 sm:px-5 space-y-7 py-5">
 
           {/* ── Hero ── */}
           <motion.div
