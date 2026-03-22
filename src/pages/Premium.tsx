@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
-import { Crown, Check, Sparkles, Zap, Shield, Brain, MessageSquare, Ban, History, Users, Target, Gift } from 'lucide-react';
+import { Crown, Check, Sparkles, Zap, Shield, Brain, MessageSquare, Ban, History, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
@@ -50,10 +50,6 @@ const includedFeatures = [
   { icon: MessageSquare, label: 'AI yorumlar' },
 ];
 
-const trustItems = [
-  { icon: Users, label: '10.000+ kullanıcı güveniyor' },
-  { icon: Target, label: '%61 doğruluk oranı' },
-];
 
 /** Strip trailing period text like "/yıl", "/ay" from price string if present */
 const cleanPrice = (s: string): string => s.replace(/\s*\/(yıl|ay|year|month)\s*$/i, '').trim();
@@ -286,7 +282,7 @@ const Premium = () => {
         className="flex-1 overflow-y-auto"
         style={{ paddingBottom: 'calc(11rem + env(safe-area-inset-bottom, 0px))' }}
       >
-        <div className="w-full max-w-md mx-auto px-3 sm:px-5 space-y-7 py-5">
+        <div className="w-full max-w-md mx-auto px-3 sm:px-5 space-y-5 py-4">
 
           {/* ── Hero ── */}
           <motion.div
@@ -341,7 +337,7 @@ const Premium = () => {
                 }`}
               >
                 Yıllık
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">2 ay 🎁</span>
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">Tasarruf</span>
               </button>
             </div>
           </motion.div>
@@ -388,43 +384,23 @@ const Premium = () => {
             ))}
           </motion.div>
 
-          {/* ── Trust & Social Proof ── */}
+          {/* ── Trust ── */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="bg-muted/30 rounded-xl p-3 space-y-2.5"
+            className="flex flex-col items-center gap-1.5 py-1"
           >
-            <p className="text-[11px] text-center font-medium text-muted-foreground">
-              10.000+ kullanıcı GolMetrik AI Premium kullanıyor
-            </p>
-            {trustItems.map(item => (
-              <div key={item.label} className="flex items-center justify-center gap-2">
-                <item.icon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span className="text-xs text-muted-foreground font-medium">{item.label}</span>
-              </div>
-            ))}
-            {isYearly && (
-              <div className="flex items-center justify-center gap-2">
-                <Gift className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                <span className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
-                  2 ay ücretsiz · sınırlı teklif
-                </span>
-              </div>
-            )}
+            <div className="flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-muted-foreground/60 shrink-0" />
+              <span className="text-[11px] text-muted-foreground font-medium">
+                10.000+ kullanıcı GolMetrik AI kullanıyor
+              </span>
+            </div>
+            <span className="text-[11px] text-muted-foreground/70">
+              Yüksek doğruluk oranına sahip AI analizler
+            </span>
           </motion.div>
-
-          {/* Urgency text for yearly */}
-          {isYearly && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.25 }}
-              className="text-center text-xs font-semibold text-amber-600 dark:text-amber-400"
-            >
-              ⚡ Sınırlı teklif: 2 ay ücretsiz
-            </motion.p>
-          )}
         </div>
       </main>
 
