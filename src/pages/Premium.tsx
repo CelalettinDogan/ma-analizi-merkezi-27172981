@@ -351,7 +351,7 @@ const Premium = () => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="flex items-stretch gap-2 pt-2"
+            className="flex items-stretch gap-2 pt-3"
           >
             {plans.map((plan) => {
               const currentProductId = isYearly ? plan.yearlyId : plan.monthlyId;
