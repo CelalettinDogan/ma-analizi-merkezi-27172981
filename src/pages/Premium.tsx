@@ -375,12 +375,12 @@ const Premium = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
-            className="flex items-center justify-center gap-2 flex-wrap"
+            className="flex items-center justify-center gap-2.5 flex-wrap"
           >
             {includedFeatures.map(f => (
               <div
                 key={f.label}
-                className="flex items-center gap-1.5 bg-primary/[0.08] text-primary rounded-full px-3.5 py-2"
+                className="flex items-center gap-1.5 bg-primary/[0.08] text-primary rounded-full px-4 py-2.5 border border-primary/10"
               >
                 <f.icon className="w-3.5 h-3.5 shrink-0" />
                 <span className="text-[11px] font-semibold whitespace-nowrap">{f.label}</span>
