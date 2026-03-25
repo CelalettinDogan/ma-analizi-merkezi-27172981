@@ -421,7 +421,7 @@ const Profile = () => {
                   <span className="flex items-center gap-2.5"><Palette className="h-4 w-4 text-muted-foreground" />Tema</span>
                   <span className="text-xs text-muted-foreground capitalize">{theme === 'dark' ? 'Koyu' : theme === 'light' ? 'Açık' : 'Sistem'}</span>
                 </Button>
-                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl" onClick={() => setShowAIInfoSheet(true)}>
+                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl active:scale-[0.98] transition-transform" onClick={() => setShowAIInfoSheet(true)}>
                   <span className="flex items-center gap-2.5"><HelpCircle className="h-4 w-4 text-muted-foreground" />AI Nasıl Çalışır?</span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
