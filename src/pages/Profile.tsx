@@ -221,8 +221,16 @@ const Profile = () => {
               <CardContent className="p-4 space-y-4">
                 {/* User info row */}
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12 xs:h-14 xs:w-14 border-2 border-primary/30 flex-shrink-0">
-                    <AvatarFallback className="bg-primary/10 text-primary text-base font-bold">{initials}</AvatarFallback>
+                  <div className={cn(
+                    "rounded-full p-[2px] flex-shrink-0",
+                    isAdmin 
+                      ? "bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 shadow-[0_0_16px_rgba(245,158,11,0.3)]"
+                      : isPremium 
+                        ? "bg-gradient-to-br from-primary via-primary to-emerald-500 shadow-[0_0_12px_hsl(var(--primary)/0.25)]"
+                        : "bg-gradient-to-br from-primary/40 to-primary/20"
+                  )}>
+                    <Avatar className="h-12 w-12 xs:h-14 xs:w-14 border-2 border-background">
+                      <AvatarFallback className="bg-primary/10 text-primary text-base font-bold">{initials}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
