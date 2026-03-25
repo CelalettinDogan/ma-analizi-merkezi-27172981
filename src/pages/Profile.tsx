@@ -231,7 +231,8 @@ const Profile = () => {
                   )}>
                     <Avatar className="h-12 w-12 xs:h-14 xs:w-14 border-2 border-background">
                       <AvatarFallback className="bg-primary/10 text-primary text-base font-bold">{initials}</AvatarFallback>
-                  </Avatar>
+                    </Avatar>
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <h1 className="text-base font-bold truncate font-display">{displayName}</h1>
