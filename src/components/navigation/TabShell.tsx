@@ -122,7 +122,9 @@ const TabShell: React.FC = () => {
           const Component = TAB_COMPONENTS[path];
           return (
             <div key={path} ref={setTabRef(path)}>
-              <Component />
+              <Suspense fallback={<TabFallback />}>
+                <Component />
+              </Suspense>
             </div>
           );
         })}
