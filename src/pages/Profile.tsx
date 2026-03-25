@@ -246,7 +246,7 @@ const Profile = () => {
                 {/* Plan badge */}
                 <div className="flex items-center">
                   {isAdmin ? (
-                    <Badge variant="outline" className={`text-xs ${getPlanBadgeStyle()}`}>
+                    <Badge variant="outline" className={`text-xs bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-600 border-amber-500/30 shadow-[0_0_8px_rgba(245,158,11,0.15)]`}>
                       <Crown className="w-3 h-3 mr-1" /> Admin
                     </Badge>
                   ) : isPremium ? (
