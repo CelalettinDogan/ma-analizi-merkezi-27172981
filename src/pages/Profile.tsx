@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -221,9 +222,18 @@ const Profile = () => {
               <CardContent className="p-4 space-y-4">
                 {/* User info row */}
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12 xs:h-14 xs:w-14 border-2 border-primary/30 flex-shrink-0">
-                    <AvatarFallback className="bg-primary/10 text-primary text-base font-bold">{initials}</AvatarFallback>
-                  </Avatar>
+                  <div className={cn(
+                    "rounded-full p-[2px] flex-shrink-0",
+                    isAdmin 
+                      ? "bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 shadow-[0_0_16px_rgba(245,158,11,0.3)]"
+                      : isPremium 
+                        ? "bg-gradient-to-br from-primary via-primary to-emerald-500 shadow-[0_0_12px_hsl(var(--primary)/0.25)]"
+                        : "bg-gradient-to-br from-primary/40 to-primary/20"
+                  )}>
+                    <Avatar className="h-12 w-12 xs:h-14 xs:w-14 border-2 border-background">
+                      <AvatarFallback className="bg-primary/10 text-primary text-base font-bold">{initials}</AvatarFallback>
+                    </Avatar>
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <h1 className="text-base font-bold truncate font-display">{displayName}</h1>
@@ -237,7 +247,7 @@ const Profile = () => {
                 {/* Plan badge */}
                 <div className="flex items-center">
                   {isAdmin ? (
-                    <Badge variant="outline" className={`text-xs ${getPlanBadgeStyle()}`}>
+                    <Badge variant="outline" className={`text-xs bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-600 border-amber-500/30 shadow-[0_0_8px_rgba(245,158,11,0.15)]`}>
                       <Crown className="w-3 h-3 mr-1" /> Admin
                     </Badge>
                   ) : isPremium ? (
@@ -320,7 +330,7 @@ const Profile = () => {
                         const resultBadge = getResultBadge(analysis.is_correct, analysis.verified_at);
                         const hasScore = analysis.home_score !== null && analysis.away_score !== null;
                         return (
-                          <div key={analysis.id} className="p-2.5 rounded-xl bg-muted/30 active:bg-muted/50 transition-colors">
+                          <div key={analysis.id} className="p-2.5 rounded-xl bg-muted/30 active:bg-muted/50 active:scale-[0.98] transition-all duration-150">
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">
@@ -408,11 +418,11 @@ const Profile = () => {
                   Ayarlar
                 </h2>
 
-                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl" onClick={() => setShowThemeSheet(true)}>
+                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl active:scale-[0.98] transition-transform" onClick={() => setShowThemeSheet(true)}>
                   <span className="flex items-center gap-2.5"><Palette className="h-4 w-4 text-muted-foreground" />Tema</span>
                   <span className="text-xs text-muted-foreground capitalize">{theme === 'dark' ? 'Koyu' : theme === 'light' ? 'Açık' : 'Sistem'}</span>
                 </Button>
-                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl" onClick={() => setShowAIInfoSheet(true)}>
+                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl active:scale-[0.98] transition-transform" onClick={() => setShowAIInfoSheet(true)}>
                   <span className="flex items-center gap-2.5"><HelpCircle className="h-4 w-4 text-muted-foreground" />AI Nasıl Çalışır?</span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
@@ -423,11 +433,11 @@ const Profile = () => {
                   <p className="font-semibold text-sm font-display">GolMetrik AI</p>
                   <p className="text-micro text-muted-foreground">v1.0.0 • İstatistik destekli futbol analiz platformu</p>
                 </div>
-                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl" onClick={() => setShowPrivacySheet(true)}>
+                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl active:scale-[0.98] transition-transform" onClick={() => setShowPrivacySheet(true)}>
                   <span className="flex items-center gap-2.5"><Shield className="h-4 w-4 text-muted-foreground" />Gizlilik Politikası</span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
-                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl" onClick={() => setShowTermsSheet(true)}>
+                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl active:scale-[0.98] transition-transform" onClick={() => setShowTermsSheet(true)}>
                   <span className="flex items-center gap-2.5"><FileText className="h-4 w-4 text-muted-foreground" />Kullanım Şartları</span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>

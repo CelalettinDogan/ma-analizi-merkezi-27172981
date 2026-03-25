@@ -1,16 +1,22 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useCallback, useState, Suspense } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
-// Lazy-ish imports — all mount at once but stay in bundle
+// Index stays eager (first screen), rest are lazy loaded for bundle optimization
 import Index from '@/pages/Index';
-import Live from '@/pages/Live';
-import Chat from '@/pages/Chat';
-import Standings from '@/pages/Standings';
-import Premium from '@/pages/Premium';
-import Profile from '@/pages/Profile';
+const Live = React.lazy(() => import('@/pages/Live'));
+const Chat = React.lazy(() => import('@/pages/Chat'));
+const Standings = React.lazy(() => import('@/pages/Standings'));
+const Premium = React.lazy(() => import('@/pages/Premium'));
+const Profile = React.lazy(() => import('@/pages/Profile'));
+
+const TabFallback = () => (
+  <div className="flex-1 flex items-center justify-center bg-background">
+    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+  </div>
+);
 
 const TAB_PATHS = ['/', '/live', '/chat', '/standings', '/premium', '/profile'] as const;
 type TabPath = (typeof TAB_PATHS)[number];
@@ -116,7 +122,9 @@ const TabShell: React.FC = () => {
           const Component = TAB_COMPONENTS[path];
           return (
             <div key={path} ref={setTabRef(path)}>
-              <Component />
+              <Suspense fallback={<TabFallback />}>
+                <Component />
+              </Suspense>
             </div>
           );
         })}
@@ -149,7 +157,9 @@ const TabShell: React.FC = () => {
             }}
           >
             <ErrorBoundary>
-              <Component />
+              <Suspense fallback={<TabFallback />}>
+                <Component />
+              </Suspense>
             </ErrorBoundary>
           </div>
         );
