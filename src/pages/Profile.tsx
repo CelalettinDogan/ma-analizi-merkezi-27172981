@@ -432,11 +432,11 @@ const Profile = () => {
                   <p className="font-semibold text-sm font-display">GolMetrik AI</p>
                   <p className="text-micro text-muted-foreground">v1.0.0 • İstatistik destekli futbol analiz platformu</p>
                 </div>
-                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl" onClick={() => setShowPrivacySheet(true)}>
+                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl active:scale-[0.98] transition-transform" onClick={() => setShowPrivacySheet(true)}>
                   <span className="flex items-center gap-2.5"><Shield className="h-4 w-4 text-muted-foreground" />Gizlilik Politikası</span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
-                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl" onClick={() => setShowTermsSheet(true)}>
+                <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl active:scale-[0.98] transition-transform" onClick={() => setShowTermsSheet(true)}>
                   <span className="flex items-center gap-2.5"><FileText className="h-4 w-4 text-muted-foreground" />Kullanım Şartları</span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
