@@ -32,6 +32,23 @@ class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({ errorInfo });
+    
+    // Report crash to backend (fire-and-forget)
+    try {
+      supabase.from('admin_activity_logs').insert({
+        admin_id: '00000000-0000-0000-0000-000000000000',
+        action: 'client_crash',
+        target_type: 'error_boundary',
+        target_id: error.name,
+        details: {
+          message: error.message,
+          stack: error.stack?.slice(0, 500),
+          componentStack: errorInfo.componentStack?.slice(0, 500),
+          url: window.location.pathname,
+          timestamp: new Date().toISOString(),
+        },
+      }).then(() => {}).catch(() => {});
+    } catch {}
   }
 
   handleRetry = () => {
