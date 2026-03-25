@@ -155,7 +155,9 @@ const TabShell: React.FC = () => {
             }}
           >
             <ErrorBoundary>
-              <Component />
+              <Suspense fallback={<TabFallback />}>
+                <Component />
+              </Suspense>
             </ErrorBoundary>
           </div>
         );
