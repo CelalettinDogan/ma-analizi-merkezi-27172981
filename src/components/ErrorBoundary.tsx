@@ -47,7 +47,7 @@ class ErrorBoundary extends Component<Props, State> {
           url: window.location.pathname,
           timestamp: new Date().toISOString(),
         },
-      }).then(() => {}).catch(() => {});
+      }).then(() => {}, () => {});
     } catch {}
   }
 
