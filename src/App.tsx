@@ -3,6 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { persistQueryClient } from "@tanstack/react-query-persist-client";
+import { createSyncStoragePersister } from "@tanstack/react-query-persist-client";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -31,13 +33,26 @@ import OfflineBanner from "@/components/OfflineBanner";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 2 * 60 * 1000,       // 2 min — avoid refetch on every mount
-      gcTime: 10 * 60 * 1000,          // 10 min garbage collection
-      retry: 1,                         // single retry on mobile
-      refetchOnWindowFocus: false,      // Capacitor WebView triggers focus on every tab switch
-      refetchOnReconnect: true,         // refetch when back online
+      staleTime: 2 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
     },
   },
+});
+
+// Offline persistence: cache survives app restart
+const localStoragePersister = createSyncStoragePersister({
+  storage: window.localStorage,
+  key: 'GOLMETRIK_QUERY_CACHE',
+});
+
+persistQueryClient({
+  queryClient,
+  persister: localStoragePersister,
+  maxAge: 1000 * 60 * 60 * 24, // 24 hours
+  buster: 'v1',
 });
 
 const HIDE_BOTTOM_NAV_ROUTES = ['/auth', '/reset-password', '/terms', '/privacy', '/delete-account', '/admin', '/callback'];
