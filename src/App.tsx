@@ -184,7 +184,7 @@ const App = () => (
         </AuthProvider>
       </TooltipProvider>
     </ThemeProvider>
-  </QueryClientProvider>
+  </PersistQueryClientProvider>
 );
 
 export default App;
