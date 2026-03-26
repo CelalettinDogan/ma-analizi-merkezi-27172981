@@ -61,6 +61,7 @@ export function useMatchAnalysis() {
               headToHead: { lastMatches: [], homeWins: 0, awayWins: 0, draws: 0 },
               tacticalAnalysis: '',
               keyFactors: [],
+              injuries: { home: [], away: [] },
               isAIEnhanced: true,
             };
 
