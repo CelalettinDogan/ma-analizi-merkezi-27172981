@@ -76,7 +76,7 @@ export function useMatchAnalysis() {
       const result = await runFullAnalysis({
         data,
         userId: user?.id,
-        toastFn: toast,
+        toastFn: (opts) => toast({ title: opts.title, description: opts.description, variant: opts.variant as 'default' | 'destructive' | undefined }),
       });
 
       setAnalysis(result);

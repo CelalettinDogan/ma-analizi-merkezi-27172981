@@ -42,17 +42,22 @@ const queryClient = new QueryClient({
 });
 
 // Offline persistence: cache survives app restart
-const localStoragePersister = createSyncStoragePersister({
-  storage: window.localStorage,
-  key: 'GOLMETRIK_QUERY_CACHE',
-});
-
-persistQueryClient({
-  queryClient,
-  persister: localStoragePersister,
-  maxAge: 1000 * 60 * 60 * 24, // 24 hours
-  buster: 'v1',
-});
+const localStoragePersister = {
+  persistClient: (client: any) => {
+    try {
+      window.localStorage.setItem('GOLMETRIK_QUERY_CACHE', JSON.stringify(client));
+    } catch (e) { /* quota exceeded — silently fail */ }
+  },
+  restoreClient: () => {
+    try {
+      const cached = window.localStorage.getItem('GOLMETRIK_QUERY_CACHE');
+      return cached ? JSON.parse(cached) : undefined;
+    } catch { return undefined; }
+  },
+  removeClient: () => {
+    window.localStorage.removeItem('GOLMETRIK_QUERY_CACHE');
+  },
+};
 
 const HIDE_BOTTOM_NAV_ROUTES = ['/auth', '/reset-password', '/terms', '/privacy', '/delete-account', '/admin', '/callback'];
 
