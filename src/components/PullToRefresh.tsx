@@ -68,7 +68,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, children, clas
         animate={{ y: pullDistance }}
         transition={pulling.current ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 25 }}
       >
-        <div className={`rounded-full p-2 bg-muted/80 backdrop-blur-sm ${pullDistance >= PULL_THRESHOLD || isRefreshing ? 'text-primary' : 'text-muted-foreground'}`}>
+        <div className={`rounded-full p-2 bg-muted/80 backdrop-blur-sm ${pullDistance >= PULL_THRESHOLD || isRefreshing ? 'text-primary' : 'text-muted-foreground'}`} role="status" aria-label={isRefreshing ? 'Yenileniyor' : 'Yenilemek için çekin'}>
           <Loader2 className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} style={{ transform: isRefreshing ? 'none' : `rotate(${pullDistance * 3}deg)` }} />
         </div>
       </motion.div>

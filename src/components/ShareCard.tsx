@@ -184,6 +184,7 @@ const ShareCard: React.FC<ShareCardProps> = ({
             variant="outline"
             className="flex flex-col items-center gap-1 h-auto py-3"
             onClick={handleTwitterShare}
+            aria-label="Twitter'da paylaş"
           >
             <Twitter className="w-5 h-5 text-[#1DA1F2]" />
             <span className="text-xs">Twitter</span>
@@ -192,6 +193,7 @@ const ShareCard: React.FC<ShareCardProps> = ({
             variant="outline"
             className="flex flex-col items-center gap-1 h-auto py-3"
             onClick={handleWhatsAppShare}
+            aria-label="WhatsApp'ta paylaş"
           >
             <MessageCircle className="w-5 h-5 text-[#25D366]" />
             <span className="text-xs">WhatsApp</span>
@@ -200,6 +202,7 @@ const ShareCard: React.FC<ShareCardProps> = ({
             variant="outline"
             className="flex flex-col items-center gap-1 h-auto py-3"
             onClick={handleCopyLink}
+            aria-label="Bağlantıyı kopyala"
           >
             {copied ? <Check className="w-5 h-5 text-primary" /> : <Copy className="w-5 h-5" />}
             <span className="text-xs">{copied ? 'Kopyalandı' : 'Kopyala'}</span>
@@ -208,6 +211,7 @@ const ShareCard: React.FC<ShareCardProps> = ({
             variant="outline"
             className="flex flex-col items-center gap-1 h-auto py-3"
             onClick={handleDownload}
+            aria-label="Görsel olarak indir"
           >
             <Download className="w-5 h-5" />
             <span className="text-xs">İndir</span>

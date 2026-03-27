@@ -145,6 +145,8 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
         <button
           onClick={() => setShowDisclaimer(!showDisclaimer)}
           className="w-full min-h-[44px] flex items-center justify-between text-xs text-amber-400/70 active:bg-muted/20 rounded-lg px-1 transition-colors mb-4 touch-manipulation"
+          aria-label="Dış faktörler hakkında bilgi"
+          aria-expanded={showDisclaimer}
         >
           <span className="flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5" />

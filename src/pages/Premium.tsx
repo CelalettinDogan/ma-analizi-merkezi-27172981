@@ -118,6 +118,9 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoadin
     <motion.button
       whileTap={{ scale: 0.97 }}
       onClick={onSelect}
+      role="radio"
+      aria-checked={isSelected}
+      aria-label={`${plan.name} planı — ${plan.tagline}`}
       className={`relative flex flex-col items-center text-center rounded-2xl border-[1.5px] transition-all duration-300 overflow-visible ${
         isPopular ? 'flex-[1.2] z-10 scale-[1.05]' : 'flex-1 z-0 opacity-90'
       } ${

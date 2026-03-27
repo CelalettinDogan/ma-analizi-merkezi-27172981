@@ -178,6 +178,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             onClick={handleSend}
             disabled={!message.trim() || isLoading || disabled || isOverLimit}
             size="icon"
+            aria-label="Mesaj gönder"
             className={cn(
               "min-h-[44px] min-w-[44px] h-auto w-auto rounded-full shrink-0 transition-all duration-200",
               "bg-gradient-to-br from-primary to-primary/80",

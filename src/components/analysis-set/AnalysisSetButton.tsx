@@ -25,6 +25,7 @@ const AnalysisSetButton: React.FC = () => {
         onClick={() => setIsOpen(true)}
         className={`${positionClass} h-12 px-4 rounded-full shadow-lg bg-primary hover:bg-primary/90 glow-effect`}
         size="lg"
+        aria-label={`Analiz seti (${itemCount} öğe)`}
       >
         <FileText className="h-5 w-5 mr-2" />
         <span className="font-semibold">Analizler</span>

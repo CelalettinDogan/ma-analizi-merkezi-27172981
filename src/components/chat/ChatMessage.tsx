@@ -222,7 +222,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                         ? "bg-destructive/20 text-destructive" 
                         : "active:bg-muted text-muted-foreground"
                     )}
-                    title="Geliştirilmeli"
+                    aria-label="Geliştirilmeli"
                   >
                     <ThumbsDown className="w-4 h-4" />
                   </motion.button>
