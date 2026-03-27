@@ -10,23 +10,25 @@ type CallbackState = 'loading' | 'verified' | 'error';
 
 const AuthCallback = () => {
   const [state, setState] = useState<CallbackState>('loading');
+  const [tokens, setTokens] = useState<{ access_token?: string; refresh_token?: string }>({});
 
   useEffect(() => {
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const searchParams = new URLSearchParams(window.location.search);
 
-    const hasToken =
-      hashParams.has('access_token') || searchParams.has('access_token');
+    const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
     const hasType =
       hashParams.get('type') === 'signup' ||
       searchParams.get('type') === 'signup' ||
       hashParams.get('type') === 'email' ||
       searchParams.get('type') === 'email';
 
-    // Any token presence means the email link was valid
-    if (hasToken || hasType) {
+    if (accessToken || hasType) {
       setState('verified');
-      // Clean URL fragment
+      if (accessToken) {
+        setTokens({ access_token: accessToken, refresh_token: refreshToken || undefined });
+      }
       if (window.location.hash) {
         window.history.replaceState(null, '', window.location.pathname);
       }
@@ -36,7 +38,11 @@ const AuthCallback = () => {
   }, []);
 
   const handleOpenApp = () => {
-    window.location.href = `${NATIVE_SCHEME}callback`;
+    if (tokens.access_token && tokens.refresh_token) {
+      window.location.href = `${NATIVE_SCHEME}callback#access_token=${tokens.access_token}&refresh_token=${tokens.refresh_token}`;
+    } else {
+      window.location.href = `${NATIVE_SCHEME}callback`;
+    }
   };
 
   if (state === 'loading') {
