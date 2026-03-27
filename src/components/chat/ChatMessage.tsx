@@ -207,7 +207,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                         ? "bg-emerald-500/20 text-emerald-500" 
                         : "active:bg-muted text-muted-foreground"
                     )}
-                    title="Faydalı"
+                    aria-label="Faydalı"
                   >
                     <ThumbsUp className="w-4 h-4" />
                   </motion.button>
