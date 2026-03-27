@@ -133,6 +133,7 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
               <button
                 onClick={() => setShowFullReasoning(!showFullReasoning)}
                 className="min-h-[44px] text-xs text-primary active:opacity-70 mt-1 touch-manipulation flex items-center transition-opacity"
+                aria-label={showFullReasoning ? 'Daha az göster' : 'Devamını oku'}
               >
                 {showFullReasoning ? 'Daha az göster' : 'Devamını oku'}
               </button>
