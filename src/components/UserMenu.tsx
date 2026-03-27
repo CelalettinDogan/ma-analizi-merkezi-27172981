@@ -50,7 +50,7 @@ const UserMenu: React.FC = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2">
+        <Button variant="ghost" size="sm" className="gap-2" aria-label="Kullanıcı menüsü">
           <Avatar className="h-7 w-7">
             <AvatarFallback className="bg-primary/20 text-primary text-xs">
               {initials}

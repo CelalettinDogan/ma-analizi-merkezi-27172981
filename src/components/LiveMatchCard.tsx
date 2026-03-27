@@ -60,6 +60,8 @@ const LiveMatchCard: React.FC<LiveMatchCardProps> = ({ match, onClick }) => {
         isLive && "ring-2 ring-red-500/50 bg-gradient-to-br from-red-500/10 to-transparent"
       )}
       onClick={onClick}
+      role="button"
+      aria-label={`${match.homeTeam.shortName || match.homeTeam.name} vs ${match.awayTeam.shortName || match.awayTeam.name}${isLive ? ' - Canlı' : ''}`}
     >
       {/* Live indicator pulse */}
       {isLive && (

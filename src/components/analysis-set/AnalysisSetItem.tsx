@@ -55,6 +55,7 @@ const AnalysisSetItem: React.FC<AnalysisSetItemProps> = ({ item, onRemove }) => 
           size="icon"
           className="h-6 w-6 text-muted-foreground hover:text-destructive flex-shrink-0"
           onClick={() => onRemove(item.id)}
+          aria-label={`${item.homeTeam} vs ${item.awayTeam} analizini kaldır`}
         >
           <X className="h-4 w-4" />
         </Button>

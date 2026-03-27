@@ -187,7 +187,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                     whileTap={{ scale: 0.9 }}
                     onClick={handleCopy}
                     className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl active:bg-muted transition-colors touch-manipulation"
-                    title="Kopyala"
+                    aria-label="Kopyala"
                   >
                     {copied ? (
                       <Check className="w-4 h-4 text-emerald-500" />
@@ -207,7 +207,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                         ? "bg-emerald-500/20 text-emerald-500" 
                         : "active:bg-muted text-muted-foreground"
                     )}
-                    title="Faydalı"
+                    aria-label="Faydalı"
                   >
                     <ThumbsUp className="w-4 h-4" />
                   </motion.button>
@@ -222,7 +222,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                         ? "bg-destructive/20 text-destructive" 
                         : "active:bg-muted text-muted-foreground"
                     )}
-                    title="Geliştirilmeli"
+                    aria-label="Geliştirilmeli"
                   >
                     <ThumbsDown className="w-4 h-4" />
                   </motion.button>

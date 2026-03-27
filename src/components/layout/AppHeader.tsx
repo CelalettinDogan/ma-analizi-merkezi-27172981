@@ -18,7 +18,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border/40 pt-safe">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
         {/* Logo - compact native style */}
-        <Link to="/" className="flex items-center gap-2.5 group flex-shrink-0">
+        <Link to="/" className="flex items-center gap-2.5 group flex-shrink-0" aria-label="Ana sayfa">
           <div className="relative">
             <img
               src={logoImage}
