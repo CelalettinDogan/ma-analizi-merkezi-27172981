@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radio, Loader2, WifiOff, Trophy, Clock } from 'lucide-react';
+import { Radio, WifiOff, Trophy, Clock, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import AppHeader from '@/components/layout/AppHeader';
 import LiveMatchCard2 from '@/components/live/LiveMatchCard2';
 import LeagueGrid from '@/components/league/LeagueGrid';
-
+import { Skeleton } from '@/components/ui/skeleton';
 import CommandPalette from '@/components/navigation/CommandPalette';
 import { Match, CompetitionCode, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,9 +15,8 @@ import { staggerContainer, staggerItem, fadeInUp } from '@/lib/animations';
 import { toast } from 'sonner';
 import { getTeamNextMatch } from '@/services/footballApiService';
 
-const REFRESH_INTERVAL = 60000; // 60 seconds - cache is updated by pg_cron
+const REFRESH_INTERVAL = 60000;
 
-// Transform cached match to Match type
 const transformCachedLiveMatch = (cached: {
   match_id: number;
   competition_code: string;
@@ -63,16 +63,38 @@ const transformCachedLiveMatch = (cached: {
   },
   score: {
     winner: null,
-    fullTime: {
-      home: cached.home_score,
-      away: cached.away_score
-    },
-    halfTime: {
-      home: cached.half_time_home,
-      away: cached.half_time_away
-    }
+    fullTime: { home: cached.home_score, away: cached.away_score },
+    halfTime: { home: cached.half_time_home, away: cached.half_time_away }
   }
 });
+
+/* Skeleton for loading state */
+const LiveMatchSkeleton = () => (
+  <div className="p-4 rounded-2xl border border-border/50 bg-card space-y-4">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <Skeleton className="w-2.5 h-2.5 rounded-full" />
+        <Skeleton className="w-10 h-3" />
+      </div>
+      <Skeleton className="w-20 h-3" />
+    </div>
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex-1 flex flex-col items-center gap-2">
+        <Skeleton className="w-10 h-10 rounded-xl" />
+        <Skeleton className="w-16 h-3" />
+      </div>
+      <div className="flex flex-col items-center gap-1">
+        <Skeleton className="w-20 h-8 rounded-lg" />
+        <Skeleton className="w-10 h-3" />
+      </div>
+      <div className="flex-1 flex flex-col items-center gap-2">
+        <Skeleton className="w-10 h-10 rounded-xl" />
+        <Skeleton className="w-16 h-3" />
+      </div>
+    </div>
+    <Skeleton className="w-full h-8 rounded-full" />
+  </div>
+);
 
 const LivePage: React.FC = () => {
   const navigate = useNavigate();
@@ -85,10 +107,8 @@ const LivePage: React.FC = () => {
   const [commandOpen, setCommandOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   
-  // Ref for cleanup
   const isMountedRef = React.useRef(true);
 
-  // Fetch from database cache
   const fetchFromCache = useCallback(async () => {
     if (!isMountedRef.current) return;
     
@@ -101,7 +121,6 @@ const LivePage: React.FC = () => {
       if (selectedLeague) {
         query = query.eq('competition_code', selectedLeague);
       } else {
-        // Default to first 2 leagues if none selected
         const defaultCodes = SUPPORTED_COMPETITIONS.slice(0, 2).map(c => c.code);
         query = query.in('competition_code', defaultCodes);
       }
@@ -114,7 +133,6 @@ const LivePage: React.FC = () => {
       const matches = (data || []).map(transformCachedLiveMatch);
       setLiveMatches(matches);
       
-      // Get last updated time from most recent record
       if (data && data.length > 0) {
         const latestUpdate = data.reduce((latest, m) => {
           const mTime = m.updated_at ? new Date(m.updated_at).getTime() : 0;
@@ -139,7 +157,6 @@ const LivePage: React.FC = () => {
     }
   }, [selectedLeague]);
 
-  // Retry by re-fetching from cache (no edge function call to save Cloud balance)
   const syncLiveMatches = useCallback(async () => {
     if (!isMountedRef.current) return;
     setIsSyncing(true);
@@ -149,30 +166,20 @@ const LivePage: React.FC = () => {
     }
   }, [fetchFromCache]);
 
-  // Initial load - only fetch from cache, sync on mount only once
   useEffect(() => {
     isMountedRef.current = true;
-    
     const init = async () => {
       if (!isMountedRef.current) return;
       setIsLoading(true);
       await fetchFromCache();
     };
     init();
-    
-    return () => {
-      isMountedRef.current = false;
-    };
+    return () => { isMountedRef.current = false; };
   }, [selectedLeague]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Note: Manual sync removed - pg_cron handles sync automatically every 15 minutes
-
-  // Auto-refresh from cache
   useEffect(() => {
     const interval = setInterval(() => {
-      if (isMountedRef.current) {
-        fetchFromCache();
-      }
+      if (isMountedRef.current) fetchFromCache();
     }, REFRESH_INTERVAL);
     return () => clearInterval(interval);
   }, [fetchFromCache]);
@@ -184,10 +191,8 @@ const LivePage: React.FC = () => {
   const handleCommandTeamSelect = async (teamName: string, leagueCode: string) => {
     setCommandOpen(false);
     toast.info(`${teamName} için maç aranıyor...`);
-    
     try {
       const nextMatch = await getTeamNextMatch(teamName);
-      
       if (nextMatch) {
         navigate('/', { state: { selectedMatch: nextMatch } });
       } else {
@@ -207,66 +212,88 @@ const LivePage: React.FC = () => {
     });
   };
 
-  const headerRightContent = lastUpdated ? (
-    <span className="text-xs text-muted-foreground hidden sm:block">
-      {formatLastUpdated()}
-    </span>
-  ) : null;
-
   return (
     <div className="h-screen bg-background flex flex-col">
-      <AppHeader rightContent={headerRightContent} />
+      <AppHeader />
 
       <main className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
-      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
-        {/* League Filter */}
-        <motion.div {...fadeInUp}>
-          <LeagueGrid 
-            selectedLeague={selectedLeague} 
-            onLeagueSelect={(code) => setSelectedLeague(code === selectedLeague ? '' : code)}
-          />
-        </motion.div>
+        <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-5 overflow-x-hidden">
+          
+          {/* Live Header */}
+          <motion.div {...fadeInUp} className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="relative">
+                <Radio className="w-5 h-5 text-destructive" />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-destructive rounded-full animate-ping" />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-destructive rounded-full" />
+              </div>
+              <h1 className="font-display font-bold text-lg">Canlı Skorlar</h1>
+              {!isLoading && liveMatches.length > 0 && (
+                <Badge variant="secondary" className="text-micro font-semibold px-2 py-0.5">
+                  {liveMatches.length} maç
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5">
+              {lastUpdated && (
+                <>
+                  <motion.div
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="w-1.5 h-1.5 rounded-full bg-green-500"
+                  />
+                  <span className="text-micro text-muted-foreground">{formatLastUpdated()}</span>
+                </>
+              )}
+            </div>
+          </motion.div>
 
-        {/* Delay Warning Banner */}
-        <motion.div 
-          {...fadeInUp}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400"
-        >
-          <Clock className="w-4 h-4 shrink-0" />
-          <span className="text-xs sm:text-sm">Veriler 15 dakikaya kadar gecikmeli olabilir</span>
-        </motion.div>
+          {/* League Filter with live match counts */}
+          <motion.div {...fadeInUp}>
+            <LeagueGrid 
+              selectedLeague={selectedLeague} 
+              onLeagueSelect={(code) => setSelectedLeague(code === selectedLeague ? '' : code)}
+              liveMatches={liveMatches}
+            />
+          </motion.div>
 
-        {/* Content */}
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
-            <p className="text-muted-foreground">Canlı maçlar yükleniyor...</p>
-          </div>
-        ) : error ? (
-          <div className="text-center py-16">
-            <WifiOff className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <p className="text-muted-foreground mb-4">{error}</p>
-            <Button variant="outline" onClick={syncLiveMatches} disabled={isSyncing}>
-              Tekrar Dene
-            </Button>
-          </div>
-        ) : liveMatches.length === 0 ? (
+          {/* Subtle Delay Banner */}
           <motion.div 
             {...fadeInUp}
-            className="rounded-2xl bg-gradient-to-br from-card via-card to-muted/20 border border-border/50 overflow-hidden"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/5 border border-amber-500/15"
           >
-            <div className="relative p-6 sm:p-8 text-center">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
-              <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-              
-              <div className="relative z-10">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 rounded-2xl bg-gradient-to-br from-muted/50 to-muted/30 flex items-center justify-center border border-border/50">
-                  <Radio className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground" />
+            <AlertCircle className="w-3.5 h-3.5 shrink-0 text-amber-500/70" />
+            <span className="text-micro text-muted-foreground">Veriler ~15 dk gecikmeli olabilir</span>
+          </motion.div>
+
+          {/* Content */}
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              {[1, 2, 3].map((i) => (
+                <LiveMatchSkeleton key={i} />
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-center py-16">
+              <WifiOff className="w-14 h-14 mx-auto mb-4 text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground mb-4">{error}</p>
+              <Button variant="outline" onClick={syncLiveMatches} disabled={isSyncing} size="sm">
+                Tekrar Dene
+              </Button>
+            </div>
+          ) : liveMatches.length === 0 ? (
+            <motion.div 
+              {...fadeInUp}
+              className="rounded-2xl bg-card border border-border/50 overflow-hidden"
+            >
+              <div className="p-6 sm:p-8 text-center">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 rounded-2xl bg-muted/40 flex items-center justify-center">
+                  <Radio className="w-7 h-7 sm:w-8 sm:h-8 text-muted-foreground/60" />
                 </div>
                 
-                <h3 className="font-display font-bold text-lg sm:text-xl mb-2">Şu an canlı maç yok</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto mb-4 sm:mb-6 px-2">
-                  Desteklenen liglerde şu anda oynanmakta olan maç bulunmuyor. Sayfa her 60 saniyede otomatik güncellenir.
+                <h3 className="font-display font-bold text-base sm:text-lg mb-1.5">Şu an canlı maç yok</h3>
+                <p className="text-xs text-muted-foreground max-w-xs mx-auto mb-5">
+                  Desteklenen liglerde oynanmakta olan maç bulunmuyor.
                 </p>
 
                 <Button 
@@ -279,56 +306,51 @@ const LivePage: React.FC = () => {
                   Yaklaşan Maçlara Git
                 </Button>
               </div>
-            </div>
 
-            <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-border/30 bg-muted/10">
-              <div className="flex items-center justify-center gap-2 text-micro sm:text-xs text-muted-foreground">
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="w-2 h-2 rounded-full bg-primary/50"
-                />
-                <span>Otomatik güncelleme aktif</span>
+              <div className="px-4 py-2.5 border-t border-border/30 bg-muted/5">
+                <div className="flex items-center justify-center gap-1.5 text-micro text-muted-foreground">
+                  <motion.div
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="w-1.5 h-1.5 rounded-full bg-primary/40"
+                  />
+                  <span>Otomatik güncelleme aktif</span>
+                </div>
               </div>
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            variants={staggerContainer}
-            initial="initial"
-            animate="animate"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
-          >
-            <AnimatePresence mode="popLayout">
-              {liveMatches.map((match) => (
-                <motion.div
-                  key={match.id}
-                  variants={staggerItem}
-                  layout
-                  exit={{ opacity: 0, scale: 0.9 }}
-                >
-                  <LiveMatchCard2 match={match} onClick={() => handleMatchSelect(match)} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
-        )}
-
-        {/* Auto-refresh indicator */}
-        {!isLoading && liveMatches.length > 0 && (
-          <motion.div 
-            {...fadeInUp}
-            className="flex items-center justify-center gap-2 text-micro sm:text-xs text-muted-foreground"
-          >
+            </motion.div>
+          ) : (
             <motion.div
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="w-2 h-2 rounded-full bg-green-500"
-            />
-            <span>Otomatik güncelleme aktif (60 sn)</span>
-          </motion.div>
-        )}
-      </div>
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
+            >
+              <AnimatePresence mode="popLayout">
+                {liveMatches.map((match) => (
+                  <motion.div
+                    key={match.id}
+                    variants={staggerItem}
+                    layout
+                    exit={{ opacity: 0, scale: 0.9 }}
+                  >
+                    <LiveMatchCard2 match={match} onClick={() => handleMatchSelect(match)} />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          )}
+
+          {/* Subtle auto-refresh dot — no text */}
+          {!isLoading && liveMatches.length > 0 && (
+            <div className="flex justify-center py-1">
+              <motion.div
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className="w-1.5 h-1.5 rounded-full bg-green-500/60"
+              />
+            </div>
+          )}
+        </div>
       </main>
 
       <CommandPalette 
