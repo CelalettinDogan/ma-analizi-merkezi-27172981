@@ -16,112 +16,118 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
     ? ((match as any).minute ? `${(match as any).minute}'` : "●") 
     : isHalfTime ? 'HT' : '';
 
+  const homeScore = match.score.fullTime.home ?? 0;
+  const awayScore = match.score.fullTime.away ?? 0;
+  const homeName = match.homeTeam.shortName || match.homeTeam.name;
+  const awayName = match.awayTeam.shortName || match.awayTeam.name;
+
   return (
     <motion.button
       whileTap={cardTap}
       onClick={onClick}
+      aria-label={`${homeName} ${homeScore} - ${awayScore} ${awayName}, Canlı`}
       className={cn(
-        "w-full max-w-full p-3 sm:p-4 rounded-2xl text-left transition-colors duration-200 overflow-hidden",
+        "w-full max-w-full p-3.5 sm:p-4 rounded-2xl text-left transition-all duration-200 overflow-hidden",
         "bg-card border border-border/50 shadow-sm",
-        "active:bg-muted/30"
+        "active:scale-[0.98] active:bg-muted/20"
       )}
     >
       {/* Live Header */}
-      <div className="flex items-center justify-between mb-3 sm:mb-4">
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <motion.div
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="relative"
-          >
-            <span className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-50" />
-            <span className="relative w-2 h-2 sm:w-2.5 sm:h-2.5 bg-red-500 rounded-full block" />
-          </motion.div>
-          <span className="text-micro sm:text-xs font-semibold text-red-500 uppercase tracking-wider">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-1.5">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inset-0 bg-destructive rounded-full animate-ping opacity-40" />
+            <span className="relative w-2 h-2 bg-destructive rounded-full block" />
+          </span>
+          <span className="text-micro font-semibold text-destructive uppercase tracking-wider">
             Canlı
           </span>
         </div>
         
-        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-          <span className="text-base sm:text-lg flex-shrink-0">{match.competition.area?.flag || '🏆'}</span>
-          <span className="text-micro sm:text-xs text-muted-foreground max-w-[70px] sm:max-w-[100px] truncate">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-sm flex-shrink-0">{match.competition.area?.flag || '🏆'}</span>
+          <span className="text-micro text-muted-foreground max-w-[90px] truncate">
             {match.competition.name}
           </span>
         </div>
       </div>
 
       {/* Score Section */}
-      <div className="flex items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+      <div className="flex items-center justify-between gap-2 mb-3">
         {/* Home Team */}
         <div className="flex-1 text-center min-w-0">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-1.5 sm:mb-2 rounded-xl bg-muted/50 flex items-center justify-center overflow-hidden">
+          <div className="w-10 h-10 mx-auto mb-1.5 rounded-xl bg-muted/40 ring-1 ring-border/30 flex items-center justify-center overflow-hidden">
             {match.homeTeam.crest ? (
-              <img src={match.homeTeam.crest} alt="" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" />
+              <img src={match.homeTeam.crest} alt="" className="w-6 h-6 object-contain" />
             ) : (
-              <span className="text-xs sm:text-sm font-bold">{match.homeTeam.tla || 'H'}</span>
+              <span className="text-xs font-bold text-muted-foreground">{match.homeTeam.tla || 'H'}</span>
             )}
           </div>
-          <p className="text-micro sm:text-sm font-medium truncate px-1">
-            {match.homeTeam.shortName || match.homeTeam.name}
+          <p className="text-micro font-medium truncate px-0.5">
+            {homeName}
           </p>
         </div>
 
         {/* Score */}
-        <div className="flex flex-col items-center flex-shrink-0">
-          <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex flex-col items-center flex-shrink-0" role="status" aria-live="polite">
+          <div className="flex items-center gap-1.5">
             <motion.span
-              key={`home-${match.score.fullTime.home}`}
-              initial={{ scale: 1.5, color: 'hsl(var(--primary))' }}
+              key={`home-${homeScore}`}
+              initial={{ scale: 1.4, color: 'hsl(var(--primary))' }}
               animate={{ scale: 1, color: 'hsl(var(--foreground))' }}
-              className="text-2xl sm:text-3xl font-bold tabular-nums"
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              className="text-2xl font-bold tabular-nums"
             >
-              {match.score.fullTime.home ?? 0}
+              {homeScore}
             </motion.span>
-            <span className="text-lg sm:text-xl text-muted-foreground">-</span>
+            <span className="text-lg text-muted-foreground/60">-</span>
             <motion.span
-              key={`away-${match.score.fullTime.away}`}
-              initial={{ scale: 1.5, color: 'hsl(var(--primary))' }}
+              key={`away-${awayScore}`}
+              initial={{ scale: 1.4, color: 'hsl(var(--primary))' }}
               animate={{ scale: 1, color: 'hsl(var(--foreground))' }}
-              className="text-2xl sm:text-3xl font-bold tabular-nums"
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              className="text-2xl font-bold tabular-nums"
             >
-              {match.score.fullTime.away ?? 0}
+              {awayScore}
             </motion.span>
           </div>
           
           {/* Match Time */}
-          <div className="flex items-center gap-1 mt-0.5 sm:mt-1">
-            <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-red-500" />
-            <span className="text-micro sm:text-xs font-medium text-red-500">{minute}</span>
+          <div className="flex items-center gap-1 mt-0.5">
+            <Clock className="w-2.5 h-2.5 text-destructive/80" />
+            <span className="text-micro font-semibold text-destructive/80">{minute}</span>
           </div>
         </div>
 
         {/* Away Team */}
         <div className="flex-1 text-center min-w-0">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-1.5 sm:mb-2 rounded-xl bg-muted/50 flex items-center justify-center overflow-hidden">
+          <div className="w-10 h-10 mx-auto mb-1.5 rounded-xl bg-muted/40 ring-1 ring-border/30 flex items-center justify-center overflow-hidden">
             {match.awayTeam.crest ? (
-              <img src={match.awayTeam.crest} alt="" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" />
+              <img src={match.awayTeam.crest} alt="" className="w-6 h-6 object-contain" />
             ) : (
-              <span className="text-xs sm:text-sm font-bold">{match.awayTeam.tla || 'A'}</span>
+              <span className="text-xs font-bold text-muted-foreground">{match.awayTeam.tla || 'A'}</span>
             )}
           </div>
-          <p className="text-micro sm:text-sm font-medium truncate px-1">
-            {match.awayTeam.shortName || match.awayTeam.name}
+          <p className="text-micro font-medium truncate px-0.5">
+            {awayName}
           </p>
         </div>
       </div>
 
-      {/* Half Time Score */}
+      {/* Half Time Score Pill */}
       {match.score.halfTime.home !== null && (
-        <div className="text-center text-micro sm:text-xs text-muted-foreground mb-2 sm:mb-3">
-          İY: {match.score.halfTime.home} - {match.score.halfTime.away}
+        <div className="flex justify-center mb-2.5">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-muted/40 text-micro text-muted-foreground font-medium">
+            İY {match.score.halfTime.home} - {match.score.halfTime.away}
+          </span>
         </div>
       )}
 
-      {/* Action */}
-      <div className="flex items-center justify-center gap-1.5 sm:gap-2 pt-2.5 sm:pt-3 border-t border-border/30">
-        <span className="inline-flex items-center gap-1.5 bg-primary/10 rounded-full px-3 py-1">
-          <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-          <span className="text-xs sm:text-sm font-medium text-primary">Hızlı Analiz</span>
+      {/* CTA */}
+      <div className="flex items-center justify-center pt-2.5 border-t border-border/20">
+        <span className="inline-flex items-center gap-1.5 bg-primary/10 rounded-full px-3.5 py-1.5 shadow-sm">
+          <Zap className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-semibold text-primary">Hızlı Analiz</span>
         </span>
       </div>
     </motion.button>
