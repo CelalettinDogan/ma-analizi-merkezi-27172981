@@ -222,11 +222,7 @@ const LivePage: React.FC = () => {
           {/* Live Header */}
           <motion.div {...fadeInUp} className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="relative">
-                <Radio className="w-5 h-5 text-destructive" />
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-destructive rounded-full animate-ping" />
-                
-              </div>
+              <span className="w-2.5 h-2.5 bg-destructive rounded-full block" />
               <h1 className="font-display font-bold text-lg">Canlı Skorlar</h1>
               {!isLoading && liveMatches.length > 0 && (
                 <Badge variant="secondary" className="text-micro font-semibold px-2 py-0.5">
