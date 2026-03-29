@@ -241,14 +241,8 @@ const LivePage: React.FC = () => {
             />
           </motion.div>
 
-          {/* Subtle Delay Banner */}
-          <motion.div 
-            {...fadeInUp}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/5 border border-amber-500/15"
-          >
-            <AlertCircle className="w-3.5 h-3.5 shrink-0 text-amber-500/70" />
-            <span className="text-micro text-muted-foreground">Veriler ~15 dk gecikmeli olabilir</span>
-          </motion.div>
+          {/* Subtle delay note */}
+          <p className="text-[10px] text-muted-foreground/50 text-center">Veriler ~15 dk gecikmeli olabilir</p>
 
           {/* Content */}
           {isLoading ? (
