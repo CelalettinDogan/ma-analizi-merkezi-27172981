@@ -295,16 +295,6 @@ const LivePage: React.FC = () => {
                 </Button>
               </div>
 
-              <div className="px-4 py-2.5 border-t border-border/30 bg-muted/5">
-                <div className="flex items-center justify-center gap-1.5 text-micro text-muted-foreground">
-                  <motion.div
-                    animate={{ scale: [1, 1.3, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="w-1.5 h-1.5 rounded-full bg-primary/40"
-                  />
-                  <span>Otomatik güncelleme aktif</span>
-                </div>
-              </div>
             </motion.div>
           ) : (
             <motion.div
