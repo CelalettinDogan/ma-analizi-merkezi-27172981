@@ -234,18 +234,6 @@ const LivePage: React.FC = () => {
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-1.5">
-              {lastUpdated && (
-                <>
-                  <motion.div
-                    animate={{ scale: [1, 1.3, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="w-1.5 h-1.5 rounded-full bg-green-500"
-                  />
-                  <span className="text-micro text-muted-foreground">{formatLastUpdated()}</span>
-                </>
-              )}
-            </div>
           </motion.div>
 
           {/* League Filter with live match counts */}
