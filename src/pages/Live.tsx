@@ -275,22 +275,19 @@ const LivePage: React.FC = () => {
               className="rounded-2xl bg-card border border-border/50 overflow-hidden"
             >
               <div className="p-6 sm:p-8 text-center">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 rounded-2xl bg-muted/40 flex items-center justify-center">
-                  <Radio className="w-7 h-7 sm:w-8 sm:h-8 text-muted-foreground/60" />
-                </div>
+                <Radio className="w-8 h-8 text-muted-foreground/40 mx-auto mb-4" />
                 
                 <h3 className="font-display font-bold text-base sm:text-lg mb-1.5">Şu an canlı maç yok</h3>
-                <p className="text-xs text-muted-foreground max-w-xs mx-auto mb-5">
+                <p className="text-xs text-muted-foreground max-w-xs mx-auto mb-6">
                   Desteklenen liglerde oynanmakta olan maç bulunmuyor.
                 </p>
 
                 <Button 
                   variant="default" 
                   onClick={() => navigate('/')}
-                  className="gap-2"
-                  size="sm"
+                  className="gap-2.5 rounded-xl h-12 px-6 font-semibold text-sm shadow-[0_4px_20px_-4px_hsl(var(--primary)/0.35)] active:scale-[0.97] transition-all duration-200"
                 >
-                  <Trophy className="w-4 h-4" />
+                  <Trophy className="w-4.5 h-4.5" />
                   Yaklaşan Maçlara Git
                 </Button>
               </div>
