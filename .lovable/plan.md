@@ -1,70 +1,47 @@
 
 
-## Plan: Live Ekranı — 2026 Native Premium İyileştirmeler
+## Live Ekranı — 2026 Premium Audit
 
-### Mevcut Durum
-Live sayfası fonksiyonel olarak sağlam: DB cache'den okuma, 60sn auto-refresh, lig filtresi, boş durum, hata durumu. Ancak UI/UX olarak Home ve Standings sayfalarının gerisinde kaldı.
+### Mevcut Durum (Ekran İncelemesi)
+Sayfa fonksiyonel olarak sağlam. Skeleton loading, lig filtresi, boş durum, hata durumu, accessibility — hepsi yerinde. Ancak birkaç görsel detay native premium hissinden uzak:
 
-### İyileştirmeler
+### Tespit Edilen Sorunlar
 
----
+| # | Sorun | Detay |
+|---|-------|-------|
+| 1 | Header Radio ikonu | `(•))` ikonu + yanındaki kırmızı ping dot fazla kalabalık, premium app'lerde (FotMob/SofaScore) daha minimal |
+| 2 | Gecikme banner'ı | `border border-amber-500/15` çerçevesi web hissi veriyor, native app'lerde böyle banner olmaz |
+| 3 | Empty state kartı | `border border-border/50` çerçeveli kart web-like görünüyor. Premium app'lerde empty state seamless, border'sız olur |
+| 4 | Empty state ikonu | Radio ikonu `w-8 h-8` küçük ve soluk. Daha büyük, daha etkileyici olmalı |
+| 5 | Empty state spacing | İkon → başlık → açıklama → buton arası sıkışık |
+| 6 | Gecikme banner'ı gereksiz alan kaplıyor | Her zaman görünüyor, maç olsa da olmasa da |
 
-### 1. LIVE HEADER — Daha Güçlü Görsel Hiyerarşi
-**Dosya:** `src/pages/Live.tsx`
+### Önerilen İyileştirmeler
 
-- Sayfanın üstüne "Canlı Skorlar" başlığı + son güncelleme zamanı ekle (şu an header'da gizli)
-- Canlı maç sayısını badge olarak göster: `3 Maç Devam Ediyor`
-- Gecikme banner'ını daha subtle yap: ikon + kısa metin, `bg-amber-500/5` ile daha hafif
+**1. Header Simplification**
+- Radio ikonu + ping dot → sadece bir kırmızı dot ile "Canlı Skorlar" yeterli
+- Veya ping animasyonunu kaldır, sadece statik kırmızı dot bırak (daha premium, daha az "web")
 
-### 2. LIG FİLTRESİ — Live Match Count Badge
-**Dosya:** `src/pages/Live.tsx`
+**2. Gecikme Banner'ını Kaldır veya Küçült**
+- Bu banner her zaman görünüyor ve native app'lerde bu tür uyarılar genelde yoktur
+- Kaldır veya sadece footer'da çok küçük text olarak göster
 
-- `LeagueGrid`'e `liveMatches` prop'u geçir (zaten destekliyor ama geçilmiyor)
-- Her lig ikonunun üstünde canlı maç sayısı badge'i gösterilsin
+**3. Empty State Premium Polish**
+- Border'ı kaldır → seamless, `bg-transparent` yap
+- İkonu büyüt: `w-12 h-12` ve `text-muted-foreground/30`
+- Alt açıklama ile buton arası spacing artır: `mb-8`
+- Buton altına küçük destekleyici metin ekle: `"Maçlar başladığında burada görünecek"`
 
-### 3. MATCH CARD — Premium Native Polish
-**Dosya:** `src/components/live/LiveMatchCard2.tsx`
-
-- Lig adı ve bayrak → kartın üst satırına daha belirgin yerleştir
-- Skor animasyonu: gol olduğunda pulse efekti ekle (zaten var, güçlendir)
-- İlk yarı skoru: daha belirgin göster, `HT 1-0` formatında pill badge olarak
-- "Hızlı Analiz" CTA → daha belirgin: gradient background, shadow
-- Kart hover/active: `shadow-md` → `shadow-lg` geçişi, `active:scale-[0.98]`
-- Takım logoları: `ring-1 ring-border/30` ekle, daha polished görünüm
-- Maç dakikası: kırmızı pulse dot ile birlikte daha büyük font
-- `aria-label` ekle: `"${homeTeam} ${homeScore} - ${awayScore} ${awayTeam}, Canlı"`
-
-### 4. BOŞ DURUM — Daha İyi Empty State
-**Dosya:** `src/pages/Live.tsx`
-
-- Mevcut empty state iyi ama dekoratif elementler (blur circles) kaldırılabilir — daha temiz
-- "Yaklaşan Maçlara Git" butonunu daha belirgin yap
-
-### 5. LOADING STATE — Skeleton Cards
-**Dosya:** `src/pages/Live.tsx`
-
-- Tek spinner yerine 3 adet skeleton match card göster
-- Daha native hissi verir, kullanıcı ne bekleyeceğini anlar
-
-### 6. AUTO-REFRESH İNDİKATÖRÜ — Daha Subtle
-**Dosya:** `src/pages/Live.tsx`
-
-- "Otomatik güncelleme aktif (60 sn)" → sadece küçük yeşil dot, metin kaldır (zaten belli)
-
-### 7. ACCESSIBILITY
-**Dosya:** `src/components/live/LiveMatchCard2.tsx`
-
-- `motion.button`'a `aria-label` ekle
-- Skor bölgesine `role="status"` + `aria-live="polite"` ekle (skor değişince screen reader bilgilensin)
-
----
+**4. Maç Kartı İyileştirmesi (LiveMatchCard2)**
+- Kart zaten iyi durumda, ancak `shadow-sm` → `shadow-[0_2px_12px_-2px_hsl(var(--foreground)/0.06)]` ile daha yumuşak shadow
+- CTA bölümünde `border-t` → daha subtle `border-border/10`
 
 ### Dosya Değişiklikleri
 
 | Dosya | İşlem |
 |-------|-------|
-| `src/pages/Live.tsx` | Header iyileştirme, skeleton loading, liveMatches prop, subtle refresh indicator |
-| `src/components/live/LiveMatchCard2.tsx` | Premium card polish, accessibility, CTA güçlendirme |
+| `src/pages/Live.tsx` | Header simplify, gecikme banner kaldır/küçült, empty state polish |
+| `src/components/live/LiveMatchCard2.tsx` | Shadow ve CTA border ince ayar |
 
-Fonksiyonalite değişmez. Sadece UI/UX ve accessibility iyileştirmeleri.
+Fonksiyonalite değişmez. Sadece görsel polish.
 
