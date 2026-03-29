@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Radio, WifiOff, Trophy, Clock, AlertCircle } from 'lucide-react';
+import { Radio, WifiOff, Trophy, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import AppHeader from '@/components/layout/AppHeader';
@@ -222,11 +222,7 @@ const LivePage: React.FC = () => {
           {/* Live Header */}
           <motion.div {...fadeInUp} className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="relative">
-                <Radio className="w-5 h-5 text-destructive" />
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-destructive rounded-full animate-ping" />
-                
-              </div>
+              <span className="w-2.5 h-2.5 bg-destructive rounded-full block" />
               <h1 className="font-display font-bold text-lg">Canlı Skorlar</h1>
               {!isLoading && liveMatches.length > 0 && (
                 <Badge variant="secondary" className="text-micro font-semibold px-2 py-0.5">
@@ -245,14 +241,8 @@ const LivePage: React.FC = () => {
             />
           </motion.div>
 
-          {/* Subtle Delay Banner */}
-          <motion.div 
-            {...fadeInUp}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/5 border border-amber-500/15"
-          >
-            <AlertCircle className="w-3.5 h-3.5 shrink-0 text-amber-500/70" />
-            <span className="text-micro text-muted-foreground">Veriler ~15 dk gecikmeli olabilir</span>
-          </motion.div>
+          {/* Subtle delay note */}
+          <p className="text-[10px] text-muted-foreground/50 text-center">Veriler ~15 dk gecikmeli olabilir</p>
 
           {/* Content */}
           {isLoading ? (
@@ -272,26 +262,25 @@ const LivePage: React.FC = () => {
           ) : liveMatches.length === 0 ? (
             <motion.div 
               {...fadeInUp}
-              className="rounded-2xl bg-card border border-border/50 overflow-hidden"
+              className="py-12 sm:py-16 text-center"
             >
-              <div className="p-6 sm:p-8 text-center">
-                <Radio className="w-8 h-8 text-muted-foreground/40 mx-auto mb-4" />
-                
-                <h3 className="font-display font-bold text-base sm:text-lg mb-1.5">Şu an canlı maç yok</h3>
-                <p className="text-xs text-muted-foreground max-w-xs mx-auto mb-6">
-                  Desteklenen liglerde oynanmakta olan maç bulunmuyor.
-                </p>
+              <Radio className="w-12 h-12 text-muted-foreground/25 mx-auto mb-5" />
+              
+              <h3 className="font-display font-bold text-base sm:text-lg mb-1.5">Şu an canlı maç yok</h3>
+              <p className="text-xs text-muted-foreground max-w-xs mx-auto mb-8">
+                Desteklenen liglerde oynanmakta olan maç bulunmuyor.
+              </p>
 
-                <Button 
-                  variant="default" 
-                  onClick={() => navigate('/')}
-                  className="gap-2.5 rounded-xl h-12 px-6 font-semibold text-sm shadow-[0_4px_20px_-4px_hsl(var(--primary)/0.35)] active:scale-[0.97] transition-all duration-200"
-                >
-                  <Trophy className="w-4.5 h-4.5" />
-                  Yaklaşan Maçlara Git
-                </Button>
-              </div>
+              <Button 
+                variant="default" 
+                onClick={() => navigate('/')}
+                className="gap-2.5 rounded-xl h-12 px-6 font-semibold text-sm shadow-[0_4px_20px_-4px_hsl(var(--primary)/0.35)] active:scale-[0.97] transition-all duration-200"
+              >
+                <Trophy className="w-4.5 h-4.5" />
+                Yaklaşan Maçlara Git
+              </Button>
 
+              <p className="text-[11px] text-muted-foreground/40 mt-4">Maçlar başladığında burada görünecek</p>
             </motion.div>
           ) : (
             <motion.div

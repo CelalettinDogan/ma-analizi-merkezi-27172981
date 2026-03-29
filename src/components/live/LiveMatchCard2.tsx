@@ -28,7 +28,7 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
       aria-label={`${homeName} ${homeScore} - ${awayScore} ${awayName}, Canlı`}
       className={cn(
         "w-full max-w-full p-3.5 sm:p-4 rounded-2xl text-left transition-all duration-200 overflow-hidden",
-        "bg-card border border-border/50 shadow-sm",
+        "bg-card border border-border/50 shadow-[0_2px_12px_-2px_hsl(var(--foreground)/0.06)]",
         "active:scale-[0.98] active:bg-muted/20"
       )}
     >
@@ -124,7 +124,7 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
       )}
 
       {/* CTA */}
-      <div className="flex items-center justify-center pt-2.5 border-t border-border/20">
+      <div className="flex items-center justify-center pt-2.5 border-t border-border/10">
         <span className="inline-flex items-center gap-1.5 bg-primary/10 rounded-full px-3.5 py-1.5 shadow-sm">
           <Zap className="w-3.5 h-3.5 text-primary" />
           <span className="text-xs font-semibold text-primary">Hızlı Analiz</span>
