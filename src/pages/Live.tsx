@@ -225,7 +225,7 @@ const LivePage: React.FC = () => {
               <div className="relative">
                 <Radio className="w-5 h-5 text-destructive" />
                 <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-destructive rounded-full animate-ping" />
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-destructive rounded-full" />
+                
               </div>
               <h1 className="font-display font-bold text-lg">Canlı Skorlar</h1>
               {!isLoading && liveMatches.length > 0 && (
