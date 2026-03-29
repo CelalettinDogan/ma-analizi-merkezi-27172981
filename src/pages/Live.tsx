@@ -318,16 +318,6 @@ const LivePage: React.FC = () => {
             </motion.div>
           )}
 
-          {/* Subtle auto-refresh dot — no text */}
-          {!isLoading && liveMatches.length > 0 && (
-            <div className="flex justify-center py-1">
-              <motion.div
-                animate={{ opacity: [0.4, 1, 0.4] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="w-1.5 h-1.5 rounded-full bg-green-500/60"
-              />
-            </div>
-          )}
         </div>
       </main>
 
