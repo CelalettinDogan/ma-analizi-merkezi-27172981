@@ -234,18 +234,6 @@ const LivePage: React.FC = () => {
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-1.5">
-              {lastUpdated && (
-                <>
-                  <motion.div
-                    animate={{ scale: [1, 1.3, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="w-1.5 h-1.5 rounded-full bg-green-500"
-                  />
-                  <span className="text-micro text-muted-foreground">{formatLastUpdated()}</span>
-                </>
-              )}
-            </div>
           </motion.div>
 
           {/* League Filter with live match counts */}
@@ -307,16 +295,6 @@ const LivePage: React.FC = () => {
                 </Button>
               </div>
 
-              <div className="px-4 py-2.5 border-t border-border/30 bg-muted/5">
-                <div className="flex items-center justify-center gap-1.5 text-micro text-muted-foreground">
-                  <motion.div
-                    animate={{ scale: [1, 1.3, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="w-1.5 h-1.5 rounded-full bg-primary/40"
-                  />
-                  <span>Otomatik güncelleme aktif</span>
-                </div>
-              </div>
             </motion.div>
           ) : (
             <motion.div
@@ -340,16 +318,6 @@ const LivePage: React.FC = () => {
             </motion.div>
           )}
 
-          {/* Subtle auto-refresh dot — no text */}
-          {!isLoading && liveMatches.length > 0 && (
-            <div className="flex justify-center py-1">
-              <motion.div
-                animate={{ opacity: [0.4, 1, 0.4] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="w-1.5 h-1.5 rounded-full bg-green-500/60"
-              />
-            </div>
-          )}
         </div>
       </main>
 
