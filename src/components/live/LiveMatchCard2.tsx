@@ -28,7 +28,7 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
       aria-label={`${homeName} ${homeScore} - ${awayScore} ${awayName}, Canlı`}
       className={cn(
         "w-full max-w-full p-3.5 sm:p-4 rounded-2xl text-left transition-all duration-200 overflow-hidden",
-        "bg-card border border-border/50 shadow-sm",
+        "bg-card border border-border/50 shadow-[0_2px_12px_-2px_hsl(var(--foreground)/0.06)]",
         "active:scale-[0.98] active:bg-muted/20"
       )}
     >
