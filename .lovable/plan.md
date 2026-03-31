@@ -1,47 +1,51 @@
 
 
-## Live Ekranı — 2026 Premium Audit
+## Plan: BottomNav — 2026 Premium Native Polish
 
 ### Mevcut Durum (Ekran İncelemesi)
-Sayfa fonksiyonel olarak sağlam. Skeleton loading, lig filtresi, boş durum, hata durumu, accessibility — hepsi yerinde. Ancak birkaç görsel detay native premium hissinden uzak:
-
-### Tespit Edilen Sorunlar
+BottomNav zaten iyi bir temele sahip: floating layout, backdrop-blur, spring animasyonları, AI vurgusu, safe-area desteği. Ancak birkaç detay 2026 premium native standardının altında:
 
 | # | Sorun | Detay |
 |---|-------|-------|
-| 1 | Header Radio ikonu | `(•))` ikonu + yanındaki kırmızı ping dot fazla kalabalık, premium app'lerde (FotMob/SofaScore) daha minimal |
-| 2 | Gecikme banner'ı | `border border-amber-500/15` çerçevesi web hissi veriyor, native app'lerde böyle banner olmaz |
-| 3 | Empty state kartı | `border border-border/50` çerçeveli kart web-like görünüyor. Premium app'lerde empty state seamless, border'sız olur |
-| 4 | Empty state ikonu | Radio ikonu `w-8 h-8` küçük ve soluk. Daha büyük, daha etkileyici olmalı |
-| 5 | Empty state spacing | İkon → başlık → açıklama → buton arası sıkışık |
-| 6 | Gecikme banner'ı gereksiz alan kaplıyor | Her zaman görünüyor, maç olsa da olmasa da |
+| 1 | 6 tab sıkışıklık | Free kullanıcıda 6 tab var (Ana, Canlı, AI, Lig, Pro, Profil) — her biri çok dar, label'lar sıkışık |
+| 2 | Inactive opacity çok düşük | `text-muted-foreground/45` neredeyse görünmez, accessibility sorunu |
+| 3 | Active pill ve AI glow çakışıyor | `layoutId="navPill"` hem normal hem AI için kullanılıyor — geçiş garip olabiliyor |
+| 4 | Shadow yönü tutarsız | `shadow-[0_4px_32px...]` aşağı doğru shadow — floating bar için yukarı doğru olmalı |
+| 5 | Haptic feedback yok | Native app'lerde tab geçişinde titreşim beklenir |
+| 6 | Border çok subtle | `border-border/10` neredeyse görünmez, derinlik hissi zayıf |
 
-### Önerilen İyileştirmeler
+### İyileştirmeler
 
-**1. Header Simplification**
-- Radio ikonu + ping dot → sadece bir kırmızı dot ile "Canlı Skorlar" yeterli
-- Veya ping animasyonunu kaldır, sadece statik kırmızı dot bırak (daha premium, daha az "web")
+**1. Inactive Opacity Artışı**
+- `text-muted-foreground/45` → `text-muted-foreground/55` (ikonlar)
+- Label'lar da `/55` yapılacak — accessibility uyumu
 
-**2. Gecikme Banner'ını Kaldır veya Küçült**
-- Bu banner her zaman görünüyor ve native app'lerde bu tür uyarılar genelde yoktur
-- Kaldır veya sadece footer'da çok küçük text olarak göster
+**2. Shadow Düzeltmesi**
+- `shadow-[0_4px_32px_-4px_rgba(0,0,0,0.12),0_-2px_12px_rgba(0,0,0,0.04)]` → `shadow-[0_-4px_32px_-4px_rgba(0,0,0,0.1),0_2px_8px_rgba(0,0,0,0.04)]`
+- Floating bar'ın yukarı doğru yumuşak gölgesi
 
-**3. Empty State Premium Polish**
-- Border'ı kaldır → seamless, `bg-transparent` yap
-- İkonu büyüt: `w-12 h-12` ve `text-muted-foreground/30`
-- Alt açıklama ile buton arası spacing artır: `mb-8`
-- Buton altına küçük destekleyici metin ekle: `"Maçlar başladığında burada görünecek"`
+**3. Border Güçlendirme**
+- `border-border/10` → `border-border/15` — derinlik artışı, hala subtle
 
-**4. Maç Kartı İyileştirmesi (LiveMatchCard2)**
-- Kart zaten iyi durumda, ancak `shadow-sm` → `shadow-[0_2px_12px_-2px_hsl(var(--foreground)/0.06)]` ile daha yumuşak shadow
-- CTA bölümünde `border-t` → daha subtle `border-border/10`
+**4. Haptic Feedback (Capacitor)**
+- `@capacitor/haptics` ile tab tıklamada `ImpactStyle.Light` titreşim ekle
+- Web'de graceful fallback (no-op)
+
+**5. Active Pill İyileştirmesi**
+- Pill bg: `bg-primary/12` → `bg-primary/10` — daha subtle, daha premium
+- AI glow: `shadow-[0_0_12px...]` → `shadow-[0_0_16px...]` — biraz daha belirgin
+
+**6. Label Spacing**
+- İkon-label arası `gap-1` → `gap-1.5` — daha nefes alan düzen
+
+**7. Container Padding**
+- `py-1.5` → `py-2` — biraz daha yüksek bar, daha rahat dokunma alanı
 
 ### Dosya Değişiklikleri
 
 | Dosya | İşlem |
 |-------|-------|
-| `src/pages/Live.tsx` | Header simplify, gecikme banner kaldır/küçült, empty state polish |
-| `src/components/live/LiveMatchCard2.tsx` | Shadow ve CTA border ince ayar |
+| `src/components/navigation/BottomNav.tsx` | Shadow, opacity, spacing, haptic, border ince ayarları |
 
-Fonksiyonalite değişmez. Sadece görsel polish.
+Tek dosya. Fonksiyonalite değişmez. Sadece görsel ve dokunsal polish.
 
