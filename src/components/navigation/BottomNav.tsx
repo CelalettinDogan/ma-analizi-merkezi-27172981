@@ -136,9 +136,6 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
                         strokeWidth={isActive ? 2.3 : 1.7}
                         {...(isActive ? { fill: 'currentColor', fillOpacity: 0.12 } : {})}
                       />
-                      {item.badge === 'live' && (
-                        <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-destructive rounded-full animate-pulse ring-2 ring-card/80" />
-                      )}
                       {item.badge === 'premium' && isAI && (
                         <span className="absolute -top-0.5 -right-1 w-1.5 h-1.5 bg-primary/50 rounded-full ring-2 ring-card/80" />
                       )}
