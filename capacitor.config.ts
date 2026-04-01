@@ -19,7 +19,7 @@ const config: CapacitorConfig = {
       backgroundColor: '#0f172a',
       androidScaleType: 'CENTER',
       showSpinner: false,
-      launchShowDuration: 2500,
+      launchShowDuration: 1500,
     },
     StatusBar: {
       style: 'DARK',
@@ -40,11 +40,6 @@ const config: CapacitorConfig = {
     webViewSettings: {
       textZoom: 100,
     },
-  },
-  ios: {
-    contentInset: 'automatic',
-    preferredContentMode: 'mobile',
-    backgroundColor: '#0f172a',
   },
 };
 

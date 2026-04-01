@@ -1,7 +1,17 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { Capacitor } from '@capacitor/core';
+
 const PUBLISHED_URL = 'https://golmetrikapp.lovable.app';
+const NATIVE_SCHEME = 'golmetrik://';
+
+const getRedirectUrl = (path: string) => {
+  if (Capacitor.isNativePlatform()) {
+    return `${NATIVE_SCHEME}${path}`;
+  }
+  return `${PUBLISHED_URL}/${path}`;
+};
 
 interface AuthContextType {
   user: User | null;
@@ -47,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password,
       options: {
-        emailRedirectTo: `${PUBLISHED_URL}/callback`,
+        emailRedirectTo: getRedirectUrl('callback'),
         data: {
           display_name: displayName,
         },
@@ -77,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${PUBLISHED_URL}/reset-password`,
+      redirectTo: getRedirectUrl('reset-password'),
     });
     return { error: error as Error | null };
   };
