@@ -41,11 +41,6 @@ const config: CapacitorConfig = {
       textZoom: 100,
     },
   },
-  ios: {
-    contentInset: 'automatic',
-    preferredContentMode: 'mobile',
-    backgroundColor: '#0f172a',
-  },
 };
 
 export default config;

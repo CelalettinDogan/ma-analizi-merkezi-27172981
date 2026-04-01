@@ -10,6 +10,8 @@ const OfflineBanner: React.FC = () => {
     <AnimatePresence>
       {!isOnline && (
         <motion.div
+          role="alert"
+          aria-live="assertive"
           initial={{ y: -48, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -48, opacity: 0 }}
