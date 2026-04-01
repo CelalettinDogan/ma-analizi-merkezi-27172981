@@ -1,7 +1,17 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { Capacitor } from '@capacitor/core';
+
 const PUBLISHED_URL = 'https://golmetrikapp.lovable.app';
+const NATIVE_SCHEME = 'golmetrik://';
+
+const getRedirectUrl = (path: string) => {
+  if (Capacitor.isNativePlatform()) {
+    return `${NATIVE_SCHEME}${path}`;
+  }
+  return `${PUBLISHED_URL}/${path}`;
+};
 
 interface AuthContextType {
   user: User | null;
