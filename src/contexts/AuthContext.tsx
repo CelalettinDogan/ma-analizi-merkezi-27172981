@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password,
       options: {
-        emailRedirectTo: `${PUBLISHED_URL}/callback`,
+        emailRedirectTo: getRedirectUrl('callback'),
         data: {
           display_name: displayName,
         },
