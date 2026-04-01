@@ -1,51 +1,83 @@
 
 
-## Plan: BottomNav — 2026 Premium Native Polish
+## Son Kontrol & İyileştirmeler — Play Store Yayın Öncesi
 
-### Mevcut Durum (Ekran İncelemesi)
-BottomNav zaten iyi bir temele sahip: floating layout, backdrop-blur, spring animasyonları, AI vurgusu, safe-area desteği. Ancak birkaç detay 2026 premium native standardının altında:
+Uygulama teknik olarak sağlam bir temele sahip: Capacitor 8, lazy loading, ErrorBoundary, RLS, Google Play Billing, deep link, accessibility aria-labels. Aşağıdakiler yayın öncesi son polish niteliğinde.
 
-| # | Sorun | Detay |
-|---|-------|-------|
-| 1 | 6 tab sıkışıklık | Free kullanıcıda 6 tab var (Ana, Canlı, AI, Lig, Pro, Profil) — her biri çok dar, label'lar sıkışık |
-| 2 | Inactive opacity çok düşük | `text-muted-foreground/45` neredeyse görünmez, accessibility sorunu |
-| 3 | Active pill ve AI glow çakışıyor | `layoutId="navPill"` hem normal hem AI için kullanılıyor — geçiş garip olabiliyor |
-| 4 | Shadow yönü tutarsız | `shadow-[0_4px_32px...]` aşağı doğru shadow — floating bar için yukarı doğru olmalı |
-| 5 | Haptic feedback yok | Native app'lerde tab geçişinde titreşim beklenir |
-| 6 | Border çok subtle | `border-border/10` neredeyse görünmez, derinlik hissi zayıf |
+---
 
-### İyileştirmeler
+### 1. PRODUCTION CONSOLE TEMİZLİĞİ
+**Sorun:** 42 dosyada ~748 console.log/warn/error çağrısı var. Play Store review'da "debug bilgisi sızıntısı" riski.
 
-**1. Inactive Opacity Artışı**
-- `text-muted-foreground/45` → `text-muted-foreground/55` (ikonlar)
-- Label'lar da `/55` yapılacak — accessibility uyumu
+**Çözüm:** Vite build'de production console çıktılarını otomatik kaldıran config ekle.
 
-**2. Shadow Düzeltmesi**
-- `shadow-[0_4px_32px_-4px_rgba(0,0,0,0.12),0_-2px_12px_rgba(0,0,0,0.04)]` → `shadow-[0_-4px_32px_-4px_rgba(0,0,0,0.1),0_2px_8px_rgba(0,0,0,0.04)]`
-- Floating bar'ın yukarı doğru yumuşak gölgesi
+**Dosya:** `vite.config.ts`
+- `build.minify: 'terser'` ve `terserOptions.compress.drop_console: true` ekle
+- Development'ta console korunur, production build'de otomatik temizlenir
 
-**3. Border Güçlendirme**
-- `border-border/10` → `border-border/15` — derinlik artışı, hala subtle
+---
 
-**4. Haptic Feedback (Capacitor)**
-- `@capacitor/haptics` ile tab tıklamada `ImpactStyle.Light` titreşim ekle
-- Web'de graceful fallback (no-op)
+### 2. PACKAGE.JSON TEMİZLİĞİ
+**Sorun:** `name: "vite_react_shadcn_ts"` — Play Store'a yansımaz ama profesyonellik için düzeltilmeli.
 
-**5. Active Pill İyileştirmesi**
-- Pill bg: `bg-primary/12` → `bg-primary/10` — daha subtle, daha premium
-- AI glow: `shadow-[0_0_12px...]` → `shadow-[0_0_16px...]` — biraz daha belirgin
+**Dosya:** `package.json`
+- `name` → `"golmetrik-ai"`
+- `version` → `"1.0.0"`
 
-**6. Label Spacing**
-- İkon-label arası `gap-1` → `gap-1.5` — daha nefes alan düzen
+---
 
-**7. Container Padding**
-- `py-1.5` → `py-2` — biraz daha yüksek bar, daha rahat dokunma alanı
+### 3. INDEX.HTML — EKSİK OG META
+**Sorun:** `og:url` ve `og:site_name` eksik. ASO (App Store Optimization) açısından deep link preview'ları etkilenir.
 
-### Dosya Değişiklikleri
+**Dosya:** `index.html`
+- `og:url` → `https://golmetrik.app`
+- `og:site_name` → `GolMetrik AI`
+
+---
+
+### 4. CAPACITOR CONFIG — iOS BLOĞU TEMİZLİĞİ
+**Sorun:** `ios` bloğu var ama uygulama sadece Android. Gereksiz config karışıklık yaratabilir.
+
+**Dosya:** `capacitor.config.ts`
+- `ios` bloğunu kaldır (sadece Android app)
+
+---
+
+### 5. OFFLINE DENEYIM GÜÇLENDİRMESİ
+**Sorun:** `useOnlineStatus` hook'u var ama `OfflineBanner` sadece basit bir banner. Play Store'da "uygulamanın çevrimdışı davranışı" test edilir.
+
+**Dosya:** `src/components/OfflineBanner.tsx`
+- Banner'a `role="alert"` ve `aria-live="assertive"` ekle (accessibility)
+
+---
+
+### 6. AUTH REDIRECT URL GÜVENLİĞİ
+**Sorun:** `AuthContext.tsx`'de `emailRedirectTo` sabit olarak `https://golmetrikapp.lovable.app/callback` kullanıyor. Production'da native deep link (`golmetrik://callback`) kullanılmalı.
+
+**Dosya:** `src/contexts/AuthContext.tsx`
+- `Capacitor.isNativePlatform()` kontrolü ekle
+- Native'de `golmetrik://callback`, web'de mevcut URL'yi kullan
+
+---
+
+### 7. SPLASH SCREEN SÜRESİ OPTİMİZASYONU
+**Sorun:** `launchShowDuration: 2500` — 2.5sn uzun. Google Play performans testlerinde "yavaş başlangıç" olarak işaretlenebilir.
+
+**Dosya:** `capacitor.config.ts`
+- `launchShowDuration` → `1500` (1.5sn yeterli, zaten `launchAutoHide: false` ile kod kontrol ediyor)
+
+---
+
+### Dosya Değişiklikleri Özeti
 
 | Dosya | İşlem |
 |-------|-------|
-| `src/components/navigation/BottomNav.tsx` | Shadow, opacity, spacing, haptic, border ince ayarları |
+| `vite.config.ts` | Production console drop |
+| `package.json` | name + version düzeltme |
+| `index.html` | OG meta tamamlama |
+| `capacitor.config.ts` | iOS bloğu kaldır, splash süre azalt |
+| `src/components/OfflineBanner.tsx` | Accessibility attr ekle |
+| `src/contexts/AuthContext.tsx` | Native redirect URL |
 
-Tek dosya. Fonksiyonalite değişmez. Sadece görsel ve dokunsal polish.
+Fonksiyonalite değişikliği yok. Sadece production readiness ve Play Store uyumluluk iyileştirmeleri.
 
