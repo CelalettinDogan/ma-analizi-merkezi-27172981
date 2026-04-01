@@ -19,7 +19,7 @@ const config: CapacitorConfig = {
       backgroundColor: '#0f172a',
       androidScaleType: 'CENTER',
       showSpinner: false,
-      launchShowDuration: 2500,
+      launchShowDuration: 1500,
     },
     StatusBar: {
       style: 'DARK',
