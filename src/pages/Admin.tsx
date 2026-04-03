@@ -23,6 +23,7 @@ const AdminPage: React.FC = () => {
 
   const {
     isLoading,
+    sectionLoading,
     dashboardData,
     refreshDashboard,
     triggerAnalyticsRefresh,
@@ -120,7 +121,7 @@ const AdminPage: React.FC = () => {
         return (
           <DashboardStats 
             data={dashboardData} 
-            isLoading={isLoading} 
+            isLoading={isLoading || sectionLoading} 
             onRefreshAnalytics={triggerAnalyticsRefresh}
           />
         );
@@ -129,7 +130,7 @@ const AdminPage: React.FC = () => {
         return (
           <UserManagement
             users={users}
-            isLoading={isLoading}
+            isLoading={sectionLoading}
             totalCount={usersCount}
             page={usersPage}
             pageSize={pageSize}
@@ -149,7 +150,7 @@ const AdminPage: React.FC = () => {
             totalPremium={totalPremium}
             monthlyRevenue={monthlyRevenue}
             conversionRate={conversionRate}
-            isLoading={isLoading}
+            isLoading={sectionLoading}
           />
         );
       
@@ -161,7 +162,7 @@ const AdminPage: React.FC = () => {
             overallAccuracy={overallAccuracy}
             totalPredictions={totalPredictions}
             systemPrompt={systemPrompt}
-            isLoading={isLoading}
+            isLoading={sectionLoading}
             onSavePrompt={savePrompt}
             onRefresh={() => { refreshPredictionStats(); refreshLeagueStats(); }}
           />
@@ -172,7 +173,7 @@ const AdminPage: React.FC = () => {
           <NotificationManagement
             notifications={notifications}
             tokenCount={tokenCount}
-            isLoading={isLoading}
+            isLoading={sectionLoading}
             onSendNotification={sendNotification}
             onRefresh={refreshNotifications}
           />
@@ -182,7 +183,7 @@ const AdminPage: React.FC = () => {
         return (
           <ActivityLog
             logs={activityLogs}
-            isLoading={isLoading}
+            isLoading={sectionLoading}
             onRefresh={refreshActivityLogs}
           />
         );

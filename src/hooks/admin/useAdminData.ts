@@ -313,8 +313,11 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
   const triggerAnalyticsRefresh = useCallback(async () => {
     try {
       toast.info('Analytics hesaplanıyor...');
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error('Oturum bulunamadı');
+
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/compute-admin-analytics`,
@@ -322,7 +325,7 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${anonKey}`,
+            'Authorization': `Bearer ${token}`,
           },
         }
       );
@@ -611,30 +614,37 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
 
   // ========== LAZY LOADING BY SECTION ==========
 
+  const [sectionLoading, setSectionLoading] = useState(false);
+
   const loadSection = useCallback(async (section: AdminSection) => {
     if (loadedSections.current.has(section)) return;
     
+    setSectionLoading(true);
     loadedSections.current.add(section);
 
-    switch (section) {
-      case 'dashboard':
-        await fetchDashboard();
-        break;
-      case 'users':
-        await fetchUsers();
-        break;
-      case 'premium':
-        await fetchPlanStats();
-        break;
-      case 'ai':
-        await Promise.all([fetchPredictionStats(), fetchLeagueStats(), fetchSystemPrompt()]);
-        break;
-      case 'notifications':
-        await fetchNotifications();
-        break;
-      case 'logs':
-        await fetchActivityLogs();
-        break;
+    try {
+      switch (section) {
+        case 'dashboard':
+          await fetchDashboard();
+          break;
+        case 'users':
+          await fetchUsers();
+          break;
+        case 'premium':
+          await fetchPlanStats();
+          break;
+        case 'ai':
+          await Promise.all([fetchPredictionStats(), fetchLeagueStats(), fetchSystemPrompt()]);
+          break;
+        case 'notifications':
+          await fetchNotifications();
+          break;
+        case 'logs':
+          await fetchActivityLogs();
+          break;
+      }
+    } finally {
+      setSectionLoading(false);
     }
   }, [fetchDashboard, fetchUsers, fetchPlanStats, fetchPredictionStats, fetchLeagueStats, fetchSystemPrompt, fetchNotifications, fetchActivityLogs]);
 
@@ -662,7 +672,7 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
 
   return {
     isLoading,
-    
+    sectionLoading,
     // Dashboard
     dashboardData,
     refreshDashboard: fetchDashboard,
