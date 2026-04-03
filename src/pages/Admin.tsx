@@ -173,7 +173,7 @@ const AdminPage: React.FC = () => {
           <NotificationManagement
             notifications={notifications}
             tokenCount={tokenCount}
-            isLoading={isLoading}
+            isLoading={sectionLoading}
             onSendNotification={sendNotification}
             onRefresh={refreshNotifications}
           />
