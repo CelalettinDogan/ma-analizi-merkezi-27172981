@@ -121,7 +121,7 @@ const AdminPage: React.FC = () => {
         return (
           <DashboardStats 
             data={dashboardData} 
-            isLoading={isLoading} 
+            isLoading={isLoading || sectionLoading} 
             onRefreshAnalytics={triggerAnalyticsRefresh}
           />
         );
