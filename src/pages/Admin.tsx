@@ -162,7 +162,7 @@ const AdminPage: React.FC = () => {
             overallAccuracy={overallAccuracy}
             totalPredictions={totalPredictions}
             systemPrompt={systemPrompt}
-            isLoading={isLoading}
+            isLoading={sectionLoading}
             onSavePrompt={savePrompt}
             onRefresh={() => { refreshPredictionStats(); refreshLeagueStats(); }}
           />
