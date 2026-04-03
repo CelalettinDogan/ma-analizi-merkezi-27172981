@@ -614,30 +614,37 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
 
   // ========== LAZY LOADING BY SECTION ==========
 
+  const [sectionLoading, setSectionLoading] = useState(false);
+
   const loadSection = useCallback(async (section: AdminSection) => {
     if (loadedSections.current.has(section)) return;
     
+    setSectionLoading(true);
     loadedSections.current.add(section);
 
-    switch (section) {
-      case 'dashboard':
-        await fetchDashboard();
-        break;
-      case 'users':
-        await fetchUsers();
-        break;
-      case 'premium':
-        await fetchPlanStats();
-        break;
-      case 'ai':
-        await Promise.all([fetchPredictionStats(), fetchLeagueStats(), fetchSystemPrompt()]);
-        break;
-      case 'notifications':
-        await fetchNotifications();
-        break;
-      case 'logs':
-        await fetchActivityLogs();
-        break;
+    try {
+      switch (section) {
+        case 'dashboard':
+          await fetchDashboard();
+          break;
+        case 'users':
+          await fetchUsers();
+          break;
+        case 'premium':
+          await fetchPlanStats();
+          break;
+        case 'ai':
+          await Promise.all([fetchPredictionStats(), fetchLeagueStats(), fetchSystemPrompt()]);
+          break;
+        case 'notifications':
+          await fetchNotifications();
+          break;
+        case 'logs':
+          await fetchActivityLogs();
+          break;
+      }
+    } finally {
+      setSectionLoading(false);
     }
   }, [fetchDashboard, fetchUsers, fetchPlanStats, fetchPredictionStats, fetchLeagueStats, fetchSystemPrompt, fetchNotifications, fetchActivityLogs]);
 
