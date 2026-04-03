@@ -692,7 +692,7 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
 
     // Premium
     planStats,
-    refreshPlanStats: fetchPlanStats,
+    refreshPlanStats: () => loadSection('premium', true),
 
     // AI
     predictionStats,
