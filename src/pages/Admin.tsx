@@ -23,6 +23,7 @@ const AdminPage: React.FC = () => {
 
   const {
     isLoading,
+    sectionLoading,
     dashboardData,
     refreshDashboard,
     triggerAnalyticsRefresh,
