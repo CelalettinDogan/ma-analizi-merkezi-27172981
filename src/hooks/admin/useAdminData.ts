@@ -672,7 +672,7 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
 
   return {
     isLoading,
-    
+    sectionLoading,
     // Dashboard
     dashboardData,
     refreshDashboard: fetchDashboard,
