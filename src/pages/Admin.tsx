@@ -130,7 +130,7 @@ const AdminPage: React.FC = () => {
         return (
           <UserManagement
             users={users}
-            isLoading={isLoading}
+            isLoading={sectionLoading}
             totalCount={usersCount}
             page={usersPage}
             pageSize={pageSize}
