@@ -29,6 +29,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { staggerContainer, staggerItem } from '@/lib/animations';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Notification {
   id: string;
