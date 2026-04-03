@@ -698,8 +698,8 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
     predictionStats,
     leagueStats,
     systemPrompt,
-    refreshPredictionStats: fetchPredictionStats,
-    refreshLeagueStats: fetchLeagueStats,
+    refreshPredictionStats: () => loadSection('ai', true),
+    refreshLeagueStats: () => loadSection('ai', true),
     savePrompt,
 
     // Notifications
