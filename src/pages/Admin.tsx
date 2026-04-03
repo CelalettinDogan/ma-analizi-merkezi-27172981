@@ -150,7 +150,7 @@ const AdminPage: React.FC = () => {
             totalPremium={totalPremium}
             monthlyRevenue={monthlyRevenue}
             conversionRate={conversionRate}
-            isLoading={isLoading}
+            isLoading={sectionLoading}
           />
         );
       
