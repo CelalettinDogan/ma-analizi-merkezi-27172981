@@ -59,7 +59,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Mobile Overlay */}
       <AnimatePresence>
         {sidebarOpen && (
