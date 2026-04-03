@@ -136,7 +136,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ data, isLoading, onRefr
       </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (

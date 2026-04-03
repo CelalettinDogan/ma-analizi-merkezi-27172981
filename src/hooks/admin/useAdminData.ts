@@ -616,8 +616,8 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
 
   const [sectionLoading, setSectionLoading] = useState(false);
 
-  const loadSection = useCallback(async (section: AdminSection) => {
-    if (loadedSections.current.has(section)) return;
+  const loadSection = useCallback(async (section: AdminSection, force = false) => {
+    if (!force && loadedSections.current.has(section)) return;
     
     setSectionLoading(true);
     loadedSections.current.add(section);
@@ -675,7 +675,7 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
     sectionLoading,
     // Dashboard
     dashboardData,
-    refreshDashboard: fetchDashboard,
+    refreshDashboard: () => loadSection('dashboard', true),
     triggerAnalyticsRefresh,
 
     // Users
@@ -684,7 +684,7 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
     usersPage,
     setUsersPage,
     pageSize,
-    refreshUsers: fetchUsers,
+    refreshUsers: () => loadSection('users', true),
     assignPremium,
     toggleRole,
     banUser,
@@ -692,24 +692,24 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
 
     // Premium
     planStats,
-    refreshPlanStats: fetchPlanStats,
+    refreshPlanStats: () => loadSection('premium', true),
 
     // AI
     predictionStats,
     leagueStats,
     systemPrompt,
-    refreshPredictionStats: fetchPredictionStats,
-    refreshLeagueStats: fetchLeagueStats,
+    refreshPredictionStats: () => loadSection('ai', true),
+    refreshLeagueStats: () => loadSection('ai', true),
     savePrompt,
 
     // Notifications
     notifications,
     tokenCount,
-    refreshNotifications: fetchNotifications,
+    refreshNotifications: () => loadSection('notifications', true),
     sendNotification,
 
     // Logs
     activityLogs,
-    refreshActivityLogs: fetchActivityLogs,
+    refreshActivityLogs: () => loadSection('logs', true),
   };
 };

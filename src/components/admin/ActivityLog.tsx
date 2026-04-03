@@ -130,7 +130,7 @@ const ActivityLog: React.FC<ActivityLogProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="h-[600px]">
+            <ScrollArea className="max-h-[60vh]">
               <div className="divide-y divide-border">
                 {logs.map((log) => (
                   <div key={log.id} className="p-4 hover:bg-muted/30 transition-colors">

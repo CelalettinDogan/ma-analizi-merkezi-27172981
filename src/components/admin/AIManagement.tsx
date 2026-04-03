@@ -266,12 +266,12 @@ const AIManagement: React.FC<AIManagementProps> = ({
       </motion.div>
 
       <Tabs defaultValue="stats" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="stats">İstatistikler</TabsTrigger>
-          <TabsTrigger value="ai-vs-math">AI vs Matematik</TabsTrigger>
-          <TabsTrigger value="ml-model">ML Model</TabsTrigger>
-          <TabsTrigger value="leagues">Lig Bazlı</TabsTrigger>
-          <TabsTrigger value="prompt">Sistem Promptu</TabsTrigger>
+        <TabsList className="flex w-full overflow-x-auto no-scrollbar">
+          <TabsTrigger value="stats" className="flex-shrink-0">İstatistikler</TabsTrigger>
+          <TabsTrigger value="ai-vs-math" className="flex-shrink-0">AI vs Math</TabsTrigger>
+          <TabsTrigger value="ml-model" className="flex-shrink-0">ML Model</TabsTrigger>
+          <TabsTrigger value="leagues" className="flex-shrink-0">Lig Bazlı</TabsTrigger>
+          <TabsTrigger value="prompt" className="flex-shrink-0">Prompt</TabsTrigger>
         </TabsList>
 
         <TabsContent value="stats" className="space-y-4">
