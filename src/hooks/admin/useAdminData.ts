@@ -705,7 +705,7 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
     // Notifications
     notifications,
     tokenCount,
-    refreshNotifications: fetchNotifications,
+    refreshNotifications: () => loadSection('notifications', true),
     sendNotification,
 
     // Logs
