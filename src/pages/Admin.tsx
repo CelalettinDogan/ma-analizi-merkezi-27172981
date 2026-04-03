@@ -183,7 +183,7 @@ const AdminPage: React.FC = () => {
         return (
           <ActivityLog
             logs={activityLogs}
-            isLoading={isLoading}
+            isLoading={sectionLoading}
             onRefresh={refreshActivityLogs}
           />
         );
