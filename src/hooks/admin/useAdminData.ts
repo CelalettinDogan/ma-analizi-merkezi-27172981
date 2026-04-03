@@ -675,7 +675,7 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
     sectionLoading,
     // Dashboard
     dashboardData,
-    refreshDashboard: fetchDashboard,
+    refreshDashboard: () => loadSection('dashboard', true),
     triggerAnalyticsRefresh,
 
     // Users
@@ -684,7 +684,7 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
     usersPage,
     setUsersPage,
     pageSize,
-    refreshUsers: fetchUsers,
+    refreshUsers: () => loadSection('users', true),
     assignPremium,
     toggleRole,
     banUser,
