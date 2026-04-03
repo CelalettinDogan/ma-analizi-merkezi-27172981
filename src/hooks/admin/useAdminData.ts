@@ -616,8 +616,8 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
 
   const [sectionLoading, setSectionLoading] = useState(false);
 
-  const loadSection = useCallback(async (section: AdminSection) => {
-    if (loadedSections.current.has(section)) return;
+  const loadSection = useCallback(async (section: AdminSection, force = false) => {
+    if (!force && loadedSections.current.has(section)) return;
     
     setSectionLoading(true);
     loadedSections.current.add(section);
