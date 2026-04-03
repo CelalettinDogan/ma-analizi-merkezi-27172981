@@ -163,7 +163,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
         </header>
 
         {/* Mobile Tab Navigation */}
-        <div className="md:hidden sticky top-[calc(env(safe-area-inset-top)+44px)] z-20 bg-background border-b border-border">
+        <div className="md:hidden sticky top-0 z-20 bg-background border-b border-border">
           <ScrollArea className="w-full">
             <div className="flex px-2 py-1.5 gap-1 min-w-max">
               {navItems.map((item) => {

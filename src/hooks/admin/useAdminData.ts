@@ -710,6 +710,6 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
 
     // Logs
     activityLogs,
-    refreshActivityLogs: fetchActivityLogs,
+    refreshActivityLogs: () => loadSection('logs', true),
   };
 };
