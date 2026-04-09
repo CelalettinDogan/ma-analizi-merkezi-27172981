@@ -1,21 +1,24 @@
 
-## Plan: Premium Sayfa Scroll & CTA Düzeltmesi
 
-### Sorun
-Fixed CTA container (buton + yasal metinler) sayfanın alt kısmındaki içeriği (trust section, feature pills) örtüyor. Scroll yapıldığında içerik CTA arkasında kayboluyor çünkü `paddingBottom: 11rem` sabit değer her ekran boyutunda yeterli olmayabiliyor.
+## Plan: Splash Screen Görseli Değiştirme
 
-### Çözüm: CTA'yı scroll akışına taşı
+### Yapılacaklar
 
-Fixed positioning yerine CTA'yı scroll içeriğinin sonuna koy. Sayfa zaten kısa — kullanıcı doğal olarak aşağı kaydırarak CTA'ya ulaşır. Bu, tüm overlap sorunlarını ortadan kaldırır.
+**1. Görsel Değiştirme**
+- Yüklenen splash görseli (`splash-3.png`) → `public/splash.png` olarak kopyalanır (mevcut splash.png'nin üzerine yazılır)
 
-### Değişiklikler
+**2. Capacitor Config Güncelleme**
+**Dosya:** `capacitor.config.ts`
+- `SplashScreen.backgroundColor`: `#0f172a` (koyu) → `#7ECFB3` (görseldeki gradient'in orta tonu) — splash görseli etrafındaki boşluk rengi görselle uyumlu olur
+- `androidScaleType`: `CENTER` → `CENTER_CROP` — görselin tüm ekranı kaplamasını sağlar
 
-**Dosya:** `src/pages/Premium.tsx`
+**3. Kullanıcı Talimatı**
+- Değişiklik sonrası yerel ortamda `npx cap sync android` çalıştırılmalı — splash görseli Android native katmanına kopyalanır
 
-1. **Fixed CTA container'ı kaldır** — `fixed left-0 right-0 z-40` div'ini scroll alanının içine taşı
-2. **CTA'yı `<main>` içine al** — Trust section'dan sonra, scroll akışının doğal parçası olarak
-3. **`paddingBottom`** değerini sadece BottomNav clearance'a düşür: `calc(80px + env(safe-area-inset-bottom))`
-4. **CTA container stili**: fixed yerine sticky veya inline — `bg-background/95 backdrop-blur-xl` korunur, `pt-4 pb-4` padding ile
-5. **`lg:hidden`** sınıfı kaldırılır — tüm ekranlarda görünsün
+### Dosya Değişiklikleri
 
-Tek dosya değişikliği. Fonksiyonalite aynı kalır.
+| Dosya | İşlem |
+|-------|-------|
+| `public/splash.png` | Yeni görsel ile değiştir |
+| `capacitor.config.ts` | backgroundColor ve scaleType güncelle |
+
