@@ -1,30 +1,21 @@
 
-## Premium Ekranı — Son Durum Değerlendirmesi
+## Plan: Premium Sayfa Scroll & CTA Düzeltmesi
 
-### Genel Değerlendirme
-Premium ekranı **%95 profesyonel ve yayına hazır**. Layout, animasyonlar, plan kartları, period toggle, feature pills ve CTA butonu hepsi premium native standartlarda.
+### Sorun
+Fixed CTA container (buton + yasal metinler) sayfanın alt kısmındaki içeriği (trust section, feature pills) örtüyor. Scroll yapıldığında içerik CTA arkasında kayboluyor çünkü `paddingBottom: 11rem` sabit değer her ekran boyutunda yeterli olmayabiliyor.
 
-### Tespit Edilen Tek Sorun
+### Çözüm: CTA'yı scroll akışına taşı
 
-| # | Sorun | Etki |
-|---|-------|------|
-| 1 | **Yasal metin (Şartlar/Gizlilik) BottomNav arkasında kalıyor** | CTA fixed container'ın `bottom` değeri BottomNav'ı hesaplıyor ama en alttaki yasal metin (3. satır) BottomNav ile örtüşüyor olabilir — Play Store gerekliliği |
+Fixed positioning yerine CTA'yı scroll içeriğinin sonuna koy. Sayfa zaten kısa — kullanıcı doğal olarak aşağı kaydırarak CTA'ya ulaşır. Bu, tüm overlap sorunlarını ortadan kaldırır.
 
-### Düzeltme
+### Değişiklikler
 
 **Dosya:** `src/pages/Premium.tsx`
 
-- Fixed CTA container'ın `bottom` değerini artır: `calc(4rem + ...)` → `calc(5rem + ...)` — yasal metnin BottomNav üzerinde tam görünmesini sağla
-- Alternatif: yasal metni CTA butonunun üstüne taşıyarak scroll alanı içine al
+1. **Fixed CTA container'ı kaldır** — `fixed left-0 right-0 z-40` div'ini scroll alanının içine taşı
+2. **CTA'yı `<main>` içine al** — Trust section'dan sonra, scroll akışının doğal parçası olarak
+3. **`paddingBottom`** değerini sadece BottomNav clearance'a düşür: `calc(80px + env(safe-area-inset-bottom))`
+4. **CTA container stili**: fixed yerine sticky veya inline — `bg-background/95 backdrop-blur-xl` korunur, `pt-4 pb-4` padding ile
+5. **`lg:hidden`** sınıfı kaldırılır — tüm ekranlarda görünsün
 
-### Sağlam Olan Alanlar (Değişiklik Gerekmez)
-- Plan kartları: responsive, 3 kart yan yana, popular vurgusu, radio selection
-- Period toggle: spring animasyonlu pill, smooth geçiş
-- CTA butonu: gradient, shimmer efekti, loading state, 44px+ touch target
-- Feature pills: flex-wrap ile responsive
-- Trust section: temiz, abartısız
-- ActivePlanView: premium/admin kullanıcılar için özel görünüm
-- Accessibility: aria-label, role="radio", aria-checked
-- Safe-area: paddingBottom hesaplaması
-
-Tek dosya, tek satır değişikliği. Fonksiyonalite değişmez.
+Tek dosya değişikliği. Fonksiyonalite aynı kalır.
