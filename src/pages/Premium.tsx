@@ -410,7 +410,7 @@ const Premium = () => {
       {/* ── Fixed CTA ── */}
       <div
         className="fixed left-0 right-0 z-40 px-5 pt-4 bg-background/95 backdrop-blur-xl border-t border-border/15 lg:hidden"
-        style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))', paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
+        style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))', paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
       >
         <div className="max-w-md mx-auto space-y-2.5">
           <motion.div whileTap={{ scale: 0.95 }}>
