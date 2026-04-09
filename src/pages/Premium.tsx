@@ -283,7 +283,7 @@ const Premium = () => {
 
       <main
         className="flex-1 overflow-y-auto"
-        style={{ paddingBottom: 'calc(11rem + env(safe-area-inset-bottom, 0px))' }}
+        style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
       >
         <div className="w-full max-w-md mx-auto px-3 sm:px-5 space-y-5 py-4">
 
@@ -404,53 +404,48 @@ const Premium = () => {
               Yüksek doğruluk oranına sahip AI analizler
             </span>
           </motion.div>
+
+          {/* ── CTA (inline in scroll) ── */}
+          <div className="px-2 pt-2 pb-4 space-y-2.5">
+            <motion.div whileTap={{ scale: 0.95 }}>
+              <Button
+                onClick={handlePurchase}
+                disabled={isLoading}
+                className="w-full h-14 text-[15px] font-bold bg-gradient-to-r from-primary via-emerald-600 to-emerald-500 active:opacity-90 relative overflow-hidden rounded-2xl shadow-[0_8px_32px_-4px_hsl(var(--primary)/0.45)] border-0"
+                size="lg"
+              >
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.07] to-transparent"
+                  animate={{ x: ['-100%', '100%'] }}
+                  transition={{ duration: 3, repeat: Infinity, repeatDelay: 2.5 }}
+                />
+                {isLoading ? (
+                  <span className="flex items-center gap-2 relative">
+                    <span className="animate-spin">⏳</span> İşleniyor...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2.5 relative">
+                    <Crown className="h-5 w-5" /> Premium'a Geç
+                  </span>
+                )}
+              </Button>
+            </motion.div>
+
+            <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground/70 leading-tight">
+              <Shield className="w-3 h-3 text-emerald-600/60 dark:text-emerald-400/60 shrink-0" />
+              <span>Google Play güvencesiyle · İstediğin zaman iptal</span>
+              <span className="mx-0.5">·</span>
+              <button onClick={handleRestore} className="underline">Geri yükle</button>
+            </div>
+
+            <p className="text-[10px] text-muted-foreground/50 text-center leading-tight">
+              Abonelik otomatik yenilenir.{' '}
+              <Link to="/terms" className="underline">Şartlar</Link> ve{' '}
+              <Link to="/privacy" className="underline">Gizlilik</Link>
+            </p>
+          </div>
         </div>
       </main>
-
-      {/* ── Fixed CTA ── */}
-      <div
-        className="fixed left-0 right-0 z-40 px-5 pt-4 bg-background/95 backdrop-blur-xl border-t border-border/15 lg:hidden"
-        style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))', paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}
-      >
-        <div className="max-w-md mx-auto space-y-2.5">
-          <motion.div whileTap={{ scale: 0.95 }}>
-            <Button
-              onClick={handlePurchase}
-              disabled={isLoading}
-              className="w-full h-14 text-[15px] font-bold bg-gradient-to-r from-primary via-emerald-600 to-emerald-500 active:opacity-90 relative overflow-hidden rounded-2xl shadow-[0_8px_32px_-4px_hsl(var(--primary)/0.45)] border-0"
-              size="lg"
-            >
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.07] to-transparent"
-                animate={{ x: ['-100%', '100%'] }}
-                transition={{ duration: 3, repeat: Infinity, repeatDelay: 2.5 }}
-              />
-              {isLoading ? (
-                <span className="flex items-center gap-2 relative">
-                  <span className="animate-spin">⏳</span> İşleniyor...
-                </span>
-              ) : (
-                <span className="flex items-center gap-2.5 relative">
-                  <Crown className="h-5 w-5" /> Premium'a Geç
-                </span>
-              )}
-            </Button>
-          </motion.div>
-
-          <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground/70 leading-tight">
-            <Shield className="w-3 h-3 text-emerald-600/60 dark:text-emerald-400/60 shrink-0" />
-            <span>Google Play güvencesiyle · İstediğin zaman iptal</span>
-            <span className="mx-0.5">·</span>
-            <button onClick={handleRestore} className="underline">Geri yükle</button>
-          </div>
-
-          <p className="text-[10px] text-muted-foreground/50 text-center leading-tight">
-            Abonelik otomatik yenilenir.{' '}
-            <Link to="/terms" className="underline">Şartlar</Link> ve{' '}
-            <Link to="/privacy" className="underline">Gizlilik</Link>
-          </p>
-        </div>
-      </div>
     </div>
   );
 };
