@@ -1,24 +1,15 @@
 
 
-## Plan: Splash Screen Görseli Değiştirme
+## Plan: onracr2001@gmail.com Hesabına 1 Aylık Premium Basic Atama
 
-### Yapılacaklar
+### Yapılacak
+`premium_subscriptions` tablosuna yeni kayıt ekle:
+- **user_id**: `39fc4d67-30ea-4f3a-84dd-dabd84408c9e`
+- **plan_type**: `premium_basic`
+- **starts_at**: `now()`
+- **expires_at**: `now() + 30 gün`
+- **is_active**: `true`
+- **platform**: `admin`
 
-**1. Görsel Değiştirme**
-- Yüklenen splash görseli (`splash-3.png`) → `public/splash.png` olarak kopyalanır (mevcut splash.png'nin üzerine yazılır)
-
-**2. Capacitor Config Güncelleme**
-**Dosya:** `capacitor.config.ts`
-- `SplashScreen.backgroundColor`: `#0f172a` (koyu) → `#7ECFB3` (görseldeki gradient'in orta tonu) — splash görseli etrafındaki boşluk rengi görselle uyumlu olur
-- `androidScaleType`: `CENTER` → `CENTER_CROP` — görselin tüm ekranı kaplamasını sağlar
-
-**3. Kullanıcı Talimatı**
-- Değişiklik sonrası yerel ortamda `npx cap sync android` çalıştırılmalı — splash görseli Android native katmanına kopyalanır
-
-### Dosya Değişiklikleri
-
-| Dosya | İşlem |
-|-------|-------|
-| `public/splash.png` | Yeni görsel ile değiştir |
-| `capacitor.config.ts` | backgroundColor ve scaleType güncelle |
+Tek bir SQL INSERT işlemi. Kod değişikliği yok.
 
