@@ -1,0 +1,50 @@
+{
+  "title": "Premium",
+  "subtitle": "Unbegrenzte Analysen, KI-Chat und mehr",
+  "plans": {
+    "basic": {
+      "name": "Premium Basic",
+      "description": "Monatlicher Plan",
+      "perMonth": "/Monat"
+    },
+    "pro": {
+      "name": "Premium Pro",
+      "description": "Jahresplan",
+      "perYear": "/Jahr",
+      "savings": "{{percent}}% sparen"
+    }
+  },
+  "features": {
+    "title": "Premium-Vorteile",
+    "unlimitedAnalysis": "Unbegrenzte Spielanalysen",
+    "aiChat": "KI-Chat-Zugang",
+    "advancedStats": "Erweiterte Statistiken",
+    "noAds": "Werbefreie Erfahrung",
+    "prioritySupport": "Priorisierter Support",
+    "earlyAccess": "Früher Zugang zu neuen Funktionen"
+  },
+  "actions": {
+    "subscribe": "Abonnieren",
+    "restore": "Käufe wiederherstellen",
+    "manage": "Abo verwalten",
+    "upgrade": "Upgrade"
+  },
+  "status": {
+    "active": "Aktiv",
+    "expired": "Abgelaufen",
+    "expiresIn": "Läuft in {{days}} Tagen ab",
+    "expiresOn": "Läuft am {{date}} ab",
+    "free": "Kostenloser Plan"
+  },
+  "billing": {
+    "vatIncluded": "Steuern enthalten",
+    "checkoutNote": "Endpreis wird beim Bezahlen angezeigt",
+    "secure": "Sichere Zahlung via Google Play"
+  },
+  "messages": {
+    "purchaseSuccess": "Abonnement erfolgreich aktiviert",
+    "purchaseFailed": "Kauf fehlgeschlagen",
+    "restoreSuccess": "Ihre Käufe wurden wiederhergestellt",
+    "restoreNone": "Keine Käufe zum Wiederherstellen"
+  }
+}

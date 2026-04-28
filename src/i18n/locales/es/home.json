@@ -1,0 +1,37 @@
+{
+  "hero": {
+    "title": "Predicciones de Fútbol con IA",
+    "subtitle": "Predicciones de partidos con IA y análisis estadístico",
+    "cta": "Empezar",
+    "ctaSecondary": "Cómo funciona"
+  },
+  "sections": {
+    "todaysMatches": "Partidos de hoy",
+    "upcomingMatches": "Próximos partidos",
+    "liveMatches": "Partidos en vivo",
+    "popularLeagues": "Ligas populares",
+    "smartPicks": "Selecciones inteligentes",
+    "filteredPredictions": "Predicciones filtradas"
+  },
+  "match": {
+    "vs": "vs",
+    "tbd": "Por definir",
+    "predict": "Predecir",
+    "analyze": "Analizar",
+    "viewDetails": "Ver detalles",
+    "noMatches": "No se encontraron partidos",
+    "loadingMatches": "Cargando partidos..."
+  },
+  "filters": {
+    "all": "Todos",
+    "today": "Hoy",
+    "tomorrow": "Mañana",
+    "thisWeek": "Esta semana",
+    "league": "Liga",
+    "allLeagues": "Todas las ligas"
+  },
+  "empty": {
+    "title": "Aún no hay datos",
+    "description": "Vuelve más tarde"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "title": "بريميوم",
+  "subtitle": "تحليلات غير محدودة، دردشة ذكاء اصطناعي والمزيد",
+  "plans": {
+    "basic": {
+      "name": "بريميوم بيسك",
+      "description": "خطة شهرية",
+      "perMonth": "/شهر"
+    },
+    "pro": {
+      "name": "بريميوم برو",
+      "description": "خطة سنوية",
+      "perYear": "/سنة",
+      "savings": "وفر {{percent}}%"
+    }
+  },
+  "features": {
+    "title": "مزايا بريميوم",
+    "unlimitedAnalysis": "تحليلات مباريات غير محدودة",
+    "aiChat": "الوصول إلى دردشة الذكاء الاصطناعي",
+    "advancedStats": "إحصائيات متقدمة",
+    "noAds": "تجربة بدون إعلانات",
+    "prioritySupport": "دعم ذو أولوية",
+    "earlyAccess": "وصول مبكر للمزايا الجديدة"
+  },
+  "actions": {
+    "subscribe": "اشترك",
+    "restore": "استعادة المشتريات",
+    "manage": "إدارة الاشتراك",
+    "upgrade": "ترقية"
+  },
+  "status": {
+    "active": "نشط",
+    "expired": "منتهي",
+    "expiresIn": "ينتهي خلال {{days}} يوم",
+    "expiresOn": "ينتهي في {{date}}",
+    "free": "خطة مجانية"
+  },
+  "billing": {
+    "vatIncluded": "شامل الضرائب",
+    "checkoutNote": "السعر النهائي يظهر عند الدفع",
+    "secure": "دفع آمن عبر جوجل بلاي"
+  },
+  "messages": {
+    "purchaseSuccess": "تم تفعيل الاشتراك بنجاح",
+    "purchaseFailed": "فشلت عملية الشراء",
+    "restoreSuccess": "تم استعادة مشترياتك",
+    "restoreNone": "لا توجد مشتريات للاستعادة"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "appName": "GolMetrik AI",
+  "tagline": "Plataforma de Predicciones de Fútbol con IA",
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "continue": "Continuar",
+    "confirm": "Confirmar",
+    "retry": "Reintentar",
+    "loading": "Cargando...",
+    "search": "Buscar",
+    "share": "Compartir",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "send": "Enviar",
+    "submit": "Enviar",
+    "ok": "OK",
+    "yes": "Sí",
+    "no": "No",
+    "viewAll": "Ver todo",
+    "seeMore": "Ver más",
+    "seeLess": "Ver menos",
+    "refresh": "Actualizar"
+  },
+  "nav": {
+    "home": "Inicio",
+    "live": "En vivo",
+    "ai": "IA",
+    "league": "Liga",
+    "profile": "Perfil",
+    "premium": "Pro",
+    "settings": "Ajustes",
+    "history": "Historial",
+    "logout": "Cerrar sesión",
+    "login": "Iniciar sesión"
+  },
+  "language": {
+    "label": "Idioma",
+    "select": "Seleccionar idioma",
+    "current": "Idioma actual"
+  },
+  "theme": {
+    "light": "Tema claro",
+    "dark": "Tema oscuro",
+    "system": "Sistema"
+  },
+  "errors": {
+    "generic": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+    "network": "Comprueba tu conexión a internet",
+    "notFound": "No encontrado",
+    "unauthorized": "Debes iniciar sesión para esta acción",
+    "tryAgain": "Inténtalo de nuevo"
+  },
+  "status": {
+    "online": "En línea",
+    "offline": "Sin conexión",
+    "live": "EN VIVO",
+    "finished": "Finalizado",
+    "scheduled": "Programado",
+    "postponed": "Aplazado",
+    "cancelled": "Cancelado"
+  },
+  "time": {
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "tomorrow": "Mañana",
+    "now": "Ahora",
+    "minutesAgo": "hace {{count}} minutos",
+    "hoursAgo": "hace {{count}} horas",
+    "daysAgo": "hace {{count}} días"
+  }
+}

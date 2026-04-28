@@ -1,0 +1,50 @@
+{
+  "title": "Premium",
+  "subtitle": "Unlimited analysis, AI chat and more",
+  "plans": {
+    "basic": {
+      "name": "Premium Basic",
+      "description": "Monthly plan",
+      "perMonth": "/month"
+    },
+    "pro": {
+      "name": "Premium Pro",
+      "description": "Yearly plan",
+      "perYear": "/year",
+      "savings": "Save {{percent}}%"
+    }
+  },
+  "features": {
+    "title": "Premium Benefits",
+    "unlimitedAnalysis": "Unlimited match analysis",
+    "aiChat": "AI chat access",
+    "advancedStats": "Advanced statistics",
+    "noAds": "Ad-free experience",
+    "prioritySupport": "Priority support",
+    "earlyAccess": "Early access to new features"
+  },
+  "actions": {
+    "subscribe": "Subscribe",
+    "restore": "Restore Purchases",
+    "manage": "Manage Subscription",
+    "upgrade": "Upgrade"
+  },
+  "status": {
+    "active": "Active",
+    "expired": "Expired",
+    "expiresIn": "Expires in {{days}} days",
+    "expiresOn": "Expires on {{date}}",
+    "free": "Free Plan"
+  },
+  "billing": {
+    "vatIncluded": "Taxes included",
+    "checkoutNote": "Final price shown at checkout",
+    "secure": "Secure payment via Google Play"
+  },
+  "messages": {
+    "purchaseSuccess": "Subscription activated successfully",
+    "purchaseFailed": "Purchase failed",
+    "restoreSuccess": "Your purchases have been restored",
+    "restoreNone": "No purchases to restore"
+  }
+}

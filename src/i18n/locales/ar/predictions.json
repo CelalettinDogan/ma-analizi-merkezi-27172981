@@ -1,0 +1,37 @@
+{
+  "types": {
+    "matchResult": "نتيجة المباراة",
+    "overUnder": "أكثر/أقل من الأهداف",
+    "btts": "كلا الفريقين يسجلان",
+    "correctScore": "النتيجة الصحيحة",
+    "firstHalf": "نتيجة الشوط الأول",
+    "halfTimeFullTime": "الشوط الأول / النهاية",
+    "firstHalfOverUnder": "أهداف في الشوطين"
+  },
+  "shortLabels": {
+    "matchResult": "1X2",
+    "overUnder": "أ/أ",
+    "btts": "BTTS",
+    "correctScore": "نص",
+    "firstHalf": "ش1",
+    "halfTimeFullTime": "ش1/ن",
+    "firstHalfOverUnder": "ش1 أ/أ"
+  },
+  "outcomes": {
+    "homeWin": "فوز المضيف",
+    "draw": "تعادل",
+    "awayWin": "فوز الضيف",
+    "over": "أكثر",
+    "under": "أقل",
+    "yes": "نعم",
+    "no": "لا"
+  },
+  "leagues": {
+    "PL": "الدوري الإنجليزي الممتاز",
+    "BL1": "البوندسليجا الألماني",
+    "PD": "الليجا الإسبانية",
+    "SA": "الدوري الإيطالي",
+    "FL1": "الدوري الفرنسي",
+    "CL": "دوري أبطال أوروبا"
+  }
+}

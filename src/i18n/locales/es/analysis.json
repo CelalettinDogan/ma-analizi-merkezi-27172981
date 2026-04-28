@@ -1,0 +1,53 @@
+{
+  "title": "Análisis del partido",
+  "loading": "Analizando...",
+  "tabs": {
+    "summary": "Resumen",
+    "stats": "Estadísticas",
+    "h2h": "Cara a cara",
+    "form": "Forma",
+    "ai": "Predicción IA"
+  },
+  "sections": {
+    "powerComparison": "Comparación de poder",
+    "headToHead": "Enfrentamientos directos",
+    "teamStats": "Estadísticas del equipo",
+    "similarMatches": "Partidos similares",
+    "matchContext": "Contexto del partido",
+    "aiRecommendation": "Recomendación IA"
+  },
+  "predictions": {
+    "winProbability": "Probabilidad de victoria",
+    "drawProbability": "Probabilidad de empate",
+    "expectedGoals": "Goles esperados (xG)",
+    "confidence": "Nivel de confianza",
+    "recommendation": "Nuestra recomendación"
+  },
+  "confidence": {
+    "low": "Baja",
+    "medium": "Media",
+    "high": "Alta"
+  },
+  "stats": {
+    "wins": "Victorias",
+    "draws": "Empates",
+    "losses": "Derrotas",
+    "goalsFor": "Goles a favor",
+    "goalsAgainst": "Goles en contra",
+    "form": "Forma reciente",
+    "position": "Posición",
+    "points": "Puntos"
+  },
+  "actions": {
+    "saveAnalysis": "Guardar análisis",
+    "addToSet": "Añadir a la lista",
+    "shareAnalysis": "Compartir análisis",
+    "newAnalysis": "Nuevo análisis"
+  },
+  "limit": {
+    "title": "Límite diario de análisis",
+    "remaining": "{{count}} análisis restantes",
+    "exhausted": "Límite diario alcanzado",
+    "upgrade": "Hazte Premium"
+  }
+}

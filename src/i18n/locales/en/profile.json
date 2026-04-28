@@ -1,0 +1,37 @@
+{
+  "title": "Profile",
+  "guest": {
+    "title": "Guest User",
+    "description": "Log in for more features",
+    "loginButton": "Log In"
+  },
+  "stats": {
+    "totalAnalyses": "Total Analyses",
+    "savedAnalyses": "Saved Analyses",
+    "memberSince": "Member Since"
+  },
+  "menu": {
+    "account": "Account",
+    "subscription": "Subscription",
+    "language": "Language",
+    "theme": "Theme",
+    "notifications": "Notifications",
+    "savedAnalyses": "Saved Analyses",
+    "history": "History",
+    "support": "Support",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "deleteAccount": "Delete Account",
+    "logout": "Log Out",
+    "version": "Version"
+  },
+  "deleteAccount": {
+    "title": "Delete My Account",
+    "warning": "This action cannot be undone. All your data will be permanently deleted.",
+    "confirmText": "Type \"DELETE\" to confirm",
+    "confirmKeyword": "DELETE",
+    "submit": "Permanently Delete My Account",
+    "success": "Your account has been deleted",
+    "failed": "Account deletion failed"
+  }
+}

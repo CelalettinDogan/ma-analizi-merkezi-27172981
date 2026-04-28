@@ -1,0 +1,37 @@
+{
+  "hero": {
+    "title": "توقعات كرة القدم بالذكاء الاصطناعي",
+    "subtitle": "توقعات المباريات بالذكاء الاصطناعي والتحليل الإحصائي",
+    "cta": "ابدأ الآن",
+    "ctaSecondary": "كيف يعمل"
+  },
+  "sections": {
+    "todaysMatches": "مباريات اليوم",
+    "upcomingMatches": "المباريات القادمة",
+    "liveMatches": "المباريات المباشرة",
+    "popularLeagues": "الدوريات الشهيرة",
+    "smartPicks": "اختيارات ذكية",
+    "filteredPredictions": "التوقعات المفلترة"
+  },
+  "match": {
+    "vs": "ضد",
+    "tbd": "لم يحدد",
+    "predict": "توقع",
+    "analyze": "تحليل",
+    "viewDetails": "عرض التفاصيل",
+    "noMatches": "لا توجد مباريات",
+    "loadingMatches": "جارٍ تحميل المباريات..."
+  },
+  "filters": {
+    "all": "الكل",
+    "today": "اليوم",
+    "tomorrow": "غداً",
+    "thisWeek": "هذا الأسبوع",
+    "league": "الدوري",
+    "allLeagues": "كل الدوريات"
+  },
+  "empty": {
+    "title": "لا توجد بيانات بعد",
+    "description": "تحقق لاحقاً"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "title": "Perfil",
+  "guest": {
+    "title": "Usuario invitado",
+    "description": "Inicia sesión para más funciones",
+    "loginButton": "Iniciar sesión"
+  },
+  "stats": {
+    "totalAnalyses": "Análisis totales",
+    "savedAnalyses": "Análisis guardados",
+    "memberSince": "Miembro desde"
+  },
+  "menu": {
+    "account": "Cuenta",
+    "subscription": "Suscripción",
+    "language": "Idioma",
+    "theme": "Tema",
+    "notifications": "Notificaciones",
+    "savedAnalyses": "Análisis guardados",
+    "history": "Historial",
+    "support": "Soporte",
+    "privacy": "Política de privacidad",
+    "terms": "Términos de uso",
+    "deleteAccount": "Eliminar cuenta",
+    "logout": "Cerrar sesión",
+    "version": "Versión"
+  },
+  "deleteAccount": {
+    "title": "Eliminar mi cuenta",
+    "warning": "Esta acción no se puede deshacer. Todos tus datos se eliminarán permanentemente.",
+    "confirmText": "Escribe \"ELIMINAR\" para confirmar",
+    "confirmKeyword": "ELIMINAR",
+    "submit": "Eliminar mi cuenta permanentemente",
+    "success": "Tu cuenta ha sido eliminada",
+    "failed": "Error al eliminar la cuenta"
+  }
+}
