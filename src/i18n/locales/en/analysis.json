@@ -3,30 +3,62 @@
   "loading": "Analyzing...",
   "tabs": {
     "summary": "Summary",
-    "stats": "Stats",
+    "stats": "Statistics",
     "h2h": "Head-to-Head",
     "form": "Form",
-    "ai": "AI Prediction"
+    "ai": "AI Prediction",
+    "btts": "Both Teams to Score",
+    "similar": "Similar Matches",
+    "factors": "Factors"
   },
   "sections": {
     "powerComparison": "Power Comparison",
     "headToHead": "Head-to-Head Matches",
-    "teamStats": "Team Stats",
+    "teamStats": "Team Statistics",
     "similarMatches": "Similar Matches",
     "matchContext": "Match Context",
-    "aiRecommendation": "AI Recommendation"
+    "aiRecommendation": "AI Recommendation",
+    "keyFactors": "Key Factors",
+    "injuries": "Injuries / Suspensions",
+    "statisticalAnalysis": "Statistical",
+    "btts": "Both Teams to Score",
+    "scoreLines": "Goal Lines",
+    "mostLikelyScores": "Most Likely Scores",
+    "scoreProbabilityMap": "Score Probability Map",
+    "predictionDetails": "Prediction Details",
+    "otherPredictions": "Other Predictions",
+    "predictionDetail": "Prediction Detail"
   },
   "predictions": {
     "winProbability": "Win Probability",
     "drawProbability": "Draw Probability",
     "expectedGoals": "Expected Goals (xG)",
+    "expectedGoal": "Expected Goals",
+    "xgTotal": "xG Total",
+    "likelyScore": "Likely Score",
     "confidence": "Confidence Level",
-    "recommendation": "Our Recommendation"
+    "recommendation": "Our Pick",
+    "over": "Over",
+    "under": "Under",
+    "poisson": "Poisson",
+    "hybrid": "Hybrid"
   },
   "confidence": {
     "low": "Low",
     "medium": "Medium",
-    "high": "High"
+    "high": "High",
+    "label": "Confidence",
+    "highBadge": "High Confidence",
+    "mediumBadge": "Medium Confidence",
+    "lowBadge": "Low Confidence",
+    "average": "Average Confidence",
+    "score": "Hybrid Confidence Score",
+    "ai": "AI Confidence",
+    "math": "Math Confidence",
+    "weightDistribution": "Weight Distribution",
+    "powerScore": "Power Score",
+    "lowRisk": "Low Risk",
+    "highRisk": "High Risk"
   },
   "stats": {
     "wins": "Wins",
@@ -36,18 +68,132 @@
     "goalsAgainst": "Goals Against",
     "form": "Recent Form",
     "position": "Position",
-    "points": "Points"
+    "points": "Points",
+    "last5": "Last 5 Matches",
+    "last5Form": "Last 5 Match Form",
+    "goalsScoredAvg": "Goals Scored Avg.",
+    "goalsConcededAvg": "Goals Conceded Avg.",
+    "goalAverage": "Goal Average",
+    "attack": "Attack",
+    "defense": "Defense",
+    "attackPower": "Attack Power",
+    "defensePower": "Defense Power",
+    "powerIndex": "Power Index",
+    "goalDiff": "Goal Diff",
+    "noFormData": "No form data",
+    "noData": "No data",
+    "balancedMatch": "Balanced Match",
+    "advantage": "{{team}} advantage (+{{diff}})",
+    "formLetters": {
+      "W": "W",
+      "D": "D",
+      "L": "L"
+    }
+  },
+  "teams": {
+    "home": "Home",
+    "away": "Away",
+    "homeShort": "Home",
+    "awayShort": "Away",
+    "vs": "vs"
+  },
+  "h2h": {
+    "noMatches": "No previous matches found",
+    "noMatchesHint": "These teams haven't faced each other recently",
+    "wins": "wins",
+    "draws": "draws",
+    "losses": "losses",
+    "months": {
+      "Jan": "Jan",
+      "Feb": "Feb",
+      "Mar": "Mar",
+      "Apr": "Apr",
+      "May": "May",
+      "Jun": "Jun",
+      "Jul": "Jul",
+      "Aug": "Aug",
+      "Sep": "Sep",
+      "Oct": "Oct",
+      "Nov": "Nov",
+      "Dec": "Dec"
+    }
   },
   "actions": {
     "saveAnalysis": "Save Analysis",
-    "addToSet": "Add to List",
+    "addToSet": "Add to Set",
+    "addedToSet": "Added",
     "shareAnalysis": "Share Analysis",
-    "newAnalysis": "New Analysis"
+    "newAnalysis": "New Analysis",
+    "tapForDetails": "Tap for details",
+    "showMore": "Read more",
+    "showLess": "Show less",
+    "externalFactorsInfo": "About external factors",
+    "checkResults": "Check results",
+    "signIn": "Sign In",
+    "retry": "Retry"
   },
   "limit": {
     "title": "Daily Analysis Limit",
     "remaining": "{{count}} analyses remaining",
     "exhausted": "Daily limit reached",
-    "upgrade": "Go Premium"
+    "upgrade": "Upgrade to Premium"
+  },
+  "loadingState": {
+    "analyzing": "Analyzing Match",
+    "completed": "Analysis Complete",
+    "processing": "Processing...",
+    "done": "Completed",
+    "steps": {
+      "form": "Analyzing form...",
+      "h2h": "Collecting H2H data...",
+      "stats": "Calculating statistics...",
+      "ai": "Generating AI predictions...",
+      "results": "Preparing results..."
+    },
+    "skeleton": {
+      "aiTip": "AI Tip",
+      "predictions": "Predictions",
+      "stats": "Statistics"
+    }
+  },
+  "history": {
+    "title": "Analysis History",
+    "filters": {
+      "all": "All",
+      "today": "Today",
+      "thisWeek": "This Week",
+      "thisMonth": "This Month",
+      "correct": "Correct",
+      "wrong": "Wrong",
+      "pending": "Pending"
+    },
+    "empty": "No saved analyses yet.",
+    "emptyFiltered": "No analyses match these filters."
+  },
+  "set": {
+    "title": "Analyses",
+    "loading": "Loading Analyses...",
+    "smartPick": "🎯 Smart Pick",
+    "empty": "Your analysis set is empty",
+    "emptySaved": "No saved analyses yet",
+    "totalAnalysis": "Total Analyses",
+    "highConfidence": "High Confidence",
+    "mediumConfidence": "Medium Confidence",
+    "lowConfidence": "Low Confidence",
+    "results": {
+      "correct": "Correct",
+      "wrong": "Wrong",
+      "updated": "Results updated",
+      "upToDate": "Up to date",
+      "alreadyUpToDate": "All results are already up to date",
+      "checkFailed": "Could not check results"
+    }
+  },
+  "filtered": {
+    "title": "Predictions",
+    "noResults": "No results found"
+  },
+  "injuries": {
+    "none": "No missing players"
   }
 }
