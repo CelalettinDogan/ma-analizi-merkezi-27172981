@@ -223,7 +223,7 @@ const Index: React.FC = () => {
         analyzedMatchesRef.current.add(matchKey);
       }
     } catch (error) {
-      toast.error('Analiz yüklenirken hata oluştu');
+      toast.error(t('toasts.analysisLoadError'));
       pendingAnalysisScrollRef.current = false;
     } finally {
       setLoadingMatchId(null);
