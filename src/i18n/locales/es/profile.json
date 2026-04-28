@@ -1,37 +1,84 @@
 {
   "title": "Perfil",
   "guest": {
-    "title": "Usuario invitado",
-    "description": "Inicia sesión para más funciones",
+    "title": "Iniciar sesión",
+    "description": "Por favor inicia sesión para ver tu perfil",
     "loginButton": "Iniciar sesión"
   },
-  "stats": {
-    "totalAnalyses": "Análisis totales",
-    "savedAnalyses": "Análisis guardados",
-    "memberSince": "Miembro desde"
+  "header": {
+    "memberSince": "Miembro: {{date}}",
+    "freeUser": "Usuario gratuito",
+    "admin": "Admin",
+    "dailyAnalysis": "Análisis diario",
+    "aiAssistant": "Asistente IA",
+    "unlimited": "Ilimitado",
+    "disabled": "Desactivado",
+    "engineTitle": "Motor de análisis",
+    "engineDescription": "Mejorado continuamente con los datos más recientes."
   },
-  "menu": {
-    "account": "Cuenta",
-    "subscription": "Suscripción",
-    "language": "Idioma",
+  "settings": {
+    "title": "Ajustes",
     "theme": "Tema",
-    "notifications": "Notificaciones",
-    "savedAnalyses": "Análisis guardados",
-    "history": "Historial",
-    "support": "Soporte",
-    "privacy": "Política de privacidad",
-    "terms": "Términos de uso",
+    "themeLight": "Claro",
+    "themeDark": "Oscuro",
+    "themeSystem": "Sistema",
+    "language": "Idioma",
+    "aiHowItWorks": "¿Cómo funciona la IA?",
+    "privacyPolicy": "Política de privacidad",
+    "termsOfUse": "Términos de uso",
     "deleteAccount": "Eliminar cuenta",
     "logout": "Cerrar sesión",
-    "version": "Versión"
+    "version": "v{{version}} • Plataforma de análisis de fútbol con estadísticas"
+  },
+  "themeSheet": {
+    "title": "Selección de tema",
+    "description": "Personaliza el aspecto de la app",
+    "lightLabel": "Tema claro",
+    "lightDesc": "Ideal para uso diurno",
+    "darkLabel": "Tema oscuro",
+    "darkDesc": "Reduce la fatiga visual",
+    "systemLabel": "Sistema",
+    "systemDesc": "Sigue la configuración del dispositivo"
+  },
+  "aiInfo": {
+    "title": "Sobre el motor de análisis",
+    "intro": "GolMetrik AI usa modelos estadísticos para los análisis:",
+    "performanceTitle": "Datos de rendimiento del equipo",
+    "performanceDesc": "Forma reciente y estadísticas",
+    "h2hTitle": "Estadísticas H2H",
+    "h2hDesc": "Enfrentamientos directos pasados",
+    "standingsTitle": "Clasificación de la liga",
+    "standingsDesc": "Puntos y posiciones actuales",
+    "formTitle": "Análisis de forma",
+    "formDesc": "Diferencias de rendimiento local/visitante",
+    "outro": "El motor de análisis se mejora continuamente con los datos más recientes.",
+    "disclaimer": "Importante: Los análisis presentados son informativos y no garantizan ningún resultado."
   },
   "deleteAccount": {
-    "title": "Eliminar mi cuenta",
-    "warning": "Esta acción no se puede deshacer. Todos tus datos se eliminarán permanentemente.",
-    "confirmText": "Escribe \"ELIMINAR\" para confirmar",
+    "title": "Eliminar cuenta",
+    "subtitle": "Esta acción no se puede deshacer",
+    "warningTitle": "¡Atención!",
+    "warningDesc": "Al eliminar tu cuenta, los siguientes datos se borrarán permanentemente:",
+    "item1": "Todo tu historial de análisis",
+    "item2": "Tus favoritos",
+    "item3": "Historial del Asistente IA",
+    "item4": "Información de suscripción Premium",
+    "confirmLabelPrefix": "Escribe",
+    "confirmLabelSuffix": "para confirmar:",
     "confirmKeyword": "ELIMINAR",
-    "submit": "Eliminar mi cuenta permanentemente",
+    "cancel": "Cancelar",
+    "submit": "Eliminar cuenta",
+    "deleting": "Eliminando...",
     "success": "Tu cuenta ha sido eliminada",
-    "failed": "Error al eliminar la cuenta"
+    "failed": "Ocurrió un error al eliminar tu cuenta",
+    "footer": "Tus datos se eliminarán permanentemente conforme al RGPD."
+  },
+  "legal": {
+    "close": "Cerrar",
+    "lastUpdated": "Última actualización: 25 de enero de 2026",
+    "translationNote": "La versión oficial de este texto legal en otros idiomas se añadirá pronto."
+  },
+  "footer": {
+    "disclaimer": "⚠️ Todo el contenido tiene fines de análisis estadístico y no constituye un consejo."
   }
 }

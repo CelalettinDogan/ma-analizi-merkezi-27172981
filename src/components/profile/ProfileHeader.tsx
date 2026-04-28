@@ -1,5 +1,6 @@
 import React from 'react';
 import { User, Crown, Zap, MessageCircle, Brain } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -27,6 +28,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   hasUnlimitedAnalyses, analysisRemaining, dailyAnalysisLimit,
   canUseAIChat, dailyChatLimit, chatRemaining,
 }) => {
+  const { t } = useTranslation('profile');
+
   const getPlanBadgeStyle = () => {
     if (isAdmin) return 'bg-amber-500/20 text-amber-600 border-amber-500/30';
     switch (planDisplayName) {
@@ -59,14 +62,14 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               {(isPremium || isAdmin) && <Crown className="h-4 w-4 text-amber-500 flex-shrink-0" />}
             </div>
             <p className="text-xs text-muted-foreground break-all min-w-0">{email}</p>
-            {memberSince && <p className="text-micro text-muted-foreground mt-0.5">Üye: {memberSince}</p>}
+            {memberSince && <p className="text-micro text-muted-foreground mt-0.5">{t('header.memberSince', { date: memberSince })}</p>}
           </div>
         </div>
 
         <div className="flex items-center">
           {isAdmin ? (
             <Badge variant="outline" className="text-xs bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-600 border-amber-500/30 shadow-[0_0_8px_rgba(245,158,11,0.15)]">
-              <Crown className="w-3 h-3 mr-1" /> Admin
+              <Crown className="w-3 h-3 mr-1" /> {t('header.admin')}
             </Badge>
           ) : isPremium ? (
             <Badge variant="outline" className={`text-xs ${getPlanBadgeStyle()}`}>
@@ -74,7 +77,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             </Badge>
           ) : (
             <Badge variant="outline" className={`text-xs ${getPlanBadgeStyle()}`}>
-              <User className="w-3 h-3 mr-1" /> Ücretsiz Kullanıcı
+              <User className="w-3 h-3 mr-1" /> {t('header.freeUser')}
             </Badge>
           )}
         </div>
@@ -85,10 +88,10 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               <Zap className="w-3.5 h-3.5 text-primary" />
             </div>
             <div>
-              <p className="text-micro text-muted-foreground leading-tight">Günlük Analiz</p>
+              <p className="text-micro text-muted-foreground leading-tight">{t('header.dailyAnalysis')}</p>
               <p className="text-sm font-semibold leading-tight">
                 {hasUnlimitedAnalyses ? (
-                  <span className="text-emerald-500">Sınırsız</span>
+                  <span className="text-emerald-500">{t('header.unlimited')}</span>
                 ) : (
                   <span>{analysisRemaining}/{dailyAnalysisLimit}</span>
                 )}
@@ -100,12 +103,12 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               <MessageCircle className="w-3.5 h-3.5 text-primary" />
             </div>
             <div>
-              <p className="text-micro text-muted-foreground leading-tight">AI Asistan</p>
+              <p className="text-micro text-muted-foreground leading-tight">{t('header.aiAssistant')}</p>
               <p className="text-sm font-semibold leading-tight">
                 {!canUseAIChat ? (
-                  <span className="text-muted-foreground">Kapalı</span>
+                  <span className="text-muted-foreground">{t('header.disabled')}</span>
                 ) : dailyChatLimit >= 999 ? (
-                  <span className="text-emerald-500">Sınırsız</span>
+                  <span className="text-emerald-500">{t('header.unlimited')}</span>
                 ) : (
                   <span>{chatRemaining}/{dailyChatLimit}</span>
                 )}
@@ -117,8 +120,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         <div className="flex items-center gap-2.5 p-3 rounded-xl bg-muted/20 border border-border/30">
           <Brain className="w-4 h-4 text-primary flex-shrink-0" />
           <div>
-            <p className="text-sm font-semibold">Analiz Motoru</p>
-            <p className="text-micro text-muted-foreground">En güncel verilerle düzenli olarak iyileştirilmektedir.</p>
+            <p className="text-sm font-semibold">{t('header.engineTitle')}</p>
+            <p className="text-micro text-muted-foreground">{t('header.engineDescription')}</p>
           </div>
         </div>
       </CardContent>

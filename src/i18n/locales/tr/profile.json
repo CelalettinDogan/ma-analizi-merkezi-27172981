@@ -1,37 +1,84 @@
 {
   "title": "Profil",
   "guest": {
-    "title": "Misafir Kullanıcı",
-    "description": "Daha fazla özellik için giriş yapın",
+    "title": "Giriş Yapın",
+    "description": "Profilinizi görüntülemek için lütfen giriş yapın",
     "loginButton": "Giriş Yap"
   },
-  "stats": {
-    "totalAnalyses": "Toplam Analiz",
-    "savedAnalyses": "Kaydedilen Analiz",
-    "memberSince": "Üyelik Tarihi"
+  "header": {
+    "memberSince": "Üye: {{date}}",
+    "freeUser": "Ücretsiz Kullanıcı",
+    "admin": "Admin",
+    "dailyAnalysis": "Günlük Analiz",
+    "aiAssistant": "AI Asistan",
+    "unlimited": "Sınırsız",
+    "disabled": "Kapalı",
+    "engineTitle": "Analiz Motoru",
+    "engineDescription": "En güncel verilerle düzenli olarak iyileştirilmektedir."
   },
-  "menu": {
-    "account": "Hesap",
-    "subscription": "Abonelik",
-    "language": "Dil",
+  "settings": {
+    "title": "Ayarlar",
     "theme": "Tema",
-    "notifications": "Bildirimler",
-    "savedAnalyses": "Kayıtlı Analizler",
-    "history": "Geçmiş",
-    "support": "Destek",
-    "privacy": "Gizlilik Politikası",
-    "terms": "Kullanım Koşulları",
-    "deleteAccount": "Hesabımı Sil",
+    "themeLight": "Açık",
+    "themeDark": "Koyu",
+    "themeSystem": "Sistem",
+    "language": "Dil",
+    "aiHowItWorks": "AI Nasıl Çalışır?",
+    "privacyPolicy": "Gizlilik Politikası",
+    "termsOfUse": "Kullanım Şartları",
+    "deleteAccount": "Hesabı Sil",
     "logout": "Çıkış Yap",
-    "version": "Sürüm"
+    "version": "v{{version}} • İstatistik destekli futbol analiz platformu"
+  },
+  "themeSheet": {
+    "title": "Tema Seçimi",
+    "description": "Uygulama görünümünü kişiselleştirin",
+    "lightLabel": "Açık Tema",
+    "lightDesc": "Gündüz kullanımı için ideal",
+    "darkLabel": "Koyu Tema",
+    "darkDesc": "Göz yorgunluğunu azaltır",
+    "systemLabel": "Sistem",
+    "systemDesc": "Cihaz ayarlarını takip eder"
+  },
+  "aiInfo": {
+    "title": "Analiz Motoru Hakkında",
+    "intro": "GolMetrik AI, maç analizleri için istatistiksel modeller kullanmaktadır:",
+    "performanceTitle": "Takım Performans Verileri",
+    "performanceDesc": "Son maç formları ve istatistikleri",
+    "h2hTitle": "H2H İstatistikleri",
+    "h2hDesc": "Kafa kafaya geçmiş karşılaşmalar",
+    "standingsTitle": "Lig Sıralama Bilgileri",
+    "standingsDesc": "Güncel puan durumu ve konumlar",
+    "formTitle": "Form Analizleri",
+    "formDesc": "Ev/deplasman performans farkları",
+    "outro": "Analiz motoru, en güncel maç verileriyle düzenli olarak iyileştirilmektedir.",
+    "disclaimer": "Önemli: Sunulan analizler bilgilendirme amaçlıdır ve kesin kazanç garantisi vermez."
   },
   "deleteAccount": {
-    "title": "Hesabımı Sil",
-    "warning": "Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecek.",
-    "confirmText": "Onaylamak için \"SİL\" yazın",
+    "title": "Hesabı Sil",
+    "subtitle": "Bu işlem geri alınamaz",
+    "warningTitle": "Dikkat!",
+    "warningDesc": "Hesabınızı sildiğinizde aşağıdaki veriler kalıcı olarak silinecektir:",
+    "item1": "Tüm analiz geçmişiniz",
+    "item2": "Favorileriniz",
+    "item3": "AI Asistan sohbet geçmişiniz",
+    "item4": "Premium abonelik bilgileriniz",
+    "confirmLabelPrefix": "Onaylamak için",
+    "confirmLabelSuffix": "yazın:",
     "confirmKeyword": "SİL",
-    "submit": "Hesabımı Kalıcı Olarak Sil",
-    "success": "Hesabınız silindi",
-    "failed": "Hesap silme başarısız oldu"
+    "cancel": "Vazgeç",
+    "submit": "Hesabı Sil",
+    "deleting": "Siliniyor...",
+    "success": "Hesabınız başarıyla silindi",
+    "failed": "Hesap silinirken bir hata oluştu",
+    "footer": "KVKK/GDPR kapsamında verileriniz kalıcı olarak silinecektir."
+  },
+  "legal": {
+    "close": "Kapat",
+    "lastUpdated": "Son güncelleme: 25 Ocak 2026",
+    "translationNote": "Bu yasal metnin diğer dillerdeki resmi versiyonu yakında eklenecektir."
+  },
+  "footer": {
+    "disclaimer": "⚠️ Tüm içerikler istatistiksel analiz amaçlıdır ve tavsiye niteliği taşımaz."
   }
 }

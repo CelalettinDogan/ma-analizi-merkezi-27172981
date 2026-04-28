@@ -1,37 +1,84 @@
 {
   "title": "Profil",
   "guest": {
-    "title": "Gastnutzer",
-    "description": "Anmelden für mehr Funktionen",
+    "title": "Anmelden",
+    "description": "Bitte melden Sie sich an, um Ihr Profil anzuzeigen",
     "loginButton": "Anmelden"
   },
-  "stats": {
-    "totalAnalyses": "Analysen gesamt",
-    "savedAnalyses": "Gespeicherte Analysen",
-    "memberSince": "Mitglied seit"
+  "header": {
+    "memberSince": "Mitglied: {{date}}",
+    "freeUser": "Kostenloser Nutzer",
+    "admin": "Admin",
+    "dailyAnalysis": "Tägliche Analyse",
+    "aiAssistant": "KI-Assistent",
+    "unlimited": "Unbegrenzt",
+    "disabled": "Deaktiviert",
+    "engineTitle": "Analyse-Engine",
+    "engineDescription": "Kontinuierlich mit aktuellen Daten verbessert."
   },
-  "menu": {
-    "account": "Konto",
-    "subscription": "Abonnement",
-    "language": "Sprache",
+  "settings": {
+    "title": "Einstellungen",
     "theme": "Design",
-    "notifications": "Benachrichtigungen",
-    "savedAnalyses": "Gespeicherte Analysen",
-    "history": "Verlauf",
-    "support": "Support",
-    "privacy": "Datenschutz",
-    "terms": "Nutzungsbedingungen",
+    "themeLight": "Hell",
+    "themeDark": "Dunkel",
+    "themeSystem": "System",
+    "language": "Sprache",
+    "aiHowItWorks": "Wie funktioniert KI?",
+    "privacyPolicy": "Datenschutz",
+    "termsOfUse": "Nutzungsbedingungen",
     "deleteAccount": "Konto löschen",
     "logout": "Abmelden",
-    "version": "Version"
+    "version": "v{{version}} • Statistikgestützte Fußballanalyse-Plattform"
+  },
+  "themeSheet": {
+    "title": "Designauswahl",
+    "description": "Passen Sie das App-Aussehen an",
+    "lightLabel": "Helles Design",
+    "lightDesc": "Ideal für die Tagnutzung",
+    "darkLabel": "Dunkles Design",
+    "darkDesc": "Reduziert Augenbelastung",
+    "systemLabel": "System",
+    "systemDesc": "Folgt den Geräteeinstellungen"
+  },
+  "aiInfo": {
+    "title": "Über die Analyse-Engine",
+    "intro": "GolMetrik AI nutzt statistische Modelle für Spielanalysen:",
+    "performanceTitle": "Team-Leistungsdaten",
+    "performanceDesc": "Aktuelle Form und Statistiken",
+    "h2hTitle": "H2H-Statistiken",
+    "h2hDesc": "Vergangene direkte Begegnungen",
+    "standingsTitle": "Liga-Tabellen",
+    "standingsDesc": "Aktuelle Punkte und Positionen",
+    "formTitle": "Formanalyse",
+    "formDesc": "Heim-/Auswärtsleistungsunterschiede",
+    "outro": "Die Analyse-Engine wird kontinuierlich mit den neuesten Spieldaten verbessert.",
+    "disclaimer": "Wichtig: Die bereitgestellten Analysen dienen nur Informationszwecken und garantieren kein Ergebnis."
   },
   "deleteAccount": {
-    "title": "Mein Konto löschen",
-    "warning": "Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden dauerhaft gelöscht.",
-    "confirmText": "Geben Sie \"LÖSCHEN\" zur Bestätigung ein",
+    "title": "Konto löschen",
+    "subtitle": "Diese Aktion kann nicht rückgängig gemacht werden",
+    "warningTitle": "Achtung!",
+    "warningDesc": "Wenn Sie Ihr Konto löschen, werden folgende Daten dauerhaft gelöscht:",
+    "item1": "Ihr gesamter Analyseverlauf",
+    "item2": "Ihre Favoriten",
+    "item3": "KI-Assistent Chatverlauf",
+    "item4": "Premium-Abo-Informationen",
+    "confirmLabelPrefix": "Geben Sie",
+    "confirmLabelSuffix": "zur Bestätigung ein:",
     "confirmKeyword": "LÖSCHEN",
-    "submit": "Mein Konto dauerhaft löschen",
+    "cancel": "Abbrechen",
+    "submit": "Konto löschen",
+    "deleting": "Wird gelöscht...",
     "success": "Ihr Konto wurde gelöscht",
-    "failed": "Kontolöschung fehlgeschlagen"
+    "failed": "Beim Löschen Ihres Kontos ist ein Fehler aufgetreten",
+    "footer": "Ihre Daten werden gemäß DSGVO dauerhaft gelöscht."
+  },
+  "legal": {
+    "close": "Schließen",
+    "lastUpdated": "Zuletzt aktualisiert: 25. Januar 2026",
+    "translationNote": "Eine offizielle Version dieses Rechtstextes in anderen Sprachen wird bald hinzugefügt."
+  },
+  "footer": {
+    "disclaimer": "⚠️ Alle Inhalte dienen statistischen Analysezwecken und stellen keine Beratung dar."
   }
 }

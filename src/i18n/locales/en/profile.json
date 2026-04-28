@@ -1,37 +1,84 @@
 {
   "title": "Profile",
   "guest": {
-    "title": "Guest User",
-    "description": "Log in for more features",
+    "title": "Log In",
+    "description": "Please log in to view your profile",
     "loginButton": "Log In"
   },
-  "stats": {
-    "totalAnalyses": "Total Analyses",
-    "savedAnalyses": "Saved Analyses",
-    "memberSince": "Member Since"
+  "header": {
+    "memberSince": "Member: {{date}}",
+    "freeUser": "Free User",
+    "admin": "Admin",
+    "dailyAnalysis": "Daily Analysis",
+    "aiAssistant": "AI Assistant",
+    "unlimited": "Unlimited",
+    "disabled": "Disabled",
+    "engineTitle": "Analysis Engine",
+    "engineDescription": "Continuously improved with the latest data."
   },
-  "menu": {
-    "account": "Account",
-    "subscription": "Subscription",
-    "language": "Language",
+  "settings": {
+    "title": "Settings",
     "theme": "Theme",
-    "notifications": "Notifications",
-    "savedAnalyses": "Saved Analyses",
-    "history": "History",
-    "support": "Support",
-    "privacy": "Privacy Policy",
-    "terms": "Terms of Use",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "language": "Language",
+    "aiHowItWorks": "How does AI work?",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfUse": "Terms of Use",
     "deleteAccount": "Delete Account",
     "logout": "Log Out",
-    "version": "Version"
+    "version": "v{{version}} • Statistics-powered football analysis platform"
+  },
+  "themeSheet": {
+    "title": "Theme Selection",
+    "description": "Customize the app appearance",
+    "lightLabel": "Light Theme",
+    "lightDesc": "Ideal for daytime use",
+    "darkLabel": "Dark Theme",
+    "darkDesc": "Reduces eye strain",
+    "systemLabel": "System",
+    "systemDesc": "Follows device settings"
+  },
+  "aiInfo": {
+    "title": "About the Analysis Engine",
+    "intro": "GolMetrik AI uses statistical models for match analysis:",
+    "performanceTitle": "Team Performance Data",
+    "performanceDesc": "Recent form and statistics",
+    "h2hTitle": "H2H Statistics",
+    "h2hDesc": "Past head-to-head matches",
+    "standingsTitle": "League Standings",
+    "standingsDesc": "Current points and positions",
+    "formTitle": "Form Analysis",
+    "formDesc": "Home/away performance differences",
+    "outro": "The analysis engine is continuously improved with the latest match data.",
+    "disclaimer": "Important: The analyses provided are for informational purposes and do not guarantee any outcome."
   },
   "deleteAccount": {
-    "title": "Delete My Account",
-    "warning": "This action cannot be undone. All your data will be permanently deleted.",
-    "confirmText": "Type \"DELETE\" to confirm",
+    "title": "Delete Account",
+    "subtitle": "This action cannot be undone",
+    "warningTitle": "Warning!",
+    "warningDesc": "When you delete your account, the following data will be permanently deleted:",
+    "item1": "All your analysis history",
+    "item2": "Your favorites",
+    "item3": "AI Assistant chat history",
+    "item4": "Premium subscription information",
+    "confirmLabelPrefix": "Type",
+    "confirmLabelSuffix": "to confirm:",
     "confirmKeyword": "DELETE",
-    "submit": "Permanently Delete My Account",
+    "cancel": "Cancel",
+    "submit": "Delete Account",
+    "deleting": "Deleting...",
     "success": "Your account has been deleted",
-    "failed": "Account deletion failed"
+    "failed": "An error occurred while deleting your account",
+    "footer": "Your data will be permanently deleted under GDPR."
+  },
+  "legal": {
+    "close": "Close",
+    "lastUpdated": "Last updated: January 25, 2026",
+    "translationNote": "An official version of this legal text in other languages will be added soon."
+  },
+  "footer": {
+    "disclaimer": "⚠️ All content is for statistical analysis purposes and does not constitute advice."
   }
 }
