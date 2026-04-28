@@ -216,7 +216,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Takım, lig veya sayfa ara..."
+              placeholder={t('commandPalette.placeholder')}
               className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
             />
             {searchQuery && (
@@ -237,24 +237,24 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
             {isSearching && !teamsLoaded && (
               <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Takımlar yükleniyor...</span>
+                <span>{t('commandPalette.loadingTeams')}</span>
               </div>
             )}
 
             {/* Empty State for Active Search */}
             {isActiveSearch && !hasResults && teamsLoaded && (
               <div className="py-6 text-center">
-                <p className="text-sm text-muted-foreground">"{searchQuery}" için sonuç bulunamadı.</p>
+                <p className="text-sm text-muted-foreground">{t('commandPalette.noResults', { query: searchQuery })}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Başka bir takım veya lig deneyin
+                  {t('commandPalette.tryOther')}
                 </p>
               </div>
             )}
 
             {/* Team Results */}
             {teamResults.length > 0 && (
-              <CommandPrimitive.Group heading="Takımlar" className="mb-2">
-                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Takımlar</div>
+              <CommandPrimitive.Group heading={t('commandPalette.teams')} className="mb-2">
+                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">{t('commandPalette.teams')}</div>
                 {teamResults.map((team) => (
                   <button
                     key={`${team.id}-${team.leagueCode}`}
@@ -285,8 +285,8 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
 
             {/* League Results */}
             {filteredLeagues.length > 0 && (
-              <CommandPrimitive.Group heading="Ligler" className="mb-2">
-                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Ligler</div>
+              <CommandPrimitive.Group heading={t('commandPalette.leagues')} className="mb-2">
+                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">{t('commandPalette.leagues')}</div>
                 {filteredLeagues.map((league) => (
                   <button
                     key={league.code}
@@ -316,35 +316,35 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
               <>
                 {/* Navigation */}
                 <div className="mb-2">
-                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Sayfalar</div>
+                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">{t('commandPalette.pages')}</div>
                   <button
                     onClick={() => runCommand(() => navigate('/'))}
                     className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
                   >
                     <Home className="mr-2 h-4 w-4" />
-                    <span>Ana Sayfa</span>
+                    <span>{t('footer.homePage')}</span>
                   </button>
                   <button
                     onClick={() => runCommand(() => navigate('/live'))}
                     className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
                   >
                     <Zap className="mr-2 h-4 w-4 text-red-500" />
-                    <span>Canlı Maçlar</span>
-                    <span className="ml-auto text-xs text-muted-foreground">⚡ Canlı</span>
+                    <span>{t('footer.liveMatches')}</span>
+                    <span className="ml-auto text-xs text-muted-foreground">{t('commandPalette.liveTag')}</span>
                   </button>
                   <button
                     onClick={() => runCommand(() => navigate('/analysis-history'))}
                     className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
                   >
                     <BarChart3 className="mr-2 h-4 w-4" />
-                    <span>Analiz Geçmişi</span>
+                    <span>{t('commandPalette.history')}</span>
                   </button>
                   <button
                     onClick={() => runCommand(() => navigate('/profile'))}
                     className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
                   >
                     <User className="mr-2 h-4 w-4" />
-                    <span>Profil</span>
+                    <span>{t('footer.profile')}</span>
                   </button>
                 </div>
 
@@ -352,7 +352,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
 
                 {/* Leagues */}
                 <div className="mb-2">
-                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Ligler</div>
+                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">{t('commandPalette.leagues')}</div>
                   {SUPPORTED_COMPETITIONS.map((league) => (
                     <button
                       key={league.code}
@@ -376,7 +376,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
                     <div className="h-px bg-border my-2" />
                     <div className="mb-2">
                       <div className="flex items-center justify-between px-2 py-1.5">
-                        <span className="text-xs font-medium text-muted-foreground">Son Aramalar</span>
+                        <span className="text-xs font-medium text-muted-foreground">{t('commandPalette.recentSearches')}</span>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -387,7 +387,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
                           }}
                         >
                           <X className="w-3 h-3 mr-1" />
-                          Temizle
+                          {t('actions.clear')}
                         </Button>
                       </div>
                       {recentSearches.map((search, idx) => (
