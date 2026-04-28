@@ -27,7 +27,8 @@
     "scoreProbabilityMap": "Ergebnis-Wahrscheinlichkeitskarte",
     "predictionDetails": "Prognose-Details",
     "otherPredictions": "Weitere Prognosen",
-    "predictionDetail": "Prognose-Detail"
+    "predictionDetail": "Prognose-Detail",
+    "aiRecommendationShort": "KI-Empfehlung"
   },
   "predictions": {
     "winProbability": "Siegwahrscheinlichkeit",
@@ -58,7 +59,8 @@
     "weightDistribution": "Gewichtsverteilung",
     "powerScore": "Stärke-Wert",
     "lowRisk": "Niedriges Risiko",
-    "highRisk": "Hohes Risiko"
+    "highRisk": "Hohes Risiko",
+    "mediumRisk": "Mittleres Risiko"
   },
   "stats": {
     "wins": "Siege",
@@ -130,7 +132,9 @@
     "externalFactorsInfo": "Über externe Faktoren",
     "checkResults": "Ergebnisse prüfen",
     "signIn": "Anmelden",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "disclaimer": "Diese Analyse basiert auf statistischen Daten. Externe Faktoren wie Trainerwechsel, Verletzungen und teaminterne Probleme können nicht berücksichtigt werden.",
+    "externalFactors": "Zu externen Faktoren"
   },
   "limit": {
     "title": "Tägliches Analyselimit",

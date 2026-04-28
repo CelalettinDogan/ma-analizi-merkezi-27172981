@@ -27,7 +27,8 @@
     "scoreProbabilityMap": "Skor Olasılık Haritası",
     "predictionDetails": "Tahmin Detayları",
     "otherPredictions": "Diğer Tahminler",
-    "predictionDetail": "Tahmin Detayı"
+    "predictionDetail": "Tahmin Detayı",
+    "aiRecommendationShort": "AI Önerisi"
   },
   "predictions": {
     "winProbability": "Kazanma Olasılığı",
@@ -58,7 +59,8 @@
     "weightDistribution": "Ağırlık Dağılımı",
     "powerScore": "Güç Puanı",
     "lowRisk": "Düşük Risk",
-    "highRisk": "Yüksek Risk"
+    "highRisk": "Yüksek Risk",
+    "mediumRisk": "Orta Risk"
   },
   "stats": {
     "wins": "Galibiyet",
@@ -130,7 +132,9 @@
     "externalFactorsInfo": "Dış faktörler hakkında bilgi",
     "checkResults": "Sonuçları kontrol et",
     "signIn": "Giriş Yap",
-    "retry": "Tekrar Dene"
+    "retry": "Tekrar Dene",
+    "disclaimer": "Bu analiz istatistiksel verilere dayanmaktadır. TD değişiklikleri, sakatlıklar ve takım içi sorunlar gibi dış faktörler dikkate alınamamaktadır.",
+    "externalFactors": "Dış faktörler hakkında"
   },
   "limit": {
     "title": "Günlük Analiz Limiti",

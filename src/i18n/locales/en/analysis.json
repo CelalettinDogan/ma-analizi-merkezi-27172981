@@ -27,7 +27,8 @@
     "scoreProbabilityMap": "Score Probability Map",
     "predictionDetails": "Prediction Details",
     "otherPredictions": "Other Predictions",
-    "predictionDetail": "Prediction Detail"
+    "predictionDetail": "Prediction Detail",
+    "aiRecommendationShort": "AI Recommendation"
   },
   "predictions": {
     "winProbability": "Win Probability",
@@ -58,7 +59,8 @@
     "weightDistribution": "Weight Distribution",
     "powerScore": "Power Score",
     "lowRisk": "Low Risk",
-    "highRisk": "High Risk"
+    "highRisk": "High Risk",
+    "mediumRisk": "Medium Risk"
   },
   "stats": {
     "wins": "Wins",
@@ -130,7 +132,9 @@
     "externalFactorsInfo": "About external factors",
     "checkResults": "Check results",
     "signIn": "Sign In",
-    "retry": "Retry"
+    "retry": "Retry",
+    "disclaimer": "This analysis is based on statistical data. External factors such as coaching changes, injuries and internal team issues cannot be considered.",
+    "externalFactors": "About external factors"
   },
   "limit": {
     "title": "Daily Analysis Limit",

@@ -27,7 +27,8 @@
     "scoreProbabilityMap": "خريطة احتمالات النتيجة",
     "predictionDetails": "تفاصيل التنبؤ",
     "otherPredictions": "تنبؤات أخرى",
-    "predictionDetail": "تفصيل التنبؤ"
+    "predictionDetail": "تفصيل التنبؤ",
+    "aiRecommendationShort": "توصية الذكاء الاصطناعي"
   },
   "predictions": {
     "winProbability": "احتمال الفوز",
@@ -58,7 +59,8 @@
     "weightDistribution": "توزيع الأوزان",
     "powerScore": "درجة القوة",
     "lowRisk": "مخاطرة منخفضة",
-    "highRisk": "مخاطرة عالية"
+    "highRisk": "مخاطرة عالية",
+    "mediumRisk": "مخاطرة متوسطة"
   },
   "stats": {
     "wins": "انتصارات",
@@ -130,7 +132,9 @@
     "externalFactorsInfo": "حول العوامل الخارجية",
     "checkResults": "تحقق من النتائج",
     "signIn": "تسجيل الدخول",
-    "retry": "إعادة المحاولة"
+    "retry": "إعادة المحاولة",
+    "disclaimer": "يستند هذا التحليل إلى بيانات إحصائية. لا يمكن مراعاة العوامل الخارجية مثل تغييرات المدرب والإصابات والمشاكل الداخلية للفريق.",
+    "externalFactors": "حول العوامل الخارجية"
   },
   "limit": {
     "title": "الحد اليومي للتحليلات",
