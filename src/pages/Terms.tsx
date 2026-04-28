@@ -1,15 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 const Terms: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('legal');
+
+  const bodySections = ['service', 'disclaimer', 'premium', 'ip', 'changes'] as const;
+  const conditionsItems = t('terms.sections.conditions.items', { returnObjects: true }) as string[];
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border pt-safe">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
@@ -21,64 +25,41 @@ const Terms: React.FC = () => {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-bold">Kullanım Şartları</h1>
+            <h1 className="text-xl font-bold">{t('terms.title')}</h1>
           </div>
         </div>
       </div>
 
-      {/* Content */}
       <div className="container mx-auto px-4 py-6">
         <Card>
           <CardContent className="p-6 prose prose-sm dark:prose-invert max-w-none">
-            <p className="text-muted-foreground text-sm mb-6">
-              Son güncelleme: 25 Ocak 2026
-            </p>
+            <p className="text-muted-foreground text-sm mb-6">{t('terms.lastUpdate')}</p>
 
-            <h2 className="text-lg font-semibold mt-6 mb-3">1. Hizmet Tanımı</h2>
-            <p className="text-muted-foreground">
-              GolMetrik AI, futbol maçları için istatistiksel analizler ve tahminler sunan bir bilgilendirme platformudur. 
-              Uygulamamız, yapay zeka ve makine öğrenimi teknolojilerini kullanarak maç istatistiklerini analiz eder.
-            </p>
+            {/* Service */}
+            <h2 className="text-lg font-semibold mt-6 mb-3">{t('terms.sections.service.title')}</h2>
+            <p className="text-muted-foreground">{t('terms.sections.service.body')}</p>
 
-            <h2 className="text-lg font-semibold mt-6 mb-3">2. Kullanım Koşulları</h2>
-            <p className="text-muted-foreground">
-              Bu uygulamayı kullanarak aşağıdaki koşulları kabul etmiş olursunuz:
-            </p>
+            {/* Conditions with list */}
+            <h2 className="text-lg font-semibold mt-6 mb-3">{t('terms.sections.conditions.title')}</h2>
+            <p className="text-muted-foreground">{t('terms.sections.conditions.intro')}</p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-2">
-              <li>Uygulamayı yalnızca yasal amaçlarla kullanacaksınız.</li>
-              <li>Sunulan analizler bilgilendirme amaçlıdır ve yatırım tavsiyesi değildir.</li>
-              <li>Hesabınızın güvenliğinden siz sorumlusunuz.</li>
-              <li>Uygulamayı kötüye kullanmayacak veya tersine mühendislik yapmayacaksınız.</li>
+              {conditionsItems.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
             </ul>
 
-            <h2 className="text-lg font-semibold mt-6 mb-3">3. Sorumluluk Reddi</h2>
-            <p className="text-muted-foreground">
-              GolMetrik AI, sunulan analizlerin doğruluğunu garanti etmez. Tüm tahminler istatistiksel modellere 
-              dayanmaktadır ve gerçek sonuçlar farklılık gösterebilir. Kullanıcılar, kendi kararlarından 
-              tamamen kendileri sorumludur.
-            </p>
+            {/* Remaining body sections (skip 'service' since rendered above) */}
+            {bodySections.filter(k => k !== 'service').map((key) => (
+              <React.Fragment key={key}>
+                <h2 className="text-lg font-semibold mt-6 mb-3">{t(`terms.sections.${key}.title`)}</h2>
+                <p className="text-muted-foreground">{t(`terms.sections.${key}.body`)}</p>
+              </React.Fragment>
+            ))}
 
-            <h2 className="text-lg font-semibold mt-6 mb-3">4. Premium Üyelik</h2>
+            {/* Contact */}
+            <h2 className="text-lg font-semibold mt-6 mb-3">{t('terms.sections.contact.title')}</h2>
             <p className="text-muted-foreground">
-              Premium üyelik satın alarak ek özelliklere erişim sağlarsınız. Abonelikler otomatik olarak 
-              yenilenir ve iptal işlemleri Google Play hesabınız üzerinden yapılmalıdır.
-            </p>
-
-            <h2 className="text-lg font-semibold mt-6 mb-3">5. Fikri Mülkiyet</h2>
-            <p className="text-muted-foreground">
-              Uygulama içeriği, tasarımı ve tüm materyaller GolMetrik AI'a aittir. İzinsiz kopyalama, 
-              dağıtım veya değiştirme yasaktır.
-            </p>
-
-            <h2 className="text-lg font-semibold mt-6 mb-3">6. Değişiklikler</h2>
-            <p className="text-muted-foreground">
-              Bu kullanım şartlarını herhangi bir zamanda değiştirme hakkımızı saklı tutarız. 
-              Önemli değişiklikler uygulama içi bildirimlerle duyurulacaktır.
-            </p>
-
-            <h2 className="text-lg font-semibold mt-6 mb-3">7. İletişim</h2>
-            <p className="text-muted-foreground">
-              Sorularınız için info@golmetrik.com adresinden bize ulaşabilirsiniz.
+              {t('terms.sections.contact.body', { email: 'info@golmetrik.com' })}
             </p>
           </CardContent>
         </Card>
