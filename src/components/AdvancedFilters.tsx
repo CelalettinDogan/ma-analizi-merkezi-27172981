@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Filter, Calendar, Target, SortAsc, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,7 +23,7 @@ import { cn } from '@/lib/utils';
 export interface FilterOptions {
   dateFrom: string;
   dateTo: string;
-  minConfidence: number; // 0-100
+  minConfidence: number;
   betTypes: string[];
   sortBy: 'date' | 'confidence' | 'type';
   sortOrder: 'asc' | 'desc';
@@ -35,22 +36,24 @@ interface AdvancedFiltersProps {
   className?: string;
 }
 
-const DEFAULT_BET_TYPES = [
-  'Maç Sonucu',
-  'Karşılıklı Gol',
-  'Toplam Gol',
-  'İlk Yarı Sonucu',
-  'Handikap',
-  'Çifte Şans',
-];
-
 const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   filters,
   onFiltersChange,
-  availableBetTypes = DEFAULT_BET_TYPES,
+  availableBetTypes,
   className,
 }) => {
+  const { t } = useTranslation('common');
   const [isOpen, setIsOpen] = useState(false);
+
+  const defaultBetTypes = [
+    t('filters.betTypeNames.matchResult'),
+    t('filters.betTypeNames.btts'),
+    t('filters.betTypeNames.totalGoals'),
+    t('filters.betTypeNames.firstHalf'),
+    t('filters.betTypeNames.handicap'),
+    t('filters.betTypeNames.doubleChance'),
+  ];
+  const types = availableBetTypes ?? defaultBetTypes;
 
   const updateFilter = <K extends keyof FilterOptions>(
     key: K,
