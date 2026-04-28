@@ -6,7 +6,10 @@
     "stats": "İstatistikler",
     "h2h": "Karşılıklı",
     "form": "Form",
-    "ai": "AI Tahmini"
+    "ai": "AI Tahmini",
+    "btts": "Karşılıklı Gol",
+    "similar": "Benzer Maçlar",
+    "factors": "Faktörler"
   },
   "sections": {
     "powerComparison": "Güç Karşılaştırması",
@@ -14,19 +17,50 @@
     "teamStats": "Takım İstatistikleri",
     "similarMatches": "Benzer Maçlar",
     "matchContext": "Maç Bağlamı",
-    "aiRecommendation": "AI Önerisi"
+    "aiRecommendation": "AI Önerisi",
+    "keyFactors": "Önemli Faktörler",
+    "injuries": "Sakat / Cezalı Oyuncular",
+    "statisticalAnalysis": "İstatistiksel",
+    "btts": "Karşılıklı Gol",
+    "scoreLines": "Gol Çizgileri",
+    "mostLikelyScores": "En Olası Skorlar",
+    "scoreProbabilityMap": "Skor Olasılık Haritası",
+    "predictionDetails": "Tahmin Detayları",
+    "otherPredictions": "Diğer Tahminler",
+    "predictionDetail": "Tahmin Detayı",
+    "aiRecommendationShort": "AI Önerisi"
   },
   "predictions": {
     "winProbability": "Kazanma Olasılığı",
     "drawProbability": "Beraberlik Olasılığı",
     "expectedGoals": "Beklenen Goller (xG)",
+    "expectedGoal": "Beklenen Gol",
+    "xgTotal": "xG Toplam",
+    "likelyScore": "Olası Skor",
     "confidence": "Güven Seviyesi",
-    "recommendation": "Önerimiz"
+    "recommendation": "Önerimiz",
+    "over": "Üst",
+    "under": "Alt",
+    "poisson": "Poisson",
+    "hybrid": "Hibrit"
   },
   "confidence": {
     "low": "Düşük",
     "medium": "Orta",
-    "high": "Yüksek"
+    "high": "Yüksek",
+    "label": "Güven",
+    "highBadge": "Yüksek Güven",
+    "mediumBadge": "Orta Güven",
+    "lowBadge": "Düşük Güven",
+    "average": "Ortalama Güven",
+    "score": "Hibrit Güven Skoru",
+    "ai": "AI Güven",
+    "math": "Matematik Güven",
+    "weightDistribution": "Ağırlık Dağılımı",
+    "powerScore": "Güç Puanı",
+    "lowRisk": "Düşük Risk",
+    "highRisk": "Yüksek Risk",
+    "mediumRisk": "Orta Risk"
   },
   "stats": {
     "wins": "Galibiyet",
@@ -36,18 +70,134 @@
     "goalsAgainst": "Yenilen Gol",
     "form": "Son Form",
     "position": "Sıralama",
-    "points": "Puan"
+    "points": "Puan",
+    "last5": "Son 5 Maç",
+    "last5Form": "Son 5 Maç Formu",
+    "goalsScoredAvg": "Atılan Gol Ort.",
+    "goalsConcededAvg": "Yenilen Gol Ort.",
+    "goalAverage": "Gol Ortalaması",
+    "attack": "Hücum",
+    "defense": "Savunma",
+    "attackPower": "Hücum Gücü",
+    "defensePower": "Savunma Gücü",
+    "powerIndex": "Güç Endeksi",
+    "goalDiff": "Gol Farkı",
+    "noFormData": "Form verisi yok",
+    "noData": "Veri yok",
+    "balancedMatch": "Dengeli Maç",
+    "advantage": "{{team}} avantajlı (+{{diff}})",
+    "formLetters": {
+      "W": "G",
+      "D": "B",
+      "L": "M"
+    }
+  },
+  "teams": {
+    "home": "Ev Sahibi",
+    "away": "Deplasman",
+    "homeShort": "İç Saha",
+    "awayShort": "Deplasman",
+    "vs": "vs"
+  },
+  "h2h": {
+    "noMatches": "Geçmiş karşılaşma bulunamadı",
+    "noMatchesHint": "Bu takımlar son dönemde karşılaşmamış",
+    "wins": "galibiyet",
+    "draws": "beraberlik",
+    "losses": "mağlubiyet",
+    "months": {
+      "Jan": "Oca",
+      "Feb": "Şub",
+      "Mar": "Mar",
+      "Apr": "Nis",
+      "May": "May",
+      "Jun": "Haz",
+      "Jul": "Tem",
+      "Aug": "Ağu",
+      "Sep": "Eyl",
+      "Oct": "Eki",
+      "Nov": "Kas",
+      "Dec": "Ara"
+    }
   },
   "actions": {
     "saveAnalysis": "Analizi Kaydet",
-    "addToSet": "Listeye Ekle",
+    "addToSet": "Analize Ekle",
+    "addedToSet": "Eklendi",
     "shareAnalysis": "Analizi Paylaş",
-    "newAnalysis": "Yeni Analiz"
+    "newAnalysis": "Yeni Analiz",
+    "tapForDetails": "Detaylar için dokun",
+    "showMore": "Devamını oku",
+    "showLess": "Daha az göster",
+    "externalFactorsInfo": "Dış faktörler hakkında bilgi",
+    "checkResults": "Sonuçları kontrol et",
+    "signIn": "Giriş Yap",
+    "retry": "Tekrar Dene",
+    "disclaimer": "Bu analiz istatistiksel verilere dayanmaktadır. TD değişiklikleri, sakatlıklar ve takım içi sorunlar gibi dış faktörler dikkate alınamamaktadır.",
+    "externalFactors": "Dış faktörler hakkında"
   },
   "limit": {
     "title": "Günlük Analiz Limiti",
     "remaining": "{{count}} analiz hakkı kaldı",
     "exhausted": "Günlük limit doldu",
     "upgrade": "Premium'a Geç"
+  },
+  "loadingState": {
+    "analyzing": "Maç Analiz Ediliyor",
+    "completed": "Analiz Tamamlandı",
+    "processing": "İşleniyor...",
+    "done": "Tamamlandı",
+    "steps": {
+      "form": "Form analizi yapılıyor...",
+      "h2h": "H2H verileri toplanıyor...",
+      "stats": "İstatistikler hesaplanıyor...",
+      "ai": "AI tahminleri oluşturuluyor...",
+      "results": "Sonuçlar hazırlanıyor..."
+    },
+    "skeleton": {
+      "aiTip": "AI Öneri",
+      "predictions": "Tahminler",
+      "stats": "İstatistikler"
+    }
+  },
+  "history": {
+    "title": "Analiz Geçmişi",
+    "filters": {
+      "all": "Tümü",
+      "today": "Bugün",
+      "thisWeek": "Bu Hafta",
+      "thisMonth": "Bu Ay",
+      "correct": "Doğru",
+      "wrong": "Yanlış",
+      "pending": "Bekliyor"
+    },
+    "empty": "Henüz kayıtlı analiz yok.",
+    "emptyFiltered": "Bu filtrelere uygun analiz bulunamadı."
+  },
+  "set": {
+    "title": "Analizler",
+    "loading": "Analizler Yükleniyor...",
+    "smartPick": "🎯 Akıllı Seçim",
+    "empty": "Analiz setiniz boş",
+    "emptySaved": "Henüz kaydedilmiş analiz yok",
+    "totalAnalysis": "Toplam Analiz",
+    "highConfidence": "Yüksek Güven",
+    "mediumConfidence": "Orta Güven",
+    "lowConfidence": "Düşük Güven",
+    "results": {
+      "correct": "Doğru",
+      "wrong": "Yanlış",
+      "updated": "Sonuçlar güncellendi",
+      "upToDate": "Güncel",
+      "alreadyUpToDate": "Tüm sonuçlar zaten güncel",
+      "checkFailed": "Sonuçlar kontrol edilemedi"
+    }
+  },
+  "filtered": {
+    "title": "Tahminleri",
+    "noResults": "Sonuç bulunamadı"
+  },
+  "injuries": {
+    "none": "Eksik oyuncu yok"
   }
 }

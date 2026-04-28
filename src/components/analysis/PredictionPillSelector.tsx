@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Sparkles, Check, Star, AlertTriangle, Info, Crown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Prediction, MatchInput } from '@/types/match';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ const confidenceConfig = {
 };
 
 const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predictions, matchInput }) => {
+  const { t } = useTranslation('analysis');
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const { addToSet, items } = useAnalysisSet();
 
@@ -75,7 +77,7 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
       transition={{ delay: 0.2 }}
       className="space-y-4"
     >
-      <h4 className="text-sm font-medium text-muted-foreground">Diğer Tahminler</h4>
+      <h4 className="text-sm font-medium text-muted-foreground">{t('sections.otherPredictions')}</h4>
 
       {/* Pills — horizontal scroll */}
       <div className="relative">
@@ -139,14 +141,14 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
                       <h4 className="font-semibold text-foreground truncate">{selectedPrediction.type}</h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">Tahmin Detayı</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t('sections.predictionDetail')}</p>
                     </div>
                     <div className="text-right shrink-0 ml-2">
                       <div className="text-xl font-bold text-foreground">
                         {selectedPrediction.prediction}
                       </div>
                       <span className={cn("text-sm font-medium", color)}>
-                        %{Math.round(hybridConfidence)} güven
+                        %{Math.round(hybridConfidence)} {t('confidence.label').toLowerCase()}
                       </span>
                     </div>
                   </div>
@@ -155,7 +157,7 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
-                        <Sparkles className="w-3 h-3" /> {selectedPrediction.marketScore !== undefined ? 'Market Skoru' : 'Hibrit Skor'}
+                        <Sparkles className="w-3 h-3" /> {selectedPrediction.marketScore !== undefined ? t('predictions.recommendation') : t('confidence.score')}
                       </span>
                       <span className={cn("font-medium", color)}>%{Math.round(hybridConfidence)}</span>
                     </div>
@@ -180,9 +182,9 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
                     )}
                   >
                     {inSet ? (
-                      <><Check className="w-4 h-4" /> Sette</>
+                      <><Check className="w-4 h-4" /> {t('actions.addedToSet')}</>
                     ) : (
-                      <><Plus className="w-4 h-4" /> Analize Ekle</>
+                      <><Plus className="w-4 h-4" /> {t('actions.addToSet')}</>
                     )}
                   </Button>
                 </div>

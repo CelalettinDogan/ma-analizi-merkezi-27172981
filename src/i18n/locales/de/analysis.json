@@ -1,53 +1,203 @@
 {
   "title": "Spielanalyse",
-  "loading": "Analysiere...",
+  "loading": "Analyse läuft...",
   "tabs": {
-    "summary": "Übersicht",
-    "stats": "Statistik",
-    "h2h": "Direktvergleich",
+    "summary": "Zusammenfassung",
+    "stats": "Statistiken",
+    "h2h": "Direkter Vergleich",
     "form": "Form",
-    "ai": "KI-Prognose"
+    "ai": "KI-Prognose",
+    "btts": "Beide Teams treffen",
+    "similar": "Ähnliche Spiele",
+    "factors": "Faktoren"
   },
   "sections": {
     "powerComparison": "Stärkevergleich",
-    "headToHead": "Direktvergleiche",
-    "teamStats": "Team-Statistik",
+    "headToHead": "Direkte Begegnungen",
+    "teamStats": "Team-Statistiken",
     "similarMatches": "Ähnliche Spiele",
     "matchContext": "Spielkontext",
-    "aiRecommendation": "KI-Empfehlung"
+    "aiRecommendation": "KI-Empfehlung",
+    "keyFactors": "Wichtige Faktoren",
+    "injuries": "Verletzte / Gesperrte",
+    "statisticalAnalysis": "Statistisch",
+    "btts": "Beide Teams treffen",
+    "scoreLines": "Tor-Linien",
+    "mostLikelyScores": "Wahrscheinlichste Ergebnisse",
+    "scoreProbabilityMap": "Ergebnis-Wahrscheinlichkeitskarte",
+    "predictionDetails": "Prognose-Details",
+    "otherPredictions": "Weitere Prognosen",
+    "predictionDetail": "Prognose-Detail",
+    "aiRecommendationShort": "KI-Empfehlung"
   },
   "predictions": {
-    "winProbability": "Gewinnwahrscheinlichkeit",
-    "drawProbability": "Unentschiedenwahrscheinlichkeit",
+    "winProbability": "Siegwahrscheinlichkeit",
+    "drawProbability": "Unentschieden-Wahrscheinlichkeit",
     "expectedGoals": "Erwartete Tore (xG)",
+    "expectedGoal": "Erwartete Tore",
+    "xgTotal": "xG Gesamt",
+    "likelyScore": "Wahrscheinl. Ergebnis",
     "confidence": "Vertrauensniveau",
-    "recommendation": "Unsere Empfehlung"
+    "recommendation": "Unser Tipp",
+    "over": "Über",
+    "under": "Unter",
+    "poisson": "Poisson",
+    "hybrid": "Hybrid"
   },
   "confidence": {
     "low": "Niedrig",
     "medium": "Mittel",
-    "high": "Hoch"
+    "high": "Hoch",
+    "label": "Vertrauen",
+    "highBadge": "Hohes Vertrauen",
+    "mediumBadge": "Mittleres Vertrauen",
+    "lowBadge": "Geringes Vertrauen",
+    "average": "Durchschn. Vertrauen",
+    "score": "Hybrid-Vertrauenswert",
+    "ai": "KI-Vertrauen",
+    "math": "Math. Vertrauen",
+    "weightDistribution": "Gewichtsverteilung",
+    "powerScore": "Stärke-Wert",
+    "lowRisk": "Niedriges Risiko",
+    "highRisk": "Hohes Risiko",
+    "mediumRisk": "Mittleres Risiko"
   },
   "stats": {
     "wins": "Siege",
     "draws": "Unentschieden",
     "losses": "Niederlagen",
-    "goalsFor": "Tore",
-    "goalsAgainst": "Gegentore",
-    "form": "Aktuelle Form",
-    "position": "Platz",
-    "points": "Punkte"
+    "goalsFor": "Tore für",
+    "goalsAgainst": "Tore gegen",
+    "form": "Letzte Form",
+    "position": "Platzierung",
+    "points": "Punkte",
+    "last5": "Letzte 5 Spiele",
+    "last5Form": "Form der letzten 5 Spiele",
+    "goalsScoredAvg": "Ø Erzielte Tore",
+    "goalsConcededAvg": "Ø Gegentore",
+    "goalAverage": "Tor-Durchschnitt",
+    "attack": "Angriff",
+    "defense": "Abwehr",
+    "attackPower": "Angriffsstärke",
+    "defensePower": "Abwehrstärke",
+    "powerIndex": "Stärke-Index",
+    "goalDiff": "Tordifferenz",
+    "noFormData": "Keine Formdaten",
+    "noData": "Keine Daten",
+    "balancedMatch": "Ausgeglichenes Spiel",
+    "advantage": "{{team}} im Vorteil (+{{diff}})",
+    "formLetters": {
+      "W": "S",
+      "D": "U",
+      "L": "N"
+    }
+  },
+  "teams": {
+    "home": "Heim",
+    "away": "Auswärts",
+    "homeShort": "Heim",
+    "awayShort": "Ausw.",
+    "vs": "vs"
+  },
+  "h2h": {
+    "noMatches": "Keine früheren Begegnungen gefunden",
+    "noMatchesHint": "Diese Teams trafen zuletzt nicht aufeinander",
+    "wins": "Siege",
+    "draws": "Unentschieden",
+    "losses": "Niederlagen",
+    "months": {
+      "Jan": "Jan",
+      "Feb": "Feb",
+      "Mar": "Mär",
+      "Apr": "Apr",
+      "May": "Mai",
+      "Jun": "Jun",
+      "Jul": "Jul",
+      "Aug": "Aug",
+      "Sep": "Sep",
+      "Oct": "Okt",
+      "Nov": "Nov",
+      "Dec": "Dez"
+    }
   },
   "actions": {
     "saveAnalysis": "Analyse speichern",
-    "addToSet": "Zur Liste hinzufügen",
+    "addToSet": "Zum Set hinzufügen",
+    "addedToSet": "Hinzugefügt",
     "shareAnalysis": "Analyse teilen",
-    "newAnalysis": "Neue Analyse"
+    "newAnalysis": "Neue Analyse",
+    "tapForDetails": "Für Details tippen",
+    "showMore": "Mehr lesen",
+    "showLess": "Weniger anzeigen",
+    "externalFactorsInfo": "Über externe Faktoren",
+    "checkResults": "Ergebnisse prüfen",
+    "signIn": "Anmelden",
+    "retry": "Erneut versuchen",
+    "disclaimer": "Diese Analyse basiert auf statistischen Daten. Externe Faktoren wie Trainerwechsel, Verletzungen und teaminterne Probleme können nicht berücksichtigt werden.",
+    "externalFactors": "Zu externen Faktoren"
   },
   "limit": {
-    "title": "Tägliches Analyse-Limit",
-    "remaining": "{{count}} Analysen verbleibend",
+    "title": "Tägliches Analyselimit",
+    "remaining": "{{count}} Analysen übrig",
     "exhausted": "Tageslimit erreicht",
-    "upgrade": "Premium werden"
+    "upgrade": "Premium aktivieren"
+  },
+  "loadingState": {
+    "analyzing": "Spiel wird analysiert",
+    "completed": "Analyse abgeschlossen",
+    "processing": "Verarbeitung...",
+    "done": "Fertig",
+    "steps": {
+      "form": "Form wird analysiert...",
+      "h2h": "H2H-Daten werden gesammelt...",
+      "stats": "Statistiken werden berechnet...",
+      "ai": "KI-Prognosen werden erstellt...",
+      "results": "Ergebnisse werden vorbereitet..."
+    },
+    "skeleton": {
+      "aiTip": "KI-Tipp",
+      "predictions": "Prognosen",
+      "stats": "Statistiken"
+    }
+  },
+  "history": {
+    "title": "Analyse-Verlauf",
+    "filters": {
+      "all": "Alle",
+      "today": "Heute",
+      "thisWeek": "Diese Woche",
+      "thisMonth": "Dieser Monat",
+      "correct": "Richtig",
+      "wrong": "Falsch",
+      "pending": "Ausstehend"
+    },
+    "empty": "Noch keine gespeicherten Analysen.",
+    "emptyFiltered": "Keine Analysen für diese Filter."
+  },
+  "set": {
+    "title": "Analysen",
+    "loading": "Analysen werden geladen...",
+    "smartPick": "🎯 Smart Pick",
+    "empty": "Dein Analyse-Set ist leer",
+    "emptySaved": "Noch keine gespeicherten Analysen",
+    "totalAnalysis": "Analysen gesamt",
+    "highConfidence": "Hohes Vertrauen",
+    "mediumConfidence": "Mittleres Vertrauen",
+    "lowConfidence": "Geringes Vertrauen",
+    "results": {
+      "correct": "Richtig",
+      "wrong": "Falsch",
+      "updated": "Ergebnisse aktualisiert",
+      "upToDate": "Aktuell",
+      "alreadyUpToDate": "Alle Ergebnisse sind bereits aktuell",
+      "checkFailed": "Ergebnisse konnten nicht geprüft werden"
+    }
+  },
+  "filtered": {
+    "title": "Prognosen",
+    "noResults": "Keine Ergebnisse gefunden"
+  },
+  "injuries": {
+    "none": "Keine fehlenden Spieler"
   }
 }

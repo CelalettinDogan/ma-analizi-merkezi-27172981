@@ -3,10 +3,13 @@
   "loading": "جارٍ التحليل...",
   "tabs": {
     "summary": "ملخص",
-    "stats": "إحصائيات",
-    "h2h": "المواجهات",
+    "stats": "الإحصائيات",
+    "h2h": "المواجهات المباشرة",
     "form": "الأداء",
-    "ai": "توقع الذكاء الاصطناعي"
+    "ai": "تنبؤ الذكاء الاصطناعي",
+    "btts": "كلا الفريقين يسجل",
+    "similar": "مباريات مشابهة",
+    "factors": "العوامل"
   },
   "sections": {
     "powerComparison": "مقارنة القوة",
@@ -14,19 +17,50 @@
     "teamStats": "إحصائيات الفريق",
     "similarMatches": "مباريات مشابهة",
     "matchContext": "سياق المباراة",
-    "aiRecommendation": "توصية الذكاء الاصطناعي"
+    "aiRecommendation": "توصية الذكاء الاصطناعي",
+    "keyFactors": "عوامل رئيسية",
+    "injuries": "إصابات / إيقافات",
+    "statisticalAnalysis": "إحصائي",
+    "btts": "كلا الفريقين يسجل",
+    "scoreLines": "خطوط الأهداف",
+    "mostLikelyScores": "النتائج الأكثر احتمالاً",
+    "scoreProbabilityMap": "خريطة احتمالات النتيجة",
+    "predictionDetails": "تفاصيل التنبؤ",
+    "otherPredictions": "تنبؤات أخرى",
+    "predictionDetail": "تفصيل التنبؤ",
+    "aiRecommendationShort": "توصية الذكاء الاصطناعي"
   },
   "predictions": {
     "winProbability": "احتمال الفوز",
     "drawProbability": "احتمال التعادل",
     "expectedGoals": "الأهداف المتوقعة (xG)",
+    "expectedGoal": "الأهداف المتوقعة",
+    "xgTotal": "إجمالي xG",
+    "likelyScore": "نتيجة محتملة",
     "confidence": "مستوى الثقة",
-    "recommendation": "توصيتنا"
+    "recommendation": "اختيارنا",
+    "over": "أكثر من",
+    "under": "أقل من",
+    "poisson": "بواسون",
+    "hybrid": "هجين"
   },
   "confidence": {
     "low": "منخفض",
     "medium": "متوسط",
-    "high": "عالٍ"
+    "high": "مرتفع",
+    "label": "الثقة",
+    "highBadge": "ثقة عالية",
+    "mediumBadge": "ثقة متوسطة",
+    "lowBadge": "ثقة منخفضة",
+    "average": "متوسط الثقة",
+    "score": "درجة الثقة الهجينة",
+    "ai": "ثقة الذكاء الاصطناعي",
+    "math": "الثقة الرياضية",
+    "weightDistribution": "توزيع الأوزان",
+    "powerScore": "درجة القوة",
+    "lowRisk": "مخاطرة منخفضة",
+    "highRisk": "مخاطرة عالية",
+    "mediumRisk": "مخاطرة متوسطة"
   },
   "stats": {
     "wins": "انتصارات",
@@ -36,18 +70,134 @@
     "goalsAgainst": "أهداف عليه",
     "form": "الأداء الأخير",
     "position": "الترتيب",
-    "points": "النقاط"
+    "points": "نقاط",
+    "last5": "آخر 5 مباريات",
+    "last5Form": "أداء آخر 5 مباريات",
+    "goalsScoredAvg": "متوسط أهداف له",
+    "goalsConcededAvg": "متوسط أهداف عليه",
+    "goalAverage": "متوسط الأهداف",
+    "attack": "هجوم",
+    "defense": "دفاع",
+    "attackPower": "قوة الهجوم",
+    "defensePower": "قوة الدفاع",
+    "powerIndex": "مؤشر القوة",
+    "goalDiff": "فارق الأهداف",
+    "noFormData": "لا توجد بيانات أداء",
+    "noData": "لا توجد بيانات",
+    "balancedMatch": "مباراة متوازنة",
+    "advantage": "{{team}} متفوق (+{{diff}})",
+    "formLetters": {
+      "W": "ف",
+      "D": "ت",
+      "L": "خ"
+    }
+  },
+  "teams": {
+    "home": "صاحب الأرض",
+    "away": "الضيف",
+    "homeShort": "محلي",
+    "awayShort": "ضيف",
+    "vs": "ضد"
+  },
+  "h2h": {
+    "noMatches": "لا توجد مواجهات سابقة",
+    "noMatchesHint": "لم يتواجه هذان الفريقان مؤخراً",
+    "wins": "انتصارات",
+    "draws": "تعادلات",
+    "losses": "هزائم",
+    "months": {
+      "Jan": "ينا",
+      "Feb": "فبر",
+      "Mar": "مار",
+      "Apr": "أبر",
+      "May": "ماي",
+      "Jun": "يون",
+      "Jul": "يول",
+      "Aug": "أغس",
+      "Sep": "سبت",
+      "Oct": "أكت",
+      "Nov": "نوف",
+      "Dec": "ديس"
+    }
   },
   "actions": {
     "saveAnalysis": "حفظ التحليل",
-    "addToSet": "إضافة للقائمة",
+    "addToSet": "إضافة إلى المجموعة",
+    "addedToSet": "تمت الإضافة",
     "shareAnalysis": "مشاركة التحليل",
-    "newAnalysis": "تحليل جديد"
+    "newAnalysis": "تحليل جديد",
+    "tapForDetails": "اضغط لعرض التفاصيل",
+    "showMore": "اقرأ المزيد",
+    "showLess": "عرض أقل",
+    "externalFactorsInfo": "حول العوامل الخارجية",
+    "checkResults": "تحقق من النتائج",
+    "signIn": "تسجيل الدخول",
+    "retry": "إعادة المحاولة",
+    "disclaimer": "يستند هذا التحليل إلى بيانات إحصائية. لا يمكن مراعاة العوامل الخارجية مثل تغييرات المدرب والإصابات والمشاكل الداخلية للفريق.",
+    "externalFactors": "حول العوامل الخارجية"
   },
   "limit": {
-    "title": "حد التحليل اليومي",
-    "remaining": "متبقي {{count}} تحليل",
-    "exhausted": "تم استنفاد الحد اليومي",
-    "upgrade": "ترقية إلى بريميوم"
+    "title": "الحد اليومي للتحليلات",
+    "remaining": "تبقى {{count}} تحليلات",
+    "exhausted": "تم بلوغ الحد اليومي",
+    "upgrade": "الترقية إلى بريميوم"
+  },
+  "loadingState": {
+    "analyzing": "جارٍ تحليل المباراة",
+    "completed": "اكتمل التحليل",
+    "processing": "جارٍ المعالجة...",
+    "done": "اكتمل",
+    "steps": {
+      "form": "تحليل الأداء...",
+      "h2h": "جمع بيانات H2H...",
+      "stats": "حساب الإحصائيات...",
+      "ai": "إنشاء تنبؤات الذكاء الاصطناعي...",
+      "results": "تحضير النتائج..."
+    },
+    "skeleton": {
+      "aiTip": "نصيحة الذكاء الاصطناعي",
+      "predictions": "تنبؤات",
+      "stats": "إحصائيات"
+    }
+  },
+  "history": {
+    "title": "سجل التحليلات",
+    "filters": {
+      "all": "الكل",
+      "today": "اليوم",
+      "thisWeek": "هذا الأسبوع",
+      "thisMonth": "هذا الشهر",
+      "correct": "صحيح",
+      "wrong": "خاطئ",
+      "pending": "قيد الانتظار"
+    },
+    "empty": "لا توجد تحليلات محفوظة بعد.",
+    "emptyFiltered": "لا توجد تحليلات تطابق هذه الفلاتر."
+  },
+  "set": {
+    "title": "التحليلات",
+    "loading": "جارٍ تحميل التحليلات...",
+    "smartPick": "🎯 اختيار ذكي",
+    "empty": "مجموعة التحليلات الخاصة بك فارغة",
+    "emptySaved": "لا توجد تحليلات محفوظة بعد",
+    "totalAnalysis": "إجمالي التحليلات",
+    "highConfidence": "ثقة عالية",
+    "mediumConfidence": "ثقة متوسطة",
+    "lowConfidence": "ثقة منخفضة",
+    "results": {
+      "correct": "صحيح",
+      "wrong": "خاطئ",
+      "updated": "تم تحديث النتائج",
+      "upToDate": "محدث",
+      "alreadyUpToDate": "جميع النتائج محدثة بالفعل",
+      "checkFailed": "تعذر التحقق من النتائج"
+    }
+  },
+  "filtered": {
+    "title": "التنبؤات",
+    "noResults": "لم يتم العثور على نتائج"
+  },
+  "injuries": {
+    "none": "لا يوجد لاعبون غائبون"
   }
 }

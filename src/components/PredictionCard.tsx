@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { Target, TrendingUp, Sparkles, Trophy, Shield } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Prediction, MatchInput } from '@/types/match';
 import { AddToSetButton } from '@/components/analysis-set';
 import { Progress } from '@/components/ui/progress';
@@ -19,6 +20,7 @@ const confidenceColors: Record<string, string> = {
 };
 
 const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matchInput }) => {
+  const { t } = useTranslation('analysis');
   const aiPercentage = prediction.aiConfidence ? Math.round(prediction.aiConfidence * 100) : 0;
   const mathPercentage = prediction.mathConfidence ? Math.round(prediction.mathConfidence * 100) : 0;
   const hybridPercentage = Math.round(getHybridConfidence(prediction));
@@ -50,7 +52,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matc
         </div>
         <div className="flex flex-col items-end gap-1">
           <span className={`prediction-badge border ${confidenceColors[prediction.confidence]}`}>
-            {prediction.confidence.charAt(0).toUpperCase() + prediction.confidence.slice(1)}
+            {prediction.confidence === 'yüksek' ? t('confidence.high') : prediction.confidence === 'orta' ? t('confidence.medium') : t('confidence.low')}
           </span>
           {hasProbability && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
@@ -66,7 +68,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matc
               'bg-loss/20 text-loss'
             )}>
               <Shield className="w-3 h-3" />
-              {prediction.riskLevel === 'low' ? 'D.Risk' : prediction.riskLevel === 'medium' ? 'O.Risk' : 'Y.Risk'}
+              {prediction.riskLevel === 'low' ? t('confidence.lowRisk') : prediction.riskLevel === 'medium' ? t('confidence.mediumBadge') : t('confidence.highRisk')}
             </span>
           )}
         </div>
@@ -106,7 +108,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matc
               "font-semibold flex items-center gap-1",
               hybridLevel === 'yüksek' ? 'text-win' : hybridLevel === 'orta' ? 'text-draw' : 'text-loss'
             )}>
-              ⚡ Hibrit Güven
+              ⚡ {t('confidence.score')}
             </span>
             <span className={cn(
               "font-bold",
@@ -118,14 +120,14 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matc
           <div className="border-t border-border/50 pt-2 mt-2 space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> AI Güveni
+                <Sparkles className="w-3 h-3" /> {t('confidence.ai')}
               </span>
               <span className="font-medium text-foreground">{aiPercentage}%</span>
             </div>
             <Progress value={aiPercentage} className="h-1.5" />
             
             <div className="flex items-center justify-between text-xs mt-2">
-              <span className="text-muted-foreground">📊 Matematik</span>
+              <span className="text-muted-foreground">📊 {t('confidence.math')}</span>
               <span className="font-medium text-foreground">{mathPercentage}%</span>
             </div>
             <Progress value={mathPercentage} className="h-1.5" />

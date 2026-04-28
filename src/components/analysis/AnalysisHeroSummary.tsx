@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ChevronUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { MatchAnalysis, Prediction } from '@/types/match';
 import { getHybridConfidence, getConfidenceLevel, cn } from '@/lib/utils';
 import ConfidenceBreakdownTooltip from './ConfidenceBreakdownTooltip';
@@ -10,6 +11,7 @@ interface AnalysisHeroSummaryProps {
 }
 
 const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) => {
+  const { t } = useTranslation('analysis');
   const sortedPredictions = [...analysis.predictions].sort(
     (a, b) => getHybridConfidence(b) - getHybridConfidence(a)
   );
@@ -103,7 +105,7 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-micro text-muted-foreground">Güven</span>
+            <span className="text-micro text-muted-foreground">{t('confidence.label')}</span>
             <ConfidenceBreakdownTooltip prediction={mainPrediction} hybridConfidence={hybridConfidence} />
           </div>
         </div>
@@ -114,7 +116,7 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
             <div className="w-16 h-16 rounded-2xl bg-muted/30 border border-border/30 flex items-center justify-center">
               <span className="text-lg font-bold text-foreground">{xGTotal.toFixed(1)}</span>
             </div>
-            <span className="text-micro text-muted-foreground">xG Toplam</span>
+            <span className="text-micro text-muted-foreground">{t('predictions.xgTotal')}</span>
           </div>
         )}
 
@@ -126,7 +128,7 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
                 {mostLikelyScore.homeGoals}-{mostLikelyScore.awayGoals}
               </span>
             </div>
-            <span className="text-micro text-muted-foreground">Olası Skor</span>
+            <span className="text-micro text-muted-foreground">{t('predictions.likelyScore')}</span>
           </div>
         )}
       </motion.div>
@@ -135,7 +137,7 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
       <div className="flex flex-col items-center gap-1 pt-1 pb-1">
         <ChevronUp className="w-5 h-5 text-muted-foreground/40" />
         <span className="text-[10px] text-muted-foreground/40 tracking-wide">
-          Detaylar için dokun
+          {t('actions.tapForDetails')}
         </span>
       </div>
     </div>

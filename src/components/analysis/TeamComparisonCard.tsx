@@ -1,6 +1,7 @@
 import React, { memo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Zap, Shield, Activity, Users, Home, Plane } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { TeamStats, TeamPower } from '@/types/match';
 import { cn } from '@/lib/utils';
 
@@ -14,19 +15,20 @@ interface TeamComparisonCardProps {
 }
 
 const FormBadge = memo<{ result: string }>(({ result }) => {
-  const config = {
-    W: { label: 'G', bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/30' },
-    L: { label: 'M', bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30' },
-    D: { label: 'B', bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/30' },
+  const { t } = useTranslation('analysis');
+  const config: Record<string, { labelKey: string; bg: string; text: string; border: string }> = {
+    W: { labelKey: 'stats.formLetters.W', bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/30' },
+    L: { labelKey: 'stats.formLetters.L', bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30' },
+    D: { labelKey: 'stats.formLetters.D', bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/30' },
   };
-  const c = config[result as keyof typeof config] || config.D;
+  const c = config[result] || config.D;
   
   return (
     <span className={cn(
       "w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold border",
       c.bg, c.text, c.border
     )}>
-      {c.label}
+      {t(c.labelKey)}
     </span>
   );
 });
@@ -85,6 +87,7 @@ const FormTabs = memo<{
   homeStats: TeamStats;
   awayStats: TeamStats;
 }>(({ homeTeam, awayTeam, homeForm, awayForm, homeStats, awayStats }) => {
+  const { t } = useTranslation('analysis');
   const [tab, setTab] = useState<'home' | 'away'>('home');
 
   const homePerf = homeStats?.homePerformance;
@@ -102,7 +105,7 @@ const FormTabs = memo<{
           )}
         >
           <Home className="w-3 h-3" />
-          İç Saha
+          {t('teams.homeShort')}
         </button>
         <button
           onClick={() => setTab('away')}
@@ -113,42 +116,42 @@ const FormTabs = memo<{
           )}
         >
           <Plane className="w-3 h-3" />
-          Deplasman
+          {t('teams.awayShort')}
         </button>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
           <p className="text-xs text-muted-foreground mb-2 truncate">
-            {homeTeam} {tab === 'home' ? 'İç Saha' : 'Deplasman'}
+            {homeTeam} {tab === 'home' ? t('teams.homeShort') : t('teams.awayShort')}
           </p>
           <div className="flex gap-1 flex-wrap">
             {homeForm.length > 0 ? (
               homeForm.slice(0, 5).map((result, i) => <FormBadge key={i} result={result} />)
             ) : (
-              <span className="text-xs text-muted-foreground">Veri yok</span>
+              <span className="text-xs text-muted-foreground">{t('stats.noData')}</span>
             )}
           </div>
           {tab === 'home' && homePerf && (
             <p className="text-micro text-muted-foreground mt-1.5">
-              {homePerf.wins}G {homePerf.draws}B {homePerf.losses}M
+              {homePerf.wins}{t('stats.formLetters.W')} {homePerf.draws}{t('stats.formLetters.D')} {homePerf.losses}{t('stats.formLetters.L')}
             </p>
           )}
           {tab === 'away' && awayPerf && (
             <p className="text-micro text-muted-foreground mt-1.5">
-              {awayPerf.wins}G {awayPerf.draws}B {awayPerf.losses}M
+              {awayPerf.wins}{t('stats.formLetters.W')} {awayPerf.draws}{t('stats.formLetters.D')} {awayPerf.losses}{t('stats.formLetters.L')}
             </p>
           )}
         </div>
         <div className="flex flex-col items-end">
           <p className="text-xs text-muted-foreground mb-2 truncate">
-            {awayTeam} {tab === 'home' ? 'İç Saha' : 'Deplasman'}
+            {awayTeam} {tab === 'home' ? t('teams.homeShort') : t('teams.awayShort')}
           </p>
           <div className="flex gap-1 flex-wrap">
             {awayForm.length > 0 ? (
               awayForm.slice(0, 5).map((result, i) => <FormBadge key={i} result={result} />)
             ) : (
-              <span className="text-xs text-muted-foreground">Veri yok</span>
+              <span className="text-xs text-muted-foreground">{t('stats.noData')}</span>
             )}
           </div>
         </div>
@@ -162,6 +165,7 @@ FormTabs.displayName = 'FormTabs';
 const TeamComparisonCard: React.FC<TeamComparisonCardProps> = ({
   homeTeam, awayTeam, homeStats, awayStats, homePower, awayPower,
 }) => {
+  const { t } = useTranslation('analysis');
   const homeForm = homeStats?.form ?? [];
   const awayForm = awayStats?.form ?? [];
   const homeGoalsScored = homeStats?.goalsScored ?? 0;
@@ -188,7 +192,7 @@ const TeamComparisonCard: React.FC<TeamComparisonCardProps> = ({
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <Users className="w-4 h-4 text-primary" />
-          Takım Karşılaştırması
+          {t('sections.powerComparison')}
         </h4>
         {hasAdvantage && (
           <div className={cn(
@@ -200,7 +204,7 @@ const TeamComparisonCard: React.FC<TeamComparisonCardProps> = ({
                 : "bg-secondary/20 text-secondary"
           )}>
             {Math.abs(advantageDiff) < 10 
-              ? "⚖️ Dengeli"
+              ? `⚖️ ${t('stats.balancedMatch')}`
               : advantageDiff > 0 
                 ? `🏠 +${advantageDiff.toFixed(0)}`
                 : `✈️ +${Math.abs(advantageDiff).toFixed(0)}`
@@ -213,14 +217,14 @@ const TeamComparisonCard: React.FC<TeamComparisonCardProps> = ({
       <div className="grid grid-cols-[1fr_auto_1fr] gap-2 mb-4 text-center">
         <div className="text-left min-w-0">
           <p className="text-sm font-medium text-foreground truncate">{homeTeam}</p>
-          <p className="text-xs text-muted-foreground">Ev Sahibi</p>
+          <p className="text-xs text-muted-foreground">{t('teams.home')}</p>
         </div>
         <div className="flex items-center justify-center px-2">
-          <span className="text-xs text-muted-foreground">vs</span>
+          <span className="text-xs text-muted-foreground">{t('teams.vs')}</span>
         </div>
         <div className="text-right min-w-0">
           <p className="text-sm font-medium text-foreground truncate">{awayTeam}</p>
-          <p className="text-xs text-muted-foreground">Deplasman</p>
+          <p className="text-xs text-muted-foreground">{t('teams.away')}</p>
         </div>
       </div>
 
@@ -234,14 +238,14 @@ const TeamComparisonCard: React.FC<TeamComparisonCardProps> = ({
       />
 
       <div className="space-y-3 pt-3 border-t border-border/50">
-        <ComparisonRow label="Atılan Gol Ort." homeValue={homeAvgScored} awayValue={awayAvgScored} icon={<TrendingUp className="w-3 h-3" />} format="decimal" />
-        <ComparisonRow label="Yenen Gol Ort." homeValue={homeAvgConceded} awayValue={awayAvgConceded} icon={<TrendingDown className="w-3 h-3" />} format="decimal" />
+        <ComparisonRow label={t('stats.goalsScoredAvg')} homeValue={homeAvgScored} awayValue={awayAvgScored} icon={<TrendingUp className="w-3 h-3" />} format="decimal" />
+        <ComparisonRow label={t('stats.goalsConcededAvg')} homeValue={homeAvgConceded} awayValue={awayAvgConceded} icon={<TrendingDown className="w-3 h-3" />} format="decimal" />
         
         {homePower && awayPower && (
           <>
-            <ComparisonRow label="Hücum Gücü" homeValue={homePower.attackIndex} awayValue={awayPower.attackIndex} icon={<Zap className="w-3 h-3" />} />
-            <ComparisonRow label="Savunma Gücü" homeValue={homePower.defenseIndex} awayValue={awayPower.defenseIndex} icon={<Shield className="w-3 h-3" />} />
-            <ComparisonRow label="Form Skoru" homeValue={homePower.formScore} awayValue={awayPower.formScore} icon={<Activity className="w-3 h-3" />} />
+            <ComparisonRow label={t('stats.attackPower')} homeValue={homePower.attackIndex} awayValue={awayPower.attackIndex} icon={<Zap className="w-3 h-3" />} />
+            <ComparisonRow label={t('stats.defensePower')} homeValue={homePower.defenseIndex} awayValue={awayPower.defenseIndex} icon={<Shield className="w-3 h-3" />} />
+            <ComparisonRow label={t('stats.form')} homeValue={homePower.formScore} awayValue={awayPower.formScore} icon={<Activity className="w-3 h-3" />} />
           </>
         )}
       </div>

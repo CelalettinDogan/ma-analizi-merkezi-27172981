@@ -6,27 +6,61 @@
     "stats": "Estadísticas",
     "h2h": "Cara a cara",
     "form": "Forma",
-    "ai": "Predicción IA"
+    "ai": "Predicción IA",
+    "btts": "Ambos marcan",
+    "similar": "Partidos similares",
+    "factors": "Factores"
   },
   "sections": {
-    "powerComparison": "Comparación de poder",
+    "powerComparison": "Comparación de potencia",
     "headToHead": "Enfrentamientos directos",
     "teamStats": "Estadísticas del equipo",
     "similarMatches": "Partidos similares",
     "matchContext": "Contexto del partido",
-    "aiRecommendation": "Recomendación IA"
+    "aiRecommendation": "Recomendación IA",
+    "keyFactors": "Factores clave",
+    "injuries": "Lesiones / Sanciones",
+    "statisticalAnalysis": "Estadístico",
+    "btts": "Ambos marcan",
+    "scoreLines": "Líneas de goles",
+    "mostLikelyScores": "Marcadores más probables",
+    "scoreProbabilityMap": "Mapa de probabilidad",
+    "predictionDetails": "Detalles de la predicción",
+    "otherPredictions": "Otras predicciones",
+    "predictionDetail": "Detalle de predicción",
+    "aiRecommendationShort": "Recomendación IA"
   },
   "predictions": {
     "winProbability": "Probabilidad de victoria",
     "drawProbability": "Probabilidad de empate",
     "expectedGoals": "Goles esperados (xG)",
+    "expectedGoal": "Goles esperados",
+    "xgTotal": "xG Total",
+    "likelyScore": "Marcador probable",
     "confidence": "Nivel de confianza",
-    "recommendation": "Nuestra recomendación"
+    "recommendation": "Nuestra elección",
+    "over": "Más de",
+    "under": "Menos de",
+    "poisson": "Poisson",
+    "hybrid": "Híbrido"
   },
   "confidence": {
     "low": "Baja",
     "medium": "Media",
-    "high": "Alta"
+    "high": "Alta",
+    "label": "Confianza",
+    "highBadge": "Confianza alta",
+    "mediumBadge": "Confianza media",
+    "lowBadge": "Confianza baja",
+    "average": "Confianza media",
+    "score": "Puntuación híbrida",
+    "ai": "Confianza IA",
+    "math": "Confianza matemática",
+    "weightDistribution": "Distribución de peso",
+    "powerScore": "Puntuación de fuerza",
+    "lowRisk": "Riesgo bajo",
+    "highRisk": "Riesgo alto",
+    "mediumRisk": "Riesgo medio"
   },
   "stats": {
     "wins": "Victorias",
@@ -36,18 +70,134 @@
     "goalsAgainst": "Goles en contra",
     "form": "Forma reciente",
     "position": "Posición",
-    "points": "Puntos"
+    "points": "Puntos",
+    "last5": "Últimos 5 partidos",
+    "last5Form": "Forma de los últimos 5",
+    "goalsScoredAvg": "Promedio goles a favor",
+    "goalsConcededAvg": "Promedio goles en contra",
+    "goalAverage": "Promedio de goles",
+    "attack": "Ataque",
+    "defense": "Defensa",
+    "attackPower": "Poder ofensivo",
+    "defensePower": "Poder defensivo",
+    "powerIndex": "Índice de fuerza",
+    "goalDiff": "Dif. de goles",
+    "noFormData": "Sin datos de forma",
+    "noData": "Sin datos",
+    "balancedMatch": "Partido equilibrado",
+    "advantage": "{{team}} con ventaja (+{{diff}})",
+    "formLetters": {
+      "W": "V",
+      "D": "E",
+      "L": "D"
+    }
+  },
+  "teams": {
+    "home": "Local",
+    "away": "Visitante",
+    "homeShort": "Local",
+    "awayShort": "Visit.",
+    "vs": "vs"
+  },
+  "h2h": {
+    "noMatches": "No se encontraron enfrentamientos previos",
+    "noMatchesHint": "Estos equipos no se han enfrentado recientemente",
+    "wins": "victorias",
+    "draws": "empates",
+    "losses": "derrotas",
+    "months": {
+      "Jan": "Ene",
+      "Feb": "Feb",
+      "Mar": "Mar",
+      "Apr": "Abr",
+      "May": "May",
+      "Jun": "Jun",
+      "Jul": "Jul",
+      "Aug": "Ago",
+      "Sep": "Sep",
+      "Oct": "Oct",
+      "Nov": "Nov",
+      "Dec": "Dic"
+    }
   },
   "actions": {
     "saveAnalysis": "Guardar análisis",
-    "addToSet": "Añadir a la lista",
+    "addToSet": "Añadir al set",
+    "addedToSet": "Añadido",
     "shareAnalysis": "Compartir análisis",
-    "newAnalysis": "Nuevo análisis"
+    "newAnalysis": "Nuevo análisis",
+    "tapForDetails": "Toca para ver detalles",
+    "showMore": "Leer más",
+    "showLess": "Mostrar menos",
+    "externalFactorsInfo": "Sobre los factores externos",
+    "checkResults": "Comprobar resultados",
+    "signIn": "Iniciar sesión",
+    "retry": "Reintentar",
+    "disclaimer": "Este análisis se basa en datos estadísticos. No se pueden considerar factores externos como cambios de entrenador, lesiones o problemas internos del equipo.",
+    "externalFactors": "Sobre los factores externos"
   },
   "limit": {
     "title": "Límite diario de análisis",
     "remaining": "{{count}} análisis restantes",
     "exhausted": "Límite diario alcanzado",
-    "upgrade": "Hazte Premium"
+    "upgrade": "Pasar a Premium"
+  },
+  "loadingState": {
+    "analyzing": "Analizando partido",
+    "completed": "Análisis completado",
+    "processing": "Procesando...",
+    "done": "Completado",
+    "steps": {
+      "form": "Analizando la forma...",
+      "h2h": "Recopilando datos H2H...",
+      "stats": "Calculando estadísticas...",
+      "ai": "Generando predicciones IA...",
+      "results": "Preparando resultados..."
+    },
+    "skeleton": {
+      "aiTip": "Consejo IA",
+      "predictions": "Predicciones",
+      "stats": "Estadísticas"
+    }
+  },
+  "history": {
+    "title": "Historial de análisis",
+    "filters": {
+      "all": "Todos",
+      "today": "Hoy",
+      "thisWeek": "Esta semana",
+      "thisMonth": "Este mes",
+      "correct": "Correcto",
+      "wrong": "Incorrecto",
+      "pending": "Pendiente"
+    },
+    "empty": "Aún no hay análisis guardados.",
+    "emptyFiltered": "No hay análisis para estos filtros."
+  },
+  "set": {
+    "title": "Análisis",
+    "loading": "Cargando análisis...",
+    "smartPick": "🎯 Elección inteligente",
+    "empty": "Tu set de análisis está vacío",
+    "emptySaved": "Aún no hay análisis guardados",
+    "totalAnalysis": "Análisis totales",
+    "highConfidence": "Confianza alta",
+    "mediumConfidence": "Confianza media",
+    "lowConfidence": "Confianza baja",
+    "results": {
+      "correct": "Correcto",
+      "wrong": "Incorrecto",
+      "updated": "Resultados actualizados",
+      "upToDate": "Actualizado",
+      "alreadyUpToDate": "Todos los resultados ya están actualizados",
+      "checkFailed": "No se pudieron comprobar los resultados"
+    }
+  },
+  "filtered": {
+    "title": "Predicciones",
+    "noResults": "No se encontraron resultados"
+  },
+  "injuries": {
+    "none": "Sin jugadores ausentes"
   }
 }
