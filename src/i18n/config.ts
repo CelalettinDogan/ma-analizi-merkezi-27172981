@@ -147,7 +147,7 @@ i18n
     fallbackLng: FALLBACK_LANGUAGE,
     supportedLngs: SUPPORTED_LANGUAGES.map((l) => l.code),
     defaultNS: 'common',
-    ns: ['common', 'auth', 'home', 'analysis', 'premium', 'profile', 'predictions'],
+    ns: ['common', 'auth', 'home', 'analysis', 'premium', 'profile', 'predictions', 'chat'],
     interpolation: { escapeValue: false },
     react: { useSuspense: false },
   });
