@@ -346,11 +346,11 @@ const Chat: React.FC = () => {
           onSend={handleSendMessage}
           isLoading={chatLoading}
           disabled={!canChat}
-          disabledReason={isLimitReached ? "Günlük limitiniz doldu" : undefined}
+          disabledReason={isLimitReached ? t('context.limitReached') : undefined}
           placeholder={
             matchContext
-              ? `${matchContext.homeTeam} vs ${matchContext.awayTeam} hakkında sorun...`
-              : "Futbol hakkında bir şeyler sorun..."
+              ? t('input.matchPlaceholder', { home: matchContext.homeTeam, away: matchContext.awayTeam })
+              : t('input.placeholder')
           }
           maxLength={500}
         />
