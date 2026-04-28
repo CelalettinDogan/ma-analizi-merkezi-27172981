@@ -39,6 +39,7 @@ export interface CachedStanding {
 }
 
 const StandingsPage: React.FC = () => {
+  const { t } = useTranslation('common');
   const [selectedLeague, setSelectedLeague] = useState<CompetitionCode>('PL');
   const [standings, setStandings] = useState<CachedStanding[]>([]);
   const [competitionName, setCompetitionName] = useState<string>('');
