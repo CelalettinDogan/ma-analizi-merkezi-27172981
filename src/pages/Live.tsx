@@ -192,18 +192,18 @@ const LivePage: React.FC = () => {
 
   const handleCommandTeamSelect = async (teamName: string, leagueCode: string) => {
     setCommandOpen(false);
-    toast.info(`${teamName} için maç aranıyor...`);
+    toast.info(t('live.searchingTeam', { team: teamName }));
     try {
       const nextMatch = await getTeamNextMatch(teamName);
       if (nextMatch) {
         navigate('/', { state: { selectedMatch: nextMatch } });
       } else {
-        toast.warning(`${teamName} için yaklaşan maç bulunamadı.`);
+        toast.warning(t('live.noUpcomingForTeam', { team: teamName }));
         navigate('/');
       }
     } catch (error) {
       console.error('Team match search error:', error);
-      toast.error('Maç aranırken hata oluştu');
+      toast.error(t('live.searchError'));
     }
   };
 
