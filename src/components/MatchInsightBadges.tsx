@@ -1,5 +1,6 @@
 import React from 'react';
 import { Flame, Snowflake, Swords, Trophy, TrendingUp, TrendingDown, Shield, Zap } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 export interface MatchInsights {
@@ -33,20 +34,23 @@ const badgeStyles: Record<string, string> = {
   attack: 'bg-gradient-to-r from-green-500/20 to-yellow-500/20 text-green-400 border-green-500/30',
 };
 
-const Badge: React.FC<BadgeProps> = ({ icon, label, variant, team }) => (
-  <div 
-    className={cn(
-      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border backdrop-blur-sm transition-all hover:scale-105',
-      badgeStyles[variant]
-    )}
-  >
-    {icon}
-    <span>{label}</span>
-    {team && (
-      <span className="opacity-60 text-micro">({team === 'home' ? 'Ev' : 'Dep'})</span>
-    )}
-  </div>
-);
+const Badge: React.FC<BadgeProps> = ({ icon, label, variant, team }) => {
+  const { t } = useTranslation('home');
+  return (
+    <div 
+      className={cn(
+        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border backdrop-blur-sm transition-all hover:scale-105',
+        badgeStyles[variant]
+      )}
+    >
+      {icon}
+      <span>{label}</span>
+      {team && (
+        <span className="opacity-60 text-micro">({team === 'home' ? t('insights.team.home') : t('insights.team.away')})</span>
+      )}
+    </div>
+  );
+};
 
 interface MatchInsightBadgesProps {
   insights: MatchInsights;
@@ -54,173 +58,84 @@ interface MatchInsightBadgesProps {
 }
 
 const MatchInsightBadges: React.FC<MatchInsightBadgesProps> = ({ insights, compact = false }) => {
+  const { t } = useTranslation('home');
   const badges: React.ReactNode[] = [];
 
-  // Derby badge
   if (insights.isDerby) {
     badges.push(
-      <Badge 
-        key="derby" 
-        icon={<Swords className="w-3.5 h-3.5" />} 
-        label="Derbi" 
-        variant="derby" 
-      />
+      <Badge key="derby" icon={<Swords className="w-3.5 h-3.5" />} label={t('insights.derby')} variant="derby" />
     );
   }
 
-  // Critical match badge
   if (insights.matchImportance === 'critical') {
     badges.push(
-      <Badge 
-        key="critical" 
-        icon={<Trophy className="w-3.5 h-3.5" />} 
-        label="Kritik Maç" 
-        variant="critical" 
-      />
+      <Badge key="critical" icon={<Trophy className="w-3.5 h-3.5" />} label={t('insights.criticalMatch')} variant="critical" />
     );
   }
 
-  // Hot form badges (form score > 80)
   if (insights.homeFormScore && insights.homeFormScore > 80) {
     badges.push(
-      <Badge 
-        key="home-hot" 
-        icon={<Flame className="w-3.5 h-3.5" />} 
-        label="Sıcak Form" 
-        variant="fire" 
-        team="home"
-      />
+      <Badge key="home-hot" icon={<Flame className="w-3.5 h-3.5" />} label={t('insights.hotForm')} variant="fire" team="home" />
     );
   }
   if (insights.awayFormScore && insights.awayFormScore > 80) {
     badges.push(
-      <Badge 
-        key="away-hot" 
-        icon={<Flame className="w-3.5 h-3.5" />} 
-        label="Sıcak Form" 
-        variant="fire" 
-        team="away"
-      />
+      <Badge key="away-hot" icon={<Flame className="w-3.5 h-3.5" />} label={t('insights.hotForm')} variant="fire" team="away" />
     );
   }
 
-  // Cold form badges (form score < 30)
   if (insights.homeFormScore && insights.homeFormScore < 30) {
     badges.push(
-      <Badge 
-        key="home-cold" 
-        icon={<Snowflake className="w-3.5 h-3.5" />} 
-        label="Soğuk Form" 
-        variant="ice" 
-        team="home"
-      />
+      <Badge key="home-cold" icon={<Snowflake className="w-3.5 h-3.5" />} label={t('insights.coldForm')} variant="ice" team="home" />
     );
   }
   if (insights.awayFormScore && insights.awayFormScore < 30) {
     badges.push(
-      <Badge 
-        key="away-cold" 
-        icon={<Snowflake className="w-3.5 h-3.5" />} 
-        label="Soğuk Form" 
-        variant="ice" 
-        team="away"
-      />
+      <Badge key="away-cold" icon={<Snowflake className="w-3.5 h-3.5" />} label={t('insights.coldForm')} variant="ice" team="away" />
     );
   }
 
-  // Rising momentum (momentum > 20)
   if (insights.homeMomentum && insights.homeMomentum > 20) {
     badges.push(
-      <Badge 
-        key="home-rising" 
-        icon={<TrendingUp className="w-3.5 h-3.5" />} 
-        label="Yükselişte" 
-        variant="rising" 
-        team="home"
-      />
+      <Badge key="home-rising" icon={<TrendingUp className="w-3.5 h-3.5" />} label={t('insights.rising')} variant="rising" team="home" />
     );
   }
   if (insights.awayMomentum && insights.awayMomentum > 20) {
     badges.push(
-      <Badge 
-        key="away-rising" 
-        icon={<TrendingUp className="w-3.5 h-3.5" />} 
-        label="Yükselişte" 
-        variant="rising" 
-        team="away"
-      />
+      <Badge key="away-rising" icon={<TrendingUp className="w-3.5 h-3.5" />} label={t('insights.rising')} variant="rising" team="away" />
     );
   }
 
-  // Falling momentum (momentum < -20)
   if (insights.homeMomentum && insights.homeMomentum < -20) {
     badges.push(
-      <Badge 
-        key="home-falling" 
-        icon={<TrendingDown className="w-3.5 h-3.5" />} 
-        label="Düşüşte" 
-        variant="falling" 
-        team="home"
-      />
+      <Badge key="home-falling" icon={<TrendingDown className="w-3.5 h-3.5" />} label={t('insights.falling')} variant="falling" team="home" />
     );
   }
   if (insights.awayMomentum && insights.awayMomentum < -20) {
     badges.push(
-      <Badge 
-        key="away-falling" 
-        icon={<TrendingDown className="w-3.5 h-3.5" />} 
-        label="Düşüşte" 
-        variant="falling" 
-        team="away"
-      />
+      <Badge key="away-falling" icon={<TrendingDown className="w-3.5 h-3.5" />} label={t('insights.falling')} variant="falling" team="away" />
     );
   }
 
-  // Defense master (clean sheet ratio > 40%)
   if (insights.homeCleanSheetRatio && insights.homeCleanSheetRatio > 40) {
     badges.push(
-      <Badge 
-        key="home-defense" 
-        icon={<Shield className="w-3.5 h-3.5" />} 
-        label="Savunma Ustası" 
-        variant="defense" 
-        team="home"
-      />
+      <Badge key="home-defense" icon={<Shield className="w-3.5 h-3.5" />} label={t('insights.defenseMaster')} variant="defense" team="home" />
     );
   }
   if (insights.awayCleanSheetRatio && insights.awayCleanSheetRatio > 40) {
     badges.push(
-      <Badge 
-        key="away-defense" 
-        icon={<Shield className="w-3.5 h-3.5" />} 
-        label="Savunma Ustası" 
-        variant="defense" 
-        team="away"
-      />
+      <Badge key="away-defense" icon={<Shield className="w-3.5 h-3.5" />} label={t('insights.defenseMaster')} variant="defense" team="away" />
     );
   }
 
-  // Goal machine (attack index > 130)
   if (insights.homeAttackIndex && insights.homeAttackIndex > 130) {
     badges.push(
-      <Badge 
-        key="home-attack" 
-        icon={<Zap className="w-3.5 h-3.5" />} 
-        label="Gol Makinesi" 
-        variant="attack" 
-        team="home"
-      />
+      <Badge key="home-attack" icon={<Zap className="w-3.5 h-3.5" />} label={t('insights.goalMachine')} variant="attack" team="home" />
     );
   }
   if (insights.awayAttackIndex && insights.awayAttackIndex > 130) {
     badges.push(
-      <Badge 
-        key="away-attack" 
-        icon={<Zap className="w-3.5 h-3.5" />} 
-        label="Gol Makinesi" 
-        variant="attack" 
-        team="away"
-      />
+      <Badge key="away-attack" icon={<Zap className="w-3.5 h-3.5" />} label={t('insights.goalMachine')} variant="attack" team="away" />
     );
   }
 
@@ -233,7 +148,7 @@ const MatchInsightBadges: React.FC<MatchInsightBadgesProps> = ({ insights, compa
       {displayBadges}
       {compact && badges.length > 3 && (
         <span className="text-xs text-muted-foreground self-center">
-          +{badges.length - 3} daha
+          {t('insights.more', { count: badges.length - 3 })}
         </span>
       )}
     </div>
