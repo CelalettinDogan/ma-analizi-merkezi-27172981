@@ -288,7 +288,7 @@ const Chat: React.FC = () => {
                   className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Sohbeti Temizle
+                  {t('actions.clear')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
