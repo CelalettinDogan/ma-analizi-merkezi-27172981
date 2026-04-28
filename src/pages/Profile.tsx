@@ -33,7 +33,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 }
 };
 
-const DATE_LOCALES: Record<string, Locale> = { tr, en: enUS, de, es, ar };
+const DATE_LOCALES: Record<string, typeof tr> = { tr, en: enUS, de, es, ar };
 
 const Profile = () => {
   const navigate = useNavigate();
