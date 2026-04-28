@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   LineChart,
   Line,
@@ -26,7 +27,8 @@ const TrendAnalysisChart: React.FC<TrendAnalysisChartProps> = ({
   homeStats,
   awayStats,
 }) => {
-  // Convert form to points trend
+  const { t } = useTranslation('analysis');
+
   const formToPoints = (result: string) => {
     switch (result) {
       case 'W': return 3;
@@ -36,26 +38,19 @@ const TrendAnalysisChart: React.FC<TrendAnalysisChartProps> = ({
     }
   };
 
-  // Calculate cumulative points
   const buildTrendData = (homeForm: string[], awayForm: string[]) => {
     const maxLength = Math.max(homeForm.length, awayForm.length);
     let homeCumulative = 0;
     let awayCumulative = 0;
-    
+
     return Array.from({ length: maxLength }, (_, i) => {
-      if (homeForm[i]) {
-        homeCumulative += formToPoints(homeForm[i]);
-      }
-      if (awayForm[i]) {
-        awayCumulative += formToPoints(awayForm[i]);
-      }
-      
+      if (homeForm[i]) homeCumulative += formToPoints(homeForm[i]);
+      if (awayForm[i]) awayCumulative += formToPoints(awayForm[i]);
+
       return {
-        match: `Maç ${i + 1}`,
+        match: t('charts.matchN', { n: i + 1 }),
         [homeTeam]: homeCumulative,
         [awayTeam]: awayCumulative,
-        homePoints: homeForm[i] ? formToPoints(homeForm[i]) : null,
-        awayPoints: awayForm[i] ? formToPoints(awayForm[i]) : null,
       };
     });
   };
@@ -65,7 +60,7 @@ const TrendAnalysisChart: React.FC<TrendAnalysisChartProps> = ({
   return (
     <Card className="p-6 bg-card/50 backdrop-blur-sm">
       <h3 className="text-lg font-display font-bold text-foreground mb-4 text-center">
-        Form Trendi (Son 5 Maç)
+        {t('charts.formTrend')}
       </h3>
       <div className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
@@ -88,7 +83,7 @@ const TrendAnalysisChart: React.FC<TrendAnalysisChartProps> = ({
                 color: 'hsl(var(--foreground))',
               }}
               formatter={(value: number, name: string) => [
-                `${value} puan`,
+                t('charts.pointsUnit', { value }),
                 name,
               ]}
             />
@@ -102,7 +97,7 @@ const TrendAnalysisChart: React.FC<TrendAnalysisChartProps> = ({
               stroke="hsl(var(--muted-foreground))"
               strokeDasharray="5 5"
               label={{
-                value: 'Ortalama',
+                value: t('charts.trendAvg'),
                 fill: 'hsl(var(--muted-foreground))',
                 fontSize: 10,
               }}
@@ -128,13 +123,13 @@ const TrendAnalysisChart: React.FC<TrendAnalysisChartProps> = ({
       </div>
       <div className="flex justify-center gap-6 mt-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-win" /> Galibiyet: 3 puan
+          <span className="w-3 h-3 rounded-full bg-win" /> {t('charts.winPoints')}
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-draw" /> Beraberlik: 1 puan
+          <span className="w-3 h-3 rounded-full bg-draw" /> {t('charts.drawPoints')}
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-full bg-loss" /> Mağlubiyet: 0 puan
+          <span className="w-3 h-3 rounded-full bg-loss" /> {t('charts.lossPoints')}
         </span>
       </div>
     </Card>

@@ -1,7 +1,7 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Prediction } from '@/types/match';
 import { Card } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Target, TrendingUp, CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn, getHybridConfidence, getConfidenceLevel } from '@/lib/utils';
 
@@ -10,9 +10,9 @@ interface ConfidenceVisualizerProps {
 }
 
 const ConfidenceVisualizer: React.FC<ConfidenceVisualizerProps> = ({ predictions }) => {
-  const getConfidenceValue = (prediction: Prediction): number => {
-    return getHybridConfidence(prediction);
-  };
+  const { t } = useTranslation('analysis');
+
+  const getConfidenceValue = (prediction: Prediction): number => getHybridConfidence(prediction);
 
   const getConfidenceColor = (level: string) => {
     switch (level) {
@@ -41,10 +41,8 @@ const ConfidenceVisualizer: React.FC<ConfidenceVisualizerProps> = ({ predictions
     }
   };
 
-  // Calculate overall confidence
   const avgConfidence = predictions.reduce((acc, p) => acc + getConfidenceValue(p), 0) / predictions.length;
-  
-  // Count by confidence level using hybrid values
+
   const confidenceCounts = predictions.reduce((acc, p) => {
     const level = getConfidenceLevel(getConfidenceValue(p));
     acc[level] = (acc[level] || 0) + 1;
@@ -59,18 +57,17 @@ const ConfidenceVisualizer: React.FC<ConfidenceVisualizerProps> = ({ predictions
         </div>
         <div>
           <h3 className="text-lg font-display font-bold text-foreground">
-            Güven Skoru Analizi
+            {t('confidence.summaryTitle')}
           </h3>
           <p className="text-sm text-muted-foreground">
-            Tahminlerin güvenilirlik değerlendirmesi
+            {t('confidence.summarySubtitle')}
           </p>
         </div>
       </div>
 
-      {/* Overall Confidence Gauge */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-muted-foreground">Ortalama Güven</span>
+          <span className="text-sm text-muted-foreground">{t('confidence.average')}</span>
           <span className={cn(
             "font-bold text-lg",
             avgConfidence >= 70 ? "text-win" : avgConfidence >= 40 ? "text-draw" : "text-loss"
@@ -79,16 +76,15 @@ const ConfidenceVisualizer: React.FC<ConfidenceVisualizerProps> = ({ predictions
           </span>
         </div>
         <div className="relative h-4 bg-muted rounded-full overflow-hidden">
-          <div 
+          <div
             className={cn(
               "h-full transition-all duration-500 rounded-full",
-              avgConfidence >= 70 ? "bg-gradient-to-r from-win/50 to-win" : 
-              avgConfidence >= 40 ? "bg-gradient-to-r from-draw/50 to-draw" : 
+              avgConfidence >= 70 ? "bg-gradient-to-r from-win/50 to-win" :
+              avgConfidence >= 40 ? "bg-gradient-to-r from-draw/50 to-draw" :
               "bg-gradient-to-r from-loss/50 to-loss"
             )}
             style={{ width: `${avgConfidence}%` }}
           />
-          {/* Markers */}
           <div className="absolute inset-0 flex items-center">
             <div className="w-1/3 border-r border-background/50" />
             <div className="w-1/3 border-r border-background/50" />
@@ -96,31 +92,29 @@ const ConfidenceVisualizer: React.FC<ConfidenceVisualizerProps> = ({ predictions
           </div>
         </div>
         <div className="flex justify-between text-xs text-muted-foreground mt-1">
-          <span>Düşük</span>
-          <span>Orta</span>
-          <span>Yüksek</span>
+          <span>{t('confidence.low')}</span>
+          <span>{t('confidence.medium')}</span>
+          <span>{t('confidence.high')}</span>
         </div>
       </div>
 
-      {/* Confidence Distribution */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="text-center p-3 rounded-lg bg-win/10 border border-win/20">
           <p className="text-2xl font-bold text-win">{confidenceCounts['yüksek'] || 0}</p>
-          <p className="text-xs text-muted-foreground">Yüksek</p>
+          <p className="text-xs text-muted-foreground">{t('confidence.high')}</p>
         </div>
         <div className="text-center p-3 rounded-lg bg-draw/10 border border-draw/20">
           <p className="text-2xl font-bold text-draw">{confidenceCounts['orta'] || 0}</p>
-          <p className="text-xs text-muted-foreground">Orta</p>
+          <p className="text-xs text-muted-foreground">{t('confidence.medium')}</p>
         </div>
         <div className="text-center p-3 rounded-lg bg-loss/10 border border-loss/20">
           <p className="text-2xl font-bold text-loss">{confidenceCounts['düşük'] || 0}</p>
-          <p className="text-xs text-muted-foreground">Düşük</p>
+          <p className="text-xs text-muted-foreground">{t('confidence.low')}</p>
         </div>
       </div>
 
-      {/* Individual Predictions */}
       <div className="space-y-3">
-        <h4 className="text-sm font-medium text-muted-foreground mb-3">Tahmin Detayları</h4>
+        <h4 className="text-sm font-medium text-muted-foreground mb-3">{t('confidence.predictionDetails')}</h4>
         {predictions.map((prediction, index) => {
           const confValue = getConfidenceValue(prediction);
           const confLevel = getConfidenceLevel(confValue);
