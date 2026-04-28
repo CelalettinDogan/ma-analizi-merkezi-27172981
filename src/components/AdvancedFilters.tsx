@@ -104,10 +104,10 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           >
             <div className="flex items-center gap-2">
               <Filter className="w-5 h-5 text-primary" />
-              <span className="font-semibold">Gelişmiş Filtreler</span>
+              <span className="font-semibold">{t('filters.title')}</span>
               {activeFilterCount > 0 && (
                 <Badge variant="secondary" className="ml-2">
-                  {activeFilterCount} aktif
+                  {t('filters.active', { count: activeFilterCount })}
                 </Badge>
               )}
             </div>
@@ -125,12 +125,12 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             <div className="space-y-3">
               <Label className="flex items-center gap-2 text-sm font-medium">
                 <Calendar className="w-4 h-4 text-primary" />
-                Tarih Aralığı
+                {t('filters.dateRange')}
               </Label>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs text-muted-foreground mb-1 block">
-                    Başlangıç
+                    {t('filters.dateFrom')}
                   </Label>
                   <Input
                     type="date"
@@ -141,7 +141,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground mb-1 block">
-                    Bitiş
+                    {t('filters.dateTo')}
                   </Label>
                   <Input
                     type="date"
@@ -158,7 +158,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               <Label className="flex items-center justify-between text-sm font-medium">
                 <span className="flex items-center gap-2">
                   <Target className="w-4 h-4 text-primary" />
-                  Minimum Güven Skoru
+                  {t('filters.minConfidence')}
                 </span>
                 <Badge
                   variant="outline"
@@ -180,10 +180,10 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 className="w-full"
               />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Tümü</span>
-                <span>Düşük</span>
-                <span>Orta</span>
-                <span>Yüksek</span>
+                <span>{t('filters.confidence.labelAll')}</span>
+                <span>{t('filters.confidence.labelLow')}</span>
+                <span>{t('filters.confidence.labelMedium')}</span>
+                <span>{t('filters.confidence.labelHigh')}</span>
               </div>
             </div>
 
@@ -191,10 +191,10 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             <div className="space-y-3">
               <Label className="flex items-center gap-2 text-sm font-medium">
                 <Target className="w-4 h-4 text-primary" />
-                Bahis Tipleri
+                {t('filters.betTypes')}
               </Label>
               <div className="flex flex-wrap gap-2">
-                {availableBetTypes.map((type) => (
+                {types.map((type) => (
                   <Badge
                     key={type}
                     variant={filters.betTypes.includes(type) ? 'default' : 'outline'}
@@ -215,7 +215,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               </div>
               {filters.betTypes.length > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  {filters.betTypes.length} tip seçili
+                  {t('filters.selectedCount', { count: filters.betTypes.length })}
                 </p>
               )}
             </div>
