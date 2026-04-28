@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { TrendingUp, TrendingDown, Target } from 'lucide-react';
 
@@ -36,6 +37,7 @@ const ScorePredictionChart: React.FC<ScorePredictionChartProps> = ({
   expectedAwayGoals,
   bttsHybridConfidence,
 }) => {
+  const { t } = useTranslation('analysis');
   // Create 6x6 grid (0-5 goals each)
   const maxGoals = 5;
   const grid: number[][] = Array(maxGoals + 1).fill(null).map(() => Array(maxGoals + 1).fill(0));
@@ -75,21 +77,21 @@ const ScorePredictionChart: React.FC<ScorePredictionChartProps> = ({
               <Target className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <div className="text-sm text-muted-foreground">Beklenen Gol</div>
+              <div className="text-sm text-muted-foreground">{t('score.expectedGoals')}</div>
               <div className="text-lg font-bold text-foreground">
                 {expectedHomeGoals.toFixed(2)} - {expectedAwayGoals.toFixed(2)}
               </div>
             </div>
           </div>
           <div className="text-sm text-muted-foreground">
-            Toplam: <span className="font-semibold text-foreground">{(expectedHomeGoals + expectedAwayGoals).toFixed(2)}</span>
+            {t('score.total')}: <span className="font-semibold text-foreground">{(expectedHomeGoals + expectedAwayGoals).toFixed(2)}</span>
           </div>
         </div>
       )}
 
       {/* Mobile: Top 5 Scores List */}
       <div className="md:hidden">
-        <h4 className="text-sm font-medium text-muted-foreground mb-3">En Olası Skorlar</h4>
+        <h4 className="text-sm font-medium text-muted-foreground mb-3">{t('score.topScores')}</h4>
         <div className="space-y-2">
           {topScores.map((score, index) => (
             <div 
@@ -139,11 +141,11 @@ const ScorePredictionChart: React.FC<ScorePredictionChartProps> = ({
 
       {/* Desktop: Score Heatmap */}
       <div className="hidden md:block">
-        <h4 className="text-sm font-medium text-muted-foreground mb-3">Skor Olasılık Haritası</h4>
+        <h4 className="text-sm font-medium text-muted-foreground mb-3">{t('score.scoreMap')}</h4>
         <div className="relative overflow-x-auto">
           {/* Away goals label */}
           <div className="absolute -left-6 top-1/2 -translate-y-1/2 -rotate-90 text-xs text-muted-foreground whitespace-nowrap">
-            Deplasman
+            {t('score.away')}
           </div>
           
           <div className="ml-6">
@@ -180,7 +182,7 @@ const ScorePredictionChart: React.FC<ScorePredictionChartProps> = ({
             
             {/* Home goals label */}
             <div className="text-center text-xs text-muted-foreground mt-2 ml-8">
-              Ev Sahibi
+              {t('score.home')}
             </div>
           </div>
         </div>
@@ -214,7 +216,7 @@ const ScorePredictionChart: React.FC<ScorePredictionChartProps> = ({
       {/* Goal Line Probabilities - Vertical on mobile */}
       {goalLineProbabilities && (
         <div>
-          <h4 className="text-sm font-medium text-muted-foreground mb-3">Gol Çizgileri</h4>
+          <h4 className="text-sm font-medium text-muted-foreground mb-3">{t('score.goalLines')}</h4>
           <div className="space-y-3">
             {[
               { label: '1.5', under: goalLineProbabilities.under15, over: goalLineProbabilities.over15 },
@@ -251,11 +253,11 @@ const ScorePredictionChart: React.FC<ScorePredictionChartProps> = ({
           <div className="flex justify-center gap-6 mt-3 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded bg-muted/50" />
-              <span>Alt</span>
+              <span>{t('score.under')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded bg-primary/50" />
-              <span>Üst</span>
+              <span>{t('score.over')}</span>
             </div>
           </div>
         </div>
@@ -268,7 +270,7 @@ const ScorePredictionChart: React.FC<ScorePredictionChartProps> = ({
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-foreground">
-                Karşılıklı Gol (KG) — <span className="text-muted-foreground">Poisson</span>
+                {t('score.btts')} — <span className="text-muted-foreground">{t('predictions.poisson')}</span>
               </span>
               <span className="text-lg font-bold text-primary">
                 {(bttsProbability * 100).toFixed(0)}%
@@ -287,7 +289,7 @@ const ScorePredictionChart: React.FC<ScorePredictionChartProps> = ({
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-foreground">
-                  Karşılıklı Gol (KG) — <span className="px-1.5 py-0.5 text-xs rounded-full bg-primary/20 text-primary">Hibrit</span>
+                  {t('score.btts')} — <span className="px-1.5 py-0.5 text-xs rounded-full bg-primary/20 text-primary">{t('predictions.hybrid')}</span>
                 </span>
                 <span className="text-lg font-bold text-primary">
                   {Math.round(bttsHybridConfidence)}%
