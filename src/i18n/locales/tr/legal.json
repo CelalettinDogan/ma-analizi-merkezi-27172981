@@ -1,0 +1,132 @@
+{
+  "privacy": {
+    "title": "Gizlilik Politikası",
+    "lastUpdate": "Son güncelleme: 25 Ocak 2026",
+    "sections": {
+      "collection": {
+        "title": "1. Veri Toplama",
+        "intro": "GolMetrik AI olarak, kullanıcı deneyimini iyileştirmek için aşağıdaki verileri topluyoruz:",
+        "items": [
+          "**Hesap Bilgileri:** E-posta adresi ve şifre (şifrelenmiş olarak saklanır)",
+          "**Kullanım Verileri:** Uygulama kullanım istatistikleri, analiz geçmişi",
+          "**Cihaz Bilgileri:** Cihaz türü, işletim sistemi versiyonu",
+          "**Ödeme Bilgileri:** Google Play üzerinden işlenir, biz saklamayız"
+        ]
+      },
+      "use": {
+        "title": "2. Veri Kullanımı",
+        "intro": "Topladığımız verileri aşağıdaki amaçlarla kullanıyoruz:",
+        "items": [
+          "Hesap yönetimi ve kimlik doğrulama",
+          "Kişiselleştirilmiş analiz önerileri sunma",
+          "Uygulama performansını iyileştirme",
+          "Teknik sorunları tespit etme ve çözme"
+        ]
+      },
+      "security": {
+        "title": "3. Veri Güvenliği",
+        "intro": "Verilerinizi korumak için endüstri standardı güvenlik önlemleri kullanıyoruz:",
+        "items": [
+          "SSL/TLS şifreleme ile güvenli veri iletimi",
+          "Şifrelerin güvenli hash algoritmaları ile saklanması",
+          "Düzenli güvenlik denetimleri",
+          "Erişim kontrolü ve yetkilendirme"
+        ]
+      },
+      "sharing": {
+        "title": "4. Veri Paylaşımı",
+        "intro": "Kişisel verilerinizi üçüncü taraflarla paylaşmıyoruz, ancak aşağıdaki durumlar hariç:",
+        "items": [
+          "Yasal zorunluluklar (mahkeme kararı, resmi talep)",
+          "Hizmet sağlayıcılar (altyapı, analitik - anonim veriler)",
+          "Kullanıcının açık onayı"
+        ]
+      },
+      "rights": {
+        "title": "5. Kullanıcı Hakları (KVKK)",
+        "intro": "6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında aşağıdaki haklara sahipsiniz:",
+        "items": [
+          "Kişisel verilerinizin işlenip işlenmediğini öğrenme",
+          "Kişisel verilerinize erişim talep etme",
+          "Yanlış verilerin düzeltilmesini isteme",
+          "Verilerinizin silinmesini talep etme",
+          "Verilerinizin üçüncü kişilere aktarımına itiraz etme"
+        ]
+      },
+      "cookies": {
+        "title": "6. Çerezler",
+        "body": "Uygulamamız oturum yönetimi için gerekli çerezleri kullanır. Bu çerezler, uygulamanın düzgün çalışması için zorunludur."
+      },
+      "children": {
+        "title": "7. Çocukların Gizliliği",
+        "body": "Uygulamamız 13 yaşın altındaki çocuklara yönelik değildir. Bilerek 13 yaşın altındaki kişilerden kişisel veri toplamıyoruz."
+      },
+      "changes": {
+        "title": "8. Değişiklikler",
+        "body": "Bu gizlilik politikasını zaman zaman güncelleyebiliriz. Önemli değişiklikleri uygulama içi bildirimlerle duyuracağız."
+      },
+      "contact": {
+        "title": "9. İletişim",
+        "body": "Gizlilik ile ilgili sorularınız için {{email}} adresinden bize ulaşabilirsiniz."
+      },
+      "deletion": {
+        "title": "10. Hesap ve Veri Silme",
+        "intro": "Hesabınızı ve tüm ilişkili verilerinizi silmek istiyorsanız aşağıdaki yöntemlerden birini kullanabilirsiniz:",
+        "method1Title": "Yöntem 1 - Uygulama İçi:",
+        "method1Body": "Profil → Ayarlar → Hesabı Sil",
+        "method2Title": "Yöntem 2 - Web:",
+        "method2LinkText": "Hesap Silme Talebi",
+        "method2Suffix": "sayfasından işlem yapabilirsiniz.",
+        "includesTitle": "Silme işlemi şunları kapsar:",
+        "includes": [
+          "Profil bilgileriniz",
+          "Analiz geçmişiniz",
+          "Chat geçmişiniz",
+          "Premium abonelik kayıtlarınız",
+          "Tüm kullanım verileri"
+        ],
+        "note": "Not: Premium aboneliğiniz varsa, önce Google Play Store'dan iptal etmenizi öneririz."
+      }
+    }
+  },
+  "terms": {
+    "title": "Kullanım Şartları",
+    "lastUpdate": "Son güncelleme: 25 Ocak 2026",
+    "sections": {
+      "service": {
+        "title": "1. Hizmet Tanımı",
+        "body": "GolMetrik AI, futbol maçları için istatistiksel analizler ve tahminler sunan bir bilgilendirme platformudur. Uygulamamız, yapay zeka ve makine öğrenimi teknolojilerini kullanarak maç istatistiklerini analiz eder."
+      },
+      "conditions": {
+        "title": "2. Kullanım Koşulları",
+        "intro": "Bu uygulamayı kullanarak aşağıdaki koşulları kabul etmiş olursunuz:",
+        "items": [
+          "Uygulamayı yalnızca yasal amaçlarla kullanacaksınız.",
+          "Sunulan analizler bilgilendirme amaçlıdır ve yatırım tavsiyesi değildir.",
+          "Hesabınızın güvenliğinden siz sorumlusunuz.",
+          "Uygulamayı kötüye kullanmayacak veya tersine mühendislik yapmayacaksınız."
+        ]
+      },
+      "disclaimer": {
+        "title": "3. Sorumluluk Reddi",
+        "body": "GolMetrik AI, sunulan analizlerin doğruluğunu garanti etmez. Tüm tahminler istatistiksel modellere dayanmaktadır ve gerçek sonuçlar farklılık gösterebilir. Kullanıcılar, kendi kararlarından tamamen kendileri sorumludur."
+      },
+      "premium": {
+        "title": "4. Premium Üyelik",
+        "body": "Premium üyelik satın alarak ek özelliklere erişim sağlarsınız. Abonelikler otomatik olarak yenilenir ve iptal işlemleri Google Play hesabınız üzerinden yapılmalıdır."
+      },
+      "ip": {
+        "title": "5. Fikri Mülkiyet",
+        "body": "Uygulama içeriği, tasarımı ve tüm materyaller GolMetrik AI'a aittir. İzinsiz kopyalama, dağıtım veya değiştirme yasaktır."
+      },
+      "changes": {
+        "title": "6. Değişiklikler",
+        "body": "Bu kullanım şartlarını herhangi bir zamanda değiştirme hakkımızı saklı tutarız. Önemli değişiklikler uygulama içi bildirimlerle duyurulacaktır."
+      },
+      "contact": {
+        "title": "7. İletişim",
+        "body": "Sorularınız için {{email}} adresinden bize ulaşabilirsiniz."
+      }
+    }
+  }
+}

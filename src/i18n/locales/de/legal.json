@@ -1,0 +1,132 @@
+{
+  "privacy": {
+    "title": "Datenschutzerklärung",
+    "lastUpdate": "Letzte Aktualisierung: 25. Januar 2026",
+    "sections": {
+      "collection": {
+        "title": "1. Datenerhebung",
+        "intro": "Bei GolMetrik AI erheben wir die folgenden Daten, um das Nutzererlebnis zu verbessern:",
+        "items": [
+          "**Kontoinformationen:** E-Mail-Adresse und Passwort (verschlüsselt gespeichert)",
+          "**Nutzungsdaten:** App-Nutzungsstatistiken, Analyseverlauf",
+          "**Geräteinformationen:** Gerätetyp, Betriebssystemversion",
+          "**Zahlungsinformationen:** Werden über Google Play verarbeitet, nicht von uns gespeichert"
+        ]
+      },
+      "use": {
+        "title": "2. Datennutzung",
+        "intro": "Wir verwenden die erhobenen Daten für folgende Zwecke:",
+        "items": [
+          "Kontoverwaltung und Authentifizierung",
+          "Bereitstellung personalisierter Analyseempfehlungen",
+          "Verbesserung der App-Leistung",
+          "Erkennung und Behebung technischer Probleme"
+        ]
+      },
+      "security": {
+        "title": "3. Datensicherheit",
+        "intro": "Wir verwenden branchenübliche Sicherheitsmaßnahmen, um Ihre Daten zu schützen:",
+        "items": [
+          "Sichere Datenübertragung mit SSL/TLS-Verschlüsselung",
+          "Speicherung von Passwörtern mit sicheren Hash-Algorithmen",
+          "Regelmäßige Sicherheitsaudits",
+          "Zugriffskontrolle und Autorisierung"
+        ]
+      },
+      "sharing": {
+        "title": "4. Datenweitergabe",
+        "intro": "Wir geben Ihre personenbezogenen Daten nicht an Dritte weiter, außer in folgenden Fällen:",
+        "items": [
+          "Gesetzliche Verpflichtungen (Gerichtsbeschluss, behördliche Anfrage)",
+          "Dienstleister (Infrastruktur, Analyse — anonymisierte Daten)",
+          "Ausdrückliche Einwilligung des Nutzers"
+        ]
+      },
+      "rights": {
+        "title": "5. Nutzerrechte (DSGVO)",
+        "intro": "Gemäß den Datenschutzgesetzen haben Sie folgende Rechte:",
+        "items": [
+          "Erfahren, ob Ihre personenbezogenen Daten verarbeitet werden",
+          "Zugriff auf Ihre personenbezogenen Daten verlangen",
+          "Berichtigung unrichtiger Daten verlangen",
+          "Löschung Ihrer Daten verlangen",
+          "Der Übermittlung Ihrer Daten an Dritte widersprechen"
+        ]
+      },
+      "cookies": {
+        "title": "6. Cookies",
+        "body": "Unsere App verwendet für die Sitzungsverwaltung erforderliche Cookies. Diese Cookies sind für den ordnungsgemäßen Betrieb der App unerlässlich."
+      },
+      "children": {
+        "title": "7. Datenschutz für Kinder",
+        "body": "Unsere App richtet sich nicht an Kinder unter 13 Jahren. Wir erheben wissentlich keine personenbezogenen Daten von Personen unter 13 Jahren."
+      },
+      "changes": {
+        "title": "8. Änderungen",
+        "body": "Wir können diese Datenschutzerklärung von Zeit zu Zeit aktualisieren. Wichtige Änderungen werden wir über In-App-Benachrichtigungen ankündigen."
+      },
+      "contact": {
+        "title": "9. Kontakt",
+        "body": "Bei Fragen zum Datenschutz erreichen Sie uns unter {{email}}."
+      },
+      "deletion": {
+        "title": "10. Konto- und Datenlöschung",
+        "intro": "Wenn Sie Ihr Konto und alle zugehörigen Daten löschen möchten, können Sie eine der folgenden Methoden verwenden:",
+        "method1Title": "Methode 1 — In der App:",
+        "method1Body": "Profil → Einstellungen → Konto löschen",
+        "method2Title": "Methode 2 — Web:",
+        "method2LinkText": "Antrag auf Kontolöschung",
+        "method2Suffix": "Sie können den Antrag auf dieser Seite stellen.",
+        "includesTitle": "Die Löschung umfasst:",
+        "includes": [
+          "Ihre Profilinformationen",
+          "Ihren Analyseverlauf",
+          "Ihren Chatverlauf",
+          "Ihre Premium-Abonnementdaten",
+          "Alle Nutzungsdaten"
+        ],
+        "note": "Hinweis: Wenn Sie ein Premium-Abonnement haben, empfehlen wir, dieses zuerst über den Google Play Store zu kündigen."
+      }
+    }
+  },
+  "terms": {
+    "title": "Nutzungsbedingungen",
+    "lastUpdate": "Letzte Aktualisierung: 25. Januar 2026",
+    "sections": {
+      "service": {
+        "title": "1. Dienstbeschreibung",
+        "body": "GolMetrik AI ist eine Informationsplattform, die statistische Analysen und Vorhersagen für Fußballspiele bietet. Unsere App nutzt Künstliche-Intelligenz- und Machine-Learning-Technologien zur Analyse von Spielstatistiken."
+      },
+      "conditions": {
+        "title": "2. Nutzungsbedingungen",
+        "intro": "Durch die Nutzung dieser App akzeptieren Sie folgende Bedingungen:",
+        "items": [
+          "Sie werden die App ausschließlich zu rechtmäßigen Zwecken nutzen.",
+          "Die bereitgestellten Analysen dienen nur zur Information und stellen keine Anlageberatung dar.",
+          "Sie sind für die Sicherheit Ihres Kontos verantwortlich.",
+          "Sie werden die App nicht missbrauchen oder Reverse Engineering betreiben."
+        ]
+      },
+      "disclaimer": {
+        "title": "3. Haftungsausschluss",
+        "body": "GolMetrik AI garantiert nicht die Richtigkeit der bereitgestellten Analysen. Alle Vorhersagen basieren auf statistischen Modellen und tatsächliche Ergebnisse können abweichen. Die Nutzer sind vollständig selbst für ihre Entscheidungen verantwortlich."
+      },
+      "premium": {
+        "title": "4. Premium-Mitgliedschaft",
+        "body": "Mit dem Kauf einer Premium-Mitgliedschaft erhalten Sie Zugriff auf zusätzliche Funktionen. Abonnements verlängern sich automatisch und Kündigungen müssen über Ihr Google-Play-Konto vorgenommen werden."
+      },
+      "ip": {
+        "title": "5. Geistiges Eigentum",
+        "body": "App-Inhalte, Design und alle Materialien gehören GolMetrik AI. Unbefugtes Kopieren, Verteilen oder Ändern ist untersagt."
+      },
+      "changes": {
+        "title": "6. Änderungen",
+        "body": "Wir behalten uns das Recht vor, diese Nutzungsbedingungen jederzeit zu ändern. Wichtige Änderungen werden über In-App-Benachrichtigungen angekündigt."
+      },
+      "contact": {
+        "title": "7. Kontakt",
+        "body": "Bei Fragen erreichen Sie uns unter {{email}}."
+      }
+    }
+  }
+}

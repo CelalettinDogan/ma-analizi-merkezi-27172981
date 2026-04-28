@@ -1,0 +1,132 @@
+{
+  "privacy": {
+    "title": "Política de Privacidad",
+    "lastUpdate": "Última actualización: 25 de enero de 2026",
+    "sections": {
+      "collection": {
+        "title": "1. Recopilación de Datos",
+        "intro": "En GolMetrik AI recopilamos los siguientes datos para mejorar la experiencia del usuario:",
+        "items": [
+          "**Información de la cuenta:** Correo electrónico y contraseña (almacenada cifrada)",
+          "**Datos de uso:** Estadísticas de uso de la app, historial de análisis",
+          "**Información del dispositivo:** Tipo de dispositivo, versión del sistema operativo",
+          "**Información de pago:** Procesada a través de Google Play, no la almacenamos"
+        ]
+      },
+      "use": {
+        "title": "2. Uso de Datos",
+        "intro": "Utilizamos los datos recopilados para los siguientes fines:",
+        "items": [
+          "Gestión de cuenta y autenticación",
+          "Ofrecer recomendaciones de análisis personalizadas",
+          "Mejorar el rendimiento de la app",
+          "Detectar y resolver problemas técnicos"
+        ]
+      },
+      "security": {
+        "title": "3. Seguridad de los Datos",
+        "intro": "Utilizamos medidas de seguridad estándar de la industria para proteger sus datos:",
+        "items": [
+          "Transmisión segura de datos con cifrado SSL/TLS",
+          "Almacenamiento de contraseñas con algoritmos hash seguros",
+          "Auditorías de seguridad periódicas",
+          "Control de acceso y autorización"
+        ]
+      },
+      "sharing": {
+        "title": "4. Compartición de Datos",
+        "intro": "No compartimos sus datos personales con terceros, excepto en los siguientes casos:",
+        "items": [
+          "Obligaciones legales (orden judicial, solicitud oficial)",
+          "Proveedores de servicios (infraestructura, analítica — datos anónimos)",
+          "Consentimiento explícito del usuario"
+        ]
+      },
+      "rights": {
+        "title": "5. Derechos del Usuario (RGPD)",
+        "intro": "Conforme a las leyes de protección de datos, usted tiene los siguientes derechos:",
+        "items": [
+          "Saber si se están procesando sus datos personales",
+          "Solicitar acceso a sus datos personales",
+          "Solicitar la rectificación de datos incorrectos",
+          "Solicitar la eliminación de sus datos",
+          "Oponerse a la transferencia de sus datos a terceros"
+        ]
+      },
+      "cookies": {
+        "title": "6. Cookies",
+        "body": "Nuestra aplicación utiliza cookies necesarias para la gestión de sesiones. Estas cookies son esenciales para el correcto funcionamiento de la app."
+      },
+      "children": {
+        "title": "7. Privacidad de los Menores",
+        "body": "Nuestra app no está dirigida a menores de 13 años. No recopilamos a sabiendas datos personales de personas menores de 13 años."
+      },
+      "changes": {
+        "title": "8. Cambios",
+        "body": "Podemos actualizar esta política de privacidad de vez en cuando. Anunciaremos los cambios importantes mediante notificaciones dentro de la app."
+      },
+      "contact": {
+        "title": "9. Contacto",
+        "body": "Para preguntas relacionadas con la privacidad, puede contactarnos en {{email}}."
+      },
+      "deletion": {
+        "title": "10. Eliminación de Cuenta y Datos",
+        "intro": "Si desea eliminar su cuenta y todos los datos asociados, puede utilizar uno de los siguientes métodos:",
+        "method1Title": "Método 1 — Dentro de la App:",
+        "method1Body": "Perfil → Configuración → Eliminar cuenta",
+        "method2Title": "Método 2 — Web:",
+        "method2LinkText": "Solicitud de Eliminación de Cuenta",
+        "method2Suffix": "puede realizar la solicitud desde esta página.",
+        "includesTitle": "La eliminación incluye:",
+        "includes": [
+          "Su información de perfil",
+          "Su historial de análisis",
+          "Su historial de chat",
+          "Sus registros de suscripción Premium",
+          "Todos los datos de uso"
+        ],
+        "note": "Nota: Si tiene una suscripción Premium, le recomendamos cancelarla primero a través de Google Play Store."
+      }
+    }
+  },
+  "terms": {
+    "title": "Términos de Uso",
+    "lastUpdate": "Última actualización: 25 de enero de 2026",
+    "sections": {
+      "service": {
+        "title": "1. Descripción del Servicio",
+        "body": "GolMetrik AI es una plataforma informativa que ofrece análisis estadísticos y pronósticos para partidos de fútbol. Nuestra app utiliza tecnologías de inteligencia artificial y aprendizaje automático para analizar estadísticas de partidos."
+      },
+      "conditions": {
+        "title": "2. Condiciones de Uso",
+        "intro": "Al usar esta aplicación, acepta los siguientes términos:",
+        "items": [
+          "Utilizará la app únicamente con fines lícitos.",
+          "Los análisis ofrecidos tienen fines informativos y no constituyen asesoramiento financiero.",
+          "Es responsable de la seguridad de su cuenta.",
+          "No hará un uso indebido de la app ni intentará realizar ingeniería inversa."
+        ]
+      },
+      "disclaimer": {
+        "title": "3. Aviso Legal",
+        "body": "GolMetrik AI no garantiza la exactitud de los análisis ofrecidos. Todos los pronósticos se basan en modelos estadísticos y los resultados reales pueden variar. Los usuarios son totalmente responsables de sus propias decisiones."
+      },
+      "premium": {
+        "title": "4. Membresía Premium",
+        "body": "Al adquirir una membresía Premium, obtiene acceso a funciones adicionales. Las suscripciones se renuevan automáticamente y las cancelaciones deben realizarse a través de su cuenta de Google Play."
+      },
+      "ip": {
+        "title": "5. Propiedad Intelectual",
+        "body": "El contenido, diseño y todos los materiales de la app pertenecen a GolMetrik AI. Está prohibida la copia, distribución o modificación no autorizada."
+      },
+      "changes": {
+        "title": "6. Cambios",
+        "body": "Nos reservamos el derecho de modificar estos términos de uso en cualquier momento. Los cambios importantes se anunciarán mediante notificaciones dentro de la app."
+      },
+      "contact": {
+        "title": "7. Contacto",
+        "body": "Para cualquier consulta, puede contactarnos en {{email}}."
+      }
+    }
+  }
+}
