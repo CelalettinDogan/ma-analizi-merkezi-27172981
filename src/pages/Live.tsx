@@ -244,7 +244,7 @@ const LivePage: React.FC = () => {
           </motion.div>
 
           {/* Subtle delay note */}
-          <p className="text-[10px] text-muted-foreground/50 text-center">Veriler ~15 dk gecikmeli olabilir</p>
+          <p className="text-[10px] text-muted-foreground/50 text-center">{t('live.delayNote')}</p>
 
           {/* Content */}
           {isLoading ? (
