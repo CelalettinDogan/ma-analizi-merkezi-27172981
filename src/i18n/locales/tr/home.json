@@ -1,37 +1,96 @@
 {
   "hero": {
-    "title": "AI Destekli Futbol Tahminleri",
-    "subtitle": "Yapay zeka ve istatistiksel analizlerle maç tahminleri",
-    "cta": "Hemen Başla",
-    "ctaSecondary": "Nasıl Çalışır?"
+    "aiAccuracy": "AI Doğruluk",
+    "analysesSuffix": "+ analiz",
+    "search": "Ara",
+    "searchAria": "Takım veya lig ara",
+    "searchPlaceholder": "Ara...",
+    "tagline": "AI destekli maç analizi"
   },
   "sections": {
     "todaysMatches": "Bugünün Maçları",
-    "upcomingMatches": "Yaklaşan Maçlar",
+    "upcomingMatchesShort": "Yaklaşan Maçlar",
     "liveMatches": "Canlı Maçlar",
-    "popularLeagues": "Popüler Ligler",
-    "smartPicks": "Akıllı Seçimler",
-    "filteredPredictions": "Filtrelenmiş Tahminler"
+    "clear": "Temizle"
   },
-  "match": {
-    "vs": "vs",
-    "tbd": "Belirlenecek",
-    "predict": "Tahmin Et",
-    "analyze": "Analiz Et",
-    "viewDetails": "Detayları Gör",
-    "noMatches": "Maç bulunamadı",
-    "loadingMatches": "Maçlar yükleniyor..."
+  "todays": {
+    "title": "Bugünün Maçları",
+    "upcomingTitle": "Yaklaşan Maçlar",
+    "noScheduledTitle": "Planlanmış maç bulunamadı",
+    "noScheduledHint": "Lig seçerek maçları görüntüleyin",
+    "viewAll": "Tümünü Gör (+{{count}})",
+    "analyzing": "Analiz ediliyor...",
+    "viewAIAnalysis": "AI Analizi Gör",
+    "reasons": {
+      "bigMatch": "Büyük Maç",
+      "soonest": "En Yakın",
+      "recommended": "Önerilen"
+    },
+    "dates": {
+      "today": "Bugün",
+      "tomorrow": "Yarın"
+    }
   },
-  "filters": {
-    "all": "Tümü",
-    "today": "Bugün",
-    "tomorrow": "Yarın",
-    "thisWeek": "Bu Hafta",
-    "league": "Lig",
-    "allLeagues": "Tüm Ligler"
+  "upcoming": {
+    "loading": "Maçlar yükleniyor...",
+    "empty": "Yaklaşan maç bulunamadı",
+    "header": "Yaklaşan Maçlar ({{count}})",
+    "matchday": "Hafta {{number}}",
+    "vs": "vs"
   },
-  "empty": {
-    "title": "Henüz veri yok",
-    "description": "Daha sonra tekrar kontrol edin"
+  "carousel": {
+    "live": "CANLI",
+    "finished": "Bitti",
+    "analyze": "Analiz Et →",
+    "empty": "Yaklaşan maç bulunamadı"
+  },
+  "live": {
+    "title": "Canlı Maçlar",
+    "lastUpdated": "Son güncelleme: {{time}}",
+    "matchesCount": "{{count}} maç",
+    "selectLeague": "Lig seçin",
+    "allLeagues": "Tüm Ligler",
+    "loading": "Canlı maçlar yükleniyor...",
+    "loadError": "Canlı maçlar yüklenirken hata oluştu",
+    "retry": "Tekrar Dene",
+    "emptyTitle": "Şu an canlı maç yok",
+    "emptyDescription": "Desteklenen liglerde şu anda oynanmakta olan maç bulunmuyor.",
+    "emptyHint": "Her 30 saniyede otomatik güncellenir",
+    "autoRefresh": "Otomatik güncelleme aktif (30 sn)",
+    "card": {
+      "live": "CANLI",
+      "halfTime": "DEVRE ARASI",
+      "halfTimeScore": "İlk Yarı: {{home}} - {{away}}",
+      "liveStream": "Canlı yayın",
+      "ariaLive": "Canlı"
+    }
+  },
+  "leagues": {
+    "liveBadge": "{{count}} CANLI"
+  },
+  "offline": {
+    "noConnection": "İnternet bağlantısı yok"
+  },
+  "insights": {
+    "derby": "Derbi",
+    "criticalMatch": "Kritik Maç",
+    "hotForm": "Sıcak Form",
+    "coldForm": "Soğuk Form",
+    "rising": "Yükselişte",
+    "falling": "Düşüşte",
+    "defenseMaster": "Savunma Ustası",
+    "goalMachine": "Gol Makinesi",
+    "more": "+{{count}} daha",
+    "team": {
+      "home": "Ev",
+      "away": "Dep"
+    }
+  },
+  "toasts": {
+    "matchLoadError": "Maç verileri yüklenirken hata oluştu.",
+    "analysisLoadError": "Analiz yüklenirken hata oluştu",
+    "searchingTeam": "{{team}} için maç aranıyor...",
+    "noUpcomingForTeam": "{{team}} için yaklaşan maç bulunamadı.",
+    "teamSearchError": "Maç aranırken hata oluştu"
   }
 }

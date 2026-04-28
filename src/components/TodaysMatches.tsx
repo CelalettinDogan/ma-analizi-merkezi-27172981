@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles, Swords } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Match } from '@/types/footballApi';
 import { format, isToday, isTomorrow } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { getDateLocale } from '@/i18n/dateLocale';
 import { cn } from '@/lib/utils';
 import H2HSummaryBadge from '@/components/match/H2HSummaryBadge';
 import { useH2HPreview } from '@/hooks/useH2HPreview';
@@ -97,20 +98,26 @@ const isBigMatch = (match: Match): boolean => {
   return BIG_TEAMS.some(team => home.includes(team.toLowerCase()) || away.includes(team.toLowerCase()));
 };
 
-const getFeaturedReason = (match: Match, allMatches: Match[]): string => {
-  if (isBigMatch(match)) return 'Büyük Maç';
+type FeaturedReason = 'bigMatch' | 'soonest' | 'recommended';
+
+const getFeaturedReason = (match: Match, allMatches: Match[]): FeaturedReason => {
+  if (isBigMatch(match)) return 'bigMatch';
   const now = new Date();
   const sorted = [...allMatches].sort((a, b) => new Date(a.utcDate).getTime() - new Date(b.utcDate).getTime());
   const soonest = sorted.find(m => new Date(m.utcDate) > now);
-  if (soonest?.id === match.id) return 'En Yakın';
-  return 'Önerilen';
+  if (soonest?.id === match.id) return 'soonest';
+  return 'recommended';
 };
 
-const getDateLabel = (dateStr: string): string => {
-  const date = new Date(dateStr);
-  if (isToday(date)) return 'Bugün';
-  if (isTomorrow(date)) return 'Yarın';
-  return format(date, 'd MMMM EEEE', { locale: tr });
+const useDateLabel = () => {
+  const { t } = useTranslation('home');
+  const locale = getDateLocale();
+  return (dateStr: string): string => {
+    const date = new Date(dateStr);
+    if (isToday(date)) return t('todays.dates.today');
+    if (isTomorrow(date)) return t('todays.dates.tomorrow');
+    return format(date, 'd MMMM EEEE', { locale });
+  };
 };
 
 const FeaturedMatchH2H: React.FC<{ match: Match }> = ({ match }) => {
@@ -169,25 +176,27 @@ const TeamCell: React.FC<{ team: Match['homeTeam']; align: 'left' | 'right'; log
 };
 
 const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = false, loadingMatchId, onMatchSelect, lastUpdated }) => {
+  const { t } = useTranslation('home');
+  const getDateLabel = useDateLabel();
   const [showAll, setShowAll] = useState(false);
 
   const { featuredMatch, otherMatches, featuredReason, hasMatchesToday, title } = useMemo(() => {
-    if (matches.length === 0) return { featuredMatch: null, otherMatches: [], featuredReason: '', hasMatchesToday: false, title: 'Bugünün Maçları' };
+    if (matches.length === 0) return { featuredMatch: null, otherMatches: [] as Match[], featuredReason: 'recommended' as FeaturedReason, hasMatchesToday: false, title: t('todays.title') };
     const todayMatches = matches.filter(m => isToday(new Date(m.utcDate)));
     const hasToday = todayMatches.length > 0;
     const bigMatch = matches.find(isBigMatch);
     const featured = bigMatch || matches[0];
     const others = matches.filter(m => m.id !== featured?.id);
     const reason = getFeaturedReason(featured, matches);
-    return { featuredMatch: featured, otherMatches: others, featuredReason: reason, hasMatchesToday: hasToday, title: hasToday ? 'Bugünün Maçları' : 'Yaklaşan Maçlar' };
-  }, [matches]);
+    return { featuredMatch: featured, otherMatches: others, featuredReason: reason, hasMatchesToday: hasToday, title: hasToday ? t('todays.title') : t('todays.upcomingTitle') };
+  }, [matches, t]);
 
   const displayedMatches = showAll ? otherMatches : otherMatches.slice(0, 5);
 
   if (isLoading) {
     return (
       <div className="space-y-3">
-        <div className="flex items-center gap-2"><div className="w-1 h-5 rounded-full bg-primary" /><h2 className="font-display font-semibold text-sm">Bugünün Maçları</h2></div>
+        <div className="flex items-center gap-2"><div className="w-1 h-5 rounded-full bg-primary" /><h2 className="font-display font-semibold text-sm">{t('todays.title')}</h2></div>
         <div className="h-40 rounded-2xl bg-muted/15 animate-pulse" />
         <div className="space-y-1.5">{[...Array(3)].map((_, i) => <div key={i} className="h-14 rounded-xl bg-muted/10 animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />)}</div>
       </div>
@@ -197,8 +206,8 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
   if (matches.length === 0) {
     return (
       <div className="space-y-3">
-        <div className="flex items-center gap-2"><div className="w-1 h-5 rounded-full bg-primary" /><h2 className="font-display font-semibold text-sm">Bugünün Maçları</h2></div>
-        <div className="text-center py-10"><Calendar className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" /><p className="text-muted-foreground text-sm">Planlanmış maç bulunamadı</p><p className="text-xs text-muted-foreground/60 mt-1">Lig seçerek maçları görüntüleyin</p></div>
+        <div className="flex items-center gap-2"><div className="w-1 h-5 rounded-full bg-primary" /><h2 className="font-display font-semibold text-sm">{t('todays.title')}</h2></div>
+        <div className="text-center py-10"><Calendar className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" /><p className="text-muted-foreground text-sm">{t('todays.noScheduledTitle')}</p><p className="text-xs text-muted-foreground/60 mt-1">{t('todays.noScheduledHint')}</p></div>
       </div>
     );
   }
@@ -231,7 +240,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
         >
           {loadingMatchId === featuredMatch.id && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-background/50 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10">
-              <div className="flex items-center gap-2"><Loader2 className="w-5 h-5 text-primary animate-spin" /><span className="text-xs font-medium">Analiz ediliyor...</span></div>
+              <div className="flex items-center gap-2"><Loader2 className="w-5 h-5 text-primary animate-spin" /><span className="text-xs font-medium">{t('todays.analyzing')}</span></div>
             </motion.div>
           )}
 
@@ -239,8 +248,8 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
           <div className="flex items-center justify-between flex-wrap gap-1.5 mb-3">
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-micro font-medium bg-muted/40 text-foreground/70">
-                {featuredReason === 'Büyük Maç' ? <Sparkles className="w-3 h-3 text-foreground/50" /> : featuredReason === 'En Yakın' ? <Clock className="w-3 h-3 text-foreground/50" /> : <Star className="w-3 h-3 text-foreground/50" />}
-                {featuredReason}
+                {featuredReason === 'bigMatch' ? <Sparkles className="w-3 h-3 text-foreground/50" /> : featuredReason === 'soonest' ? <Clock className="w-3 h-3 text-foreground/50" /> : <Star className="w-3 h-3 text-foreground/50" />}
+                {t(`todays.reasons.${featuredReason}`)}
               </span>
               {!hasMatchesToday && <span className="text-micro text-muted-foreground/60">{getDateLabel(featuredMatch.utcDate)}</span>}
             </div>
@@ -278,7 +287,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
           <div className="flex items-center justify-center mt-3 pt-3 border-t border-border/15">
             <span className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground rounded-xl px-4 py-2 shadow-sm shadow-primary/15">
               <Sparkles className="w-3.5 h-3.5" />
-              <span className="text-xs font-semibold">AI Analizi Gör</span>
+              <span className="text-xs font-semibold">{t('todays.viewAIAnalysis')}</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </span>
           </div>
@@ -342,7 +351,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
 
       {otherMatches.length > 5 && !showAll && (
         <Button variant="ghost" size="sm" onClick={() => setShowAll(true)} className="w-full text-primary text-xs h-9 rounded-xl">
-          Tümünü Gör (+{otherMatches.length - 5})
+          {t('todays.viewAll', { count: otherMatches.length - 5 })}
         </Button>
       )}
     </div>

@@ -2,10 +2,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Heart } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Match } from '@/types/footballApi';
 import { format, parseISO } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { getDateLocale } from '@/i18n/dateLocale';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -22,6 +23,8 @@ const MatchSlide: React.FC<{
   onToggleFavorite: (type: 'team' | 'league', id: string, name: string) => void;
   isLoggedIn: boolean;
 }> = ({ match, onSelect, isFavorite, onToggleFavorite, isLoggedIn }) => {
+  const { t } = useTranslation('home');
+  const locale = getDateLocale();
   const matchDate = parseISO(match.utcDate);
   const isLive = match.status === 'IN_PLAY' || match.status === 'PAUSED';
   const isFinished = match.status === 'FINISHED';
@@ -61,13 +64,13 @@ const MatchSlide: React.FC<{
           {isLive ? (
             <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-destructive/10 text-destructive text-micro font-medium">
               <span className="w-1.5 h-1.5 bg-destructive rounded-full animate-pulse" />
-              CANLI
+              {t('carousel.live')}
             </span>
           ) : isFinished ? (
-            <span className="text-micro text-muted-foreground/40">Bitti</span>
+            <span className="text-micro text-muted-foreground/40">{t('carousel.finished')}</span>
           ) : (
             <span className="text-micro text-muted-foreground/60 tabular-nums">
-              {format(matchDate, 'HH:mm', { locale: tr })}
+              {format(matchDate, 'HH:mm', { locale })}
             </span>
           )}
         </div>
@@ -144,9 +147,9 @@ const MatchSlide: React.FC<{
         {/* Footer */}
         <div className="mt-3 pt-2.5 border-t border-border/10 flex items-center justify-between">
           <span className="text-micro text-muted-foreground/60 tabular-nums">
-            {format(matchDate, 'd MMM', { locale: tr })}
+            {format(matchDate, 'd MMM', { locale })}
           </span>
-          <span className="text-micro text-primary font-medium bg-primary/10 rounded-full px-3 py-1">Analiz Et →</span>
+          <span className="text-micro text-primary font-medium bg-primary/10 rounded-full px-3 py-1">{t('carousel.analyze')}</span>
         </div>
       </button>
     </motion.div>
@@ -154,6 +157,7 @@ const MatchSlide: React.FC<{
 };
 
 const MatchCarousel: React.FC<MatchCarouselProps> = ({ matches, onMatchSelect, isLoading }) => {
+  const { t } = useTranslation('home');
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'start',
     containScroll: 'trimSnaps',
@@ -182,7 +186,7 @@ const MatchCarousel: React.FC<MatchCarouselProps> = ({ matches, onMatchSelect, i
     return (
       <div className="text-center py-8 text-muted-foreground/50">
         <Calendar className="w-8 h-8 mx-auto mb-2 opacity-30" />
-        <p className="text-sm">Yaklaşan maç bulunamadı</p>
+        <p className="text-sm">{t('carousel.empty')}</p>
       </div>
     );
   }

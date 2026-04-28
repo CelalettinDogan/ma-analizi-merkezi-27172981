@@ -1,37 +1,96 @@
 {
   "hero": {
-    "title": "Predicciones de Fútbol con IA",
-    "subtitle": "Predicciones de partidos con IA y análisis estadístico",
-    "cta": "Empezar",
-    "ctaSecondary": "Cómo funciona"
+    "aiAccuracy": "Precisión de IA",
+    "analysesSuffix": "+ análisis",
+    "search": "Buscar",
+    "searchAria": "Buscar equipo o liga",
+    "searchPlaceholder": "Buscar...",
+    "tagline": "Análisis de partidos con IA"
   },
   "sections": {
-    "todaysMatches": "Partidos de hoy",
-    "upcomingMatches": "Próximos partidos",
-    "liveMatches": "Partidos en vivo",
-    "popularLeagues": "Ligas populares",
-    "smartPicks": "Selecciones inteligentes",
-    "filteredPredictions": "Predicciones filtradas"
+    "todaysMatches": "Partidos de Hoy",
+    "upcomingMatchesShort": "Próximos Partidos",
+    "liveMatches": "Partidos en Vivo",
+    "clear": "Limpiar"
   },
-  "match": {
-    "vs": "vs",
-    "tbd": "Por definir",
-    "predict": "Predecir",
-    "analyze": "Analizar",
-    "viewDetails": "Ver detalles",
-    "noMatches": "No se encontraron partidos",
-    "loadingMatches": "Cargando partidos..."
+  "todays": {
+    "title": "Partidos de Hoy",
+    "upcomingTitle": "Próximos Partidos",
+    "noScheduledTitle": "No hay partidos programados",
+    "noScheduledHint": "Selecciona una liga para ver partidos",
+    "viewAll": "Ver todos (+{{count}})",
+    "analyzing": "Analizando...",
+    "viewAIAnalysis": "Ver análisis de IA",
+    "reasons": {
+      "bigMatch": "Gran Partido",
+      "soonest": "Más Cercano",
+      "recommended": "Recomendado"
+    },
+    "dates": {
+      "today": "Hoy",
+      "tomorrow": "Mañana"
+    }
   },
-  "filters": {
-    "all": "Todos",
-    "today": "Hoy",
-    "tomorrow": "Mañana",
-    "thisWeek": "Esta semana",
-    "league": "Liga",
-    "allLeagues": "Todas las ligas"
+  "upcoming": {
+    "loading": "Cargando partidos...",
+    "empty": "No hay próximos partidos",
+    "header": "Próximos Partidos ({{count}})",
+    "matchday": "Jornada {{number}}",
+    "vs": "vs"
   },
-  "empty": {
-    "title": "Aún no hay datos",
-    "description": "Vuelve más tarde"
+  "carousel": {
+    "live": "EN VIVO",
+    "finished": "Finalizado",
+    "analyze": "Analizar →",
+    "empty": "No hay próximos partidos"
+  },
+  "live": {
+    "title": "Partidos en Vivo",
+    "lastUpdated": "Última actualización: {{time}}",
+    "matchesCount": "{{count}} partidos",
+    "selectLeague": "Seleccionar liga",
+    "allLeagues": "Todas las ligas",
+    "loading": "Cargando partidos en vivo...",
+    "loadError": "Error al cargar partidos en vivo",
+    "retry": "Reintentar",
+    "emptyTitle": "No hay partidos en vivo ahora",
+    "emptyDescription": "No hay partidos jugándose en las ligas soportadas.",
+    "emptyHint": "Se actualiza cada 30 segundos",
+    "autoRefresh": "Actualización automática (30 s)",
+    "card": {
+      "live": "EN VIVO",
+      "halfTime": "DESCANSO",
+      "halfTimeScore": "Descanso: {{home}} - {{away}}",
+      "liveStream": "Transmisión en vivo",
+      "ariaLive": "En vivo"
+    }
+  },
+  "leagues": {
+    "liveBadge": "{{count}} EN VIVO"
+  },
+  "offline": {
+    "noConnection": "Sin conexión a internet"
+  },
+  "insights": {
+    "derby": "Derbi",
+    "criticalMatch": "Partido Clave",
+    "hotForm": "Buena Forma",
+    "coldForm": "Mala Forma",
+    "rising": "En Alza",
+    "falling": "En Caída",
+    "defenseMaster": "Maestro Defensivo",
+    "goalMachine": "Máquina de Goles",
+    "more": "+{{count}} más",
+    "team": {
+      "home": "Local",
+      "away": "Visit."
+    }
+  },
+  "toasts": {
+    "matchLoadError": "Error al cargar los datos del partido.",
+    "analysisLoadError": "Error al cargar el análisis",
+    "searchingTeam": "Buscando partido de {{team}}...",
+    "noUpcomingForTeam": "No se encontró próximo partido para {{team}}.",
+    "teamSearchError": "Error al buscar el partido"
   }
 }

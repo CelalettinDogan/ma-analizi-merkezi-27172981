@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { SUPPORTED_COMPETITIONS, CompetitionCode, Match } from '@/types/footballApi';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +17,7 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
   onLeagueSelect,
   liveMatches = []
 }) => {
+  const { t } = useTranslation('home');
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
@@ -89,7 +91,7 @@ const LeagueGrid: React.FC<LeagueGridProps> = ({
                   variant="destructive" 
                   className="text-[8px] px-1.5 py-0 h-3.5 animate-pulse"
                 >
-                  {matchCounts[league.code]} CANLI
+                  {t('leagues.liveBadge', { count: matchCounts[league.code] })}
                 </Badge>
               )}
             </motion.button>

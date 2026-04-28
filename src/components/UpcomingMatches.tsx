@@ -1,8 +1,9 @@
 import React from 'react';
 import { Calendar, ChevronRight, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Match } from '@/types/footballApi';
 import { format } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { getDateLocale } from '@/i18n/dateLocale';
 
 interface UpcomingMatchesProps {
   matches: Match[];
@@ -15,11 +16,14 @@ const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
   isLoading, 
   onSelectMatch 
 }) => {
+  const { t } = useTranslation('home');
+  const locale = getDateLocale();
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
-        <span className="ml-2 text-muted-foreground">Maçlar yükleniyor...</span>
+        <span className="ml-2 text-muted-foreground">{t('upcoming.loading')}</span>
       </div>
     );
   }
@@ -28,7 +32,7 @@ const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
     return (
       <div className="text-center py-8 text-muted-foreground">
         <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
-        <p>Yaklaşan maç bulunamadı</p>
+        <p>{t('upcoming.empty')}</p>
       </div>
     );
   }
@@ -36,7 +40,7 @@ const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
   return (
     <div className="space-y-3">
       <h3 className="text-sm font-medium text-muted-foreground mb-4">
-        Yaklaşan Maçlar ({matches.length})
+        {t('upcoming.header', { count: matches.length })}
       </h3>
       <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
         {matches.map((match) => (
@@ -60,7 +64,7 @@ const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
                       {match.homeTeam.shortName || match.homeTeam.name}
                     </span>
                   </div>
-                  <span className="text-muted-foreground text-sm">vs</span>
+                  <span className="text-muted-foreground text-sm">{t('upcoming.vs')}</span>
                   <div className="flex items-center gap-2 flex-1 justify-end">
                     <span className="font-medium text-foreground">
                       {match.awayTeam.shortName || match.awayTeam.name}
@@ -77,10 +81,10 @@ const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Calendar className="w-3 h-3" />
                   <span>
-                    {format(new Date(match.utcDate), 'dd MMMM yyyy, HH:mm', { locale: tr })}
+                    {format(new Date(match.utcDate), 'dd MMMM yyyy, HH:mm', { locale })}
                   </span>
                   {match.matchday && (
-                    <span className="ml-2">• Hafta {match.matchday}</span>
+                    <span className="ml-2">• {t('upcoming.matchday', { number: match.matchday })}</span>
                   )}
                 </div>
               </div>

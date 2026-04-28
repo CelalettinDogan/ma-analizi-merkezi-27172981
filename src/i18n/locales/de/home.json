@@ -1,37 +1,96 @@
 {
   "hero": {
-    "title": "KI-gestützte Fußballprognosen",
-    "subtitle": "Spielprognosen durch KI und statistische Analyse",
-    "cta": "Jetzt starten",
-    "ctaSecondary": "Wie es funktioniert"
+    "aiAccuracy": "KI-Genauigkeit",
+    "analysesSuffix": "+ Analysen",
+    "search": "Suchen",
+    "searchAria": "Team oder Liga suchen",
+    "searchPlaceholder": "Suchen...",
+    "tagline": "KI-gestützte Spielanalyse"
   },
   "sections": {
     "todaysMatches": "Heutige Spiele",
-    "upcomingMatches": "Kommende Spiele",
+    "upcomingMatchesShort": "Kommende Spiele",
     "liveMatches": "Live-Spiele",
-    "popularLeagues": "Beliebte Ligen",
-    "smartPicks": "Smarte Tipps",
-    "filteredPredictions": "Gefilterte Prognosen"
+    "clear": "Zurücksetzen"
   },
-  "match": {
-    "vs": "vs",
-    "tbd": "Offen",
-    "predict": "Prognostizieren",
-    "analyze": "Analysieren",
-    "viewDetails": "Details anzeigen",
-    "noMatches": "Keine Spiele gefunden",
-    "loadingMatches": "Spiele werden geladen..."
+  "todays": {
+    "title": "Heutige Spiele",
+    "upcomingTitle": "Kommende Spiele",
+    "noScheduledTitle": "Keine geplanten Spiele",
+    "noScheduledHint": "Wähle eine Liga, um Spiele zu sehen",
+    "viewAll": "Alle anzeigen (+{{count}})",
+    "analyzing": "Analyse läuft...",
+    "viewAIAnalysis": "KI-Analyse ansehen",
+    "reasons": {
+      "bigMatch": "Top-Spiel",
+      "soonest": "Demnächst",
+      "recommended": "Empfohlen"
+    },
+    "dates": {
+      "today": "Heute",
+      "tomorrow": "Morgen"
+    }
   },
-  "filters": {
-    "all": "Alle",
-    "today": "Heute",
-    "tomorrow": "Morgen",
-    "thisWeek": "Diese Woche",
-    "league": "Liga",
-    "allLeagues": "Alle Ligen"
+  "upcoming": {
+    "loading": "Spiele werden geladen...",
+    "empty": "Keine kommenden Spiele",
+    "header": "Kommende Spiele ({{count}})",
+    "matchday": "Spieltag {{number}}",
+    "vs": "vs"
   },
-  "empty": {
-    "title": "Noch keine Daten",
-    "description": "Schauen Sie später vorbei"
+  "carousel": {
+    "live": "LIVE",
+    "finished": "Beendet",
+    "analyze": "Analysieren →",
+    "empty": "Keine kommenden Spiele"
+  },
+  "live": {
+    "title": "Live-Spiele",
+    "lastUpdated": "Letzte Aktualisierung: {{time}}",
+    "matchesCount": "{{count}} Spiele",
+    "selectLeague": "Liga wählen",
+    "allLeagues": "Alle Ligen",
+    "loading": "Live-Spiele werden geladen...",
+    "loadError": "Live-Spiele konnten nicht geladen werden",
+    "retry": "Erneut versuchen",
+    "emptyTitle": "Aktuell keine Live-Spiele",
+    "emptyDescription": "In den unterstützten Ligen wird derzeit kein Spiel gespielt.",
+    "emptyHint": "Aktualisiert sich automatisch alle 30 Sekunden",
+    "autoRefresh": "Auto-Aktualisierung aktiv (30 Sek.)",
+    "card": {
+      "live": "LIVE",
+      "halfTime": "HALBZEIT",
+      "halfTimeScore": "Halbzeit: {{home}} - {{away}}",
+      "liveStream": "Live-Übertragung",
+      "ariaLive": "Live"
+    }
+  },
+  "leagues": {
+    "liveBadge": "{{count}} LIVE"
+  },
+  "offline": {
+    "noConnection": "Keine Internetverbindung"
+  },
+  "insights": {
+    "derby": "Derby",
+    "criticalMatch": "Schlüsselspiel",
+    "hotForm": "Heiße Form",
+    "coldForm": "Kalte Form",
+    "rising": "Aufsteigend",
+    "falling": "Abfallend",
+    "defenseMaster": "Abwehrmeister",
+    "goalMachine": "Tormaschine",
+    "more": "+{{count}} mehr",
+    "team": {
+      "home": "Heim",
+      "away": "Ausw."
+    }
+  },
+  "toasts": {
+    "matchLoadError": "Spieldaten konnten nicht geladen werden.",
+    "analysisLoadError": "Analyse konnte nicht geladen werden",
+    "searchingTeam": "Spiel für {{team}} wird gesucht...",
+    "noUpcomingForTeam": "Kein kommendes Spiel für {{team}} gefunden.",
+    "teamSearchError": "Suche fehlgeschlagen"
   }
 }
