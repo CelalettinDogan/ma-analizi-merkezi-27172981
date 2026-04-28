@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   BarChart,
   Bar,
@@ -7,7 +8,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell,
   Legend,
 } from 'recharts';
 import { TeamStats } from '@/types/match';
@@ -26,19 +26,21 @@ const GoalDistributionChart: React.FC<GoalDistributionChartProps> = ({
   homeStats,
   awayStats,
 }) => {
+  const { t } = useTranslation('analysis');
+
   const data = [
     {
-      name: 'Atılan Gol',
+      name: t('charts.scored'),
       [homeTeam]: homeStats.goalsScored,
       [awayTeam]: awayStats.goalsScored,
     },
     {
-      name: 'Yenilen Gol',
+      name: t('charts.conceded'),
       [homeTeam]: homeStats.goalsConceded,
       [awayTeam]: awayStats.goalsConceded,
     },
     {
-      name: 'Gol Ortalaması',
+      name: t('charts.goalAvg'),
       [homeTeam]: Number((homeStats.goalsScored / 5).toFixed(1)),
       [awayTeam]: Number((awayStats.goalsScored / 5).toFixed(1)),
     },
@@ -47,7 +49,7 @@ const GoalDistributionChart: React.FC<GoalDistributionChartProps> = ({
   return (
     <Card className="p-6 bg-card/50 backdrop-blur-sm">
       <h3 className="text-lg font-display font-bold text-foreground mb-4 text-center">
-        Gol Dağılımı
+        {t('charts.goalDistribution')}
       </h3>
       <div className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">

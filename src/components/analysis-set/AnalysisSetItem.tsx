@@ -1,21 +1,16 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, Calendar, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AnalysisSetItem as AnalysisSetItemType } from '@/types/analysisSet';
 import { format, parseISO } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { getDateLocale } from '@/i18n/dateLocale';
 
 interface AnalysisSetItemProps {
   item: AnalysisSetItemType;
   onRemove: (id: string) => void;
 }
-
-const confidenceLabels: Record<string, string> = {
-  düşük: 'Düşük Güven',
-  orta: 'Orta Güven',
-  yüksek: 'Yüksek Güven',
-};
 
 const confidenceColors: Record<string, string> = {
   düşük: 'text-loss bg-loss/10 border-loss/30',
@@ -23,19 +18,26 @@ const confidenceColors: Record<string, string> = {
   yüksek: 'text-win bg-win/10 border-win/30',
 };
 
-const formatMatchDate = (dateString: string): string => {
-  try {
-    const date = parseISO(dateString);
-    return format(date, 'd MMM', { locale: tr });
-  } catch {
-    return dateString;
-  }
-};
-
 const AnalysisSetItem: React.FC<AnalysisSetItemProps> = ({ item, onRemove }) => {
+  const { t, i18n } = useTranslation('analysis');
+
+  const confidenceLabels: Record<string, string> = {
+    düşük: t('confidence.lowBadge'),
+    orta: t('confidence.mediumBadge'),
+    yüksek: t('confidence.highBadge'),
+  };
+
+  const formatMatchDate = (dateString: string): string => {
+    try {
+      const date = parseISO(dateString);
+      return format(date, 'd MMM', { locale: getDateLocale(i18n.language) });
+    } catch {
+      return dateString;
+    }
+  };
+
   return (
     <div className="bg-muted/50 rounded-lg p-3 space-y-2">
-      {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
@@ -55,13 +57,12 @@ const AnalysisSetItem: React.FC<AnalysisSetItemProps> = ({ item, onRemove }) => 
           size="icon"
           className="h-6 w-6 text-muted-foreground hover:text-destructive flex-shrink-0"
           onClick={() => onRemove(item.id)}
-          aria-label={`${item.homeTeam} vs ${item.awayTeam} analizini kaldır`}
+          aria-label={t('actions.removeAria', { home: item.homeTeam, away: item.awayTeam })}
         >
           <X className="h-4 w-4" />
         </Button>
       </div>
 
-      {/* Analysis Info */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-sm">
           <TrendingUp className="h-4 w-4 text-primary" />

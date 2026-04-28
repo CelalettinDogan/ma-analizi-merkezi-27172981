@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Crosshair, History, Brain, Users, AlertCircle } from 'lucide-react';
 import { MatchAnalysis } from '@/types/match';
@@ -19,15 +20,15 @@ interface SectionProps {
   badge?: string;
 }
 
-const CollapsibleSection: React.FC<SectionProps> = ({ 
-  title, icon, children, defaultOpen = false, badge 
+const CollapsibleSection: React.FC<SectionProps> = ({
+  title, icon, children, defaultOpen = false, badge
 }) => {
   const [isOpen, setIsOpen] = React.useState(defaultOpen);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger className="w-full">
-        <div 
+        <div
           className={cn(
             "flex items-center justify-between p-4 rounded-xl bg-card border border-border/50 transition-all touch-manipulation",
             "active:bg-muted/20 active:scale-[0.99]",
@@ -51,7 +52,7 @@ const CollapsibleSection: React.FC<SectionProps> = ({
           )} />
         </div>
       </CollapsibleTrigger>
-      
+
       <CollapsibleContent>
         <AnimatePresence>
           {isOpen && (
@@ -73,6 +74,7 @@ const CollapsibleSection: React.FC<SectionProps> = ({
 };
 
 const CollapsibleAnalysis: React.FC<CollapsibleAnalysisProps> = ({ analysis }) => {
+  const { t } = useTranslation('analysis');
   const hasPoisson = analysis.poissonData;
   const hasSimilar = analysis.similarMatches && analysis.similarMatches.length > 0;
 
@@ -90,7 +92,11 @@ const CollapsibleAnalysis: React.FC<CollapsibleAnalysisProps> = ({ analysis }) =
       className="space-y-3"
     >
       {hasPoisson && (
-        <CollapsibleSection title="Poisson Gol Analizi" icon={<Crosshair className="w-4 h-4 text-primary" />} badge="İstatistiksel">
+        <CollapsibleSection
+          title={t('tabsAdvanced.poissonTitle')}
+          icon={<Crosshair className="w-4 h-4 text-primary" />}
+          badge={t('tabsAdvanced.statisticalBadge')}
+        >
           <ScorePredictionChart
             scoreProbabilities={analysis.poissonData!.scoreProbabilities}
             goalLineProbabilities={analysis.poissonData!.goalLineProbabilities}
@@ -103,16 +109,24 @@ const CollapsibleAnalysis: React.FC<CollapsibleAnalysisProps> = ({ analysis }) =
       )}
 
       {hasSimilar && (
-        <CollapsibleSection title="Benzer Maçlar" icon={<History className="w-4 h-4 text-secondary" />} badge={`${analysis.similarMatches!.length} maç`}>
+        <CollapsibleSection
+          title={t('tabsAdvanced.similar')}
+          icon={<History className="w-4 h-4 text-secondary" />}
+          badge={t('tabsAdvanced.matchesBadge', { count: analysis.similarMatches!.length })}
+        >
           <SimilarMatchesSection matches={analysis.similarMatches!} stats={analysis.similarMatchStats} />
         </CollapsibleSection>
       )}
 
-      <CollapsibleSection title="Taktiksel Analiz" icon={<Brain className="w-4 h-4 text-primary" />}>
+      <CollapsibleSection title={t('tabsAdvanced.assessment')} icon={<Brain className="w-4 h-4 text-primary" />}>
         <p className="text-muted-foreground leading-relaxed">{analysis.tacticalAnalysis}</p>
       </CollapsibleSection>
 
-      <CollapsibleSection title="Önemli Faktörler" icon={<AlertCircle className="w-4 h-4 text-amber-400" />} badge={`${analysis.keyFactors.length} faktör`}>
+      <CollapsibleSection
+        title={t('sections.keyFactors')}
+        icon={<AlertCircle className="w-4 h-4 text-amber-400" />}
+        badge={t('tabsAdvanced.factorsBadge', { count: analysis.keyFactors.length })}
+      >
         <ul className="space-y-2">
           {analysis.keyFactors.map((factor, index) => (
             <li key={index} className="flex items-start gap-2">
@@ -126,7 +140,7 @@ const CollapsibleAnalysis: React.FC<CollapsibleAnalysisProps> = ({ analysis }) =
       </CollapsibleSection>
 
       {(analysis.injuries.home.length > 0 || analysis.injuries.away.length > 0) && (
-        <CollapsibleSection title="Sakat / Cezalı Oyuncular" icon={<Users className="w-4 h-4 text-red-400" />}>
+        <CollapsibleSection title={t('sections.injuries')} icon={<Users className="w-4 h-4 text-red-400" />}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <h5 className="text-sm font-medium text-primary mb-2">{analysis.input.homeTeam}</h5>
@@ -140,7 +154,7 @@ const CollapsibleAnalysis: React.FC<CollapsibleAnalysisProps> = ({ analysis }) =
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-muted-foreground">Eksik oyuncu yok</p>
+                <p className="text-sm text-muted-foreground">{t('injuries.none')}</p>
               )}
             </div>
             <div>
@@ -155,7 +169,7 @@ const CollapsibleAnalysis: React.FC<CollapsibleAnalysisProps> = ({ analysis }) =
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-muted-foreground">Eksik oyuncu yok</p>
+                <p className="text-sm text-muted-foreground">{t('injuries.none')}</p>
               )}
             </div>
           </div>

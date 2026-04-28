@@ -1,6 +1,7 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Swords, Trophy, Minus, TrendingUp } from 'lucide-react';
+import { Swords, TrendingUp } from 'lucide-react';
 import { HeadToHead } from '@/types/match';
 import { cn } from '@/lib/utils';
 
@@ -13,6 +14,7 @@ interface H2HTimelineProps {
 const DonutChart: React.FC<{
   homeWins: number; draws: number; awayWins: number; homeTeam: string; awayTeam: string;
 }> = ({ homeWins, draws, awayWins }) => {
+  const { t } = useTranslation('analysis');
   const total = homeWins + draws + awayWins;
   if (total === 0) return null;
 
@@ -46,7 +48,7 @@ const DonutChart: React.FC<{
           initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.8 }}>
           {total}
         </motion.span>
-        <span className="text-micro text-muted-foreground">maç</span>
+        <span className="text-micro text-muted-foreground">{t('h2h.matchesUnit')}</span>
       </div>
     </div>
   );
@@ -55,10 +57,11 @@ const DonutChart: React.FC<{
 const StatsLegend: React.FC<{
   homeWins: number; draws: number; awayWins: number; homeTeam: string; awayTeam: string;
 }> = ({ homeWins, draws, awayWins, homeTeam, awayTeam }) => {
+  const { t } = useTranslation('analysis');
   const total = homeWins + draws + awayWins;
   const stats = [
     { label: homeTeam, value: homeWins, percentage: total > 0 ? Math.round((homeWins / total) * 100) : 0, color: 'bg-primary', textColor: 'text-primary' },
-    { label: 'Beraberlik', value: draws, percentage: total > 0 ? Math.round((draws / total) * 100) : 0, color: 'bg-muted-foreground', textColor: 'text-muted-foreground' },
+    { label: t('h2h.draw'), value: draws, percentage: total > 0 ? Math.round((draws / total) * 100) : 0, color: 'bg-muted-foreground', textColor: 'text-muted-foreground' },
     { label: awayTeam, value: awayWins, percentage: total > 0 ? Math.round((awayWins / total) * 100) : 0, color: 'bg-secondary', textColor: 'text-secondary' },
   ];
 
@@ -93,16 +96,20 @@ const MatchBubble: React.FC<{
   result: 'home' | 'away' | 'draw';
   index: number;
 }> = ({ match, result, index }) => {
+  const { t, i18n } = useTranslation('analysis');
+
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '-';
     try {
       const [, month, day] = dateStr.split('-');
-      const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
-      return `${parseInt(day)} ${months[parseInt(month) - 1]}`;
+      const monthKeys = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthLabel = t(`h2h.months.${monthKeys[parseInt(month) - 1]}`);
+      return `${parseInt(day)} ${monthLabel}`;
     } catch { return '-'; }
   };
 
-  const resultLabel = result === 'home' ? 'G' : result === 'away' ? 'M' : 'B';
+  const resultKey = result === 'home' ? 'W' : result === 'away' ? 'L' : 'D';
+  const resultLabel = t(`h2h.resultLetters.${resultKey}`);
 
   return (
     <motion.div
@@ -111,7 +118,6 @@ const MatchBubble: React.FC<{
       transition={{ delay: 0.6 + index * 0.1, type: "spring", stiffness: 200, damping: 15 }}
       className="flex flex-col items-center shrink-0"
     >
-      {/* Result indicator */}
       <div className={cn(
         "w-5 h-5 rounded-full flex items-center justify-center text-micro font-bold mb-1",
         result === 'home' && "bg-emerald-500/20 text-emerald-500",
@@ -120,8 +126,7 @@ const MatchBubble: React.FC<{
       )}>
         {resultLabel}
       </div>
-      
-      {/* Score bubble — fixed size */}
+
       <div className={cn(
         "w-11 h-11 rounded-xl flex items-center justify-center text-xs font-bold border-2 bg-card/80 z-10 shadow-sm",
         result === 'home' && "border-emerald-500/50 text-emerald-500",
@@ -130,8 +135,7 @@ const MatchBubble: React.FC<{
       )}>
         {match.score}
       </div>
-      
-      {/* Date */}
+
       <span className="text-micro text-muted-foreground mt-1.5 whitespace-nowrap">
         {formatDate(match.date)}
       </span>
@@ -140,6 +144,7 @@ const MatchBubble: React.FC<{
 };
 
 const H2HTimeline: React.FC<H2HTimelineProps> = ({ h2h, homeTeam, awayTeam }) => {
+  const { t } = useTranslation('analysis');
   const homeWins = h2h?.homeWins ?? 0;
   const awayWins = h2h?.awayWins ?? 0;
   const draws = h2h?.draws ?? 0;
@@ -184,27 +189,33 @@ const H2HTimeline: React.FC<H2HTimelineProps> = ({ h2h, homeTeam, awayTeam }) =>
         className="p-4 rounded-xl bg-card border border-border/50">
         <div className="flex items-center justify-between mb-4">
           <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <Swords className="w-4 h-4 text-secondary" /> Geçmiş Karşılaşmalar
+            <Swords className="w-4 h-4 text-secondary" /> {t('sections.pastMatches')}
           </h4>
         </div>
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mb-3">
             <Swords className="w-8 h-8 text-muted-foreground/50" />
           </div>
-          <p className="text-sm text-muted-foreground font-medium">Geçmiş karşılaşma bulunamadı</p>
-          <p className="text-xs text-muted-foreground/70 mt-1 max-w-[200px]">Bu takımlar son dönemde karşılaşmamış</p>
+          <p className="text-sm text-muted-foreground font-medium">{t('h2h.noMatches')}</p>
+          <p className="text-xs text-muted-foreground/70 mt-1 max-w-[200px]">{t('h2h.noMatchesHint')}</p>
         </div>
       </motion.div>
     );
   }
 
+  const getStreakLabel = () => {
+    if (!streak) return '';
+    if (streak.type === 'home') return t('h2h.streakWin', { count: streak.count });
+    if (streak.type === 'away') return t('h2h.streakLoss', { count: streak.count });
+    return t('h2h.streakDraw', { count: streak.count });
+  };
+
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
       className="p-4 rounded-xl bg-card border border-border/50 overflow-hidden">
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-          <Swords className="w-4 h-4 text-secondary" /> Geçmiş Karşılaşmalar
+          <Swords className="w-4 h-4 text-secondary" /> {t('sections.pastMatches')}
         </h4>
         {streak && (
           <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.8 }}
@@ -215,26 +226,26 @@ const H2HTimeline: React.FC<H2HTimelineProps> = ({ h2h, homeTeam, awayTeam }) =>
               streak.type === 'draw' && "bg-amber-500/10 text-amber-500"
             )}>
             <TrendingUp className="w-3 h-3" />
-            {streak.count} {streak.type === 'home' ? 'galibiyet' : streak.type === 'away' ? 'mağlubiyet' : 'beraberlik'} serisi
+            {getStreakLabel()}
           </motion.div>
         )}
       </div>
 
-      {/* Donut + Stats */}
       <div className="flex items-center gap-4 mb-5">
         <DonutChart homeWins={homeWins} draws={draws} awayWins={awayWins} homeTeam={homeTeam} awayTeam={awayTeam} />
         <StatsLegend homeWins={homeWins} draws={draws} awayWins={awayWins} homeTeam={homeTeam} awayTeam={awayTeam} />
       </div>
 
-      {/* Match Timeline — horizontal scroll */}
       {lastMatches.length > 0 && (
         <div className="relative pt-3">
           <div className="flex items-center gap-2 mb-3">
             <div className="h-px flex-1 bg-border/50" />
-            <span className="text-micro text-muted-foreground uppercase tracking-wider shrink-0">Son {Math.min(lastMatches.length, 5)} Maç</span>
+            <span className="text-micro text-muted-foreground uppercase tracking-wider shrink-0">
+              {t('sections.lastNMatches', { count: Math.min(lastMatches.length, 5) })}
+            </span>
             <div className="h-px flex-1 bg-border/50" />
           </div>
-          
+
           <div className="overflow-x-auto scrollbar-none -mx-1 px-1">
             <div className="flex justify-between gap-3 min-w-0">
               {lastMatches.slice(0, 5).map((match, index) => (

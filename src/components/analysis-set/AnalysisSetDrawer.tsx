@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Trash2, Save, FileText, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { useAnalysisSet } from '@/contexts/AnalysisSetContext';
 import AnalysisSetItem from './AnalysisSetItem';
 
 const AnalysisSetDrawer: React.FC = () => {
+  const { t } = useTranslation('analysis');
   const {
     items,
     isOpen,
@@ -49,10 +51,10 @@ const AnalysisSetDrawer: React.FC = () => {
         <SheetHeader className="space-y-1">
           <SheetTitle className="flex items-center gap-2 text-foreground">
             <FileText className="h-5 w-5 text-primary" />
-            Analiz Setim
+            {t('set.drawerTitle')}
             {items.length > 0 && (
               <span className="ml-auto text-sm font-normal text-muted-foreground">
-                {items.length} analiz
+                {t('set.itemsCount', { count: items.length })}
               </span>
             )}
           </SheetTitle>
@@ -63,11 +65,11 @@ const AnalysisSetDrawer: React.FC = () => {
             <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
               <FileText className="h-8 w-8 text-muted-foreground" />
             </div>
-            <p className="text-muted-foreground">Analiz setiniz boş</p>
+            <p className="text-muted-foreground">{t('set.empty')}</p>
             <p className="text-sm text-muted-foreground mt-1 mb-4">
-              Maç analizlerini sete eklemek için "Analize Ekle" butonuna tıklayın.
+              {t('set.emptyHint')}
             </p>
-            
+
             <Button
               variant="outline"
               className="gap-2 border-primary/50 text-primary hover:bg-primary/10 hover:border-primary min-w-[220px]"
@@ -80,7 +82,7 @@ const AnalysisSetDrawer: React.FC = () => {
                 <Sparkles className="h-4 w-4" />
               )}
               <span className="truncate">
-                {isLoadingSmart ? 'Analizler Yükleniyor...' : '🎯 Akıllı Seçim'}
+                {isLoadingSmart ? t('set.loading') : t('set.smartPick')}
               </span>
             </Button>
           </div>
@@ -89,7 +91,7 @@ const AnalysisSetDrawer: React.FC = () => {
             <Alert className="bg-muted/30 border-border">
               <AlertCircle className="h-4 w-4 text-muted-foreground" />
               <AlertDescription className="text-xs text-muted-foreground">
-                Bu analizler istatistiksel verilere dayanmaktadır. Kesin sonuç garantisi yoktur.
+                {t('set.disclaimer')}
               </AlertDescription>
             </Alert>
 
@@ -106,7 +108,7 @@ const AnalysisSetDrawer: React.FC = () => {
                 <Sparkles className="h-4 w-4" />
               )}
               <span className="truncate">
-                {isLoadingSmart ? 'Analizler Yükleniyor...' : '🎯 Akıllı Seçim'}
+                {isLoadingSmart ? t('set.loading') : t('set.smartPick')}
               </span>
             </Button>
 
@@ -127,19 +129,19 @@ const AnalysisSetDrawer: React.FC = () => {
 
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Toplam Analiz</span>
+                  <span className="text-muted-foreground">{t('set.totalAnalysis')}</span>
                   <span className="font-bold text-foreground">{items.length}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Yüksek Güven</span>
+                  <span className="text-muted-foreground">{t('set.highConfidence')}</span>
                   <span className="font-medium text-win">{confidenceCounts.yüksek}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Orta Güven</span>
+                  <span className="text-muted-foreground">{t('set.mediumConfidence')}</span>
                   <span className="font-medium text-draw">{confidenceCounts.orta}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Düşük Güven</span>
+                  <span className="text-muted-foreground">{t('set.lowConfidence')}</span>
                   <span className="font-medium text-loss">{confidenceCounts.düşük}</span>
                 </div>
               </div>
@@ -151,7 +153,7 @@ const AnalysisSetDrawer: React.FC = () => {
                   onClick={clearSet}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Temizle
+                  {t('set.clear')}
                 </Button>
                 <Button
                   className="flex-1 bg-primary hover:bg-primary/90"
@@ -159,7 +161,7 @@ const AnalysisSetDrawer: React.FC = () => {
                   disabled={isSaving}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
+                  {isSaving ? t('set.saving') : t('set.save')}
                 </Button>
               </div>
             </div>

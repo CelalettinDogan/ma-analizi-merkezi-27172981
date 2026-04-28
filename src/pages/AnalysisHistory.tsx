@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ArrowLeft, RefreshCw, Calendar, Filter, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,13 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { getDateLocale } from '@/i18n/dateLocale';
 
 type DateFilter = 'all' | 'today' | 'week' | 'month';
 type StatusFilter = 'all' | 'correct' | 'wrong' | 'pending';
 
 const AnalysisHistory: React.FC = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation('analysis');
   const [dateFilter, setDateFilter] = useState<DateFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
@@ -57,7 +59,6 @@ const AnalysisHistory: React.FC = () => {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Filter by status on client side
       let filtered = data || [];
       if (statusFilter !== 'all') {
         filtered = filtered.filter(slip => {
@@ -79,12 +80,12 @@ const AnalysisHistory: React.FC = () => {
 
   const getResultBadge = (isCorrect: boolean | null) => {
     if (isCorrect === null) {
-      return { text: 'Bekliyor', icon: Clock, className: 'bg-amber-500/20 text-amber-500 border-amber-500/30' };
+      return { text: t('set.results.pending'), icon: Clock, className: 'bg-amber-500/20 text-amber-500 border-amber-500/30' };
     }
     if (isCorrect) {
-      return { text: 'Doğru', icon: CheckCircle2, className: 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30' };
+      return { text: t('set.results.correct'), icon: CheckCircle2, className: 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30' };
     }
-    return { text: 'Yanlış', icon: XCircle, className: 'bg-red-500/20 text-red-500 border-red-500/30' };
+    return { text: t('set.results.wrong'), icon: XCircle, className: 'bg-red-500/20 text-red-500 border-red-500/30' };
   };
 
   const getSlipSummary = (items: any[]) => {
@@ -93,10 +94,9 @@ const AnalysisHistory: React.FC = () => {
     return { verified: verified.length, correct: correct.length, total: items.length };
   };
 
-  // Stats summary
   const stats = React.useMemo(() => {
     if (!analysisSlips) return { total: 0, correct: 0, wrong: 0, pending: 0 };
-    
+
     let correct = 0, wrong = 0, pending = 0;
     analysisSlips.forEach(slip => {
       (slip.items || []).forEach((item: any) => {
@@ -105,7 +105,7 @@ const AnalysisHistory: React.FC = () => {
         else wrong++;
       });
     });
-    
+
     return { total: correct + wrong + pending, correct, wrong, pending };
   }, [analysisSlips]);
 
@@ -124,9 +124,9 @@ const AnalysisHistory: React.FC = () => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-bold">Analiz Geçmişi</h1>
+              <h1 className="text-xl font-bold">{t('history.title')}</h1>
               <p className="text-sm text-muted-foreground">
-                {stats.total} analiz • {stats.correct} doğru
+                {t('history.subtitle', { total: stats.total, correct: stats.correct })}
               </p>
             </div>
           </div>
@@ -138,7 +138,7 @@ const AnalysisHistory: React.FC = () => {
             className="gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
-            Güncelle
+            {t('history.refresh')}
           </Button>
         </div>
       </div>
@@ -149,26 +149,26 @@ const AnalysisHistory: React.FC = () => {
           <Select value={dateFilter} onValueChange={(v) => setDateFilter(v as DateFilter)}>
             <SelectTrigger className="w-[140px]">
               <Calendar className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Tarih" />
+              <SelectValue placeholder={t('history.dateFilter')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tümü</SelectItem>
-              <SelectItem value="today">Bugün</SelectItem>
-              <SelectItem value="week">Bu Hafta</SelectItem>
-              <SelectItem value="month">Bu Ay</SelectItem>
+              <SelectItem value="all">{t('history.filters.all')}</SelectItem>
+              <SelectItem value="today">{t('history.filters.today')}</SelectItem>
+              <SelectItem value="week">{t('history.filters.thisWeek')}</SelectItem>
+              <SelectItem value="month">{t('history.filters.thisMonth')}</SelectItem>
             </SelectContent>
           </Select>
 
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
             <SelectTrigger className="w-[140px]">
               <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Durum" />
+              <SelectValue placeholder={t('history.statusFilter')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tümü</SelectItem>
-              <SelectItem value="correct">Doğru</SelectItem>
-              <SelectItem value="wrong">Yanlış</SelectItem>
-              <SelectItem value="pending">Bekliyor</SelectItem>
+              <SelectItem value="all">{t('history.filters.all')}</SelectItem>
+              <SelectItem value="correct">{t('history.filters.correct')}</SelectItem>
+              <SelectItem value="wrong">{t('history.filters.wrong')}</SelectItem>
+              <SelectItem value="pending">{t('history.filters.pending')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -190,8 +190,8 @@ const AnalysisHistory: React.FC = () => {
               </div>
               <p className="text-muted-foreground text-center">
                 {dateFilter !== 'all' || statusFilter !== 'all'
-                  ? 'Bu filtrelere uygun analiz bulunamadı.'
-                  : 'Henüz kayıtlı analiz yok.'}
+                  ? t('history.emptyFiltered')
+                  : t('history.empty')}
               </p>
             </CardContent>
           </Card>
@@ -210,20 +210,18 @@ const AnalysisHistory: React.FC = () => {
                 >
                   <Card className="overflow-hidden">
                     <CardContent className="p-4">
-                      {/* Slip Header */}
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm font-medium">
-                            {format(new Date(slip.created_at), 'd MMMM yyyy, HH:mm', { locale: tr })}
+                            {format(new Date(slip.created_at), 'd MMMM yyyy, HH:mm', { locale: getDateLocale(i18n.language) })}
                           </span>
                         </div>
                         <Badge variant="outline" className="text-xs">
-                          {summary.correct}/{summary.total} Doğru
+                          {t('history.correctRatio', { correct: summary.correct, total: summary.total })}
                         </Badge>
                       </div>
 
-                      {/* Items */}
                       <div className="space-y-2">
                         {items.map((item: any) => {
                           const badge = getResultBadge(item.is_correct);

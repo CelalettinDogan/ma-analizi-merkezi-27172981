@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Prediction, MatchInput } from '@/types/match';
 import PredictionCard from './PredictionCard';
 import AdvancedFilters, { FilterOptions } from './AdvancedFilters';
@@ -15,9 +16,9 @@ const FilteredPredictionsSection: React.FC<FilteredPredictionsSectionProps> = ({
   predictions,
   matchInput,
 }) => {
+  const { t } = useTranslation('analysis');
   const [filters, setFilters] = useState<FilterOptions>(getDefaultFilters());
 
-  // Add matchDate to predictions for filtering
   const predictionsWithDate = predictions.map((p) => ({
     ...p,
     matchDate: matchInput.matchDate,
@@ -36,17 +37,17 @@ const FilteredPredictionsSection: React.FC<FilteredPredictionsSectionProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-            Bahis <span className="gradient-text">Tahminleri</span>
+            {t('predictions.title')} <span className="gradient-text">{t('predictions.titleAccent')}</span>
           </h2>
           {hasActiveFilters && (
             <p className="text-sm text-muted-foreground mt-1">
-              {filteredPredictions.length} / {predictions.length} tahmin gösteriliyor
+              {t('predictions.showing', { filtered: filteredPredictions.length, total: predictions.length })}
             </p>
           )}
         </div>
         {filteredPredictions.length !== predictions.length && (
           <Badge variant="outline" className="self-start sm:self-auto">
-            {filteredPredictions.length} sonuç
+            {t('predictions.results', { count: filteredPredictions.length })}
           </Badge>
         )}
       </div>
@@ -60,9 +61,9 @@ const FilteredPredictionsSection: React.FC<FilteredPredictionsSectionProps> = ({
       {filteredPredictions.length === 0 ? (
         <div className="text-center py-12 bg-muted/20 rounded-lg border border-dashed border-border">
           <AlertCircle className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
-          <h3 className="font-semibold mb-1">Sonuç bulunamadı</h3>
+          <h3 className="font-semibold mb-1">{t('predictions.noResults')}</h3>
           <p className="text-sm text-muted-foreground">
-            Seçili filtrelerle eşleşen tahmin yok. Filtreleri değiştirmeyi deneyin.
+            {t('predictions.noResultsHint')}
           </p>
         </div>
       ) : (

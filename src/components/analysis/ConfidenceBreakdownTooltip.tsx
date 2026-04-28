@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Info } from 'lucide-react';
 import {
   Tooltip,
@@ -13,19 +14,20 @@ interface ConfidenceBreakdownTooltipProps {
   hybridConfidence: number;
 }
 
-const weights = [
-  { label: 'Poisson Modeli', key: 'poisson', weight: 30, color: 'bg-primary' },
-  { label: 'Form Skoru', key: 'form', weight: 25, color: 'bg-emerald-500' },
-  { label: 'xG Etkisi', key: 'xg', weight: 25, color: 'bg-blue-500' },
-  { label: 'Güç Puanı', key: 'power', weight: 20, color: 'bg-amber-500' },
-];
-
 const ConfidenceBreakdownTooltip: React.FC<ConfidenceBreakdownTooltipProps> = ({
   prediction,
   hybridConfidence,
 }) => {
+  const { t } = useTranslation('analysis');
   const aiConf = prediction.aiConfidence ?? 0;
   const mathConf = prediction.mathConfidence ?? 0;
+
+  const weights = [
+    { label: t('confidence.weights.poisson'), key: 'poisson', weight: 30, color: 'bg-primary' },
+    { label: t('confidence.weights.form'), key: 'form', weight: 25, color: 'bg-emerald-500' },
+    { label: t('confidence.weights.xg'), key: 'xg', weight: 25, color: 'bg-blue-500' },
+    { label: t('confidence.weights.power'), key: 'power', weight: 20, color: 'bg-amber-500' },
+  ];
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -37,24 +39,24 @@ const ConfidenceBreakdownTooltip: React.FC<ConfidenceBreakdownTooltipProps> = ({
         </TooltipTrigger>
         <TooltipContent side="top" className="w-56 p-3 space-y-2.5">
           <p className="text-xs font-semibold text-foreground">
-            %{Math.round(hybridConfidence)} Güven Nasıl Hesaplandı?
+            {t('confidence.calcTitle', { value: Math.round(hybridConfidence) })}
           </p>
 
           {aiConf > 0 && (
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>AI Güven</span>
+              <span>{t('confidence.ai')}</span>
               <span className="font-medium text-foreground">%{Math.round(aiConf)}</span>
             </div>
           )}
           {mathConf > 0 && (
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Matematik Güven</span>
+              <span>{t('confidence.math')}</span>
               <span className="font-medium text-foreground">%{Math.round(mathConf)}</span>
             </div>
           )}
 
           <div className="pt-1.5 border-t border-border/50 space-y-1.5">
-            <p className="text-micro text-muted-foreground font-medium">Ağırlık Dağılımı</p>
+            <p className="text-micro text-muted-foreground font-medium">{t('confidence.weightDistribution')}</p>
             {weights.map((w) => (
               <div key={w.key} className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${w.color} shrink-0`} />

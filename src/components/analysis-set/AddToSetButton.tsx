@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnalysisSet } from '@/contexts/AnalysisSetContext';
@@ -12,6 +13,7 @@ interface AddToSetButtonProps {
 }
 
 const AddToSetButton: React.FC<AddToSetButtonProps> = ({ prediction, matchInput }) => {
+  const { t } = useTranslation('analysis');
   const { addToSet, isInSet } = useAnalysisSet();
   const { user } = useAuth();
 
@@ -41,7 +43,7 @@ const AddToSetButton: React.FC<AddToSetButtonProps> = ({ prediction, matchInput 
           className="gap-1.5 border-border hover:border-primary hover:bg-primary/10"
         >
           <Plus className="h-3.5 w-3.5" />
-          <span>Giriş Yap</span>
+          <span>{t('actions.signIn')}</span>
         </Button>
       </Link>
     );
@@ -62,12 +64,12 @@ const AddToSetButton: React.FC<AddToSetButtonProps> = ({ prediction, matchInput 
       {isAdded ? (
         <>
           <Check className="h-3.5 w-3.5" />
-          <span>Eklendi</span>
+          <span>{t('actions.addedToSet')}</span>
         </>
       ) : (
         <>
           <Plus className="h-3.5 w-3.5" />
-          <span>Analize Ekle</span>
+          <span>{t('actions.addToSet')}</span>
         </>
       )}
     </Button>
