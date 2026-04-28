@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   MatchHeroCard,
@@ -33,6 +34,7 @@ const getAppHeight = () => {
 };
 
 const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClose }) => {
+  const { t } = useTranslation('analysis');
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const [snapPoint, setSnapPoint] = useState<number>(SNAP_PEEK);
@@ -233,7 +235,7 @@ const AnalysisDrawer: React.FC<AnalysisDrawerProps> = ({ analysis, isOpen, onClo
               <div
                 role="button"
                 tabIndex={0}
-                aria-label="Detaylar için dokun"
+                aria-label={t('actions.tapForDetails')}
                 className="cursor-pointer transition-transform duration-150 active:scale-[0.995]"
                 onTouchStart={handlePeekTouchStart}
                 onTouchMove={handlePeekTouchMove}
