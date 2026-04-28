@@ -95,7 +95,7 @@ const AnalysisLoadingState: React.FC<AnalysisLoadingStateProps> = ({
               {isComplete ? <Check className="w-6 h-6 text-green-500" /> : <Brain className="w-6 h-6 text-primary" />}
             </motion.div>
             <h2 className="text-lg font-semibold text-foreground">
-              {isComplete ? 'Analiz Tamamlandı' : 'Maç Analiz Ediliyor'}
+              {isComplete ? t('loadingState.completed') : t('loadingState.analyzing')}
             </h2>
           </div>
 
@@ -115,7 +115,7 @@ const AnalysisLoadingState: React.FC<AnalysisLoadingStateProps> = ({
           {/* Progress */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{isComplete ? 'Tamamlandı' : 'İşleniyor...'}</span>
+              <span>{isComplete ? t('loadingState.done') : t('loadingState.processing')}</span>
               <span>{displayProgress}%</span>
             </div>
             <div className="relative h-1.5 bg-muted rounded-full overflow-hidden">
@@ -152,7 +152,7 @@ const AnalysisLoadingState: React.FC<AnalysisLoadingStateProps> = ({
 
           {/* Skeleton cards — horizontal scroll for 320px */}
           <div className="flex overflow-x-auto gap-3 scrollbar-none pt-2 -mx-1 px-1">
-            {['AI Öneri', 'Tahminler', 'İstatistikler'].map((label, i) => (
+            {[t('loadingState.skeleton.aiTip'), t('loadingState.skeleton.predictions'), t('loadingState.skeleton.stats')].map((label, i) => (
               <div key={label} className="relative overflow-hidden rounded-xl border border-border/40 bg-card/50 p-3 min-w-[100px] shrink-0 flex-1">
                 <div className="relative space-y-2">
                   <div className="h-3 w-12 bg-muted rounded animate-pulse" />
