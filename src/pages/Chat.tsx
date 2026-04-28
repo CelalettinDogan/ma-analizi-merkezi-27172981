@@ -128,7 +128,7 @@ const Chat: React.FC = () => {
   useEffect(() => {
     const hasRemainingUsage = isAdmin || (usage && (typeof usage.remaining === 'number' ? usage.remaining > 0 : true));
     if (hasAccess && matchContext && !contextSent && hasRemainingUsage && !isLoadingHistory) {
-      const contextMessage = `${matchContext.homeTeam} vs ${matchContext.awayTeam} maçını analiz et. Bu maç hakkında detaylı bilgi ver.`;
+      const contextMessage = t('context.autoMessage', { home: matchContext.homeTeam, away: matchContext.awayTeam });
       
       const aiContext = {
         match: {
