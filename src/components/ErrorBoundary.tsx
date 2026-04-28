@@ -1,10 +1,11 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { withTranslation, WithTranslation } from 'react-i18next';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 
-interface Props {
+interface Props extends WithTranslation {
   children: ReactNode;
   fallback?: ReactNode;
 }
@@ -32,8 +33,7 @@ class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({ errorInfo });
-    
-    // Report crash to backend (fire-and-forget)
+
     try {
       supabase.from('admin_activity_logs').insert({
         admin_id: '00000000-0000-0000-0000-000000000000',
@@ -62,6 +62,8 @@ class ErrorBoundary extends Component<Props, State> {
   };
 
   render() {
+    const { t } = this.props;
+
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
@@ -75,13 +77,12 @@ class ErrorBoundary extends Component<Props, State> {
                 <AlertTriangle className="h-8 w-8 text-destructive" />
               </div>
               <h2 className="text-xl font-semibold text-foreground">
-                Bir Hata Oluştu
+                {t('errors.boundaryTitle')}
               </h2>
             </CardHeader>
             <CardContent className="text-center space-y-4">
               <p className="text-muted-foreground">
-                Beklenmeyen bir hata oluştu. Lütfen sayfayı yenilemeyi deneyin veya
-                anasayfaya dönün.
+                {t('errors.boundaryDescription')}
               </p>
               {process.env.NODE_ENV === 'development' && this.state.error && (
                 <div className="text-left p-3 rounded-lg bg-destructive/10 border border-destructive/20">
@@ -98,14 +99,14 @@ class ErrorBoundary extends Component<Props, State> {
                 onClick={this.handleGoHome}
               >
                 <Home className="h-4 w-4 mr-2" />
-                Anasayfaya Dön
+                {t('actions.goHome')}
               </Button>
               <Button
                 className="flex-1 bg-primary hover:bg-primary/90"
                 onClick={this.handleRetry}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Tekrar Dene
+                {t('actions.retry')}
               </Button>
             </CardFooter>
           </Card>
@@ -117,4 +118,4 @@ class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-export default ErrorBoundary;
+export default withTranslation('common')(ErrorBoundary);
