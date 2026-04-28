@@ -157,7 +157,7 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
-                        <Sparkles className="w-3 h-3" /> {selectedPrediction.marketScore !== undefined ? 'Market Skoru' : 'Hibrit Skor'}
+                        <Sparkles className="w-3 h-3" /> {selectedPrediction.marketScore !== undefined ? t('predictions.recommendation') : t('confidence.score')}
                       </span>
                       <span className={cn("font-medium", color)}>%{Math.round(hybridConfidence)}</span>
                     </div>
