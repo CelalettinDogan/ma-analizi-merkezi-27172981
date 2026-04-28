@@ -1,33 +1,81 @@
 {
   "title": "Premium",
   "subtitle": "Unbegrenzte Analysen, KI-Chat und mehr",
+  "hero": {
+    "heading": "Premium",
+    "tagline": "Heb dich ab mit erweiterten Analysen und KI-Insights"
+  },
+  "billing": {
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "savingsBadge": "Sparen",
+    "twoMonthsFree": "2 Monate gratis",
+    "perMonth": "/Mo.",
+    "perYear": "/Jahr",
+    "approxPerMonth": "≈ {{price}}/Mo.",
+    "vatIncluded": "Inkl. Steuern",
+    "checkoutNote": "Endpreis wird beim Bezahlen angezeigt",
+    "secure": "Sichere Zahlung via Google Play",
+    "managedByPlay": "Abonnement wird über Google Play verwaltet",
+    "autoRenewNotice": "Das Abonnement verlängert sich am Periodenende automatisch. Du kannst es jederzeit im Google Play Store > Abos kündigen. Die Kündigung wird zum Ende der laufenden Periode wirksam.",
+    "autoRenewShort": "Das Abonnement verlängert sich automatisch. Du kannst es jederzeit im Google Play Store > Abos kündigen. Ohne Kündigung verlängert es sich am Periodenende.",
+    "termsAcceptance": "Mit dem Kauf akzeptierst du die {{terms}} und die {{privacy}}.",
+    "termsLink": "Nutzungsbedingungen",
+    "privacyLink": "Datenschutzerklärung"
+  },
   "plans": {
-    "basic": {
-      "name": "Premium Basic",
-      "description": "Monatlicher Plan",
-      "perMonth": "/Monat"
-    },
-    "pro": {
-      "name": "Premium Pro",
-      "description": "Jahresplan",
-      "perYear": "/Jahr",
-      "savings": "{{percent}}% sparen"
-    }
+    "popular": "Beliebt",
+    "basic": { "name": "Basic", "tagline": "3 KI/Tag" },
+    "plus": { "name": "Plus", "tagline": "5 KI/Tag" },
+    "pro": { "name": "Pro", "tagline": "10 KI/Tag" },
+    "chatPerDay": "{{count}}/Tag",
+    "summaryLine": "{{count}} KI-Nachrichten/Tag • Unbegrenzte Analysen",
+    "fromPrice": "Ab {{price}}/Monat"
   },
   "features": {
     "title": "Premium-Vorteile",
-    "unlimitedAnalysis": "Unbegrenzte Spielanalysen",
-    "aiChat": "KI-Chat-Zugang",
-    "advancedStats": "Erweiterte Statistiken",
-    "noAds": "Werbefreie Erfahrung",
-    "prioritySupport": "Priorisierter Support",
-    "earlyAccess": "Früher Zugang zu neuen Funktionen"
+    "unlimitedAnalysis": "Unbegrenzte Analysen",
+    "unlimitedAnalysisDesc": "Matchanalysen ohne Tageslimit",
+    "noAds": "Werbefrei",
+    "noAdsDesc": "Ungestörtes, sauberes Erlebnis",
+    "history": "Verlaufszugriff",
+    "historyDesc": "Zugriff auf alle bisherigen Analysen",
+    "aiComments": "KI-Kommentare",
+    "aiAssistant": "KI-Assistent",
+    "aiAssistantDesc": "Tägliches KI-Kontingent je nach Plan",
+    "advancedStats": "Tiefenstatistiken",
+    "prioritySupport": "Vorrangiger Support",
+    "earlyAccess": "Früher Zugriff auf neue Funktionen",
+    "aiChat": "KI-Chat-Assistent",
+    "premiumBadge": "Premium"
+  },
+  "active": {
+    "adminAccess": "Admin-Zugriff",
+    "adminDesc": "Voller Zugriff auf alle Funktionen",
+    "activeSubscription": "Aktives Abonnement",
+    "unlimitedAnalysis": "Unbegrenzte Analyse",
+    "noDailyLimit": "Kein Tageslimit",
+    "aiAssistant": "KI-Assistent",
+    "messagesPerDay": "{{count}} Nachr./Tag",
+    "noAds": "Werbefrei",
+    "cleanExperience": "Sauberes Erlebnis",
+    "historyAccess": "Verlaufszugriff",
+    "allAnalyses": "Alle Analysen"
   },
   "actions": {
     "subscribe": "Abonnieren",
+    "buy": "Kaufen",
     "restore": "Käufe wiederherstellen",
     "manage": "Abo verwalten",
-    "upgrade": "Upgrade"
+    "upgrade": "Auf Premium upgraden",
+    "viewPlans": "Pläne ansehen",
+    "later": "Später",
+    "skip": "Vorerst überspringen",
+    "processing": "Wird verarbeitet..."
+  },
+  "trust": {
+    "userCount": "10.000+ Nutzer verwenden GolMetrik AI",
+    "highAccuracy": "KI-Analysen mit hoher Genauigkeit"
   },
   "status": {
     "active": "Aktiv",
@@ -36,15 +84,60 @@
     "expiresOn": "Läuft am {{date}} ab",
     "free": "Kostenloser Plan"
   },
-  "billing": {
-    "vatIncluded": "Steuern enthalten",
-    "checkoutNote": "Endpreis wird beim Bezahlen angezeigt",
-    "secure": "Sichere Zahlung via Google Play"
-  },
   "messages": {
-    "purchaseSuccess": "Abonnement erfolgreich aktiviert",
+    "purchaseSuccess": "{{plan}} aktiviert! 🎉",
+    "purchaseSuccessShort": "{{plan}}-Mitgliedschaft aktiv!",
+    "purchaseSuccessUpgrade": "{{plan}}-Mitgliedschaft aktiviert!",
     "purchaseFailed": "Kauf fehlgeschlagen",
-    "restoreSuccess": "Ihre Käufe wurden wiederhergestellt",
-    "restoreNone": "Keine Käufe zum Wiederherstellen"
+    "activationFailed": "Deine Zahlung wurde empfangen, aber die Aktivierung schlug fehl. Versuche es erneut über \"Wiederherstellen\".",
+    "activationFailedAlt": "Deine Zahlung wurde empfangen, aber die Aktivierung schlug fehl. Versuche es erneut über \"Käufe wiederherstellen\".",
+    "nativeRequired": "Echte Käufe erfordern die Mobile-App",
+    "nativeRequiredTest": "Kauftest: Echte Käufe erfordern die Mobile-App",
+    "restoreSuccess": "Wiederhergestellt!",
+    "restoreSuccessFull": "Käufe wiederhergestellt!",
+    "restoreNone": "Keine Käufe zum Wiederherstellen gefunden",
+    "restoreFailed": "Wiederherstellung fehlgeschlagen",
+    "genericError": "Ein Fehler ist aufgetreten",
+    "shortError": "Fehler",
+    "notFound": "Nicht gefunden"
+  },
+  "limit": {
+    "bannerTitle": "Tägliches Analyse-Limit erreicht",
+    "resetIn": "Zurücksetzung in: {{time}}",
+    "fromPrice": "Premium: ab {{price}}/Monat",
+    "sheetTitle": "Tägliches Analyse-Limit erreicht",
+    "sheetDescription": "Du hast deine kostenlosen Tagesanalysen aufgebraucht. Neue Analysen sind in {{time}} verfügbar.",
+    "premiumPrompt": "Mit Premium führst du ohne Wartezeit unbegrenzte Analysen durch",
+    "viewPlans": "Premium-Pläne ansehen",
+    "tryTomorrow": "Morgen erneut versuchen ({{time}})",
+    "hours": "{{hours}} Std. {{minutes}} Min.",
+    "minutes": "{{minutes}} Min."
+  },
+  "promotion": {
+    "limit": {
+      "title": "Analyse-Limit erreicht!",
+      "subtitle": "Deine 2 kostenlosen Tagesanalysen sind aufgebraucht",
+      "description": "Mit Premium führst du unbegrenzte Matchanalysen durch und nutzt den KI-Assistenten."
+    },
+    "feature": {
+      "title": "Premium-Funktion",
+      "subtitle": "Diese Funktion ist exklusiv für Premium-Mitglieder",
+      "description": "Upgrade auf Premium für tiefe Analysen, xG-Daten und taktische Einblicke."
+    },
+    "general": {
+      "title": "Upgrade auf Premium",
+      "subtitle": "Sei der Fußballanalyse einen Schritt voraus",
+      "description": "KI-gestützte Prognosen, unbegrenzte Analysen und vieles mehr warten auf dich."
+    },
+    "chatbot": {
+      "title": "KI-Assistent nur für Premium",
+      "subtitle": "Dein persönlicher Fußball-Berater",
+      "description": "Analysiere Spiele, erhalte Prognosen und stelle Fragen mit dem KI-Assistenten."
+    },
+    "yearlyHint": "2 Monate gratis bei Jahresplänen!"
+  },
+  "upgrade": {
+    "title": "Upgrade auf Premium",
+    "subtitle": "Schalte unbegrenzte Analysen und den KI-Assistenten frei"
   }
 }

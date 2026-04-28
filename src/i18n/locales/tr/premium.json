@@ -1,33 +1,81 @@
 {
   "title": "Premium",
   "subtitle": "Sınırsız analiz, AI sohbet ve daha fazlası",
+  "hero": {
+    "heading": "Premium",
+    "tagline": "Gelişmiş analiz ve AI destekli içgörülerle fark yarat"
+  },
+  "billing": {
+    "monthly": "Aylık",
+    "yearly": "Yıllık",
+    "savingsBadge": "Tasarruf",
+    "twoMonthsFree": "2 ay bedava",
+    "perMonth": "/ay",
+    "perYear": "/yıl",
+    "approxPerMonth": "≈ {{price}}/ay",
+    "vatIncluded": "Vergiler dahil",
+    "checkoutNote": "Nihai fiyat ödeme adımında gösterilir",
+    "secure": "Google Play ile güvenli ödeme",
+    "managedByPlay": "Abonelik Google Play üzerinden yönetilir",
+    "autoRenewNotice": "Abonelik dönem sonunda otomatik olarak yenilenir. İstediğiniz zaman Google Play Store > Abonelikler bölümünden iptal edebilirsiniz. İptal, mevcut dönem sonunda geçerli olur.",
+    "autoRenewShort": "Abonelik otomatik yenilenir. İstediğiniz zaman Google Play Store > Abonelikler bölümünden iptal edebilirsiniz. İptal edilmedikçe abonelik dönem sonunda yenilenir.",
+    "termsAcceptance": "Satın alarak {{terms}} ve {{privacy}}'nı kabul etmiş olursunuz.",
+    "termsLink": "Kullanım Şartları",
+    "privacyLink": "Gizlilik Politikası"
+  },
   "plans": {
-    "basic": {
-      "name": "Premium Basic",
-      "description": "Aylık plan",
-      "perMonth": "/ay"
-    },
-    "pro": {
-      "name": "Premium Pro",
-      "description": "Yıllık plan",
-      "perYear": "/yıl",
-      "savings": "%{{percent}} tasarruf"
-    }
+    "popular": "Popüler",
+    "basic": { "name": "Basic", "tagline": "3 AI/gün" },
+    "plus": { "name": "Plus", "tagline": "5 AI/gün" },
+    "pro": { "name": "Pro", "tagline": "10 AI/gün" },
+    "chatPerDay": "{{count}}/gün",
+    "summaryLine": "{{count}} AI mesajı/gün • Sınırsız analiz",
+    "fromPrice": "{{price}}/ay'dan başlayan fiyatlarla"
   },
   "features": {
     "title": "Premium Avantajları",
-    "unlimitedAnalysis": "Sınırsız maç analizi",
-    "aiChat": "AI sohbet erişimi",
-    "advancedStats": "Gelişmiş istatistikler",
-    "noAds": "Reklamsız deneyim",
+    "unlimitedAnalysis": "Sınırsız analiz",
+    "unlimitedAnalysisDesc": "Günlük limit olmadan maç analizi",
+    "noAds": "Reklamsız",
+    "noAdsDesc": "Kesintisiz, temiz deneyim",
+    "history": "Geçmiş erişimi",
+    "historyDesc": "Tüm geçmiş analizlerine erişim",
+    "aiComments": "AI yorumlar",
+    "aiAssistant": "AI Asistan",
+    "aiAssistantDesc": "Planına göre günlük AI mesaj hakkı",
+    "advancedStats": "Derin İstatistik",
     "prioritySupport": "Öncelikli destek",
-    "earlyAccess": "Yeni özelliklere erken erişim"
+    "earlyAccess": "Yeni özelliklere erken erişim",
+    "aiChat": "AI Sohbet Asistanı",
+    "premiumBadge": "Premium"
+  },
+  "active": {
+    "adminAccess": "Admin Erişimi",
+    "adminDesc": "Tüm özelliklere tam erişim",
+    "activeSubscription": "Aktif abonelik",
+    "unlimitedAnalysis": "Sınırsız Analiz",
+    "noDailyLimit": "Günlük limit yok",
+    "aiAssistant": "AI Asistan",
+    "messagesPerDay": "{{count}} mesaj/gün",
+    "noAds": "Reklamsız",
+    "cleanExperience": "Temiz deneyim",
+    "historyAccess": "Geçmiş Erişimi",
+    "allAnalyses": "Tüm analizler"
   },
   "actions": {
     "subscribe": "Abone Ol",
-    "restore": "Satın Alımları Geri Yükle",
+    "buy": "Satın Al",
+    "restore": "Satın Almaları Geri Yükle",
     "manage": "Aboneliği Yönet",
-    "upgrade": "Yükselt"
+    "upgrade": "Premium'a Yükselt",
+    "viewPlans": "Planları Görüntüle",
+    "later": "Daha sonra",
+    "skip": "Şimdilik Atla",
+    "processing": "İşleniyor..."
+  },
+  "trust": {
+    "userCount": "10.000+ kullanıcı GolMetrik AI kullanıyor",
+    "highAccuracy": "Yüksek doğruluk oranına sahip AI analizler"
   },
   "status": {
     "active": "Aktif",
@@ -36,15 +84,60 @@
     "expiresOn": "{{date}} tarihinde sona eriyor",
     "free": "Ücretsiz Plan"
   },
-  "billing": {
-    "vatIncluded": "Vergiler dahil",
-    "checkoutNote": "Nihai fiyat ödeme adımında gösterilir",
-    "secure": "Google Play ile güvenli ödeme"
-  },
   "messages": {
-    "purchaseSuccess": "Abonelik başarıyla aktif edildi",
-    "purchaseFailed": "Satın alma başarısız oldu",
-    "restoreSuccess": "Satın alımlarınız geri yüklendi",
-    "restoreNone": "Geri yüklenecek satın alım bulunamadı"
+    "purchaseSuccess": "{{plan}} aktif edildi! 🎉",
+    "purchaseSuccessShort": "{{plan}} üyeliğin aktif!",
+    "purchaseSuccessUpgrade": "{{plan}} üyeliğin aktif edildi!",
+    "purchaseFailed": "Satın alma başarısız",
+    "activationFailed": "Ödemeniz alındı ancak aktivasyon başarısız oldu. \"Geri yükle\" ile tekrar deneyin.",
+    "activationFailedAlt": "Ödemeniz alındı ancak aktivasyon başarısız oldu. \"Satın Almaları Geri Yükle\" ile tekrar deneyin.",
+    "nativeRequired": "Gerçek satın alma için mobil uygulama gerekli",
+    "nativeRequiredTest": "Satın alma testi: Gerçek satın alma için mobil uygulama gerekli",
+    "restoreSuccess": "Geri yüklendi!",
+    "restoreSuccessFull": "Satın almalar geri yüklendi!",
+    "restoreNone": "Geri yüklenecek satın alma bulunamadı",
+    "restoreFailed": "Geri yükleme başarısız",
+    "genericError": "Bir hata oluştu",
+    "shortError": "Hata",
+    "notFound": "Bulunamadı"
+  },
+  "limit": {
+    "bannerTitle": "Günlük analiz hakkınız doldu",
+    "resetIn": "Yenilenmesine: {{time}}",
+    "fromPrice": "Premium: {{price}}/ay'dan başlayan fiyatlarla",
+    "sheetTitle": "Günlük Analiz Hakkın Doldu",
+    "sheetDescription": "Günlük ücretsiz analiz hakkını kullandın. Yeni analiz hakkı {{time}} sonra yenilenecek.",
+    "premiumPrompt": "Premium ile beklemeden sınırsız analiz yapabilirsin",
+    "viewPlans": "Premium Planları Gör",
+    "tryTomorrow": "Yarın Tekrar Dene ({{time}})",
+    "hours": "{{hours}} saat {{minutes}} dakika",
+    "minutes": "{{minutes}} dakika"
+  },
+  "promotion": {
+    "limit": {
+      "title": "Analiz Limitine Ulaştınız!",
+      "subtitle": "Günlük 2 ücretsiz analiz hakkınız doldu",
+      "description": "Premium ile sınırsız maç analizi yapın ve AI asistandan yararlanın."
+    },
+    "feature": {
+      "title": "Premium Özellik",
+      "subtitle": "Bu özellik Premium üyelere özel",
+      "description": "Derin analiz, xG verileri ve taktik içgörüler için Premium'a yükseltin."
+    },
+    "general": {
+      "title": "Premium'a Yükseltin",
+      "subtitle": "Futbol analizinde bir adım önde olun",
+      "description": "AI destekli tahminler, sınırsız analiz ve çok daha fazlası sizi bekliyor."
+    },
+    "chatbot": {
+      "title": "AI Asistan Premium'a Özel",
+      "subtitle": "Kişisel futbol danışmanınız",
+      "description": "AI Asistan ile maç analizi yapın, tahmin alın ve sorularınızı sorun."
+    },
+    "yearlyHint": "Yıllık planlarda 2 ay bedava!"
+  },
+  "upgrade": {
+    "title": "Premium'a Yükselt",
+    "subtitle": "Sınırsız analiz ve AI Asistan'a eriş"
   }
 }
