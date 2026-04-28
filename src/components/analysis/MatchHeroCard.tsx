@@ -19,7 +19,7 @@ const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights, homeTeam
   const { t, i18n } = useTranslation('analysis');
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return format(date, 'EEE d MMM', { locale: getDateLocale(i18n.language) });
+    return format(date, 'EEE d MMM', { locale: getDateLocale() });
   };
 
   const getLeagueName = (code: string) => {
@@ -86,7 +86,7 @@ const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights, homeTeam
               gradient="from-primary/20 to-primary/10"
             />
             <h2 className="text-sm font-semibold text-foreground break-words min-w-0">{match.homeTeam}</h2>
-            <span className="text-xs text-muted-foreground">Ev Sahibi</span>
+            <span className="text-xs text-muted-foreground">{t('teams.home')}</span>
           </div>
 
           {/* VS Badge — fixed size */}
@@ -104,7 +104,7 @@ const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights, homeTeam
               gradient="from-secondary/20 to-secondary/10"
             />
             <h2 className="text-sm font-semibold text-foreground break-words min-w-0">{match.awayTeam}</h2>
-            <span className="text-xs text-muted-foreground">Deplasman</span>
+            <span className="text-xs text-muted-foreground">{t('teams.away')}</span>
           </div>
         </div>
 
