@@ -25,7 +25,9 @@
     "viewAll": "View All",
     "seeMore": "See More",
     "seeLess": "See Less",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "clear": "Clear",
+    "goHome": "Back to Home"
   },
   "nav": {
     "home": "Home",
@@ -54,7 +56,9 @@
     "network": "Check your internet connection",
     "notFound": "Not found",
     "unauthorized": "You must be logged in for this action",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "boundaryTitle": "Something Went Wrong",
+    "boundaryDescription": "An unexpected error occurred. Please try refreshing the page or returning home."
   },
   "status": {
     "online": "Online",
@@ -73,5 +77,48 @@
     "minutesAgo": "{{count}} minutes ago",
     "hoursAgo": "{{count}} hours ago",
     "daysAgo": "{{count}} days ago"
+  },
+  "footer": {
+    "tagline": "AI-powered football analysis platform. Data-driven statistics, AI predictions, and comprehensive match analyses.",
+    "quickLinks": "Quick Links",
+    "legal": "Legal",
+    "homePage": "Home",
+    "liveMatches": "Live Matches",
+    "leagueStandings": "League Standings",
+    "profile": "Profile",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfUse": "Terms of Use",
+    "copyright": "© {{year}} GolMetrik AI. All rights reserved.",
+    "disclaimer": "All content is for informational purposes only and does not constitute advice."
+  },
+  "userMenu": {
+    "label": "User menu",
+    "fallback": "User",
+    "profile": "My Profile",
+    "adminPanel": "Admin Panel",
+    "history": "Analysis History"
+  },
+  "commandPalette": {
+    "placeholder": "Search team, league or page...",
+    "loadingTeams": "Loading teams...",
+    "noResults": "No results found for \"{{query}}\".",
+    "tryOther": "Try a different team or league",
+    "teams": "Teams",
+    "leagues": "Leagues",
+    "pages": "Pages",
+    "recentSearches": "Recent Searches",
+    "history": "Analysis History",
+    "liveTag": "⚡ Live"
+  },
+  "legalDisclaimer": {
+    "title": "Disclaimer",
+    "infoTitle": "Informational Content",
+    "infoBody": "All analyses, statistics and predictions on this platform are for informational purposes only.",
+    "financeTitle": "Not Financial Advice",
+    "financeBody": "Our content does not constitute investment or financial advice. You are solely responsible for your decisions.",
+    "dataTitle": "Data Sources",
+    "dataBody": "Match data and statistics are sourced from third parties. Data accuracy is not guaranteed.",
+    "predictionTitle": "Prediction Outcomes",
+    "predictionBody": "There is no guarantee that predictions will be correct. The platform accepts no responsibility for prediction outcomes."
   }
 }
