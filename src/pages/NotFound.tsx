@@ -2,11 +2,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Home } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation('profile');
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
@@ -20,7 +22,6 @@ const NotFound = () => {
         transition={{ duration: 0.4 }}
         className="text-center space-y-6"
       >
-        {/* Brand icon */}
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -31,9 +32,9 @@ const NotFound = () => {
         </motion.div>
 
         <div className="space-y-2">
-          <h1 className="text-xl font-bold text-foreground">Sayfa bulunamadı</h1>
+          <h1 className="text-xl font-bold text-foreground">{t('notFound.title')}</h1>
           <p className="text-sm text-muted-foreground max-w-[260px] mx-auto">
-            Aradığınız sayfa mevcut değil veya taşınmış olabilir.
+            {t('notFound.description')}
           </p>
         </div>
 
@@ -43,7 +44,7 @@ const NotFound = () => {
             className="rounded-2xl h-12 px-8 text-sm font-semibold"
           >
             <Home className="w-4 h-4 mr-2" />
-            Ana Sayfaya Dön
+            {t('notFound.cta')}
           </Button>
         </motion.div>
       </motion.div>
