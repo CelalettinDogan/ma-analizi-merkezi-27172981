@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Loader2, Smartphone, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import logoImg from '@/assets/logo.png';
@@ -9,6 +10,7 @@ const NATIVE_SCHEME = 'golmetrik://';
 type CallbackState = 'loading' | 'verified' | 'error';
 
 const AuthCallback = () => {
+  const { t } = useTranslation('auth');
   const [state, setState] = useState<CallbackState>('loading');
   const [tokens, setTokens] = useState<{ access_token?: string; refresh_token?: string }>({});
 
@@ -66,9 +68,9 @@ const AuthCallback = () => {
             <AlertCircle className="h-8 w-8 text-destructive" />
           </div>
           <div className="space-y-2">
-            <h1 className="text-xl font-bold text-foreground">Geçersiz Bağlantı</h1>
+            <h1 className="text-xl font-bold text-foreground">{t('verifyEmail.invalidTitle')}</h1>
             <p className="text-sm text-muted-foreground">
-              Bu doğrulama bağlantısı geçersiz veya süresi dolmuş. Lütfen tekrar kayıt olun.
+              {t('verifyEmail.invalidDescription')}
             </p>
           </div>
         </motion.div>
@@ -101,9 +103,9 @@ const AuthCallback = () => {
         </motion.div>
 
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold text-foreground">E-postanız Doğrulandı!</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('verifyEmail.successTitle')}</h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Hesabınız başarıyla doğrulandı. Mobil uygulamadan giriş yaparak devam edebilirsiniz.
+            {t('verifyEmail.successDescription')}
           </p>
         </div>
 
@@ -113,12 +115,12 @@ const AuthCallback = () => {
             className="w-full h-[52px] rounded-2xl text-[15px] font-semibold shadow-[0_4px_16px_hsl(var(--primary)/0.3)] gap-2"
           >
             <Smartphone className="h-4 w-4" />
-            Uygulamayı Aç
+            {t('verifyEmail.openApp')}
           </Button>
         </motion.div>
 
         <p className="text-xs text-muted-foreground/60">
-          Uygulama açılmazsa, GolMetrik uygulamasını açıp giriş yapabilirsiniz.
+          {t('verifyEmail.openAppHint')}
         </p>
       </motion.div>
     </div>
