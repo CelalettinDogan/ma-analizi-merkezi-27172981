@@ -1,4 +1,5 @@
 import React, { useState, lazy, Suspense, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Crosshair, History, Brain, AlertCircle, Users } from 'lucide-react';
 import { MatchAnalysis } from '@/types/match';
@@ -24,8 +25,9 @@ const TabSkeleton = () => (
 );
 
 const AdvancedAnalysisTabs: React.FC<AdvancedAnalysisTabsProps> = ({ analysis }) => {
+  const { t } = useTranslation('analysis');
   const [activeTab, setActiveTab] = useState('poisson');
-  
+
   const hasPoisson = !!analysis.poissonData;
   const hasSimilar = analysis.similarMatches && analysis.similarMatches.length > 0;
   const hasInjuries = analysis.injuries.home.length > 0 || analysis.injuries.away.length > 0;
@@ -41,30 +43,30 @@ const AdvancedAnalysisTabs: React.FC<AdvancedAnalysisTabsProps> = ({ analysis })
 
   // Tab configuration
   const tabs = [
-    { 
-      id: 'poisson', 
-      label: 'Gol Analizi', 
+    {
+      id: 'poisson',
+      label: t('tabsAdvanced.poisson'),
       icon: <Crosshair className="w-4 h-4" />,
-      badge: hasPoisson ? null : 'Yok',
+      badge: hasPoisson ? null : t('tabsAdvanced.none'),
       disabled: !hasPoisson
     },
-    { 
-      id: 'similar', 
-      label: 'Benzer Maçlar', 
+    {
+      id: 'similar',
+      label: t('tabsAdvanced.similar'),
       icon: <History className="w-4 h-4" />,
       badge: hasSimilar ? `${analysis.similarMatches?.length}` : null,
       disabled: !hasSimilar
     },
-    { 
-      id: 'tactical', 
-      label: 'Taktik', 
+    {
+      id: 'tactical',
+      label: t('tabsAdvanced.tactical'),
       icon: <Brain className="w-4 h-4" />,
       badge: null,
       disabled: false
     },
-    { 
-      id: 'factors', 
-      label: 'Faktörler', 
+    {
+      id: 'factors',
+      label: t('tabsAdvanced.factors'),
       icon: <AlertCircle className="w-4 h-4" />,
       badge: `${analysis.keyFactors.length}`,
       disabled: false
@@ -75,7 +77,7 @@ const AdvancedAnalysisTabs: React.FC<AdvancedAnalysisTabsProps> = ({ analysis })
   if (hasInjuries) {
     tabs.push({
       id: 'injuries',
-      label: 'Eksikler',
+      label: t('tabsAdvanced.injuries'),
       icon: <Users className="w-4 h-4" />,
       badge: `${analysis.injuries.home.length + analysis.injuries.away.length}`,
       disabled: false
@@ -152,7 +154,7 @@ const AdvancedAnalysisTabs: React.FC<AdvancedAnalysisTabsProps> = ({ analysis })
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                 <Brain className="w-4 h-4 text-primary" />
-                Taktiksel Değerlendirme
+                {t('tabsAdvanced.assessment')}
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {analysis.tacticalAnalysis}
@@ -165,7 +167,7 @@ const AdvancedAnalysisTabs: React.FC<AdvancedAnalysisTabsProps> = ({ analysis })
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                 <AlertCircle className="w-4 h-4 text-amber-400" />
-                Önemli Faktörler
+                {t('sections.keyFactors')}
               </div>
               <ul className="space-y-2">
                 {analysis.keyFactors.map((factor, index) => (
@@ -199,7 +201,7 @@ const AdvancedAnalysisTabs: React.FC<AdvancedAnalysisTabsProps> = ({ analysis })
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-muted-foreground">Eksik oyuncu yok</p>
+                    <p className="text-sm text-muted-foreground">{t('injuries.none')}</p>
                   )}
                 </div>
                 <div>
@@ -217,7 +219,7 @@ const AdvancedAnalysisTabs: React.FC<AdvancedAnalysisTabsProps> = ({ analysis })
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-muted-foreground">Eksik oyuncu yok</p>
+                    <p className="text-sm text-muted-foreground">{t('injuries.none')}</p>
                   )}
                 </div>
               </div>
