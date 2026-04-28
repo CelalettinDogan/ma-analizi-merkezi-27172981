@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Plus, Star, AlertTriangle, Info, ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Prediction, MatchInput } from '@/types/match';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -15,13 +16,13 @@ interface AIRecommendationCardProps {
   matchInput: MatchInput;
 }
 
-const confidenceConfig = {
-  'yüksek': { icon: Star, label: 'Yüksek Güven', color: 'text-emerald-400', bg: 'bg-emerald-500/20' },
-  'orta': { icon: Info, label: 'Orta Güven', color: 'text-amber-400', bg: 'bg-amber-500/20' },
-  'düşük': { icon: AlertTriangle, label: 'Düşük Güven', color: 'text-muted-foreground', bg: 'bg-muted' },
-};
-
 const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions, matchInput }) => {
+  const { t } = useTranslation('analysis');
+  const confidenceConfig = {
+    'yüksek': { icon: Star, label: t('confidence.highBadge'), color: 'text-emerald-400', bg: 'bg-emerald-500/20' },
+    'orta': { icon: Info, label: t('confidence.mediumBadge'), color: 'text-amber-400', bg: 'bg-amber-500/20' },
+    'düşük': { icon: AlertTriangle, label: t('confidence.lowBadge'), color: 'text-muted-foreground', bg: 'bg-muted' },
+  };
   const { addToSet, items } = useAnalysisSet();
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showFullReasoning, setShowFullReasoning] = useState(false);
