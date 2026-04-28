@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import HeroSection from '@/components/HeroSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
 import { AnalysisSetButton } from '@/components/analysis-set';
@@ -37,6 +38,7 @@ import { getUpcomingMatches, getTeamNextMatch } from '@/services/footballApiServ
 const Index: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation('home');
   const { analysis, isLoading: analysisLoading, analyzeMatch } = useMatchAnalysis();
   const { user } = useAuth();
   const { showOnboarding, completeOnboarding } = useOnboarding();
@@ -99,7 +101,7 @@ const Index: React.FC = () => {
       setUpcomingMatches(matches.slice(0, 10));
     } catch (e) {
       console.error('Error fetching matches:', e);
-      toast.error('Maç verileri yüklenirken hata oluştu.');
+      toast.error(t('toasts.matchLoadError'));
     } finally {
       setIsLoadingMatches(false);
     }
@@ -221,7 +223,7 @@ const Index: React.FC = () => {
         analyzedMatchesRef.current.add(matchKey);
       }
     } catch (error) {
-      toast.error('Analiz yüklenirken hata oluştu');
+      toast.error(t('toasts.analysisLoadError'));
       pendingAnalysisScrollRef.current = false;
     } finally {
       setLoadingMatchId(null);
@@ -241,7 +243,7 @@ const Index: React.FC = () => {
 
   const handleCommandTeamSelect = async (teamName: string, leagueCode: string) => {
     setCommandOpen(false);
-    toast.info(`${teamName} için maç aranıyor...`);
+    toast.info(t('toasts.searchingTeam', { team: teamName }));
     
     try {
       const nextMatch = await getTeamNextMatch(teamName);
@@ -249,13 +251,13 @@ const Index: React.FC = () => {
       if (nextMatch) {
         handleMatchSelect(nextMatch);
       } else {
-        toast.warning(`${teamName} için yaklaşan maç bulunamadı.`);
+        toast.warning(t('toasts.noUpcomingForTeam', { team: teamName }));
         // Fallback: Select the league and scroll to upcoming matches
         setSelectedLeague(leagueCode as CompetitionCode);
       }
     } catch (error) {
       console.error('Team match search error:', error);
-      toast.error('Maç aranırken hata oluştu');
+      toast.error(t('toasts.teamSearchError'));
     }
   };
 
@@ -265,10 +267,10 @@ const Index: React.FC = () => {
       size="sm" 
       className="hidden md:flex gap-2 text-muted-foreground"
       onClick={() => setCommandOpen(true)}
-      aria-label="Takım veya lig ara"
+      aria-label={t('hero.searchAria')}
     >
       <Search className="w-4 h-4" />
-      <span>Ara...</span>
+      <span>{t('hero.searchPlaceholder')}</span>
       <kbd className="ml-2 px-1.5 py-0.5 text-micro bg-muted rounded">⌘K</kbd>
     </Button>
   );
@@ -322,7 +324,7 @@ const Index: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-5 rounded-full bg-primary" />
-                <h2 className="font-semibold">Yaklaşan Maçlar</h2>
+                <h2 className="font-semibold">{t('sections.upcomingMatchesShort')}</h2>
                 <span className="text-sm text-muted-foreground">
                   {SUPPORTED_COMPETITIONS.find(c => c.code === selectedLeague)?.name}
                 </span>
@@ -333,7 +335,7 @@ const Index: React.FC = () => {
                 onClick={() => setSelectedLeague('')}
                 className="text-xs text-muted-foreground"
               >
-                Temizle
+                {t('sections.clear')}
               </Button>
             </div>
             
