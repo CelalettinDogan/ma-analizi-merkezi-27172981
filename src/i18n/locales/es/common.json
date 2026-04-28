@@ -200,5 +200,25 @@
       "handicap": "Hándicap",
       "doubleChance": "Doble Oportunidad"
     }
+  },
+  "live": {
+    "title": "Resultados en Vivo",
+    "matchCount_one": "{{count}} partido",
+    "matchCount_other": "{{count}} partidos",
+    "delayNote": "Los datos pueden tener ~15 min de retraso",
+    "errorLoading": "Error al cargar los partidos en vivo",
+    "retry": "Reintentar",
+    "noMatchesTitle": "No hay partidos en vivo ahora",
+    "noMatchesDesc": "No hay partidos en curso en las ligas compatibles.",
+    "goToUpcoming": "Ir a próximos partidos",
+    "willAppear": "Los partidos aparecerán aquí cuando comiencen",
+    "searchingTeam": "Buscando partido para {{team}}...",
+    "noUpcomingForTeam": "No se encontró próximo partido para {{team}}.",
+    "searchError": "Error al buscar el partido"
+  },
+  "standings": {
+    "loading": "Cargando clasificación...",
+    "errorLoading": "Error al cargar la clasificación",
+    "retry": "Reintentar"
   }
 }

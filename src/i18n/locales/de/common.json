@@ -200,5 +200,25 @@
       "handicap": "Handicap",
       "doubleChance": "Doppelte Chance"
     }
+  },
+  "live": {
+    "title": "Live-Ergebnisse",
+    "matchCount_one": "{{count}} Spiel",
+    "matchCount_other": "{{count}} Spiele",
+    "delayNote": "Daten können ~15 Min verzögert sein",
+    "errorLoading": "Live-Spiele konnten nicht geladen werden",
+    "retry": "Erneut versuchen",
+    "noMatchesTitle": "Derzeit keine Live-Spiele",
+    "noMatchesDesc": "In den unterstützten Ligen laufen keine Spiele.",
+    "goToUpcoming": "Zu kommenden Spielen",
+    "willAppear": "Spiele erscheinen hier, sobald sie beginnen",
+    "searchingTeam": "Suche Spiel für {{team}}...",
+    "noUpcomingForTeam": "Kein kommendes Spiel für {{team}} gefunden.",
+    "searchError": "Fehler bei der Spielsuche"
+  },
+  "standings": {
+    "loading": "Tabelle wird geladen...",
+    "errorLoading": "Tabelle konnte nicht geladen werden",
+    "retry": "Erneut versuchen"
   }
 }
