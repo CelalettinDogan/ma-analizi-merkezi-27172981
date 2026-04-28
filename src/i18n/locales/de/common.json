@@ -25,7 +25,9 @@
     "viewAll": "Alle anzeigen",
     "seeMore": "Mehr",
     "seeLess": "Weniger",
-    "refresh": "Aktualisieren"
+    "refresh": "Aktualisieren",
+    "clear": "Leeren",
+    "goHome": "Zur Startseite"
   },
   "nav": {
     "home": "Start",
@@ -54,7 +56,9 @@
     "network": "Überprüfen Sie Ihre Internetverbindung",
     "notFound": "Nicht gefunden",
     "unauthorized": "Sie müssen für diese Aktion angemeldet sein",
-    "tryAgain": "Erneut versuchen"
+    "tryAgain": "Erneut versuchen",
+    "boundaryTitle": "Ein Fehler ist aufgetreten",
+    "boundaryDescription": "Ein unerwarteter Fehler ist aufgetreten. Bitte aktualisieren Sie die Seite oder kehren Sie zur Startseite zurück."
   },
   "status": {
     "online": "Online",
@@ -73,5 +77,48 @@
     "minutesAgo": "vor {{count}} Minuten",
     "hoursAgo": "vor {{count}} Stunden",
     "daysAgo": "vor {{count}} Tagen"
+  },
+  "footer": {
+    "tagline": "KI-gestützte Fußballanalyse-Plattform. Datengetriebene Statistiken, KI-Prognosen und umfassende Spielanalysen.",
+    "quickLinks": "Schnellzugriff",
+    "legal": "Rechtliches",
+    "homePage": "Startseite",
+    "liveMatches": "Live-Spiele",
+    "leagueStandings": "Liga-Tabellen",
+    "profile": "Profil",
+    "privacyPolicy": "Datenschutz",
+    "termsOfUse": "Nutzungsbedingungen",
+    "copyright": "© {{year}} GolMetrik AI. Alle Rechte vorbehalten.",
+    "disclaimer": "Alle Inhalte dienen nur zu Informationszwecken und stellen keine Beratung dar."
+  },
+  "userMenu": {
+    "label": "Benutzermenü",
+    "fallback": "Benutzer",
+    "profile": "Mein Profil",
+    "adminPanel": "Admin-Bereich",
+    "history": "Analyseverlauf"
+  },
+  "commandPalette": {
+    "placeholder": "Team, Liga oder Seite suchen...",
+    "loadingTeams": "Teams werden geladen...",
+    "noResults": "Keine Ergebnisse für \"{{query}}\".",
+    "tryOther": "Probieren Sie ein anderes Team oder eine Liga",
+    "teams": "Teams",
+    "leagues": "Ligen",
+    "pages": "Seiten",
+    "recentSearches": "Letzte Suchen",
+    "history": "Analyseverlauf",
+    "liveTag": "⚡ Live"
+  },
+  "legalDisclaimer": {
+    "title": "Haftungsausschluss",
+    "infoTitle": "Informative Inhalte",
+    "infoBody": "Alle Analysen, Statistiken und Prognosen auf dieser Plattform dienen nur zu Informationszwecken.",
+    "financeTitle": "Keine Finanzberatung",
+    "financeBody": "Unsere Inhalte stellen keine Anlage- oder Finanzberatung dar. Sie sind allein für Ihre Entscheidungen verantwortlich.",
+    "dataTitle": "Datenquellen",
+    "dataBody": "Spieldaten und Statistiken stammen aus Drittquellen. Die Genauigkeit der Daten wird nicht garantiert.",
+    "predictionTitle": "Vorhersageergebnisse",
+    "predictionBody": "Es wird keine Garantie für die Richtigkeit der Vorhersagen übernommen. Die Plattform übernimmt keine Verantwortung für Vorhersageergebnisse."
   }
 }

@@ -80,5 +80,24 @@
   },
   "footer": {
     "disclaimer": "⚠️ Tüm içerikler istatistiksel analiz amaçlıdır ve tavsiye niteliği taşımaz."
+  },
+  "recentAnalyses": {
+    "title": "Son Analizler",
+    "empty": "Henüz analiz yapılmamış",
+    "cta": "Analiz Yap",
+    "resultPending": "Bekliyor",
+    "resultCorrect": "Doğru",
+    "resultWrong": "Yanlış"
+  },
+  "favorites": {
+    "title": "Favorilerim",
+    "empty": "Henüz favori eklenmedi",
+    "leagues": "Ligler",
+    "teams": "Takımlar"
+  },
+  "notFound": {
+    "title": "Sayfa bulunamadı",
+    "description": "Aradığınız sayfa mevcut değil veya taşınmış olabilir.",
+    "cta": "Ana Sayfaya Dön"
   }
 }

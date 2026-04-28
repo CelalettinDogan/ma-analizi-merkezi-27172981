@@ -80,5 +80,24 @@
   },
   "footer": {
     "disclaimer": "⚠️ All content is for statistical analysis purposes and does not constitute advice."
+  },
+  "recentAnalyses": {
+    "title": "Recent Analyses",
+    "empty": "No analyses yet",
+    "cta": "Run Analysis",
+    "resultPending": "Pending",
+    "resultCorrect": "Correct",
+    "resultWrong": "Wrong"
+  },
+  "favorites": {
+    "title": "My Favorites",
+    "empty": "No favorites added yet",
+    "leagues": "Leagues",
+    "teams": "Teams"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist or has been moved.",
+    "cta": "Back to Home"
   }
 }

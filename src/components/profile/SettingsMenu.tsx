@@ -28,8 +28,6 @@ interface SettingsMenuProps {
 const SettingsMenu: React.FC<SettingsMenuProps> = ({ theme, setTheme, signOut, userId }) => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('profile');
-  const [showPrivacySheet, setShowPrivacySheet] = useState(false);
-  const [showTermsSheet, setShowTermsSheet] = useState(false);
   const [showThemeSheet, setShowThemeSheet] = useState(false);
   const [showLanguageSheet, setShowLanguageSheet] = useState(false);
   const [showAIInfoSheet, setShowAIInfoSheet] = useState(false);
@@ -115,11 +113,11 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ theme, setTheme, signOut, u
             <p className="font-semibold text-sm font-display">GolMetrik AI</p>
             <p className="text-micro text-muted-foreground">{t('settings.version', { version: '1.0.0' })}</p>
           </div>
-          <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl active:scale-[0.98] transition-transform" onClick={() => setShowPrivacySheet(true)}>
+          <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl active:scale-[0.98] transition-transform" onClick={() => navigate('/privacy')}>
             <span className="flex items-center gap-2.5"><Shield className="h-4 w-4 text-muted-foreground" />{t('settings.privacyPolicy')}</span>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Button>
-          <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl active:scale-[0.98] transition-transform" onClick={() => setShowTermsSheet(true)}>
+          <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl active:scale-[0.98] transition-transform" onClick={() => navigate('/terms')}>
             <span className="flex items-center gap-2.5"><FileText className="h-4 w-4 text-muted-foreground" />{t('settings.termsOfUse')}</span>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Button>
@@ -269,74 +267,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ theme, setTheme, signOut, u
         </SheetContent>
       </Sheet>
 
-      {/* Privacy Sheet */}
-      <Sheet open={showPrivacySheet} onOpenChange={setShowPrivacySheet}>
-        <SheetContent side="bottom" className="h-[85vh] p-0">
-          <ScrollArea className="h-full px-6 py-6">
-            <div className="space-y-6 pb-8">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold">{t('settings.privacyPolicy')}</h2>
-                <Button variant="ghost" size="sm" onClick={() => setShowPrivacySheet(false)}>{t('legal.close')}</Button>
-              </div>
-              <p className="text-xs text-muted-foreground">{t('legal.lastUpdated')}</p>
-              {currentLang !== 'tr' && (
-                <p className="text-xs text-muted-foreground italic border-l-2 border-primary/40 pl-3">{t('legal.translationNote')}</p>
-              )}
-              <div className="space-y-4">
-                {[
-                  { t: '1. Veri Toplama', d: 'GolMetrik AI olarak, hizmetlerimizi sunabilmek için belirli kişisel verilerinizi topluyoruz. Bu veriler arasında e-posta adresiniz, kullanıcı tercihleri ve uygulama kullanım istatistikleri yer almaktadır.' },
-                  { t: '2. Veri Kullanımı', d: 'Topladığımız veriler, size kişiselleştirilmiş futbol analizi sunmak, uygulama deneyimini iyileştirmek ve teknik destek sağlamak amacıyla kullanılmaktadır.' },
-                  { t: '3. Veri Güvenliği', d: 'Verileriniz endüstri standardı güvenlik protokolleri ile korunmaktadır. SSL şifreleme ve güvenli sunucu altyapısı kullanıyoruz.' },
-                  { t: '4. Üçüncü Taraf Paylaşımı', d: 'Kişisel verileriniz, yasal zorunluluklar dışında üçüncü taraflarla paylaşılmaz. Analiz hizmetleri için anonim ve toplu veriler kullanılabilir.' },
-                  { t: '5. Çerezler', d: 'Uygulamamız, oturum yönetimi ve kullanıcı tercihlerini saklamak için gerekli çerezleri kullanmaktadır.' },
-                  { t: '6. Kullanıcı Hakları', d: 'Verilerinize erişim, düzeltme veya silme talep etme hakkına sahipsiniz. Bu talepler için destek ekibimizle iletişime geçebilirsiniz.' },
-                  { t: '7. İletişim', d: 'Gizlilik politikamız hakkında sorularınız için: destek@golmetrik.com' },
-                ].map(s => (
-                  <section key={s.t}>
-                    <h3 className="font-semibold text-sm mb-1">{s.t}</h3>
-                    <p className="text-xs text-muted-foreground">{s.d}</p>
-                  </section>
-                ))}
-              </div>
-            </div>
-          </ScrollArea>
-        </SheetContent>
-      </Sheet>
-
-      {/* Terms Sheet */}
-      <Sheet open={showTermsSheet} onOpenChange={setShowTermsSheet}>
-        <SheetContent side="bottom" className="h-[85vh] p-0">
-          <ScrollArea className="h-full px-6 py-6">
-            <div className="space-y-6 pb-8">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold">{t('settings.termsOfUse')}</h2>
-                <Button variant="ghost" size="sm" onClick={() => setShowTermsSheet(false)}>{t('legal.close')}</Button>
-              </div>
-              <p className="text-xs text-muted-foreground">{t('legal.lastUpdated')}</p>
-              {currentLang !== 'tr' && (
-                <p className="text-xs text-muted-foreground italic border-l-2 border-primary/40 pl-3">{t('legal.translationNote')}</p>
-              )}
-              <div className="space-y-4">
-                {[
-                  { t: '1. Hizmet Tanımı', d: 'GolMetrik AI, istatistik destekli futbol analiz platformudur. Sunulan tüm analizler istatistiksel değerlendirmeler olup, kesin sonuç garantisi vermez.' },
-                  { t: '2. Kullanım Koşulları', d: 'Uygulamayı kullanarak bu şartları kabul etmiş olursunuz. Platform 18 yaş üstü kullanıcılar içindir. Yasal olmayan amaçlarla kullanım yasaktır.' },
-                  { t: '3. Sorumluluk Reddi', d: 'Sunulan analizler bilgilendirme amaçlıdır. Bahis veya finansal kararlar için tavsiye niteliği taşımaz. Kullanıcılar kendi kararlarından sorumludur.' },
-                  { t: '4. Fikri Mülkiyet', d: 'Uygulama içeriği, algoritmaları ve tasarımı GolMetrik AI\'a aittir. İzinsiz kopyalama veya dağıtım yasaktır.' },
-                  { t: '5. Hesap Güvenliği', d: 'Kullanıcılar hesap bilgilerini güvende tutmakla yükümlüdür. Şüpheli aktivite durumunda derhal bildirim yapılmalıdır.' },
-                  { t: '6. Premium Üyelik', d: 'Premium özellikler ücretli abonelik gerektirir. İptal ve iade koşulları uygulama mağazası politikalarına tabidir.' },
-                  { t: '7. Değişiklikler', d: 'Bu şartlar önceden bildirimle güncellenebilir. Güncel versiyonu uygulama içinden takip edebilirsiniz.' },
-                  { t: '8. İletişim', d: 'Sorularınız için: destek@golmetrik.com' },
-                ].map(s => (
-                  <section key={s.t}>
-                    <h3 className="font-semibold text-sm mb-1">{s.t}</h3>
-                    <p className="text-xs text-muted-foreground">{s.d}</p>
-                  </section>
-                ))}
-              </div>
-            </div>
-          </ScrollArea>
-        </SheetContent>
-      </Sheet>
     </>
   );
 };

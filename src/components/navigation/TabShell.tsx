@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useCallback, useState, Suspense } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -17,6 +18,18 @@ const TabFallback = () => (
     <Loader2 className="h-6 w-6 animate-spin text-primary" />
   </div>
 );
+
+const TabShellLoading: React.FC = () => {
+  const { t } = useTranslation('common');
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="text-center space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+        <p className="text-sm text-muted-foreground">{t('actions.loading')}</p>
+      </div>
+    </div>
+  );
+};
 
 const TAB_PATHS = ['/', '/live', '/chat', '/standings', '/premium', '/profile'] as const;
 type TabPath = (typeof TAB_PATHS)[number];
@@ -100,14 +113,7 @@ const TabShell: React.FC = () => {
 
   // Auth guard — loading
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="text-sm text-muted-foreground">Yükleniyor...</p>
-        </div>
-      </div>
-    );
+    return <TabShellLoading />;
   }
 
   if (!user) {

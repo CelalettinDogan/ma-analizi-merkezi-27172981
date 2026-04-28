@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, LogOut, Receipt, Shield } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,14 +12,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
 import { useUserRole } from '@/hooks/useUserRole';
 
 const UserMenu: React.FC = () => {
   const { user, signOut, isLoading } = useAuth();
   const { isAdmin } = useUserRole();
-  const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation('common');
 
   const handleSignOut = async () => {
     await signOut();
@@ -38,19 +38,19 @@ const UserMenu: React.FC = () => {
       <Link to="/auth">
         <Button variant="outline" size="sm" className="gap-2">
           <User className="w-4 h-4" />
-          <span className="hidden sm:inline">Giriş Yap</span>
+          <span className="hidden sm:inline">{t('nav.login')}</span>
         </Button>
       </Link>
     );
   }
 
-  const displayName = user.user_metadata?.display_name || user.email?.split('@')[0] || 'Kullanıcı';
+  const displayName = user.user_metadata?.display_name || user.email?.split('@')[0] || t('userMenu.fallback');
   const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2" aria-label="Kullanıcı menüsü">
+        <Button variant="ghost" size="sm" className="gap-2" aria-label={t('userMenu.label')}>
           <Avatar className="h-7 w-7">
             <AvatarFallback className="bg-primary/20 text-primary text-xs">
               {initials}
@@ -63,30 +63,30 @@ const UserMenu: React.FC = () => {
         <DropdownMenuItem asChild>
           <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
             <User className="h-4 w-4" />
-            Profilim
+            {t('userMenu.profile')}
           </Link>
         </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem asChild>
             <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
               <Shield className="h-4 w-4" />
-              Admin Panel
+              {t('userMenu.adminPanel')}
             </Link>
           </DropdownMenuItem>
         )}
         <DropdownMenuItem asChild>
           <Link to="/analysis-history" className="flex items-center gap-2 cursor-pointer">
             <Receipt className="h-4 w-4" />
-            Analiz Geçmişi
+            {t('userMenu.history')}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="bg-border" />
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={handleSignOut}
           className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive"
         >
           <LogOut className="h-4 w-4" />
-          Çıkış Yap
+          {t('nav.logout')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

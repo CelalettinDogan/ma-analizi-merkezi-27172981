@@ -46,6 +46,11 @@
   },
   "live": {
     "title": "Live Matches",
+    "scoresTitle": "Live Scores",
+    "delayNote": "Data may be delayed by ~15 min",
+    "emptyCta": "Go to Upcoming Matches",
+    "standingsLoading": "Loading standings...",
+    "standingsError": "Failed to load standings",
     "lastUpdated": "Last updated: {{time}}",
     "matchesCount": "{{count}} matches",
     "selectLeague": "Select league",

@@ -1,6 +1,6 @@
 {
   "appName": "GolMetrik AI",
-  "tagline": "AI Destekli Futbol Tahmin Platformu",
+  "tagline": "Yapay Zeka Destekli Futbol Tahmin Platformu",
   "actions": {
     "save": "Kaydet",
     "cancel": "İptal",
@@ -25,7 +25,9 @@
     "viewAll": "Tümünü Gör",
     "seeMore": "Daha Fazla",
     "seeLess": "Daha Az",
-    "refresh": "Yenile"
+    "refresh": "Yenile",
+    "clear": "Temizle",
+    "goHome": "Anasayfaya Dön"
   },
   "nav": {
     "home": "Ana",
@@ -54,7 +56,9 @@
     "network": "İnternet bağlantınızı kontrol edin",
     "notFound": "Bulunamadı",
     "unauthorized": "Bu işlem için giriş yapmalısınız",
-    "tryAgain": "Tekrar deneyin"
+    "tryAgain": "Tekrar deneyin",
+    "boundaryTitle": "Bir Hata Oluştu",
+    "boundaryDescription": "Beklenmeyen bir hata oluştu. Lütfen sayfayı yenilemeyi deneyin veya anasayfaya dönün."
   },
   "status": {
     "online": "Çevrimiçi",
@@ -73,5 +77,48 @@
     "minutesAgo": "{{count}} dakika önce",
     "hoursAgo": "{{count}} saat önce",
     "daysAgo": "{{count}} gün önce"
+  },
+  "footer": {
+    "tagline": "AI destekli futbol analiz platformu. Veri odaklı istatistikler, yapay zeka tahminleri ve kapsamlı maç analizleri.",
+    "quickLinks": "Hızlı Erişim",
+    "legal": "Yasal",
+    "homePage": "Ana Sayfa",
+    "liveMatches": "Canlı Maçlar",
+    "leagueStandings": "Lig Sıralamaları",
+    "profile": "Profil",
+    "privacyPolicy": "Gizlilik Politikası",
+    "termsOfUse": "Kullanım Şartları",
+    "copyright": "© {{year}} GolMetrik AI. Tüm hakları saklıdır.",
+    "disclaimer": "Tüm içerikler bilgilendirme amaçlıdır ve tavsiye niteliği taşımaz."
+  },
+  "userMenu": {
+    "label": "Kullanıcı menüsü",
+    "fallback": "Kullanıcı",
+    "profile": "Profilim",
+    "adminPanel": "Admin Panel",
+    "history": "Analiz Geçmişi"
+  },
+  "commandPalette": {
+    "placeholder": "Takım, lig veya sayfa ara...",
+    "loadingTeams": "Takımlar yükleniyor...",
+    "noResults": "\"{{query}}\" için sonuç bulunamadı.",
+    "tryOther": "Başka bir takım veya lig deneyin",
+    "teams": "Takımlar",
+    "leagues": "Ligler",
+    "pages": "Sayfalar",
+    "recentSearches": "Son Aramalar",
+    "history": "Analiz Geçmişi",
+    "liveTag": "⚡ Canlı"
+  },
+  "legalDisclaimer": {
+    "title": "Sorumluluk Reddi",
+    "infoTitle": "Bilgilendirme Amaçlı İçerik",
+    "infoBody": "Bu platformda sunulan tüm analizler, istatistikler ve tahminler yalnızca bilgilendirme amaçlıdır.",
+    "financeTitle": "Finansal Tavsiye Değildir",
+    "financeBody": "İçeriklerimiz herhangi bir yatırım veya finansal tavsiye niteliği taşımaz. Kararlarınızdan yalnızca siz sorumlusunuz.",
+    "dataTitle": "Veri Kaynakları",
+    "dataBody": "Maç verileri ve istatistikler üçüncü parti kaynaklardan alınmaktadır. Verilerin doğruluğu garanti edilmez.",
+    "predictionTitle": "Tahmin Sonuçları",
+    "predictionBody": "Tahminlerin doğru çıkacağına dair herhangi bir garanti verilmez. Platform, tahmin sonuçlarından dolayı sorumluluk kabul etmez."
   }
 }

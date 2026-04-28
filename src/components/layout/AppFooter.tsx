@@ -1,17 +1,16 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import logoImage from '@/assets/logo.png';
 
 const AppFooter: React.FC = () => {
+  const { t } = useTranslation('common');
+
   return (
     <footer className="hidden md:block py-12 border-t border-border/50 bg-gradient-to-t from-background to-transparent">
       <div className="container mx-auto px-4">
-
-        {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-          {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <img
@@ -22,12 +21,11 @@ const AppFooter: React.FC = () => {
               <span className="font-display font-bold text-xl text-foreground">GolMetrik AI</span>
             </div>
             <p className="text-sm text-muted-foreground max-w-md mb-4">
-              AI destekli futbol analiz platformu. Veri odaklı istatistikler, 
-              yapay zeka tahminleri ve kapsamlı maç analizleri.
+              {t('footer.tagline')}
             </p>
             <div className="flex items-center gap-3">
-              <a 
-                href="mailto:info@golmetrik.com" 
+              <a
+                href="mailto:info@golmetrik.com"
                 className="w-9 h-9 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 flex items-center justify-center transition-colors"
                 aria-label="Email"
               >
@@ -36,58 +34,31 @@ const AppFooter: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Links */}
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Hızlı Erişim</h4>
+            <h4 className="font-semibold text-foreground mb-4">{t('footer.quickLinks')}</h4>
             <ul className="space-y-2">
-              <li>
-                <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Ana Sayfa
-                </Link>
-              </li>
-              <li>
-                <Link to="/live" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Canlı Maçlar
-                </Link>
-              </li>
-              <li>
-                <Link to="/standings" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Lig Sıralamaları
-                </Link>
-              </li>
-              <li>
-                <Link to="/profile" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Profil
-                </Link>
-              </li>
+              <li><Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.homePage')}</Link></li>
+              <li><Link to="/live" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.liveMatches')}</Link></li>
+              <li><Link to="/standings" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.leagueStandings')}</Link></li>
+              <li><Link to="/profile" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.profile')}</Link></li>
             </ul>
           </div>
 
-          {/* Legal */}
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Yasal</h4>
+            <h4 className="font-semibold text-foreground mb-4">{t('footer.legal')}</h4>
             <ul className="space-y-2">
-              <li>
-                <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Gizlilik Politikası
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Kullanım Şartları
-                </Link>
-              </li>
+              <li><Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.privacyPolicy')}</Link></li>
+              <li><Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.termsOfUse')}</Link></li>
             </ul>
           </div>
         </div>
 
-        {/* Copyright */}
         <div className="pt-8 border-t border-border/30 text-center">
           <p className="text-sm text-muted-foreground mb-2">
-            © {new Date().getFullYear()} GolMetrik AI. Tüm hakları saklıdır.
+            {t('footer.copyright', { year: new Date().getFullYear() })}
           </p>
           <p className="text-xs text-muted-foreground">
-            Tüm içerikler bilgilendirme amaçlıdır ve tavsiye niteliği taşımaz.
+            {t('footer.disclaimer')}
           </p>
         </div>
       </div>

@@ -25,7 +25,9 @@
     "viewAll": "Ver todo",
     "seeMore": "Ver más",
     "seeLess": "Ver menos",
-    "refresh": "Actualizar"
+    "refresh": "Actualizar",
+    "clear": "Limpiar",
+    "goHome": "Ir al inicio"
   },
   "nav": {
     "home": "Inicio",
@@ -54,7 +56,9 @@
     "network": "Comprueba tu conexión a internet",
     "notFound": "No encontrado",
     "unauthorized": "Debes iniciar sesión para esta acción",
-    "tryAgain": "Inténtalo de nuevo"
+    "tryAgain": "Inténtalo de nuevo",
+    "boundaryTitle": "Algo salió mal",
+    "boundaryDescription": "Ocurrió un error inesperado. Intenta actualizar la página o volver al inicio."
   },
   "status": {
     "online": "En línea",
@@ -73,5 +77,48 @@
     "minutesAgo": "hace {{count}} minutos",
     "hoursAgo": "hace {{count}} horas",
     "daysAgo": "hace {{count}} días"
+  },
+  "footer": {
+    "tagline": "Plataforma de análisis de fútbol con IA. Estadísticas basadas en datos, predicciones de IA y análisis completos de partidos.",
+    "quickLinks": "Acceso rápido",
+    "legal": "Legal",
+    "homePage": "Inicio",
+    "liveMatches": "Partidos en vivo",
+    "leagueStandings": "Clasificaciones",
+    "profile": "Perfil",
+    "privacyPolicy": "Política de privacidad",
+    "termsOfUse": "Términos de uso",
+    "copyright": "© {{year}} GolMetrik AI. Todos los derechos reservados.",
+    "disclaimer": "Todo el contenido es informativo y no constituye un consejo."
+  },
+  "userMenu": {
+    "label": "Menú de usuario",
+    "fallback": "Usuario",
+    "profile": "Mi perfil",
+    "adminPanel": "Panel admin",
+    "history": "Historial de análisis"
+  },
+  "commandPalette": {
+    "placeholder": "Busca equipo, liga o página...",
+    "loadingTeams": "Cargando equipos...",
+    "noResults": "Sin resultados para \"{{query}}\".",
+    "tryOther": "Prueba con otro equipo o liga",
+    "teams": "Equipos",
+    "leagues": "Ligas",
+    "pages": "Páginas",
+    "recentSearches": "Búsquedas recientes",
+    "history": "Historial de análisis",
+    "liveTag": "⚡ En vivo"
+  },
+  "legalDisclaimer": {
+    "title": "Aviso legal",
+    "infoTitle": "Contenido informativo",
+    "infoBody": "Todos los análisis, estadísticas y predicciones de esta plataforma son solo para fines informativos.",
+    "financeTitle": "No es asesoramiento financiero",
+    "financeBody": "Nuestro contenido no constituye asesoramiento de inversión o financiero. Usted es el único responsable de sus decisiones.",
+    "dataTitle": "Fuentes de datos",
+    "dataBody": "Los datos y estadísticas de los partidos provienen de terceros. No se garantiza la exactitud de los datos.",
+    "predictionTitle": "Resultados de predicciones",
+    "predictionBody": "No se garantiza la exactitud de las predicciones. La plataforma no se responsabiliza de los resultados de las predicciones."
   }
 }

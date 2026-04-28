@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp, Heart, Star, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,16 +15,17 @@ interface RecentAnalysesProps {
   favoriteTeams: any[];
 }
 
-const getResultBadge = (isCorrect: boolean | null, verifiedAt: string | null) => {
-  if (!verifiedAt) return { text: 'Bekliyor', className: 'bg-amber-500/20 text-amber-500 border-amber-500/30' };
-  if (isCorrect) return { text: 'Doğru', className: 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30' };
-  return { text: 'Yanlış', className: 'bg-red-500/20 text-red-500 border-red-500/30' };
-};
-
 const RecentAnalyses: React.FC<RecentAnalysesProps> = ({
   recentAnalyses, analysesLoading, favorites, favoriteLeagues, favoriteTeams,
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation('profile');
+
+  const getResultBadge = (isCorrect: boolean | null, verifiedAt: string | null) => {
+    if (!verifiedAt) return { text: t('recentAnalyses.resultPending'), className: 'bg-amber-500/20 text-amber-500 border-amber-500/30' };
+    if (isCorrect) return { text: t('recentAnalyses.resultCorrect'), className: 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30' };
+    return { text: t('recentAnalyses.resultWrong'), className: 'bg-red-500/20 text-red-500 border-red-500/30' };
+  };
 
   return (
     <Card className="glass-card">
@@ -31,7 +33,7 @@ const RecentAnalyses: React.FC<RecentAnalysesProps> = ({
         <div>
           <h2 className="text-sm font-semibold font-display flex items-center gap-2 mb-3">
             <TrendingUp className="w-4 h-4 text-primary" />
-            Son Analizler
+            {t('recentAnalyses.title')}
           </h2>
           {analysesLoading ? (
             <div className="space-y-2">
@@ -71,9 +73,9 @@ const RecentAnalyses: React.FC<RecentAnalysesProps> = ({
           ) : (
             <div className="text-center py-4">
               <Sparkles className="w-7 h-7 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Henüz analiz yapılmamış</p>
+              <p className="text-xs text-muted-foreground">{t('recentAnalyses.empty')}</p>
               <Button variant="outline" size="sm" onClick={() => navigate('/')} className="mt-2 text-xs h-8">
-                Analiz Yap
+                {t('recentAnalyses.cta')}
               </Button>
             </div>
           )}
@@ -82,15 +84,15 @@ const RecentAnalyses: React.FC<RecentAnalysesProps> = ({
         <div className="border-t border-border/50 pt-4">
           <h2 className="text-sm font-semibold font-display flex items-center gap-2 mb-3">
             <Heart className="h-4 w-4 text-primary" />
-            Favorilerim
+            {t('favorites.title')}
           </h2>
           {favorites.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-3">Henüz favori eklenmedi</p>
+            <p className="text-xs text-muted-foreground text-center py-3">{t('favorites.empty')}</p>
           ) : (
             <div className="space-y-2.5">
               {favoriteLeagues.length > 0 && (
                 <div>
-                  <p className="text-micro text-muted-foreground mb-1.5">Ligler</p>
+                  <p className="text-micro text-muted-foreground mb-1.5">{t('favorites.leagues')}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {favoriteLeagues.map((fav) => (
                       <Badge key={fav.id} variant="outline" className="gap-1 text-xs">
@@ -103,7 +105,7 @@ const RecentAnalyses: React.FC<RecentAnalysesProps> = ({
               )}
               {favoriteTeams.length > 0 && (
                 <div>
-                  <p className="text-micro text-muted-foreground mb-1.5">Takımlar</p>
+                  <p className="text-micro text-muted-foreground mb-1.5">{t('favorites.teams')}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {favoriteTeams.map((fav) => (
                       <Badge key={fav.id} variant="outline" className="gap-1 text-xs">

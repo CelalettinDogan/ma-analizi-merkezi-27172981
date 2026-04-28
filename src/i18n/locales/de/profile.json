@@ -80,5 +80,24 @@
   },
   "footer": {
     "disclaimer": "⚠️ Alle Inhalte dienen statistischen Analysezwecken und stellen keine Beratung dar."
+  },
+  "recentAnalyses": {
+    "title": "Letzte Analysen",
+    "empty": "Noch keine Analysen",
+    "cta": "Analyse starten",
+    "resultPending": "Ausstehend",
+    "resultCorrect": "Richtig",
+    "resultWrong": "Falsch"
+  },
+  "favorites": {
+    "title": "Meine Favoriten",
+    "empty": "Noch keine Favoriten",
+    "leagues": "Ligen",
+    "teams": "Teams"
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    "cta": "Zur Startseite"
   }
 }

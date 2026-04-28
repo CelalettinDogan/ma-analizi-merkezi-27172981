@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import UserMenu from '@/components/UserMenu';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -14,12 +15,12 @@ interface AppHeaderProps {
 const AppHeader: React.FC<AppHeaderProps> = ({
   rightContent
 }) => {
+  const { t } = useTranslation('common');
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border/40 pt-safe">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-        {/* Logo - compact native style */}
-        <Link to="/" className="flex items-center gap-2.5 group flex-shrink-0" aria-label="Ana sayfa">
+        <Link to="/" className="flex items-center gap-2.5 group flex-shrink-0" aria-label={t('footer.homePage')}>
           <div className="relative">
             <img
               src={logoImage}
@@ -31,7 +32,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({
           </span>
         </Link>
 
-        {/* Right Side - tighter spacing */}
         <div className="flex items-center gap-1">
           {rightContent}
           <LanguageSwitcher />
@@ -39,7 +39,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({
         </div>
       </div>
     </header>);
-
 };
 
 export default AppHeader;
