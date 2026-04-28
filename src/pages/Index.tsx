@@ -267,10 +267,10 @@ const Index: React.FC = () => {
       size="sm" 
       className="hidden md:flex gap-2 text-muted-foreground"
       onClick={() => setCommandOpen(true)}
-      aria-label="Takım veya lig ara"
+      aria-label={t('hero.searchAria')}
     >
       <Search className="w-4 h-4" />
-      <span>Ara...</span>
+      <span>{t('hero.searchPlaceholder')}</span>
       <kbd className="ml-2 px-1.5 py-0.5 text-micro bg-muted rounded">⌘K</kbd>
     </Button>
   );
