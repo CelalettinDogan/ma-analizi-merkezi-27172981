@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { MatchInput, MatchInsights } from '@/types/match';
 import MatchInsightBadges from '@/components/MatchInsightBadges';
 import { SUPPORTED_COMPETITIONS } from '@/types/footballApi';
-import { getDateFnsLocale } from '@/i18n/dateLocale';
+import { getDateLocale } from '@/i18n/dateLocale';
 import { format } from 'date-fns';
 
 interface MatchHeroCardProps {
@@ -16,13 +16,10 @@ interface MatchHeroCardProps {
 }
 
 const MatchHeroCard: React.FC<MatchHeroCardProps> = ({ match, insights, homeTeamCrest, awayTeamCrest }) => {
+  const { t, i18n } = useTranslation('analysis');
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('tr-TR', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-    });
+    return format(date, 'EEE d MMM', { locale: getDateLocale(i18n.language) });
   };
 
   const getLeagueName = (code: string) => {
