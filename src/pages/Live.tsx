@@ -99,6 +99,7 @@ const LiveMatchSkeleton = () => (
 
 const LivePage: React.FC = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation('common');
   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
