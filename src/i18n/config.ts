@@ -22,6 +22,7 @@ import trPremium from './locales/tr/premium.json';
 import trProfile from './locales/tr/profile.json';
 import trPredictions from './locales/tr/predictions.json';
 import trChat from './locales/tr/chat.json';
+import trLegal from './locales/tr/legal.json';
 
 // EN
 import enCommon from './locales/en/common.json';
@@ -32,6 +33,7 @@ import enPremium from './locales/en/premium.json';
 import enProfile from './locales/en/profile.json';
 import enPredictions from './locales/en/predictions.json';
 import enChat from './locales/en/chat.json';
+import enLegal from './locales/en/legal.json';
 
 // DE
 import deCommon from './locales/de/common.json';
@@ -42,6 +44,7 @@ import dePremium from './locales/de/premium.json';
 import deProfile from './locales/de/profile.json';
 import dePredictions from './locales/de/predictions.json';
 import deChat from './locales/de/chat.json';
+import deLegal from './locales/de/legal.json';
 
 // ES
 import esCommon from './locales/es/common.json';
@@ -52,6 +55,7 @@ import esPremium from './locales/es/premium.json';
 import esProfile from './locales/es/profile.json';
 import esPredictions from './locales/es/predictions.json';
 import esChat from './locales/es/chat.json';
+import esLegal from './locales/es/legal.json';
 
 // AR
 import arCommon from './locales/ar/common.json';
@@ -62,13 +66,14 @@ import arPremium from './locales/ar/premium.json';
 import arProfile from './locales/ar/profile.json';
 import arPredictions from './locales/ar/predictions.json';
 import arChat from './locales/ar/chat.json';
+import arLegal from './locales/ar/legal.json';
 
 const resources = {
-  tr: { common: trCommon, auth: trAuth, home: trHome, analysis: trAnalysis, premium: trPremium, profile: trProfile, predictions: trPredictions, chat: trChat },
-  en: { common: enCommon, auth: enAuth, home: enHome, analysis: enAnalysis, premium: enPremium, profile: enProfile, predictions: enPredictions, chat: enChat },
-  de: { common: deCommon, auth: deAuth, home: deHome, analysis: deAnalysis, premium: dePremium, profile: deProfile, predictions: dePredictions, chat: deChat },
-  es: { common: esCommon, auth: esAuth, home: esHome, analysis: esAnalysis, premium: esPremium, profile: esProfile, predictions: esPredictions, chat: esChat },
-  ar: { common: arCommon, auth: arAuth, home: arHome, analysis: arAnalysis, premium: arPremium, profile: arProfile, predictions: arPredictions, chat: arChat },
+  tr: { common: trCommon, auth: trAuth, home: trHome, analysis: trAnalysis, premium: trPremium, profile: trProfile, predictions: trPredictions, chat: trChat, legal: trLegal },
+  en: { common: enCommon, auth: enAuth, home: enHome, analysis: enAnalysis, premium: enPremium, profile: enProfile, predictions: enPredictions, chat: enChat, legal: enLegal },
+  de: { common: deCommon, auth: deAuth, home: deHome, analysis: deAnalysis, premium: dePremium, profile: deProfile, predictions: dePredictions, chat: deChat, legal: deLegal },
+  es: { common: esCommon, auth: esAuth, home: esHome, analysis: esAnalysis, premium: esPremium, profile: esProfile, predictions: esPredictions, chat: esChat, legal: esLegal },
+  ar: { common: arCommon, auth: arAuth, home: arHome, analysis: arAnalysis, premium: arPremium, profile: arProfile, predictions: arPredictions, chat: arChat, legal: arLegal },
 };
 
 /**
@@ -147,7 +152,7 @@ i18n
     fallbackLng: FALLBACK_LANGUAGE,
     supportedLngs: SUPPORTED_LANGUAGES.map((l) => l.code),
     defaultNS: 'common',
-    ns: ['common', 'auth', 'home', 'analysis', 'premium', 'profile', 'predictions', 'chat'],
+    ns: ['common', 'auth', 'home', 'analysis', 'premium', 'profile', 'predictions', 'chat', 'legal'],
     interpolation: { escapeValue: false },
     react: { useSuspense: false },
   });
