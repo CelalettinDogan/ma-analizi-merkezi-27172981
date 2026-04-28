@@ -28,8 +28,6 @@ interface SettingsMenuProps {
 const SettingsMenu: React.FC<SettingsMenuProps> = ({ theme, setTheme, signOut, userId }) => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('profile');
-  const [showPrivacySheet, setShowPrivacySheet] = useState(false);
-  const [showTermsSheet, setShowTermsSheet] = useState(false);
   const [showThemeSheet, setShowThemeSheet] = useState(false);
   const [showLanguageSheet, setShowLanguageSheet] = useState(false);
   const [showAIInfoSheet, setShowAIInfoSheet] = useState(false);
@@ -115,11 +113,11 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ theme, setTheme, signOut, u
             <p className="font-semibold text-sm font-display">GolMetrik AI</p>
             <p className="text-micro text-muted-foreground">{t('settings.version', { version: '1.0.0' })}</p>
           </div>
-          <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl active:scale-[0.98] transition-transform" onClick={() => setShowPrivacySheet(true)}>
+          <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl active:scale-[0.98] transition-transform" onClick={() => navigate('/privacy')}>
             <span className="flex items-center gap-2.5"><Shield className="h-4 w-4 text-muted-foreground" />{t('settings.privacyPolicy')}</span>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Button>
-          <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl active:scale-[0.98] transition-transform" onClick={() => setShowTermsSheet(true)}>
+          <Button variant="ghost" className="w-full justify-between h-11 text-sm rounded-xl active:scale-[0.98] transition-transform" onClick={() => navigate('/terms')}>
             <span className="flex items-center gap-2.5"><FileText className="h-4 w-4 text-muted-foreground" />{t('settings.termsOfUse')}</span>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Button>
