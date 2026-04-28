@@ -11,6 +11,19 @@
     "similar": "Benzer Maçlar",
     "factors": "Faktörler"
   },
+  "tabsAdvanced": {
+    "poisson": "Gol Analizi",
+    "similar": "Benzer Maçlar",
+    "tactical": "Taktik",
+    "factors": "Faktörler",
+    "injuries": "Eksikler",
+    "none": "Yok",
+    "assessment": "Taktiksel Değerlendirme",
+    "poissonTitle": "Poisson Gol Analizi",
+    "statisticalBadge": "İstatistiksel",
+    "matchesBadge": "{{count}} maç",
+    "factorsBadge": "{{count}} faktör"
+  },
   "sections": {
     "powerComparison": "Güç Karşılaştırması",
     "headToHead": "Karşılıklı Maçlar",
@@ -28,7 +41,9 @@
     "predictionDetails": "Tahmin Detayları",
     "otherPredictions": "Diğer Tahminler",
     "predictionDetail": "Tahmin Detayı",
-    "aiRecommendationShort": "AI Önerisi"
+    "aiRecommendationShort": "AI Önerisi",
+    "pastMatches": "Geçmiş Karşılaşmalar",
+    "lastNMatches": "Son {{count}} Maç"
   },
   "predictions": {
     "winProbability": "Kazanma Olasılığı",
@@ -42,7 +57,13 @@
     "over": "Üst",
     "under": "Alt",
     "poisson": "Poisson",
-    "hybrid": "Hibrit"
+    "hybrid": "Hibrit",
+    "title": "Bahis",
+    "titleAccent": "Tahminleri",
+    "showing": "{{filtered}} / {{total}} tahmin gösteriliyor",
+    "results": "{{count}} sonuç",
+    "noResults": "Sonuç bulunamadı",
+    "noResultsHint": "Seçili filtrelerle eşleşen tahmin yok. Filtreleri değiştirmeyi deneyin."
   },
   "confidence": {
     "low": "Düşük",
@@ -60,7 +81,17 @@
     "powerScore": "Güç Puanı",
     "lowRisk": "Düşük Risk",
     "highRisk": "Yüksek Risk",
-    "mediumRisk": "Orta Risk"
+    "mediumRisk": "Orta Risk",
+    "summaryTitle": "Güven Skoru Analizi",
+    "summarySubtitle": "Tahminlerin güvenilirlik değerlendirmesi",
+    "predictionDetails": "Tahmin Detayları",
+    "weights": {
+      "poisson": "Poisson Modeli",
+      "form": "Form Skoru",
+      "xg": "xG Etkisi",
+      "power": "Güç Puanı"
+    },
+    "calcTitle": "%{{value}} Güven Nasıl Hesaplandı?"
   },
   "stats": {
     "wins": "Galibiyet",
@@ -86,11 +117,39 @@
     "noData": "Veri yok",
     "balancedMatch": "Dengeli Maç",
     "advantage": "{{team}} avantajlı (+{{diff}})",
+    "winRate": "Galibiyet",
     "formLetters": {
       "W": "G",
       "D": "B",
       "L": "M"
     }
+  },
+  "charts": {
+    "goalDistribution": "Gol Dağılımı",
+    "scored": "Atılan Gol",
+    "conceded": "Yenilen Gol",
+    "goalAvg": "Gol Ortalaması",
+    "formTrend": "Form Trendi (Son 5 Maç)",
+    "matchN": "Maç {{n}}",
+    "pointsUnit": "{{value}} puan",
+    "trendAvg": "Ortalama",
+    "winPoints": "Galibiyet: 3 puan",
+    "drawPoints": "Beraberlik: 1 puan",
+    "lossPoints": "Mağlubiyet: 0 puan",
+    "radarTitle": "Takım Performans Karşılaştırması"
+  },
+  "score": {
+    "expectedGoals": "Beklenen Gol",
+    "total": "Toplam",
+    "topScores": "En Olası Skorlar",
+    "scoreMap": "Skor Olasılık Haritası",
+    "away": "Deplasman",
+    "home": "Ev Sahibi",
+    "goalLines": "Gol Çizgileri",
+    "under": "Alt",
+    "over": "Üst",
+    "btts": "Karşılıklı Gol (KG)",
+    "bttsHybrid": "Karşılıklı Gol (KG)"
   },
   "teams": {
     "home": "Ev Sahibi",
@@ -105,6 +164,16 @@
     "wins": "galibiyet",
     "draws": "beraberlik",
     "losses": "mağlubiyet",
+    "matchesUnit": "maç",
+    "draw": "Beraberlik",
+    "streakWin": "{{count}} galibiyet serisi",
+    "streakLoss": "{{count}} mağlubiyet serisi",
+    "streakDraw": "{{count}} beraberlik serisi",
+    "resultLetters": {
+      "W": "G",
+      "D": "B",
+      "L": "M"
+    },
     "months": {
       "Jan": "Oca",
       "Feb": "Şub",
@@ -134,7 +203,9 @@
     "signIn": "Giriş Yap",
     "retry": "Tekrar Dene",
     "disclaimer": "Bu analiz istatistiksel verilere dayanmaktadır. TD değişiklikleri, sakatlıklar ve takım içi sorunlar gibi dış faktörler dikkate alınamamaktadır.",
-    "externalFactors": "Dış faktörler hakkında"
+    "externalFactors": "Dış faktörler hakkında",
+    "delete": "Sil",
+    "removeAria": "{{home}} - {{away}} analizini kaldır"
   },
   "limit": {
     "title": "Günlük Analiz Limiti",
@@ -162,6 +233,10 @@
   },
   "history": {
     "title": "Analiz Geçmişi",
+    "subtitle": "{{total}} analiz • {{correct}} doğru",
+    "refresh": "Güncelle",
+    "dateFilter": "Tarih",
+    "statusFilter": "Durum",
     "filters": {
       "all": "Tümü",
       "today": "Bugün",
@@ -172,26 +247,49 @@
       "pending": "Bekliyor"
     },
     "empty": "Henüz kayıtlı analiz yok.",
-    "emptyFiltered": "Bu filtrelere uygun analiz bulunamadı."
+    "emptyFiltered": "Bu filtrelere uygun analiz bulunamadı.",
+    "correctRatio": "{{correct}}/{{total}} Doğru"
   },
   "set": {
     "title": "Analizler",
+    "drawerTitle": "Analiz Setim",
+    "itemsCount": "{{count}} analiz",
     "loading": "Analizler Yükleniyor...",
     "smartPick": "🎯 Akıllı Seçim",
     "empty": "Analiz setiniz boş",
+    "emptyHint": "Maç analizlerini sete eklemek için \"Analize Ekle\" butonuna tıklayın.",
     "emptySaved": "Henüz kaydedilmiş analiz yok",
+    "emptySavedHint": "Maç analizlerini kaydederek başlayın",
     "totalAnalysis": "Toplam Analiz",
     "highConfidence": "Yüksek Güven",
     "mediumConfidence": "Orta Güven",
     "lowConfidence": "Düşük Güven",
+    "clear": "Temizle",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor...",
+    "disclaimer": "Bu analizler istatistiksel verilere dayanmaktadır. Kesin sonuç garantisi yoktur.",
+    "recentTitle": "İncelenen Maçlar",
+    "viewAll": "Tümü",
+    "deleted": "Analiz seti silindi",
+    "deleteFailed": "Analiz seti silinemedi",
+    "error": "Hata",
+    "checkResults": "Sonuçları kontrol et",
+    "moreItems": "+{{count}} daha fazla",
+    "analysisCount": "{{count}} Analiz",
     "results": {
       "correct": "Doğru",
       "wrong": "Yanlış",
+      "pending": "Bekliyor",
       "updated": "Sonuçlar güncellendi",
+      "updatedDesc": "{{count}} analiz doğrulandı",
       "upToDate": "Güncel",
       "alreadyUpToDate": "Tüm sonuçlar zaten güncel",
       "checkFailed": "Sonuçlar kontrol edilemedi"
     }
+  },
+  "floatingButton": {
+    "label": "Analizler",
+    "aria": "Analiz seti ({{count}} öğe)"
   },
   "filtered": {
     "title": "Tahminleri",

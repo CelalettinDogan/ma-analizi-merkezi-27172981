@@ -11,6 +11,19 @@
     "similar": "Similar Matches",
     "factors": "Factors"
   },
+  "tabsAdvanced": {
+    "poisson": "Goal Analysis",
+    "similar": "Similar Matches",
+    "tactical": "Tactical",
+    "factors": "Factors",
+    "injuries": "Injuries",
+    "none": "None",
+    "assessment": "Tactical Assessment",
+    "poissonTitle": "Poisson Goal Analysis",
+    "statisticalBadge": "Statistical",
+    "matchesBadge": "{{count}} matches",
+    "factorsBadge": "{{count}} factors"
+  },
   "sections": {
     "powerComparison": "Power Comparison",
     "headToHead": "Head-to-Head Matches",
@@ -28,7 +41,9 @@
     "predictionDetails": "Prediction Details",
     "otherPredictions": "Other Predictions",
     "predictionDetail": "Prediction Detail",
-    "aiRecommendationShort": "AI Recommendation"
+    "aiRecommendationShort": "AI Recommendation",
+    "pastMatches": "Past Matches",
+    "lastNMatches": "Last {{count}} Matches"
   },
   "predictions": {
     "winProbability": "Win Probability",
@@ -42,7 +57,13 @@
     "over": "Over",
     "under": "Under",
     "poisson": "Poisson",
-    "hybrid": "Hybrid"
+    "hybrid": "Hybrid",
+    "title": "Betting",
+    "titleAccent": "Predictions",
+    "showing": "Showing {{filtered}} / {{total}} predictions",
+    "results": "{{count}} results",
+    "noResults": "No results found",
+    "noResultsHint": "No predictions match the selected filters. Try changing the filters."
   },
   "confidence": {
     "low": "Low",
@@ -60,7 +81,17 @@
     "powerScore": "Power Score",
     "lowRisk": "Low Risk",
     "highRisk": "High Risk",
-    "mediumRisk": "Medium Risk"
+    "mediumRisk": "Medium Risk",
+    "summaryTitle": "Confidence Score Analysis",
+    "summarySubtitle": "Reliability assessment of predictions",
+    "predictionDetails": "Prediction Details",
+    "weights": {
+      "poisson": "Poisson Model",
+      "form": "Form Score",
+      "xg": "xG Impact",
+      "power": "Power Score"
+    },
+    "calcTitle": "How was {{value}}% Confidence Calculated?"
   },
   "stats": {
     "wins": "Wins",
@@ -86,11 +117,39 @@
     "noData": "No data",
     "balancedMatch": "Balanced Match",
     "advantage": "{{team}} advantage (+{{diff}})",
+    "winRate": "Win Rate",
     "formLetters": {
       "W": "W",
       "D": "D",
       "L": "L"
     }
+  },
+  "charts": {
+    "goalDistribution": "Goal Distribution",
+    "scored": "Scored",
+    "conceded": "Conceded",
+    "goalAvg": "Goal Average",
+    "formTrend": "Form Trend (Last 5)",
+    "matchN": "Match {{n}}",
+    "pointsUnit": "{{value}} pts",
+    "trendAvg": "Average",
+    "winPoints": "Win: 3 pts",
+    "drawPoints": "Draw: 1 pt",
+    "lossPoints": "Loss: 0 pts",
+    "radarTitle": "Team Performance Comparison"
+  },
+  "score": {
+    "expectedGoals": "Expected Goals",
+    "total": "Total",
+    "topScores": "Most Likely Scores",
+    "scoreMap": "Score Probability Map",
+    "away": "Away",
+    "home": "Home",
+    "goalLines": "Goal Lines",
+    "under": "Under",
+    "over": "Over",
+    "btts": "Both Teams to Score (BTTS)",
+    "bttsHybrid": "Both Teams to Score (BTTS)"
   },
   "teams": {
     "home": "Home",
@@ -105,6 +164,16 @@
     "wins": "wins",
     "draws": "draws",
     "losses": "losses",
+    "matchesUnit": "matches",
+    "draw": "Draw",
+    "streakWin": "{{count}}-win streak",
+    "streakLoss": "{{count}}-loss streak",
+    "streakDraw": "{{count}}-draw streak",
+    "resultLetters": {
+      "W": "W",
+      "D": "D",
+      "L": "L"
+    },
     "months": {
       "Jan": "Jan",
       "Feb": "Feb",
@@ -134,7 +203,9 @@
     "signIn": "Sign In",
     "retry": "Retry",
     "disclaimer": "This analysis is based on statistical data. External factors such as coaching changes, injuries and internal team issues cannot be considered.",
-    "externalFactors": "About external factors"
+    "externalFactors": "About external factors",
+    "delete": "Delete",
+    "removeAria": "Remove {{home}} - {{away}} analysis"
   },
   "limit": {
     "title": "Daily Analysis Limit",
@@ -162,6 +233,10 @@
   },
   "history": {
     "title": "Analysis History",
+    "subtitle": "{{total}} analyses • {{correct}} correct",
+    "refresh": "Refresh",
+    "dateFilter": "Date",
+    "statusFilter": "Status",
     "filters": {
       "all": "All",
       "today": "Today",
@@ -172,26 +247,49 @@
       "pending": "Pending"
     },
     "empty": "No saved analyses yet.",
-    "emptyFiltered": "No analyses match these filters."
+    "emptyFiltered": "No analyses match these filters.",
+    "correctRatio": "{{correct}}/{{total}} Correct"
   },
   "set": {
     "title": "Analyses",
+    "drawerTitle": "My Analysis Set",
+    "itemsCount": "{{count}} analyses",
     "loading": "Loading Analyses...",
     "smartPick": "🎯 Smart Pick",
     "empty": "Your analysis set is empty",
+    "emptyHint": "Tap \"Add to Set\" to add match analyses to your set.",
     "emptySaved": "No saved analyses yet",
+    "emptySavedHint": "Start by saving match analyses",
     "totalAnalysis": "Total Analyses",
     "highConfidence": "High Confidence",
     "mediumConfidence": "Medium Confidence",
     "lowConfidence": "Low Confidence",
+    "clear": "Clear",
+    "save": "Save",
+    "saving": "Saving...",
+    "disclaimer": "These analyses are based on statistical data. No guaranteed outcome.",
+    "recentTitle": "Reviewed Matches",
+    "viewAll": "View All",
+    "deleted": "Analysis set deleted",
+    "deleteFailed": "Could not delete analysis set",
+    "error": "Error",
+    "checkResults": "Check results",
+    "moreItems": "+{{count}} more",
+    "analysisCount": "{{count}} Analyses",
     "results": {
       "correct": "Correct",
       "wrong": "Wrong",
+      "pending": "Pending",
       "updated": "Results updated",
+      "updatedDesc": "{{count}} analyses verified",
       "upToDate": "Up to date",
       "alreadyUpToDate": "All results are already up to date",
       "checkFailed": "Could not check results"
     }
+  },
+  "floatingButton": {
+    "label": "Analyses",
+    "aria": "Analysis set ({{count}} items)"
   },
   "filtered": {
     "title": "Predictions",

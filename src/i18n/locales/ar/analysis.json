@@ -11,6 +11,19 @@
     "similar": "مباريات مشابهة",
     "factors": "العوامل"
   },
+  "tabsAdvanced": {
+    "poisson": "تحليل الأهداف",
+    "similar": "مباريات مشابهة",
+    "tactical": "تكتيك",
+    "factors": "العوامل",
+    "injuries": "الغيابات",
+    "none": "لا يوجد",
+    "assessment": "تقييم تكتيكي",
+    "poissonTitle": "تحليل الأهداف بواسون",
+    "statisticalBadge": "إحصائي",
+    "matchesBadge": "{{count}} مباراة",
+    "factorsBadge": "{{count}} عامل"
+  },
   "sections": {
     "powerComparison": "مقارنة القوة",
     "headToHead": "المواجهات المباشرة",
@@ -28,7 +41,9 @@
     "predictionDetails": "تفاصيل التنبؤ",
     "otherPredictions": "تنبؤات أخرى",
     "predictionDetail": "تفصيل التنبؤ",
-    "aiRecommendationShort": "توصية الذكاء الاصطناعي"
+    "aiRecommendationShort": "توصية الذكاء الاصطناعي",
+    "pastMatches": "المباريات السابقة",
+    "lastNMatches": "آخر {{count}} مباريات"
   },
   "predictions": {
     "winProbability": "احتمال الفوز",
@@ -42,7 +57,13 @@
     "over": "أكثر من",
     "under": "أقل من",
     "poisson": "بواسون",
-    "hybrid": "هجين"
+    "hybrid": "هجين",
+    "title": "تنبؤات",
+    "titleAccent": "الرهانات",
+    "showing": "عرض {{filtered}} / {{total}} تنبؤ",
+    "results": "{{count}} نتيجة",
+    "noResults": "لا توجد نتائج",
+    "noResultsHint": "لا توجد تنبؤات تطابق المرشحات. حاول تغيير المرشحات."
   },
   "confidence": {
     "low": "منخفض",
@@ -60,7 +81,17 @@
     "powerScore": "درجة القوة",
     "lowRisk": "مخاطرة منخفضة",
     "highRisk": "مخاطرة عالية",
-    "mediumRisk": "مخاطرة متوسطة"
+    "mediumRisk": "مخاطرة متوسطة",
+    "summaryTitle": "تحليل درجة الثقة",
+    "summarySubtitle": "تقييم موثوقية التنبؤات",
+    "predictionDetails": "تفاصيل التنبؤ",
+    "weights": {
+      "poisson": "نموذج بواسون",
+      "form": "درجة الأداء",
+      "xg": "تأثير xG",
+      "power": "درجة القوة"
+    },
+    "calcTitle": "كيف تم حساب {{value}}% من الثقة؟"
   },
   "stats": {
     "wins": "انتصارات",
@@ -86,11 +117,39 @@
     "noData": "لا توجد بيانات",
     "balancedMatch": "مباراة متوازنة",
     "advantage": "{{team}} متفوق (+{{diff}})",
+    "winRate": "نسبة الفوز",
     "formLetters": {
       "W": "ف",
       "D": "ت",
       "L": "خ"
     }
+  },
+  "charts": {
+    "goalDistribution": "توزيع الأهداف",
+    "scored": "أهداف مسجلة",
+    "conceded": "أهداف مستقبلة",
+    "goalAvg": "متوسط الأهداف",
+    "formTrend": "اتجاه الأداء (آخر 5 مباريات)",
+    "matchN": "مباراة {{n}}",
+    "pointsUnit": "{{value}} نقطة",
+    "trendAvg": "المتوسط",
+    "winPoints": "فوز: 3 نقاط",
+    "drawPoints": "تعادل: نقطة 1",
+    "lossPoints": "هزيمة: 0 نقطة",
+    "radarTitle": "مقارنة أداء الفريقين"
+  },
+  "score": {
+    "expectedGoals": "الأهداف المتوقعة",
+    "total": "الإجمالي",
+    "topScores": "النتائج الأكثر احتمالاً",
+    "scoreMap": "خريطة احتمالات النتيجة",
+    "away": "ضيف",
+    "home": "محلي",
+    "goalLines": "خطوط الأهداف",
+    "under": "أقل",
+    "over": "أكثر",
+    "btts": "كلا الفريقين يسجل (BTTS)",
+    "bttsHybrid": "كلا الفريقين يسجل (BTTS)"
   },
   "teams": {
     "home": "صاحب الأرض",
@@ -105,6 +164,16 @@
     "wins": "انتصارات",
     "draws": "تعادلات",
     "losses": "هزائم",
+    "matchesUnit": "مباريات",
+    "draw": "تعادل",
+    "streakWin": "سلسلة {{count}} انتصارات",
+    "streakLoss": "سلسلة {{count}} هزائم",
+    "streakDraw": "سلسلة {{count}} تعادلات",
+    "resultLetters": {
+      "W": "ف",
+      "D": "ت",
+      "L": "خ"
+    },
     "months": {
       "Jan": "ينا",
       "Feb": "فبر",
@@ -134,7 +203,9 @@
     "signIn": "تسجيل الدخول",
     "retry": "إعادة المحاولة",
     "disclaimer": "يستند هذا التحليل إلى بيانات إحصائية. لا يمكن مراعاة العوامل الخارجية مثل تغييرات المدرب والإصابات والمشاكل الداخلية للفريق.",
-    "externalFactors": "حول العوامل الخارجية"
+    "externalFactors": "حول العوامل الخارجية",
+    "delete": "حذف",
+    "removeAria": "إزالة تحليل {{home}} - {{away}}"
   },
   "limit": {
     "title": "الحد اليومي للتحليلات",
@@ -162,6 +233,10 @@
   },
   "history": {
     "title": "سجل التحليلات",
+    "subtitle": "{{total}} تحليلات • {{correct}} صحيحة",
+    "refresh": "تحديث",
+    "dateFilter": "التاريخ",
+    "statusFilter": "الحالة",
     "filters": {
       "all": "الكل",
       "today": "اليوم",
@@ -172,26 +247,49 @@
       "pending": "قيد الانتظار"
     },
     "empty": "لا توجد تحليلات محفوظة بعد.",
-    "emptyFiltered": "لا توجد تحليلات تطابق هذه الفلاتر."
+    "emptyFiltered": "لا توجد تحليلات تطابق هذه الفلاتر.",
+    "correctRatio": "{{correct}}/{{total}} صحيح"
   },
   "set": {
     "title": "التحليلات",
+    "drawerTitle": "مجموعة تحليلاتي",
+    "itemsCount": "{{count}} تحليل",
     "loading": "جارٍ تحميل التحليلات...",
     "smartPick": "🎯 اختيار ذكي",
     "empty": "مجموعة التحليلات الخاصة بك فارغة",
+    "emptyHint": "اضغط على \"إضافة إلى المجموعة\" لإضافة تحليلات المباريات.",
     "emptySaved": "لا توجد تحليلات محفوظة بعد",
+    "emptySavedHint": "ابدأ بحفظ تحليلات المباريات",
     "totalAnalysis": "إجمالي التحليلات",
     "highConfidence": "ثقة عالية",
     "mediumConfidence": "ثقة متوسطة",
     "lowConfidence": "ثقة منخفضة",
+    "clear": "مسح",
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ...",
+    "disclaimer": "تستند هذه التحليلات إلى بيانات إحصائية. لا يوجد ضمان للنتيجة.",
+    "recentTitle": "المباريات المراجعة",
+    "viewAll": "عرض الكل",
+    "deleted": "تم حذف مجموعة التحليل",
+    "deleteFailed": "تعذر حذف مجموعة التحليل",
+    "error": "خطأ",
+    "checkResults": "تحقق من النتائج",
+    "moreItems": "+{{count}} المزيد",
+    "analysisCount": "{{count}} تحليلات",
     "results": {
       "correct": "صحيح",
       "wrong": "خاطئ",
+      "pending": "قيد الانتظار",
       "updated": "تم تحديث النتائج",
+      "updatedDesc": "تم التحقق من {{count}} تحليلات",
       "upToDate": "محدث",
       "alreadyUpToDate": "جميع النتائج محدثة بالفعل",
       "checkFailed": "تعذر التحقق من النتائج"
     }
+  },
+  "floatingButton": {
+    "label": "التحليلات",
+    "aria": "مجموعة التحليل ({{count}} عناصر)"
   },
   "filtered": {
     "title": "التنبؤات",
