@@ -224,7 +224,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             <div className="space-y-3">
               <Label className="flex items-center gap-2 text-sm font-medium">
                 <SortAsc className="w-4 h-4 text-primary" />
-                Sıralama
+                {t('filters.sort')}
               </Label>
               <div className="grid grid-cols-2 gap-3">
                 <Select
@@ -232,12 +232,12 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                   onValueChange={(v) => updateFilter('sortBy', v as FilterOptions['sortBy'])}
                 >
                   <SelectTrigger className="bg-muted/50">
-                    <SelectValue placeholder="Sıralama kriteri" />
+                    <SelectValue placeholder={t('filters.sortPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="date">Tarihe Göre</SelectItem>
-                    <SelectItem value="confidence">Güven Skoruna Göre</SelectItem>
-                    <SelectItem value="type">Bahis Tipine Göre</SelectItem>
+                    <SelectItem value="date">{t('filters.sortByDate')}</SelectItem>
+                    <SelectItem value="confidence">{t('filters.sortByConfidence')}</SelectItem>
+                    <SelectItem value="type">{t('filters.sortByType')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select
@@ -245,11 +245,11 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                   onValueChange={(v) => updateFilter('sortOrder', v as FilterOptions['sortOrder'])}
                 >
                   <SelectTrigger className="bg-muted/50">
-                    <SelectValue placeholder="Sıra" />
+                    <SelectValue placeholder={t('filters.orderPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="asc">Artan</SelectItem>
-                    <SelectItem value="desc">Azalan</SelectItem>
+                    <SelectItem value="asc">{t('filters.asc')}</SelectItem>
+                    <SelectItem value="desc">{t('filters.desc')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -264,12 +264,12 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 disabled={activeFilterCount === 0}
               >
                 <X className="w-4 h-4 mr-1" />
-                Filtreleri Temizle
+                {t('filters.clear')}
               </Button>
               <div className="text-xs text-muted-foreground">
                 {activeFilterCount > 0
-                  ? `${activeFilterCount} filtre uygulandı`
-                  : 'Filtre yok'}
+                  ? t('filters.appliedCount', { count: activeFilterCount })
+                  : t('filters.noFilters')}
               </div>
             </div>
           </div>
