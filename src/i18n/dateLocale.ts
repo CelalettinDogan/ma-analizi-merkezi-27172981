@@ -11,7 +11,7 @@ const DATE_LOCALES: Record<string, Locale> = {
 };
 
 /** Returns the date-fns locale matching the active i18n language. */
-export const getDateLocale = (): Locale => {
-  const lang = (i18n.language || 'tr').split('-')[0];
+export const getDateLocale = (language?: string): Locale => {
+  const lang = (language || i18n.language || 'tr').split('-')[0];
   return DATE_LOCALES[lang] || tr;
 };
