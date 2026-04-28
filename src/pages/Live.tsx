@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Radio, WifiOff, Trophy, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -98,6 +99,7 @@ const LiveMatchSkeleton = () => (
 
 const LivePage: React.FC = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation('common');
   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -147,7 +149,7 @@ const LivePage: React.FC = () => {
     } catch (e) {
       console.error('Error fetching from cache:', e);
       if (isMountedRef.current) {
-        setError('Canlı maçlar yüklenirken hata oluştu');
+        setError(t('live.errorLoading'));
       }
     } finally {
       if (isMountedRef.current) {
@@ -190,24 +192,24 @@ const LivePage: React.FC = () => {
 
   const handleCommandTeamSelect = async (teamName: string, leagueCode: string) => {
     setCommandOpen(false);
-    toast.info(`${teamName} için maç aranıyor...`);
+    toast.info(t('live.searchingTeam', { team: teamName }));
     try {
       const nextMatch = await getTeamNextMatch(teamName);
       if (nextMatch) {
         navigate('/', { state: { selectedMatch: nextMatch } });
       } else {
-        toast.warning(`${teamName} için yaklaşan maç bulunamadı.`);
+        toast.warning(t('live.noUpcomingForTeam', { team: teamName }));
         navigate('/');
       }
     } catch (error) {
       console.error('Team match search error:', error);
-      toast.error('Maç aranırken hata oluştu');
+      toast.error(t('live.searchError'));
     }
   };
 
   const formatLastUpdated = () => {
     if (!lastUpdated) return '';
-    return lastUpdated.toLocaleTimeString('tr-TR', { 
+    return lastUpdated.toLocaleTimeString(i18n.language, { 
       hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
   };
@@ -223,10 +225,10 @@ const LivePage: React.FC = () => {
           <motion.div {...fadeInUp} className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="w-2.5 h-2.5 bg-destructive rounded-full block" />
-              <h1 className="font-display font-bold text-lg">Canlı Skorlar</h1>
+              <h1 className="font-display font-bold text-lg">{t('live.title')}</h1>
               {!isLoading && liveMatches.length > 0 && (
                 <Badge variant="secondary" className="text-micro font-semibold px-2 py-0.5">
-                  {liveMatches.length} maç
+                  {t('live.matchCount', { count: liveMatches.length })}
                 </Badge>
               )}
             </div>
@@ -242,7 +244,7 @@ const LivePage: React.FC = () => {
           </motion.div>
 
           {/* Subtle delay note */}
-          <p className="text-[10px] text-muted-foreground/50 text-center">Veriler ~15 dk gecikmeli olabilir</p>
+          <p className="text-[10px] text-muted-foreground/50 text-center">{t('live.delayNote')}</p>
 
           {/* Content */}
           {isLoading ? (
@@ -256,7 +258,7 @@ const LivePage: React.FC = () => {
               <WifiOff className="w-14 h-14 mx-auto mb-4 text-muted-foreground/40" />
               <p className="text-sm text-muted-foreground mb-4">{error}</p>
               <Button variant="outline" onClick={syncLiveMatches} disabled={isSyncing} size="sm">
-                Tekrar Dene
+                {t('live.retry')}
               </Button>
             </div>
           ) : liveMatches.length === 0 ? (
@@ -266,9 +268,9 @@ const LivePage: React.FC = () => {
             >
               <Radio className="w-12 h-12 text-muted-foreground/25 mx-auto mb-5" />
               
-              <h3 className="font-display font-bold text-base sm:text-lg mb-1.5">Şu an canlı maç yok</h3>
+              <h3 className="font-display font-bold text-base sm:text-lg mb-1.5">{t('live.noMatchesTitle')}</h3>
               <p className="text-xs text-muted-foreground max-w-xs mx-auto mb-8">
-                Desteklenen liglerde oynanmakta olan maç bulunmuyor.
+                {t('live.noMatchesDesc')}
               </p>
 
               <Button 
@@ -277,10 +279,10 @@ const LivePage: React.FC = () => {
                 className="gap-2.5 rounded-xl h-12 px-6 font-semibold text-sm shadow-[0_4px_20px_-4px_hsl(var(--primary)/0.35)] active:scale-[0.97] transition-all duration-200"
               >
                 <Trophy className="w-4.5 h-4.5" />
-                Yaklaşan Maçlara Git
+                {t('live.goToUpcoming')}
               </Button>
 
-              <p className="text-[11px] text-muted-foreground/40 mt-4">Maçlar başladığında burada görünecek</p>
+              <p className="text-[11px] text-muted-foreground/40 mt-4">{t('live.willAppear')}</p>
             </motion.div>
           ) : (
             <motion.div

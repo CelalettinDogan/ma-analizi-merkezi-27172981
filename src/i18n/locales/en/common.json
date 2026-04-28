@@ -200,5 +200,25 @@
       "handicap": "Handicap",
       "doubleChance": "Double Chance"
     }
+  },
+  "live": {
+    "title": "Live Scores",
+    "matchCount_one": "{{count}} match",
+    "matchCount_other": "{{count}} matches",
+    "delayNote": "Data may be delayed by ~15 min",
+    "errorLoading": "Failed to load live matches",
+    "retry": "Retry",
+    "noMatchesTitle": "No live matches right now",
+    "noMatchesDesc": "There are no ongoing matches in supported leagues.",
+    "goToUpcoming": "Go to Upcoming Matches",
+    "willAppear": "Matches will appear here when they start",
+    "searchingTeam": "Searching match for {{team}}...",
+    "noUpcomingForTeam": "No upcoming match found for {{team}}.",
+    "searchError": "Failed to search match"
+  },
+  "standings": {
+    "loading": "Loading standings...",
+    "errorLoading": "Failed to load standings",
+    "retry": "Retry"
   }
 }

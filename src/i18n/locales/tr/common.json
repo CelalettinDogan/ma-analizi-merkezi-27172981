@@ -200,5 +200,25 @@
       "handicap": "Handikap",
       "doubleChance": "Çifte Şans"
     }
+  },
+  "live": {
+    "title": "Canlı Skorlar",
+    "matchCount_one": "{{count}} maç",
+    "matchCount_other": "{{count}} maç",
+    "delayNote": "Veriler ~15 dk gecikmeli olabilir",
+    "errorLoading": "Canlı maçlar yüklenirken hata oluştu",
+    "retry": "Tekrar Dene",
+    "noMatchesTitle": "Şu an canlı maç yok",
+    "noMatchesDesc": "Desteklenen liglerde oynanmakta olan maç bulunmuyor.",
+    "goToUpcoming": "Yaklaşan Maçlara Git",
+    "willAppear": "Maçlar başladığında burada görünecek",
+    "searchingTeam": "{{team}} için maç aranıyor...",
+    "noUpcomingForTeam": "{{team}} için yaklaşan maç bulunamadı.",
+    "searchError": "Maç aranırken hata oluştu"
+  },
+  "standings": {
+    "loading": "Puan durumu yükleniyor...",
+    "errorLoading": "Puan durumu yüklenirken hata oluştu",
+    "retry": "Tekrar Dene"
   }
 }

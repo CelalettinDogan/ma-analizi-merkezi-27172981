@@ -1,14 +1,30 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+const renderInline = (text: string) => {
+  // Convert **bold** to <strong>
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((p, i) =>
+    p.startsWith('**') && p.endsWith('**') ? (
+      <strong key={i}>{p.slice(2, -2)}</strong>
+    ) : (
+      <React.Fragment key={i}>{p}</React.Fragment>
+    )
+  );
+};
+
 const Privacy: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('legal');
+
+  const sectionsWithList = ['collection', 'use', 'security', 'sharing', 'rights'] as const;
+  const sectionsWithBody = ['cookies', 'children', 'changes'] as const;
 
   return (
     <div className="min-h-screen bg-background" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
-      {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border pt-safe">
         <div className="container mx-auto px-4 h-14 flex items-center gap-3">
           <Button
@@ -19,117 +35,59 @@ const Privacy: React.FC = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-bold">Gizlilik Politikası</h1>
+          <h1 className="text-lg font-bold">{t('privacy.title')}</h1>
         </div>
       </div>
 
-      {/* Content */}
       <div className="container mx-auto px-4 py-6">
         <div className="space-y-6">
-          <p className="text-muted-foreground text-sm">
-            Son güncelleme: 25 Ocak 2026
-          </p>
+          <p className="text-muted-foreground text-sm">{t('privacy.lastUpdate')}</p>
 
-          <Section title="1. Veri Toplama">
-            <p>GolMetrik AI olarak, kullanıcı deneyimini iyileştirmek için aşağıdaki verileri topluyoruz:</p>
-            <ul className="list-disc list-inside space-y-2 mt-2">
-              <li><strong>Hesap Bilgileri:</strong> E-posta adresi ve şifre (şifrelenmiş olarak saklanır)</li>
-              <li><strong>Kullanım Verileri:</strong> Uygulama kullanım istatistikleri, analiz geçmişi</li>
-              <li><strong>Cihaz Bilgileri:</strong> Cihaz türü, işletim sistemi versiyonu</li>
-              <li><strong>Ödeme Bilgileri:</strong> Google Play üzerinden işlenir, biz saklamayız</li>
-            </ul>
+          {sectionsWithList.map((key) => {
+            const items = t(`privacy.sections.${key}.items`, { returnObjects: true }) as string[];
+            return (
+              <Section key={key} title={t(`privacy.sections.${key}.title`)}>
+                <p>{t(`privacy.sections.${key}.intro`)}</p>
+                <ul className="list-disc list-inside space-y-2 mt-2">
+                  {items.map((item, idx) => (
+                    <li key={idx}>{renderInline(item)}</li>
+                  ))}
+                </ul>
+              </Section>
+            );
+          })}
+
+          {sectionsWithBody.map((key) => (
+            <Section key={key} title={t(`privacy.sections.${key}.title`)}>
+              <p>{t(`privacy.sections.${key}.body`)}</p>
+            </Section>
+          ))}
+
+          <Section title={t('privacy.sections.contact.title')}>
+            <p>{t('privacy.sections.contact.body', { email: 'info@golmetrik.com' })}</p>
           </Section>
 
-          <Section title="2. Veri Kullanımı">
-            <p>Topladığımız verileri aşağıdaki amaçlarla kullanıyoruz:</p>
-            <ul className="list-disc list-inside space-y-2 mt-2">
-              <li>Hesap yönetimi ve kimlik doğrulama</li>
-              <li>Kişiselleştirilmiş analiz önerileri sunma</li>
-              <li>Uygulama performansını iyileştirme</li>
-              <li>Teknik sorunları tespit etme ve çözme</li>
-            </ul>
-          </Section>
-
-          <Section title="3. Veri Güvenliği">
-            <p>Verilerinizi korumak için endüstri standardı güvenlik önlemleri kullanıyoruz:</p>
-            <ul className="list-disc list-inside space-y-2 mt-2">
-              <li>SSL/TLS şifreleme ile güvenli veri iletimi</li>
-              <li>Şifrelerin güvenli hash algoritmaları ile saklanması</li>
-              <li>Düzenli güvenlik denetimleri</li>
-              <li>Erişim kontrolü ve yetkilendirme</li>
-            </ul>
-          </Section>
-
-          <Section title="4. Veri Paylaşımı">
-            <p>Kişisel verilerinizi üçüncü taraflarla paylaşmıyoruz, ancak aşağıdaki durumlar hariç:</p>
-            <ul className="list-disc list-inside space-y-2 mt-2">
-              <li>Yasal zorunluluklar (mahkeme kararı, resmi talep)</li>
-              <li>Hizmet sağlayıcılar (altyapı, analitik - anonim veriler)</li>
-              <li>Kullanıcının açık onayı</li>
-            </ul>
-          </Section>
-
-          <Section title="5. Kullanıcı Hakları (KVKK)">
-            <p>6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında aşağıdaki haklara sahipsiniz:</p>
-            <ul className="list-disc list-inside space-y-2 mt-2">
-              <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
-              <li>Kişisel verilerinize erişim talep etme</li>
-              <li>Yanlış verilerin düzeltilmesini isteme</li>
-              <li>Verilerinizin silinmesini talep etme</li>
-              <li>Verilerinizin üçüncü kişilere aktarımına itiraz etme</li>
-            </ul>
-          </Section>
-
-          <Section title="6. Çerezler">
-            <p>Uygulamamız oturum yönetimi için gerekli çerezleri kullanır. Bu çerezler, uygulamanın düzgün çalışması için zorunludur.</p>
-          </Section>
-
-          <Section title="7. Çocukların Gizliliği">
-            <p>Uygulamamız 13 yaşın altındaki çocuklara yönelik değildir. Bilerek 13 yaşın altındaki kişilerden kişisel veri toplamıyoruz.</p>
-          </Section>
-
-          <Section title="8. Değişiklikler">
-            <p>Bu gizlilik politikasını zaman zaman güncelleyebiliriz. Önemli değişiklikleri uygulama içi bildirimlerle duyuracağız.</p>
-          </Section>
-
-          <Section title="9. İletişim">
-            <p>
-              Gizlilik ile ilgili sorularınız için{' '}
-              <span className="text-primary active:opacity-70">info@golmetrik.com</span>{' '}
-              adresinden bize ulaşabilirsiniz.
-            </p>
-          </Section>
-
-          <Section title="10. Hesap ve Veri Silme">
-            <p>Hesabınızı ve tüm ilişkili verilerinizi silmek istiyorsanız aşağıdaki yöntemlerden birini kullanabilirsiniz:</p>
-            
+          <Section title={t('privacy.sections.deletion.title')}>
+            <p>{t('privacy.sections.deletion.intro')}</p>
             <p className="mt-3">
-              <strong>Yöntem 1 - Uygulama İçi:</strong><br />
-              Profil → Ayarlar → Hesabı Sil
+              <strong>{t('privacy.sections.deletion.method1Title')}</strong><br />
+              {t('privacy.sections.deletion.method1Body')}
             </p>
-            
             <p className="mt-3">
-              <strong>Yöntem 2 - Web:</strong><br />
-              <button 
-                onClick={() => navigate('/delete-account')}
-                className="text-primary active:opacity-70"
-              >
-                Hesap Silme Talebi
+              <strong>{t('privacy.sections.deletion.method2Title')}</strong><br />
+              <button onClick={() => navigate('/delete-account')} className="text-primary active:opacity-70">
+                {t('privacy.sections.deletion.method2LinkText')}
               </button>{' '}
-              sayfasından işlem yapabilirsiniz.
+              {t('privacy.sections.deletion.method2Suffix')}
             </p>
-
-            <p className="mt-3"><strong>Silme işlemi şunları kapsar:</strong></p>
+            <p className="mt-3"><strong>{t('privacy.sections.deletion.includesTitle')}</strong></p>
             <ul className="list-disc list-inside space-y-1 mt-2">
-              <li>Profil bilgileriniz</li>
-              <li>Analiz geçmişiniz</li>
-              <li>Chat geçmişiniz</li>
-              <li>Premium abonelik kayıtlarınız</li>
-              <li>Tüm kullanım verileri</li>
+              {(t('privacy.sections.deletion.includes', { returnObjects: true }) as string[]).map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
             </ul>
-
             <p className="text-amber-500 text-sm mt-3">
-              Not: Premium aboneliğiniz varsa, önce Google Play Store'dan iptal etmenizi öneririz.
+              {t('privacy.sections.deletion.note')}
             </p>
           </Section>
         </div>

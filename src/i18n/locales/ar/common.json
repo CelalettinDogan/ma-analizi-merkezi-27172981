@@ -200,5 +200,25 @@
       "handicap": "الهانديكاب",
       "doubleChance": "الفرصة المزدوجة"
     }
+  },
+  "live": {
+    "title": "النتائج المباشرة",
+    "matchCount_one": "{{count}} مباراة",
+    "matchCount_other": "{{count}} مباريات",
+    "delayNote": "قد تتأخر البيانات حوالي 15 دقيقة",
+    "errorLoading": "فشل تحميل المباريات المباشرة",
+    "retry": "إعادة المحاولة",
+    "noMatchesTitle": "لا توجد مباريات مباشرة الآن",
+    "noMatchesDesc": "لا توجد مباريات جارية في الدوريات المدعومة.",
+    "goToUpcoming": "الذهاب إلى المباريات القادمة",
+    "willAppear": "ستظهر المباريات هنا عند بدئها",
+    "searchingTeam": "جاري البحث عن مباراة لـ {{team}}...",
+    "noUpcomingForTeam": "لم يتم العثور على مباراة قادمة لـ {{team}}.",
+    "searchError": "فشل البحث عن المباراة"
+  },
+  "standings": {
+    "loading": "جاري تحميل الترتيب...",
+    "errorLoading": "فشل تحميل الترتيب",
+    "retry": "إعادة المحاولة"
   }
 }

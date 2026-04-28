@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Trash2, Crown, Sparkles, Star, MoreVertical, X } from 'lucide-react';
 import varioAvatar from '@/assets/vario-avatar.png';
@@ -53,6 +54,7 @@ interface MatchContext {
 const Chat: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation('chat');
   const { user, isLoading: authLoading } = useAuth();
   const { 
     planType, 
@@ -126,7 +128,7 @@ const Chat: React.FC = () => {
   useEffect(() => {
     const hasRemainingUsage = isAdmin || (usage && (typeof usage.remaining === 'number' ? usage.remaining > 0 : true));
     if (hasAccess && matchContext && !contextSent && hasRemainingUsage && !isLoadingHistory) {
-      const contextMessage = `${matchContext.homeTeam} vs ${matchContext.awayTeam} maçını analiz et. Bu maç hakkında detaylı bilgi ver.`;
+      const contextMessage = t('context.autoMessage', { home: matchContext.homeTeam, away: matchContext.awayTeam });
       
       const aiContext = {
         match: {
@@ -185,7 +187,7 @@ const Chat: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-background pt-safe">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          <p className="text-sm text-muted-foreground">Yükleniyor...</p>
+          <p className="text-sm text-muted-foreground">{t('loading.text', 'Yükleniyor...')}</p>
         </div>
       </div>
     );
@@ -241,28 +243,28 @@ const Chat: React.FC = () => {
                 {isAdmin && (
                   <Badge variant="secondary" className="text-micro min-h-[16px] h-auto px-1.5 bg-amber-500/20 text-amber-600 border-0">
                     <Crown className="w-2.5 h-2.5 mr-0.5" />
-                    Admin
+                    {t('header.admin')}
                   </Badge>
                 )}
                 {isPremiumPro && !isAdmin && (
                   <Badge variant="secondary" className="text-micro min-h-[16px] h-auto px-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600 border-0">
                     <Star className="w-2.5 h-2.5 mr-0.5" />
-                    Pro
+                    {t('header.pro')}
                   </Badge>
                 )}
                 {isPremiumPlus && !isAdmin && (
                   <Badge variant="secondary" className="text-micro min-h-[16px] h-auto px-1.5 bg-primary/20 text-primary border-0">
                     <Sparkles className="w-2.5 h-2.5 mr-0.5" />
-                    Plus
+                    {t('header.plus')}
                   </Badge>
                 )}
                 {isPremiumBasic && !isAdmin && (
                   <Badge variant="secondary" className="text-micro min-h-[16px] h-auto px-1.5 bg-emerald-500/20 text-emerald-600 border-0">
-                    Basic
+                    {t('header.basic')}
                   </Badge>
                 )}
                 </div>
-                <span className="text-micro text-emerald-500 font-medium">AI Asistan</span>
+                <span className="text-micro text-emerald-500 font-medium">{t('header.subtitle')}</span>
               </div>
             </div>
           </div>
@@ -286,7 +288,7 @@ const Chat: React.FC = () => {
                   className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Sohbeti Temizle
+                  {t('actions.clear')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -344,11 +346,11 @@ const Chat: React.FC = () => {
           onSend={handleSendMessage}
           isLoading={chatLoading}
           disabled={!canChat}
-          disabledReason={isLimitReached ? "Günlük limitiniz doldu" : undefined}
+          disabledReason={isLimitReached ? t('context.limitReached') : undefined}
           placeholder={
             matchContext
-              ? `${matchContext.homeTeam} vs ${matchContext.awayTeam} hakkında sorun...`
-              : "Futbol hakkında bir şeyler sorun..."
+              ? t('input.matchPlaceholder', { home: matchContext.homeTeam, away: matchContext.awayTeam })
+              : t('input.placeholder')
           }
           maxLength={500}
         />
