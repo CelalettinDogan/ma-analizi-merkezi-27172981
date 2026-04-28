@@ -77,7 +77,7 @@ const StandingsPage: React.FC = () => {
     } catch (e) {
       console.error('Error fetching standings:', e);
       if (isMountedRef.current) {
-        setError('Puan durumu yüklenirken hata oluştu');
+        setError(t('standings.errorLoading'));
       }
     } finally {
       if (isMountedRef.current) {
