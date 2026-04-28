@@ -149,7 +149,7 @@ const LivePage: React.FC = () => {
     } catch (e) {
       console.error('Error fetching from cache:', e);
       if (isMountedRef.current) {
-        setError('Canlı maçlar yüklenirken hata oluştu');
+        setError(t('live.errorLoading'));
       }
     } finally {
       if (isMountedRef.current) {
