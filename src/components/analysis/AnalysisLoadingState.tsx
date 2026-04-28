@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2, Brain, BarChart3, Users, TrendingUp, Check, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface AnalysisLoadingStateProps {
   homeTeam: string;
@@ -10,13 +11,8 @@ interface AnalysisLoadingStateProps {
   isComplete?: boolean;
 }
 
-const LOADING_STEPS = [
-  { id: 1, message: 'Form analizi yapılıyor...', icon: TrendingUp },
-  { id: 2, message: 'H2H verileri toplanıyor...', icon: Users },
-  { id: 3, message: 'İstatistikler hesaplanıyor...', icon: BarChart3 },
-  { id: 4, message: 'AI tahminleri oluşturuluyor...', icon: Brain },
-  { id: 5, message: 'Sonuçlar hazırlanıyor...', icon: Sparkles },
-];
+const STEP_KEYS = ['form', 'h2h', 'stats', 'ai', 'results'] as const;
+const STEP_ICONS = [TrendingUp, Users, BarChart3, Brain, Sparkles];
 
 const TeamLogo = ({ name, crest }: { name: string; crest?: string }) => {
   if (crest) {
