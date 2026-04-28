@@ -1,0 +1,132 @@
+{
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdate": "Last updated: January 25, 2026",
+    "sections": {
+      "collection": {
+        "title": "1. Data Collection",
+        "intro": "At GolMetrik AI, we collect the following data to improve user experience:",
+        "items": [
+          "**Account Information:** Email address and password (stored encrypted)",
+          "**Usage Data:** App usage statistics, analysis history",
+          "**Device Information:** Device type, operating system version",
+          "**Payment Information:** Processed via Google Play, not stored by us"
+        ]
+      },
+      "use": {
+        "title": "2. Data Use",
+        "intro": "We use the collected data for the following purposes:",
+        "items": [
+          "Account management and authentication",
+          "Providing personalized analysis recommendations",
+          "Improving app performance",
+          "Detecting and resolving technical issues"
+        ]
+      },
+      "security": {
+        "title": "3. Data Security",
+        "intro": "We use industry-standard security measures to protect your data:",
+        "items": [
+          "Secure data transmission with SSL/TLS encryption",
+          "Storing passwords with secure hashing algorithms",
+          "Regular security audits",
+          "Access control and authorization"
+        ]
+      },
+      "sharing": {
+        "title": "4. Data Sharing",
+        "intro": "We do not share your personal data with third parties, except in the following cases:",
+        "items": [
+          "Legal obligations (court order, official request)",
+          "Service providers (infrastructure, analytics — anonymized data)",
+          "Explicit user consent"
+        ]
+      },
+      "rights": {
+        "title": "5. User Rights (GDPR)",
+        "intro": "Under data protection laws, you have the following rights:",
+        "items": [
+          "Learn whether your personal data is being processed",
+          "Request access to your personal data",
+          "Request correction of inaccurate data",
+          "Request deletion of your data",
+          "Object to the transfer of your data to third parties"
+        ]
+      },
+      "cookies": {
+        "title": "6. Cookies",
+        "body": "Our app uses cookies necessary for session management. These cookies are essential for the app to function properly."
+      },
+      "children": {
+        "title": "7. Children's Privacy",
+        "body": "Our app is not intended for children under 13. We do not knowingly collect personal data from anyone under 13."
+      },
+      "changes": {
+        "title": "8. Changes",
+        "body": "We may update this privacy policy from time to time. We will announce significant changes via in-app notifications."
+      },
+      "contact": {
+        "title": "9. Contact",
+        "body": "For privacy-related questions, you can reach us at {{email}}."
+      },
+      "deletion": {
+        "title": "10. Account & Data Deletion",
+        "intro": "If you want to delete your account and all associated data, you can use one of the following methods:",
+        "method1Title": "Method 1 — In-App:",
+        "method1Body": "Profile → Settings → Delete Account",
+        "method2Title": "Method 2 — Web:",
+        "method2LinkText": "Account Deletion Request",
+        "method2Suffix": "you can submit a request from this page.",
+        "includesTitle": "Deletion includes:",
+        "includes": [
+          "Your profile information",
+          "Your analysis history",
+          "Your chat history",
+          "Your premium subscription records",
+          "All usage data"
+        ],
+        "note": "Note: If you have a Premium subscription, we recommend canceling it first via the Google Play Store."
+      }
+    }
+  },
+  "terms": {
+    "title": "Terms of Use",
+    "lastUpdate": "Last updated: January 25, 2026",
+    "sections": {
+      "service": {
+        "title": "1. Service Description",
+        "body": "GolMetrik AI is an informational platform that provides statistical analyses and predictions for football matches. Our app uses artificial intelligence and machine learning technologies to analyze match statistics."
+      },
+      "conditions": {
+        "title": "2. Terms of Use",
+        "intro": "By using this app, you agree to the following terms:",
+        "items": [
+          "You will use the app only for lawful purposes.",
+          "The analyses provided are for informational purposes only and do not constitute investment advice.",
+          "You are responsible for the security of your account.",
+          "You will not misuse the app or attempt reverse engineering."
+        ]
+      },
+      "disclaimer": {
+        "title": "3. Disclaimer",
+        "body": "GolMetrik AI does not guarantee the accuracy of the analyses provided. All predictions are based on statistical models, and actual results may vary. Users are entirely responsible for their own decisions."
+      },
+      "premium": {
+        "title": "4. Premium Membership",
+        "body": "By purchasing a Premium membership, you gain access to additional features. Subscriptions renew automatically, and cancellations must be made through your Google Play account."
+      },
+      "ip": {
+        "title": "5. Intellectual Property",
+        "body": "App content, design, and all materials belong to GolMetrik AI. Unauthorized copying, distribution, or modification is prohibited."
+      },
+      "changes": {
+        "title": "6. Changes",
+        "body": "We reserve the right to change these terms of use at any time. Significant changes will be announced via in-app notifications."
+      },
+      "contact": {
+        "title": "7. Contact",
+        "body": "For questions, you can reach us at {{email}}."
+      }
+    }
+  }
+}

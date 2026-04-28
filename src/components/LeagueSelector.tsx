@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { MapPin } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import {
@@ -17,15 +18,16 @@ interface LeagueSelectorProps {
 }
 
 const LeagueSelector: React.FC<LeagueSelectorProps> = ({ value, onChange, disabled }) => {
+  const { t } = useTranslation('common');
   return (
     <div className="space-y-2">
       <Label className="flex items-center gap-2 text-foreground">
         <MapPin className="w-4 h-4 text-primary" />
-        Lig
+        {t('forms.leagueLabel')}
       </Label>
       <Select value={value} onValueChange={(v) => onChange(v as CompetitionCode)} disabled={disabled}>
         <SelectTrigger className="bg-muted/50 border-border focus:border-primary">
-          <SelectValue placeholder="Lig seçin..." />
+          <SelectValue placeholder={t('forms.leaguePlaceholder')} />
         </SelectTrigger>
         <SelectContent className="bg-popover border-border">
           {SUPPORTED_COMPETITIONS.map((comp) => (

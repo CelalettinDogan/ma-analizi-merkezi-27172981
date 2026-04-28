@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Users, Loader2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import {
@@ -31,8 +32,9 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({
   excludeTeamId,
   isHome = true,
 }) => {
-  const filteredTeams = excludeTeamId 
-    ? teams.filter(t => t.id.toString() !== excludeTeamId)
+  const { t } = useTranslation('common');
+  const filteredTeams = excludeTeamId
+    ? teams.filter(team => team.id.toString() !== excludeTeamId)
     : teams;
 
   return (
@@ -41,10 +43,10 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({
         <Users className={`w-4 h-4 ${isHome ? 'text-primary' : 'text-secondary'}`} />
         {label}
       </Label>
-      <Select 
-        value={value} 
+      <Select
+        value={value}
         onValueChange={(v) => {
-          const team = teams.find(t => t.id.toString() === v);
+          const team = teams.find(team => team.id.toString() === v);
           if (team) {
             onChange(v, team.name);
           }
@@ -55,10 +57,10 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({
           {isLoading ? (
             <span className="flex items-center gap-2">
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Yükleniyor...</span>
+              <span>{t('forms.teamsLoading')}</span>
             </span>
           ) : (
-            <SelectValue placeholder="Takım seçin..." />
+            <SelectValue placeholder={t('forms.teamPlaceholder')} />
           )}
         </SelectTrigger>
         <SelectContent className="bg-popover border-border max-h-[300px]">
