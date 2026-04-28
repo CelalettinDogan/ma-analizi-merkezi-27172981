@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Zap, Shield, Activity } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { TeamStats, TeamPower } from '@/types/match';
 import { cn } from '@/lib/utils';
 
@@ -18,16 +19,17 @@ interface FormBadgeProps {
 }
 
 const FormBadge = memo<FormBadgeProps>(({ result }) => {
-  const config = {
-    W: { label: 'G', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
-    L: { label: 'M', bg: 'bg-red-500/20', text: 'text-red-400' },
-    D: { label: 'B', bg: 'bg-amber-500/20', text: 'text-amber-400' },
+  const { t } = useTranslation('analysis');
+  const config: Record<string, { labelKey: string; bg: string; text: string }> = {
+    W: { labelKey: 'stats.formLetters.W', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
+    L: { labelKey: 'stats.formLetters.L', bg: 'bg-red-500/20', text: 'text-red-400' },
+    D: { labelKey: 'stats.formLetters.D', bg: 'bg-amber-500/20', text: 'text-amber-400' },
   };
-  const c = config[result as keyof typeof config] || config.D;
+  const c = config[result] || config.D;
   
   return (
     <span className={cn("w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold", c.bg, c.text)}>
-      {c.label}
+      {t(c.labelKey)}
     </span>
   );
 });
@@ -81,6 +83,7 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
   homePower,
   awayPower,
 }) => {
+  const { t } = useTranslation('analysis');
   // Null safety for stats
   const homeForm = homeStats?.form ?? [];
   const awayForm = awayStats?.form ?? [];
@@ -105,7 +108,7 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
       <div className="p-4 rounded-xl bg-card border border-border/50">
         <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
           <Activity className="w-4 h-4 text-primary" />
-          Son 5 Maç Formu
+          {t('stats.last5Form')}
         </h4>
         
         <div className="space-y-4">
@@ -126,7 +129,7 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
                   <FormBadge key={i} result={result} />
                 ))
               ) : (
-                <span className="text-xs text-muted-foreground">Form verisi yok</span>
+                <span className="text-xs text-muted-foreground">{t('stats.noFormData')}</span>
               )}
             </div>
           </div>
@@ -150,7 +153,7 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
                   <FormBadge key={i} result={result} />
                 ))
               ) : (
-                <span className="text-xs text-muted-foreground">Form verisi yok</span>
+                <span className="text-xs text-muted-foreground">{t('stats.noFormData')}</span>
               )}
             </div>
           </div>
@@ -162,7 +165,7 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
         <div className="p-4 rounded-xl bg-card border border-border/50">
           <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
             <Zap className="w-4 h-4 text-primary" />
-            Güç Endeksi
+            {t('stats.powerIndex')}
           </h4>
           
           <div className="grid grid-cols-2 gap-4">
@@ -171,12 +174,12 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
               <div className="text-xs text-muted-foreground text-center truncate">{homeTeam}</div>
               <PowerMeter 
                 value={homePower.attackIndex} 
-                label="Hücum" 
+                label={t('stats.attack')} 
                 icon={<Zap className="w-3.5 h-3.5 text-primary" />}
               />
               <PowerMeter 
                 value={homePower.defenseIndex} 
-                label="Savunma" 
+                label={t('stats.defense')} 
                 icon={<Shield className="w-3.5 h-3.5 text-blue-400" />}
               />
             </div>
@@ -186,12 +189,12 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
               <div className="text-xs text-muted-foreground text-center truncate">{awayTeam}</div>
               <PowerMeter 
                 value={awayPower.attackIndex} 
-                label="Hücum" 
+                label={t('stats.attack')} 
                 icon={<Zap className="w-3.5 h-3.5 text-secondary" />}
               />
               <PowerMeter 
                 value={awayPower.defenseIndex} 
-                label="Savunma" 
+                label={t('stats.defense')} 
                 icon={<Shield className="w-3.5 h-3.5 text-blue-400" />}
               />
             </div>
@@ -202,14 +205,14 @@ const QuickStatsRow: React.FC<QuickStatsRowProps> = ({
             {(() => {
               const diff = homePower.overallPower - awayPower.overallPower;
               if (Math.abs(diff) < 10) {
-                return <span className="text-xs text-muted-foreground">⚖️ Dengeli Maç</span>;
+                return <span className="text-xs text-muted-foreground">⚖️ {t('stats.balancedMatch')}</span>;
               }
               return (
                 <span className={cn(
                   "text-xs font-medium",
                   diff > 0 ? "text-primary" : "text-secondary"
                 )}>
-                  {diff > 0 ? `🏠 ${homeTeam}` : `✈️ ${awayTeam}`} avantajlı (+{Math.abs(diff).toFixed(0)})
+                  {t('stats.advantage', { team: diff > 0 ? `🏠 ${homeTeam}` : `✈️ ${awayTeam}`, diff: Math.abs(diff).toFixed(0) })}
                 </span>
               );
             })()}
