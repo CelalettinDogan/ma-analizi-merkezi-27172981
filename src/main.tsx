@@ -4,6 +4,7 @@ import { Capacitor } from "@capacitor/core";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import App from "./App.tsx";
+import "./i18n/config";
 import "./index.css";
 
 // Counter-scaling: detect and neutralize Android system font scaling

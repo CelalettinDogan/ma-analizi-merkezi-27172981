@@ -1,0 +1,53 @@
+{
+  "title": "Spielanalyse",
+  "loading": "Analysiere...",
+  "tabs": {
+    "summary": "Übersicht",
+    "stats": "Statistik",
+    "h2h": "Direktvergleich",
+    "form": "Form",
+    "ai": "KI-Prognose"
+  },
+  "sections": {
+    "powerComparison": "Stärkevergleich",
+    "headToHead": "Direktvergleiche",
+    "teamStats": "Team-Statistik",
+    "similarMatches": "Ähnliche Spiele",
+    "matchContext": "Spielkontext",
+    "aiRecommendation": "KI-Empfehlung"
+  },
+  "predictions": {
+    "winProbability": "Gewinnwahrscheinlichkeit",
+    "drawProbability": "Unentschiedenwahrscheinlichkeit",
+    "expectedGoals": "Erwartete Tore (xG)",
+    "confidence": "Vertrauensniveau",
+    "recommendation": "Unsere Empfehlung"
+  },
+  "confidence": {
+    "low": "Niedrig",
+    "medium": "Mittel",
+    "high": "Hoch"
+  },
+  "stats": {
+    "wins": "Siege",
+    "draws": "Unentschieden",
+    "losses": "Niederlagen",
+    "goalsFor": "Tore",
+    "goalsAgainst": "Gegentore",
+    "form": "Aktuelle Form",
+    "position": "Platz",
+    "points": "Punkte"
+  },
+  "actions": {
+    "saveAnalysis": "Analyse speichern",
+    "addToSet": "Zur Liste hinzufügen",
+    "shareAnalysis": "Analyse teilen",
+    "newAnalysis": "Neue Analyse"
+  },
+  "limit": {
+    "title": "Tägliches Analyse-Limit",
+    "remaining": "{{count}} Analysen verbleibend",
+    "exhausted": "Tageslimit erreicht",
+    "upgrade": "Premium werden"
+  }
+}

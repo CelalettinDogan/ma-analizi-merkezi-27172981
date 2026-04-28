@@ -1,0 +1,50 @@
+{
+  "title": "Premium",
+  "subtitle": "Análisis ilimitado, chat IA y más",
+  "plans": {
+    "basic": {
+      "name": "Premium Basic",
+      "description": "Plan mensual",
+      "perMonth": "/mes"
+    },
+    "pro": {
+      "name": "Premium Pro",
+      "description": "Plan anual",
+      "perYear": "/año",
+      "savings": "Ahorra {{percent}}%"
+    }
+  },
+  "features": {
+    "title": "Beneficios Premium",
+    "unlimitedAnalysis": "Análisis de partidos ilimitado",
+    "aiChat": "Acceso al chat IA",
+    "advancedStats": "Estadísticas avanzadas",
+    "noAds": "Experiencia sin anuncios",
+    "prioritySupport": "Soporte prioritario",
+    "earlyAccess": "Acceso anticipado a nuevas funciones"
+  },
+  "actions": {
+    "subscribe": "Suscribirse",
+    "restore": "Restaurar compras",
+    "manage": "Gestionar suscripción",
+    "upgrade": "Actualizar"
+  },
+  "status": {
+    "active": "Activa",
+    "expired": "Expirada",
+    "expiresIn": "Expira en {{days}} días",
+    "expiresOn": "Expira el {{date}}",
+    "free": "Plan gratuito"
+  },
+  "billing": {
+    "vatIncluded": "Impuestos incluidos",
+    "checkoutNote": "El precio final se muestra al pagar",
+    "secure": "Pago seguro vía Google Play"
+  },
+  "messages": {
+    "purchaseSuccess": "Suscripción activada con éxito",
+    "purchaseFailed": "La compra falló",
+    "restoreSuccess": "Tus compras han sido restauradas",
+    "restoreNone": "No hay compras para restaurar"
+  }
+}

@@ -2,6 +2,7 @@ import React, { useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, Radio, Sparkles, Crown, BarChart3, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useCachedAccessLevel } from '@/hooks/useCachedAccessLevel';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -23,24 +24,25 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
   const location = useLocation();
   const navigate = useNavigate();
   const { isAdmin, isPremium, isResolved } = useCachedAccessLevel();
+  const { t } = useTranslation('common');
 
   const computedItems = useMemo((): NavItem[] => {
     const items: NavItem[] = [
-      { icon: Home, label: 'Ana', path: '/' },
-      { icon: Radio, label: 'Canlı', path: '/live', badge: 'live' as const },
-      { icon: Sparkles, label: 'AI', path: '/chat', isAI: true },
-      { icon: BarChart3, label: 'Lig', path: '/standings' },
-      { icon: User, label: 'Profil', path: '/profile' },
+      { icon: Home, label: t('nav.home'), path: '/' },
+      { icon: Radio, label: t('nav.live'), path: '/live', badge: 'live' as const },
+      { icon: Sparkles, label: t('nav.ai'), path: '/chat', isAI: true },
+      { icon: BarChart3, label: t('nav.league'), path: '/standings' },
+      { icon: User, label: t('nav.profile'), path: '/profile' },
     ];
     const showProTab = !isPremium && !isAdmin;
     if (showProTab) {
-      items.splice(4, 0, { icon: Crown, label: 'Pro', path: '/premium', badge: 'premium' as const });
+      items.splice(4, 0, { icon: Crown, label: t('nav.premium'), path: '/premium', badge: 'premium' as const });
     }
     return items.map(item => {
       if (item.path === '/chat' && !isAdmin && !isPremium) return { ...item, badge: 'premium' as const };
       return item;
     });
-  }, [isAdmin, isPremium]);
+  }, [isAdmin, isPremium, t]);
 
   const handleClick = useCallback((item: NavItem, e: React.MouseEvent) => {
     e.preventDefault();

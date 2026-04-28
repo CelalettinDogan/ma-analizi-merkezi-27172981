@@ -1,0 +1,77 @@
+{
+  "appName": "GolMetrik AI",
+  "tagline": "KI-gestützte Fußballprognose-Plattform",
+  "actions": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "continue": "Fortfahren",
+    "confirm": "Bestätigen",
+    "retry": "Erneut versuchen",
+    "loading": "Lädt...",
+    "search": "Suchen",
+    "share": "Teilen",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "send": "Senden",
+    "submit": "Absenden",
+    "ok": "OK",
+    "yes": "Ja",
+    "no": "Nein",
+    "viewAll": "Alle anzeigen",
+    "seeMore": "Mehr",
+    "seeLess": "Weniger",
+    "refresh": "Aktualisieren"
+  },
+  "nav": {
+    "home": "Start",
+    "live": "Live",
+    "ai": "KI",
+    "league": "Liga",
+    "profile": "Profil",
+    "premium": "Pro",
+    "settings": "Einstellungen",
+    "history": "Verlauf",
+    "logout": "Abmelden",
+    "login": "Anmelden"
+  },
+  "language": {
+    "label": "Sprache",
+    "select": "Sprache wählen",
+    "current": "Aktuelle Sprache"
+  },
+  "theme": {
+    "light": "Helles Design",
+    "dark": "Dunkles Design",
+    "system": "System"
+  },
+  "errors": {
+    "generic": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    "network": "Überprüfen Sie Ihre Internetverbindung",
+    "notFound": "Nicht gefunden",
+    "unauthorized": "Sie müssen für diese Aktion angemeldet sein",
+    "tryAgain": "Erneut versuchen"
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline",
+    "live": "LIVE",
+    "finished": "Beendet",
+    "scheduled": "Geplant",
+    "postponed": "Verschoben",
+    "cancelled": "Abgesagt"
+  },
+  "time": {
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "tomorrow": "Morgen",
+    "now": "Jetzt",
+    "minutesAgo": "vor {{count}} Minuten",
+    "hoursAgo": "vor {{count}} Stunden",
+    "daysAgo": "vor {{count}} Tagen"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "title": "تحليل المباراة",
+  "loading": "جارٍ التحليل...",
+  "tabs": {
+    "summary": "ملخص",
+    "stats": "إحصائيات",
+    "h2h": "المواجهات",
+    "form": "الأداء",
+    "ai": "توقع الذكاء الاصطناعي"
+  },
+  "sections": {
+    "powerComparison": "مقارنة القوة",
+    "headToHead": "المواجهات المباشرة",
+    "teamStats": "إحصائيات الفريق",
+    "similarMatches": "مباريات مشابهة",
+    "matchContext": "سياق المباراة",
+    "aiRecommendation": "توصية الذكاء الاصطناعي"
+  },
+  "predictions": {
+    "winProbability": "احتمال الفوز",
+    "drawProbability": "احتمال التعادل",
+    "expectedGoals": "الأهداف المتوقعة (xG)",
+    "confidence": "مستوى الثقة",
+    "recommendation": "توصيتنا"
+  },
+  "confidence": {
+    "low": "منخفض",
+    "medium": "متوسط",
+    "high": "عالٍ"
+  },
+  "stats": {
+    "wins": "انتصارات",
+    "draws": "تعادلات",
+    "losses": "هزائم",
+    "goalsFor": "أهداف له",
+    "goalsAgainst": "أهداف عليه",
+    "form": "الأداء الأخير",
+    "position": "الترتيب",
+    "points": "النقاط"
+  },
+  "actions": {
+    "saveAnalysis": "حفظ التحليل",
+    "addToSet": "إضافة للقائمة",
+    "shareAnalysis": "مشاركة التحليل",
+    "newAnalysis": "تحليل جديد"
+  },
+  "limit": {
+    "title": "حد التحليل اليومي",
+    "remaining": "متبقي {{count}} تحليل",
+    "exhausted": "تم استنفاد الحد اليومي",
+    "upgrade": "ترقية إلى بريميوم"
+  }
+}

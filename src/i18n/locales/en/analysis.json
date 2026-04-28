@@ -1,0 +1,53 @@
+{
+  "title": "Match Analysis",
+  "loading": "Analyzing...",
+  "tabs": {
+    "summary": "Summary",
+    "stats": "Stats",
+    "h2h": "Head-to-Head",
+    "form": "Form",
+    "ai": "AI Prediction"
+  },
+  "sections": {
+    "powerComparison": "Power Comparison",
+    "headToHead": "Head-to-Head Matches",
+    "teamStats": "Team Stats",
+    "similarMatches": "Similar Matches",
+    "matchContext": "Match Context",
+    "aiRecommendation": "AI Recommendation"
+  },
+  "predictions": {
+    "winProbability": "Win Probability",
+    "drawProbability": "Draw Probability",
+    "expectedGoals": "Expected Goals (xG)",
+    "confidence": "Confidence Level",
+    "recommendation": "Our Recommendation"
+  },
+  "confidence": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High"
+  },
+  "stats": {
+    "wins": "Wins",
+    "draws": "Draws",
+    "losses": "Losses",
+    "goalsFor": "Goals For",
+    "goalsAgainst": "Goals Against",
+    "form": "Recent Form",
+    "position": "Position",
+    "points": "Points"
+  },
+  "actions": {
+    "saveAnalysis": "Save Analysis",
+    "addToSet": "Add to List",
+    "shareAnalysis": "Share Analysis",
+    "newAnalysis": "New Analysis"
+  },
+  "limit": {
+    "title": "Daily Analysis Limit",
+    "remaining": "{{count}} analyses remaining",
+    "exhausted": "Daily limit reached",
+    "upgrade": "Go Premium"
+  }
+}

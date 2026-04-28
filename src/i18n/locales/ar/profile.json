@@ -1,0 +1,37 @@
+{
+  "title": "الملف الشخصي",
+  "guest": {
+    "title": "مستخدم زائر",
+    "description": "سجل الدخول للحصول على المزيد من المزايا",
+    "loginButton": "تسجيل الدخول"
+  },
+  "stats": {
+    "totalAnalyses": "إجمالي التحليلات",
+    "savedAnalyses": "التحليلات المحفوظة",
+    "memberSince": "عضو منذ"
+  },
+  "menu": {
+    "account": "الحساب",
+    "subscription": "الاشتراك",
+    "language": "اللغة",
+    "theme": "المظهر",
+    "notifications": "الإشعارات",
+    "savedAnalyses": "التحليلات المحفوظة",
+    "history": "السجل",
+    "support": "الدعم",
+    "privacy": "سياسة الخصوصية",
+    "terms": "شروط الاستخدام",
+    "deleteAccount": "حذف الحساب",
+    "logout": "تسجيل الخروج",
+    "version": "الإصدار"
+  },
+  "deleteAccount": {
+    "title": "حذف حسابي",
+    "warning": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع بياناتك بشكل دائم.",
+    "confirmText": "اكتب \"حذف\" للتأكيد",
+    "confirmKeyword": "حذف",
+    "submit": "حذف حسابي بشكل دائم",
+    "success": "تم حذف حسابك",
+    "failed": "فشل حذف الحساب"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "appName": "GolMetrik AI",
+  "tagline": "منصة توقعات كرة القدم بالذكاء الاصطناعي",
+  "actions": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "close": "إغلاق",
+    "back": "رجوع",
+    "next": "التالي",
+    "continue": "متابعة",
+    "confirm": "تأكيد",
+    "retry": "إعادة المحاولة",
+    "loading": "جارٍ التحميل...",
+    "search": "بحث",
+    "share": "مشاركة",
+    "copy": "نسخ",
+    "copied": "تم النسخ",
+    "send": "إرسال",
+    "submit": "إرسال",
+    "ok": "موافق",
+    "yes": "نعم",
+    "no": "لا",
+    "viewAll": "عرض الكل",
+    "seeMore": "المزيد",
+    "seeLess": "أقل",
+    "refresh": "تحديث"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "live": "مباشر",
+    "ai": "الذكاء",
+    "league": "الدوري",
+    "profile": "الملف",
+    "premium": "بريميوم",
+    "settings": "الإعدادات",
+    "history": "السجل",
+    "logout": "تسجيل الخروج",
+    "login": "تسجيل الدخول"
+  },
+  "language": {
+    "label": "اللغة",
+    "select": "اختر اللغة",
+    "current": "اللغة الحالية"
+  },
+  "theme": {
+    "light": "الوضع الفاتح",
+    "dark": "الوضع الداكن",
+    "system": "النظام"
+  },
+  "errors": {
+    "generic": "حدث خطأ. يرجى المحاولة مرة أخرى.",
+    "network": "تحقق من اتصالك بالإنترنت",
+    "notFound": "غير موجود",
+    "unauthorized": "يجب تسجيل الدخول لهذا الإجراء",
+    "tryAgain": "حاول مرة أخرى"
+  },
+  "status": {
+    "online": "متصل",
+    "offline": "غير متصل",
+    "live": "مباشر",
+    "finished": "انتهت",
+    "scheduled": "مجدولة",
+    "postponed": "مؤجلة",
+    "cancelled": "ملغاة"
+  },
+  "time": {
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "tomorrow": "غداً",
+    "now": "الآن",
+    "minutesAgo": "منذ {{count}} دقيقة",
+    "hoursAgo": "منذ {{count}} ساعة",
+    "daysAgo": "منذ {{count}} يوم"
+  }
+}

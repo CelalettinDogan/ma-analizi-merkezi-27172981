@@ -1,0 +1,37 @@
+{
+  "hero": {
+    "title": "KI-gestützte Fußballprognosen",
+    "subtitle": "Spielprognosen durch KI und statistische Analyse",
+    "cta": "Jetzt starten",
+    "ctaSecondary": "Wie es funktioniert"
+  },
+  "sections": {
+    "todaysMatches": "Heutige Spiele",
+    "upcomingMatches": "Kommende Spiele",
+    "liveMatches": "Live-Spiele",
+    "popularLeagues": "Beliebte Ligen",
+    "smartPicks": "Smarte Tipps",
+    "filteredPredictions": "Gefilterte Prognosen"
+  },
+  "match": {
+    "vs": "vs",
+    "tbd": "Offen",
+    "predict": "Prognostizieren",
+    "analyze": "Analysieren",
+    "viewDetails": "Details anzeigen",
+    "noMatches": "Keine Spiele gefunden",
+    "loadingMatches": "Spiele werden geladen..."
+  },
+  "filters": {
+    "all": "Alle",
+    "today": "Heute",
+    "tomorrow": "Morgen",
+    "thisWeek": "Diese Woche",
+    "league": "Liga",
+    "allLeagues": "Alle Ligen"
+  },
+  "empty": {
+    "title": "Noch keine Daten",
+    "description": "Schauen Sie später vorbei"
+  }
+}

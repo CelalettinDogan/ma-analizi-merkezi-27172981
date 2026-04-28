@@ -1,0 +1,77 @@
+{
+  "appName": "GolMetrik AI",
+  "tagline": "AI-Powered Football Prediction Platform",
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "continue": "Continue",
+    "confirm": "Confirm",
+    "retry": "Retry",
+    "loading": "Loading...",
+    "search": "Search",
+    "share": "Share",
+    "copy": "Copy",
+    "copied": "Copied",
+    "send": "Send",
+    "submit": "Submit",
+    "ok": "OK",
+    "yes": "Yes",
+    "no": "No",
+    "viewAll": "View All",
+    "seeMore": "See More",
+    "seeLess": "See Less",
+    "refresh": "Refresh"
+  },
+  "nav": {
+    "home": "Home",
+    "live": "Live",
+    "ai": "AI",
+    "league": "League",
+    "profile": "Profile",
+    "premium": "Pro",
+    "settings": "Settings",
+    "history": "History",
+    "logout": "Log Out",
+    "login": "Log In"
+  },
+  "language": {
+    "label": "Language",
+    "select": "Select Language",
+    "current": "Current Language"
+  },
+  "theme": {
+    "light": "Light Theme",
+    "dark": "Dark Theme",
+    "system": "System"
+  },
+  "errors": {
+    "generic": "An error occurred. Please try again.",
+    "network": "Check your internet connection",
+    "notFound": "Not found",
+    "unauthorized": "You must be logged in for this action",
+    "tryAgain": "Try again"
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline",
+    "live": "LIVE",
+    "finished": "Finished",
+    "scheduled": "Scheduled",
+    "postponed": "Postponed",
+    "cancelled": "Cancelled"
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "now": "Now",
+    "minutesAgo": "{{count}} minutes ago",
+    "hoursAgo": "{{count}} hours ago",
+    "daysAgo": "{{count}} days ago"
+  }
+}

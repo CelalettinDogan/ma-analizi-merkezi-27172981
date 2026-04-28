@@ -1,0 +1,37 @@
+{
+  "title": "Profil",
+  "guest": {
+    "title": "Gastnutzer",
+    "description": "Anmelden für mehr Funktionen",
+    "loginButton": "Anmelden"
+  },
+  "stats": {
+    "totalAnalyses": "Analysen gesamt",
+    "savedAnalyses": "Gespeicherte Analysen",
+    "memberSince": "Mitglied seit"
+  },
+  "menu": {
+    "account": "Konto",
+    "subscription": "Abonnement",
+    "language": "Sprache",
+    "theme": "Design",
+    "notifications": "Benachrichtigungen",
+    "savedAnalyses": "Gespeicherte Analysen",
+    "history": "Verlauf",
+    "support": "Support",
+    "privacy": "Datenschutz",
+    "terms": "Nutzungsbedingungen",
+    "deleteAccount": "Konto löschen",
+    "logout": "Abmelden",
+    "version": "Version"
+  },
+  "deleteAccount": {
+    "title": "Mein Konto löschen",
+    "warning": "Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden dauerhaft gelöscht.",
+    "confirmText": "Geben Sie \"LÖSCHEN\" zur Bestätigung ein",
+    "confirmKeyword": "LÖSCHEN",
+    "submit": "Mein Konto dauerhaft löschen",
+    "success": "Ihr Konto wurde gelöscht",
+    "failed": "Kontolöschung fehlgeschlagen"
+  }
+}

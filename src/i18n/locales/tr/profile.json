@@ -1,0 +1,37 @@
+{
+  "title": "Profil",
+  "guest": {
+    "title": "Misafir Kullanıcı",
+    "description": "Daha fazla özellik için giriş yapın",
+    "loginButton": "Giriş Yap"
+  },
+  "stats": {
+    "totalAnalyses": "Toplam Analiz",
+    "savedAnalyses": "Kaydedilen Analiz",
+    "memberSince": "Üyelik Tarihi"
+  },
+  "menu": {
+    "account": "Hesap",
+    "subscription": "Abonelik",
+    "language": "Dil",
+    "theme": "Tema",
+    "notifications": "Bildirimler",
+    "savedAnalyses": "Kayıtlı Analizler",
+    "history": "Geçmiş",
+    "support": "Destek",
+    "privacy": "Gizlilik Politikası",
+    "terms": "Kullanım Koşulları",
+    "deleteAccount": "Hesabımı Sil",
+    "logout": "Çıkış Yap",
+    "version": "Sürüm"
+  },
+  "deleteAccount": {
+    "title": "Hesabımı Sil",
+    "warning": "Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecek.",
+    "confirmText": "Onaylamak için \"SİL\" yazın",
+    "confirmKeyword": "SİL",
+    "submit": "Hesabımı Kalıcı Olarak Sil",
+    "success": "Hesabınız silindi",
+    "failed": "Hesap silme başarısız oldu"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "types": {
+    "matchResult": "Match Result",
+    "overUnder": "Over/Under Goals",
+    "btts": "Both Teams to Score",
+    "correctScore": "Correct Score",
+    "firstHalf": "First Half Result",
+    "halfTimeFullTime": "Half-Time / Full-Time",
+    "firstHalfOverUnder": "Goals in Both Halves"
+  },
+  "shortLabels": {
+    "matchResult": "1X2",
+    "overUnder": "O/U",
+    "btts": "BTTS",
+    "correctScore": "CS",
+    "firstHalf": "HT",
+    "halfTimeFullTime": "HT/FT",
+    "firstHalfOverUnder": "HT O/U"
+  },
+  "outcomes": {
+    "homeWin": "Home Win",
+    "draw": "Draw",
+    "awayWin": "Away Win",
+    "over": "Over",
+    "under": "Under",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "leagues": {
+    "PL": "English Premier League",
+    "BL1": "German Bundesliga",
+    "PD": "Spanish La Liga",
+    "SA": "Italian Serie A",
+    "FL1": "French Ligue 1",
+    "CL": "UEFA Champions League"
+  }
+}

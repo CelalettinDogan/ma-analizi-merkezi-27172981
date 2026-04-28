@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import UserMenu from '@/components/UserMenu';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import logoImage from '@/assets/logo.png';
 
 interface AppHeaderProps {
@@ -33,6 +34,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
         {/* Right Side - tighter spacing */}
         <div className="flex items-center gap-1">
           {rightContent}
+          <LanguageSwitcher />
           <UserMenu />
         </div>
       </div>

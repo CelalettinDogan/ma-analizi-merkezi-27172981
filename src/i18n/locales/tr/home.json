@@ -1,0 +1,37 @@
+{
+  "hero": {
+    "title": "AI Destekli Futbol Tahminleri",
+    "subtitle": "Yapay zeka ve istatistiksel analizlerle maç tahminleri",
+    "cta": "Hemen Başla",
+    "ctaSecondary": "Nasıl Çalışır?"
+  },
+  "sections": {
+    "todaysMatches": "Bugünün Maçları",
+    "upcomingMatches": "Yaklaşan Maçlar",
+    "liveMatches": "Canlı Maçlar",
+    "popularLeagues": "Popüler Ligler",
+    "smartPicks": "Akıllı Seçimler",
+    "filteredPredictions": "Filtrelenmiş Tahminler"
+  },
+  "match": {
+    "vs": "vs",
+    "tbd": "Belirlenecek",
+    "predict": "Tahmin Et",
+    "analyze": "Analiz Et",
+    "viewDetails": "Detayları Gör",
+    "noMatches": "Maç bulunamadı",
+    "loadingMatches": "Maçlar yükleniyor..."
+  },
+  "filters": {
+    "all": "Tümü",
+    "today": "Bugün",
+    "tomorrow": "Yarın",
+    "thisWeek": "Bu Hafta",
+    "league": "Lig",
+    "allLeagues": "Tüm Ligler"
+  },
+  "empty": {
+    "title": "Henüz veri yok",
+    "description": "Daha sonra tekrar kontrol edin"
+  }
+}

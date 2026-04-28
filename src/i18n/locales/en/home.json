@@ -1,0 +1,37 @@
+{
+  "hero": {
+    "title": "AI-Powered Football Predictions",
+    "subtitle": "Match predictions powered by AI and statistical analysis",
+    "cta": "Get Started",
+    "ctaSecondary": "How It Works"
+  },
+  "sections": {
+    "todaysMatches": "Today's Matches",
+    "upcomingMatches": "Upcoming Matches",
+    "liveMatches": "Live Matches",
+    "popularLeagues": "Popular Leagues",
+    "smartPicks": "Smart Picks",
+    "filteredPredictions": "Filtered Predictions"
+  },
+  "match": {
+    "vs": "vs",
+    "tbd": "TBD",
+    "predict": "Predict",
+    "analyze": "Analyze",
+    "viewDetails": "View Details",
+    "noMatches": "No matches found",
+    "loadingMatches": "Loading matches..."
+  },
+  "filters": {
+    "all": "All",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "thisWeek": "This Week",
+    "league": "League",
+    "allLeagues": "All Leagues"
+  },
+  "empty": {
+    "title": "No data yet",
+    "description": "Check back later"
+  }
+}
