@@ -78,7 +78,7 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
             <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-primary" />
             </div>
-            <span className="text-sm font-medium text-muted-foreground">AI Önerisi</span>
+            <span className="text-sm font-medium text-muted-foreground">{t('sections.aiRecommendation')}</span>
           </div>
           <div className={cn("px-3 py-1.5 rounded-full text-sm font-semibold flex items-center gap-1.5", bg, color)}>
             <ConfidenceIcon className="w-3.5 h-3.5" />
@@ -100,8 +100,8 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
                 mainPrediction.riskLevel === 'medium' ? 'bg-amber-500/20 text-amber-400' :
                 'bg-red-500/20 text-red-400'
               )}>
-                {mainPrediction.riskLevel === 'low' ? 'Düşük Risk' :
-                 mainPrediction.riskLevel === 'medium' ? 'Orta Risk' : 'Yüksek Risk'}
+                {mainPrediction.riskLevel === 'low' ? t('confidence.lowRisk') :
+                 mainPrediction.riskLevel === 'medium' ? t('confidence.mediumRisk') : t('confidence.highRisk')}
               </span>
             )}
           </div>
@@ -112,7 +112,7 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
           <div className="flex items-center justify-between text-xs mb-2">
             <div className="flex items-center gap-1.5">
               <span className="text-muted-foreground">
-                {mainPrediction.marketScore !== undefined ? 'Market Skoru' : 'Hibrit Güven Skoru'}
+                {mainPrediction.marketScore !== undefined ? t('predictions.recommendation') : t('confidence.score')}
               </span>
               <ConfidenceBreakdownTooltip prediction={mainPrediction} hybridConfidence={hybridConfidence} />
             </div>
@@ -134,9 +134,9 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
               <button
                 onClick={() => setShowFullReasoning(!showFullReasoning)}
                 className="min-h-[44px] text-xs text-primary active:opacity-70 mt-1 touch-manipulation flex items-center transition-opacity"
-                aria-label={showFullReasoning ? 'Daha az göster' : 'Devamını oku'}
+                aria-label={showFullReasoning ? t('actions.showLess') : t('actions.showMore')}
               >
-                {showFullReasoning ? 'Daha az göster' : 'Devamını oku'}
+                {showFullReasoning ? t('actions.showLess') : t('actions.showMore')}
               </button>
             )}
           </div>
@@ -146,12 +146,12 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
         <button
           onClick={() => setShowDisclaimer(!showDisclaimer)}
           className="w-full min-h-[44px] flex items-center justify-between text-xs text-amber-400/70 active:bg-muted/20 rounded-lg px-1 transition-colors mb-4 touch-manipulation"
-          aria-label="Dış faktörler hakkında bilgi"
+          aria-label={t('actions.externalFactorsInfo')}
           aria-expanded={showDisclaimer}
         >
           <span className="flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5" />
-            Dış faktörler hakkında
+            {t('actions.externalFactors')}
           </span>
           <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", showDisclaimer && "rotate-180")} />
         </button>
@@ -166,8 +166,7 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
             >
               <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 mb-4">
                 <p className="text-xs text-amber-300/80">
-                  Bu analiz istatistiksel verilere dayanmaktadır. TD değişiklikleri, sakatlıklar ve 
-                  takım içi sorunlar gibi dış faktörler dikkate alınamamaktadır.
+                  {t('actions.disclaimer')}
                 </p>
               </div>
             </motion.div>
@@ -188,9 +187,9 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
             )}
           >
             {isInSet ? (
-              <><Star className="w-4 h-4" /> Sette</>
+              <><Star className="w-4 h-4" /> {t('actions.addedToSet')}</>
             ) : (
-              <><Plus className="w-4 h-4" /> Analize Ekle</>
+              <><Plus className="w-4 h-4" /> {t('actions.addToSet')}</>
             )}
           </Button>
 
