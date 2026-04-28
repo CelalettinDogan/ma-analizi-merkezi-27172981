@@ -1,33 +1,81 @@
 {
   "title": "Premium",
   "subtitle": "Análisis ilimitado, chat IA y más",
+  "hero": {
+    "heading": "Premium",
+    "tagline": "Destaca con análisis avanzado e insights con IA"
+  },
+  "billing": {
+    "monthly": "Mensual",
+    "yearly": "Anual",
+    "savingsBadge": "Ahorra",
+    "twoMonthsFree": "2 meses gratis",
+    "perMonth": "/mes",
+    "perYear": "/año",
+    "approxPerMonth": "≈ {{price}}/mes",
+    "vatIncluded": "Impuestos incluidos",
+    "checkoutNote": "Precio final en el pago",
+    "secure": "Pago seguro vía Google Play",
+    "managedByPlay": "La suscripción se gestiona en Google Play",
+    "autoRenewNotice": "La suscripción se renueva automáticamente al final del periodo. Puedes cancelar en cualquier momento en Google Play Store > Suscripciones. La cancelación se aplica al final del periodo actual.",
+    "autoRenewShort": "La suscripción se renueva automáticamente. Puedes cancelar en Google Play Store > Suscripciones. Sin cancelación, se renueva al final del periodo.",
+    "termsAcceptance": "Al comprar aceptas los {{terms}} y la {{privacy}}.",
+    "termsLink": "Términos de uso",
+    "privacyLink": "Política de privacidad"
+  },
   "plans": {
-    "basic": {
-      "name": "Premium Basic",
-      "description": "Plan mensual",
-      "perMonth": "/mes"
-    },
-    "pro": {
-      "name": "Premium Pro",
-      "description": "Plan anual",
-      "perYear": "/año",
-      "savings": "Ahorra {{percent}}%"
-    }
+    "popular": "Popular",
+    "basic": { "name": "Basic", "tagline": "3 IA/día" },
+    "plus": { "name": "Plus", "tagline": "5 IA/día" },
+    "pro": { "name": "Pro", "tagline": "10 IA/día" },
+    "chatPerDay": "{{count}}/día",
+    "summaryLine": "{{count}} mensajes IA/día • Análisis ilimitado",
+    "fromPrice": "Desde {{price}}/mes"
   },
   "features": {
     "title": "Beneficios Premium",
-    "unlimitedAnalysis": "Análisis de partidos ilimitado",
-    "aiChat": "Acceso al chat IA",
+    "unlimitedAnalysis": "Análisis ilimitado",
+    "unlimitedAnalysisDesc": "Análisis de partidos sin límite diario",
+    "noAds": "Sin anuncios",
+    "noAdsDesc": "Experiencia limpia y sin interrupciones",
+    "history": "Acceso al historial",
+    "historyDesc": "Acceso a todos tus análisis anteriores",
+    "aiComments": "Comentarios IA",
+    "aiAssistant": "Asistente IA",
+    "aiAssistantDesc": "Cuota diaria de mensajes según el plan",
     "advancedStats": "Estadísticas avanzadas",
-    "noAds": "Experiencia sin anuncios",
     "prioritySupport": "Soporte prioritario",
-    "earlyAccess": "Acceso anticipado a nuevas funciones"
+    "earlyAccess": "Acceso anticipado a novedades",
+    "aiChat": "Asistente de chat IA",
+    "premiumBadge": "Premium"
+  },
+  "active": {
+    "adminAccess": "Acceso de Admin",
+    "adminDesc": "Acceso total a todas las funciones",
+    "activeSubscription": "Suscripción activa",
+    "unlimitedAnalysis": "Análisis ilimitado",
+    "noDailyLimit": "Sin límite diario",
+    "aiAssistant": "Asistente IA",
+    "messagesPerDay": "{{count}} msj/día",
+    "noAds": "Sin anuncios",
+    "cleanExperience": "Experiencia limpia",
+    "historyAccess": "Acceso al historial",
+    "allAnalyses": "Todos los análisis"
   },
   "actions": {
-    "subscribe": "Suscribirse",
+    "subscribe": "Suscribirme",
+    "buy": "Comprar",
     "restore": "Restaurar compras",
     "manage": "Gestionar suscripción",
-    "upgrade": "Actualizar"
+    "upgrade": "Pasar a Premium",
+    "viewPlans": "Ver planes",
+    "later": "Más tarde",
+    "skip": "Omitir por ahora",
+    "processing": "Procesando..."
+  },
+  "trust": {
+    "userCount": "10.000+ usuarios usan GolMetrik AI",
+    "highAccuracy": "Análisis IA con alta precisión"
   },
   "status": {
     "active": "Activa",
@@ -36,15 +84,60 @@
     "expiresOn": "Expira el {{date}}",
     "free": "Plan gratuito"
   },
-  "billing": {
-    "vatIncluded": "Impuestos incluidos",
-    "checkoutNote": "El precio final se muestra al pagar",
-    "secure": "Pago seguro vía Google Play"
-  },
   "messages": {
-    "purchaseSuccess": "Suscripción activada con éxito",
+    "purchaseSuccess": "¡{{plan}} activado! 🎉",
+    "purchaseSuccessShort": "¡Membresía {{plan}} activa!",
+    "purchaseSuccessUpgrade": "¡Membresía {{plan}} activada!",
     "purchaseFailed": "La compra falló",
-    "restoreSuccess": "Tus compras han sido restauradas",
-    "restoreNone": "No hay compras para restaurar"
+    "activationFailed": "Tu pago fue recibido pero falló la activación. Intenta de nuevo con \"Restaurar\".",
+    "activationFailedAlt": "Tu pago fue recibido pero falló la activación. Intenta de nuevo con \"Restaurar compras\".",
+    "nativeRequired": "Las compras reales requieren la app móvil",
+    "nativeRequiredTest": "Prueba de compra: las compras reales requieren la app móvil",
+    "restoreSuccess": "¡Restaurado!",
+    "restoreSuccessFull": "¡Compras restauradas!",
+    "restoreNone": "No hay compras para restaurar",
+    "restoreFailed": "La restauración falló",
+    "genericError": "Ocurrió un error",
+    "shortError": "Error",
+    "notFound": "No encontrado"
+  },
+  "limit": {
+    "bannerTitle": "Cuota diaria de análisis alcanzada",
+    "resetIn": "Se reinicia en: {{time}}",
+    "fromPrice": "Premium: desde {{price}}/mes",
+    "sheetTitle": "Cuota diaria de análisis alcanzada",
+    "sheetDescription": "Has usado tus análisis diarios gratis. Habrá nuevos análisis en {{time}}.",
+    "premiumPrompt": "Con Premium puedes hacer análisis ilimitados sin esperar",
+    "viewPlans": "Ver planes Premium",
+    "tryTomorrow": "Reintenta mañana ({{time}})",
+    "hours": "{{hours}}h {{minutes}}m",
+    "minutes": "{{minutes}}m"
+  },
+  "promotion": {
+    "limit": {
+      "title": "¡Has alcanzado el límite de análisis!",
+      "subtitle": "Tus 2 análisis gratuitos diarios están agotados",
+      "description": "Haz análisis ilimitados y usa el asistente IA con Premium."
+    },
+    "feature": {
+      "title": "Función Premium",
+      "subtitle": "Esta función es exclusiva para miembros Premium",
+      "description": "Pasa a Premium para análisis profundo, datos xG e insights tácticos."
+    },
+    "general": {
+      "title": "Pasa a Premium",
+      "subtitle": "Mantente un paso por delante en el análisis del fútbol",
+      "description": "Predicciones con IA, análisis ilimitados y mucho más te esperan."
+    },
+    "chatbot": {
+      "title": "El Asistente IA es solo Premium",
+      "subtitle": "Tu consultor personal de fútbol",
+      "description": "Analiza partidos, obtén predicciones y haz preguntas con el Asistente IA."
+    },
+    "yearlyHint": "¡2 meses gratis en planes anuales!"
+  },
+  "upgrade": {
+    "title": "Pasa a Premium",
+    "subtitle": "Desbloquea análisis ilimitados y el Asistente IA"
   }
 }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Crown, Check, Sparkles, Zap, Shield, Brain, MessageSquare, Ban, History, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,8 +17,7 @@ import { toast } from 'sonner';
 // ─── Plan data ─────────────────────────────────────────────
 interface PlanConfig {
   id: 'premium_basic' | 'premium_plus' | 'premium_pro';
-  name: string;
-  tagline: string;
+  nameKey: 'basic' | 'plus' | 'pro';
   monthlyId: string;
   yearlyId: string;
   chatLimit: number;
@@ -27,36 +27,30 @@ interface PlanConfig {
 
 const plans: PlanConfig[] = [
   {
-    id: 'premium_basic', name: 'Basic', tagline: '3 AI/gün',
+    id: 'premium_basic', nameKey: 'basic',
     monthlyId: PRODUCTS.PREMIUM_BASIC_MONTHLY, yearlyId: PRODUCTS.PREMIUM_BASIC_YEARLY,
     chatLimit: PLAN_PRODUCTS.premium_basic.chatLimit, popular: false, icon: Zap,
   },
   {
-    id: 'premium_plus', name: 'Plus', tagline: '5 AI/gün',
+    id: 'premium_plus', nameKey: 'plus',
     monthlyId: PRODUCTS.PREMIUM_PLUS_MONTHLY, yearlyId: PRODUCTS.PREMIUM_PLUS_YEARLY,
     chatLimit: PLAN_PRODUCTS.premium_plus.chatLimit, popular: true, icon: Crown,
   },
   {
-    id: 'premium_pro', name: 'Pro', tagline: '10 AI/gün',
+    id: 'premium_pro', nameKey: 'pro',
     monthlyId: PRODUCTS.PREMIUM_PRO_MONTHLY, yearlyId: PRODUCTS.PREMIUM_PRO_YEARLY,
     chatLimit: PLAN_PRODUCTS.premium_pro.chatLimit, popular: false, icon: Sparkles,
   },
 ];
 
-const includedFeatures = [
-  { icon: Brain, label: 'Sınırsız analiz' },
-  { icon: Ban, label: 'Reklamsız' },
-  { icon: History, label: 'Geçmiş erişimi' },
-  { icon: MessageSquare, label: 'AI yorumlar' },
-];
-
-
 /** Strip trailing period text like "/yıl", "/ay" from price string if present */
-const cleanPrice = (s: string): string => s.replace(/\s*\/(yıl|ay|year|month)\s*$/i, '').trim();
+const cleanPrice = (s: string): string => s.replace(/\s*\/(yıl|ay|year|month|yr|mo|jahr|año|سنة|شهر)\s*$/i, '').trim();
 
 // ─── Active Plan View (for premium/admin users) ───────────
 const ActivePlanView = ({ plans: plansList, planType, isAdmin }: { plans: PlanConfig[]; planType: string; isAdmin: boolean }) => {
+  const { t } = useTranslation('premium');
   const currentPlan = plansList.find(p => p.id === planType) || plansList[1];
+  const planName = currentPlan ? t(`plans.${currentPlan.nameKey}.name`) : t('title');
   return (
     <div className="h-screen bg-background flex flex-col">
       <AppHeader />
@@ -67,18 +61,18 @@ const ActivePlanView = ({ plans: plansList, planType, isAdmin }: { plans: PlanCo
               <Crown className="h-6 w-6 text-primary" />
             </div>
             <h2 className="text-lg font-bold mb-0.5">
-              {isAdmin ? 'Admin Erişimi' : (currentPlan?.name || 'Premium')}
+              {isAdmin ? t('active.adminAccess') : planName}
             </h2>
             <p className="text-xs text-muted-foreground">
-              {isAdmin ? 'Tüm özelliklere tam erişim' : 'Aktif abonelik'}
+              {isAdmin ? t('active.adminDesc') : t('active.activeSubscription')}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {[
-              { icon: Brain, label: 'Sınırsız Analiz', desc: 'Günlük limit yok' },
-              { icon: MessageSquare, label: 'AI Asistan', desc: `${currentPlan?.chatLimit || '∞'} mesaj/gün` },
-              { icon: Ban, label: 'Reklamsız', desc: 'Temiz deneyim' },
-              { icon: History, label: 'Geçmiş Erişimi', desc: 'Tüm analizler' },
+              { icon: Brain, label: t('active.unlimitedAnalysis'), desc: t('active.noDailyLimit') },
+              { icon: MessageSquare, label: t('active.aiAssistant'), desc: t('active.messagesPerDay', { count: currentPlan?.chatLimit ?? '∞' }) },
+              { icon: Ban, label: t('active.noAds'), desc: t('active.cleanExperience') },
+              { icon: History, label: t('active.historyAccess'), desc: t('active.allAnalyses') },
             ].map(f => (
               <div key={f.label} className="p-3 rounded-xl bg-muted/20 border border-border/30">
                 <f.icon className="w-4 h-4 text-primary mb-1.5" />
@@ -89,7 +83,7 @@ const ActivePlanView = ({ plans: plansList, planType, isAdmin }: { plans: PlanCo
           </div>
           <div className="p-3 rounded-xl bg-muted/10 border border-border/20 text-center">
             <p className="text-[10px] text-muted-foreground">
-              Abonelik Google Play üzerinden yönetilir
+              {t('billing.managedByPlay')}
             </p>
           </div>
         </div>
@@ -110,9 +104,20 @@ interface PlanCardProps {
 }
 
 const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoading, onSelect }: PlanCardProps) => {
+  const { t, i18n } = useTranslation('premium');
   const Icon = plan.icon;
   const isPopular = plan.popular;
-  const periodLabel = isYearly ? '/yıl' : '/ay';
+  const periodLabel = isYearly ? t('billing.perYear') : t('billing.perMonth');
+  const planName = t(`plans.${plan.nameKey}.name`);
+  const tagline = t(`plans.${plan.nameKey}.tagline`);
+
+  const formatMonthly = (n: number) => {
+    try {
+      return new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 }).format(n);
+    } catch {
+      return String(n);
+    }
+  };
 
   return (
     <motion.button
@@ -120,7 +125,7 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoadin
       onClick={onSelect}
       role="radio"
       aria-checked={isSelected}
-      aria-label={`${plan.name} planı — ${plan.tagline}`}
+      aria-label={`${planName} — ${tagline}`}
       className={`relative flex flex-col items-center text-center rounded-2xl border-[1.5px] transition-all duration-300 overflow-visible ${
         isPopular ? 'flex-[1.2] z-10 scale-[1.05]' : 'flex-1 z-0 opacity-90'
       } ${
@@ -134,39 +139,33 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoadin
       }`}
       style={{ minWidth: 0 }}
     >
-      {/* Popular badge — floating above card with glow */}
       {isPopular && (
         <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20">
           <div className="bg-gradient-to-r from-primary to-accent text-primary-foreground text-[10px] font-bold px-4 py-1 rounded-full shadow-[0_4px_16px_-2px_hsl(var(--primary)/0.5)] ring-2 ring-primary/20 flex items-center gap-1 whitespace-nowrap">
             <Sparkles className="w-3 h-3" />
-            Popüler
+            {t('plans.popular')}
           </div>
         </div>
       )}
 
       <div className={`flex flex-col items-center w-full px-2.5 pb-5 ${isPopular ? 'pt-6' : 'pt-5'}`}>
-        {/* Icon */}
         <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-2 ${
           isPopular ? 'bg-primary/10' : 'bg-muted/50'
         }`}>
           <Icon className={`w-4 h-4 ${isPopular ? 'text-primary' : 'text-muted-foreground'}`} />
         </div>
 
-        {/* Name */}
         <p className={`font-bold truncate max-w-full ${isPopular ? 'text-sm' : 'text-xs'}`}>
-          {plan.name}
+          {planName}
         </p>
 
-        {/* Price block — NEVER wraps */}
         {pricesLoading ? (
           <Skeleton className="h-8 w-14 mt-3 rounded-lg" />
         ) : (
           <div className="flex flex-col items-center mt-3 min-w-0 max-w-full">
             <div className="flex items-baseline gap-0.5 min-w-0 max-w-full overflow-hidden">
               <span
-                className={`font-extrabold tracking-tight leading-none ${
-                  isPopular ? 'text-lg' : 'text-[15px]'
-                }`}
+                className={`font-extrabold tracking-tight leading-none ${isPopular ? 'text-lg' : 'text-[15px]'}`}
                 style={{ fontSize: isPopular ? 'clamp(1rem, 4vw, 1.25rem)' : 'clamp(0.8rem, 3.2vw, 0.9375rem)' }}
               >
                 {cleanPrice(priceStr)}
@@ -178,18 +177,16 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoadin
 
             {isYearly && priceNum > 0 && (
               <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1.5 whitespace-nowrap">
-                ≈ ₺{Math.round(priceNum / 12)}/ay
+                {t('billing.approxPerMonth', { price: `₺${formatMonthly(priceNum / 12)}` })}
               </p>
             )}
           </div>
         )}
 
-        {/* Tagline */}
         <p className="text-[11px] text-muted-foreground mt-3 whitespace-nowrap">
-          {plan.tagline}
+          {tagline}
         </p>
 
-        {/* Selection radio */}
         <div className={`w-5 h-5 rounded-full border-2 mt-4 flex items-center justify-center transition-all duration-200 ${
           isSelected ? 'border-primary bg-primary scale-110' : 'border-muted-foreground/20'
         }`}>
@@ -202,6 +199,7 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoadin
 
 // ─── Main Premium Page ────────────────────────────────────
 const Premium = () => {
+  const { t } = useTranslation('premium');
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
   const { isNative } = usePlatform();
@@ -215,7 +213,14 @@ const Premium = () => {
 
   const sel = plans.find(p => p.id === selectedPlan)!;
   const productId = isYearly ? sel.yearlyId : sel.monthlyId;
-  const planName = PLAN_PRODUCTS[selectedPlan].name;
+  const planName = t(`plans.${sel.nameKey}.name`);
+
+  const includedFeatures = [
+    { icon: Brain, label: t('features.unlimitedAnalysis') },
+    { icon: Ban, label: t('features.noAds') },
+    { icon: History, label: t('features.history') },
+    { icon: MessageSquare, label: t('features.aiComments') },
+  ];
 
   const handlePurchase = async () => {
     if (!user) { navigate('/auth'); return; }
@@ -224,20 +229,20 @@ const Premium = () => {
       if (isNative) {
         const result = await purchaseService.purchaseSubscription(productId);
         if (result.success) {
-          toast.success(`${planName} aktif edildi! 🎉`);
+          toast.success(t('messages.purchaseSuccess', { plan: planName }));
           refetch();
         } else {
           const isActivationError = result.error?.includes('doğrulanamadı') || result.error?.includes('kaydedilemedi');
           if (isActivationError) {
-            toast.error('Ödemeniz alındı ancak aktivasyon başarısız oldu. "Geri yükle" ile tekrar deneyin.');
+            toast.error(t('messages.activationFailed'));
           } else {
-            toast.error(result.error || 'Satın alma başarısız');
+            toast.error(result.error || t('messages.purchaseFailed'));
           }
         }
       } else {
-        toast.info('Gerçek satın alma için mobil uygulama gerekli');
+        toast.info(t('messages.nativeRequired'));
       }
-    } catch { toast.error('Bir hata oluştu'); }
+    } catch { toast.error(t('messages.genericError')); }
     finally { setIsLoading(false); }
   };
 
@@ -245,13 +250,12 @@ const Premium = () => {
     setIsLoading(true);
     try {
       const r = await purchaseService.restorePurchases();
-      if (r.success) { refetch(); toast.success('Geri yüklendi!'); }
-      else { toast.info(r.error || 'Bulunamadı'); }
-    } catch { toast.error('Hata'); }
+      if (r.success) { refetch(); toast.success(t('messages.restoreSuccess')); }
+      else { toast.info(r.error || t('messages.restoreNone')); }
+    } catch { toast.error(t('messages.shortError')); }
     finally { setIsLoading(false); }
   };
 
-  // ── Loading skeleton ──
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -271,12 +275,10 @@ const Premium = () => {
     );
   }
 
-  // ── Already premium ──
   if (isPremium || isAdmin) {
     return <ActivePlanView plans={plans} planType={planType} isAdmin={isAdmin} />;
   }
 
-  // ── Free user — subscription screen ──
   return (
     <div className="h-screen bg-background flex flex-col">
       <AppHeader />
@@ -287,7 +289,7 @@ const Premium = () => {
       >
         <div className="w-full max-w-md mx-auto px-3 sm:px-5 space-y-5 py-4">
 
-          {/* ── Hero ── */}
+          {/* Hero */}
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -300,15 +302,15 @@ const Premium = () => {
                 </div>
               </div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-amber-400 via-primary to-accent bg-clip-text text-transparent">
-                Premium
+                {t('hero.heading')}
               </h1>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Gelişmiş analiz ve AI destekli içgörülerle fark yarat
+              {t('hero.tagline')}
             </p>
           </motion.div>
 
-          {/* ── Period Toggle ── */}
+          {/* Period Toggle */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -331,7 +333,7 @@ const Premium = () => {
                   !isYearly ? 'text-foreground' : 'text-muted-foreground'
                 }`}
               >
-                Aylık
+                {t('billing.monthly')}
               </button>
               <button
                 onClick={() => setIsYearly(true)}
@@ -339,13 +341,13 @@ const Premium = () => {
                   isYearly ? 'text-foreground' : 'text-muted-foreground'
                 }`}
               >
-                Yıllık
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">Tasarruf</span>
+                {t('billing.yearly')}
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">{t('billing.savingsBadge')}</span>
               </button>
             </div>
           </motion.div>
 
-          {/* ── Plan Cards ── */}
+          {/* Plan Cards */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -369,7 +371,7 @@ const Premium = () => {
             })}
           </motion.div>
 
-          {/* ── Feature Pills ── */}
+          {/* Feature Pills */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -387,7 +389,7 @@ const Premium = () => {
             ))}
           </motion.div>
 
-          {/* ── Trust ── */}
+          {/* Trust */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -397,15 +399,15 @@ const Premium = () => {
             <div className="flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-muted-foreground/60 shrink-0" />
               <span className="text-[11px] text-muted-foreground font-medium">
-                10.000+ kullanıcı GolMetrik AI kullanıyor
+                {t('trust.userCount')}
               </span>
             </div>
             <span className="text-[11px] text-muted-foreground/70">
-              Yüksek doğruluk oranına sahip AI analizler
+              {t('trust.highAccuracy')}
             </span>
           </motion.div>
 
-          {/* ── CTA (inline in scroll) ── */}
+          {/* CTA */}
           <div className="px-2 pt-2 pb-4 space-y-2.5">
             <motion.div whileTap={{ scale: 0.95 }}>
               <Button
@@ -421,11 +423,11 @@ const Premium = () => {
                 />
                 {isLoading ? (
                   <span className="flex items-center gap-2 relative">
-                    <span className="animate-spin">⏳</span> İşleniyor...
+                    <span className="animate-spin">⏳</span> {t('actions.processing')}
                   </span>
                 ) : (
                   <span className="flex items-center gap-2.5 relative">
-                    <Crown className="h-5 w-5" /> Premium'a Geç
+                    <Crown className="h-5 w-5" /> {t('actions.upgrade')}
                   </span>
                 )}
               </Button>
@@ -433,15 +435,15 @@ const Premium = () => {
 
             <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground/70 leading-tight">
               <Shield className="w-3 h-3 text-emerald-600/60 dark:text-emerald-400/60 shrink-0" />
-              <span>Google Play güvencesiyle · İstediğin zaman iptal</span>
+              <span>{t('billing.secure')}</span>
               <span className="mx-0.5">·</span>
-              <button onClick={handleRestore} className="underline">Geri yükle</button>
+              <button onClick={handleRestore} className="underline">{t('actions.restore')}</button>
             </div>
 
             <p className="text-[10px] text-muted-foreground/50 text-center leading-tight">
-              Abonelik otomatik yenilenir.{' '}
-              <Link to="/terms" className="underline">Şartlar</Link> ve{' '}
-              <Link to="/privacy" className="underline">Gizlilik</Link>
+              {t('billing.autoRenewShort').split('.')[0]}.{' '}
+              <Link to="/terms" className="underline">{t('billing.termsLink')}</Link>{' · '}
+              <Link to="/privacy" className="underline">{t('billing.privacyLink')}</Link>
             </p>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,14 +26,16 @@ const getPromptBorderColor = (text: string): string => {
   return 'border-border/50';
 };
 
-const ChatInput: React.FC<ChatInputProps> = ({ 
-  onSend, 
-  isLoading, 
+const ChatInput: React.FC<ChatInputProps> = ({
+  onSend,
+  isLoading,
   disabled = false,
   disabledReason,
-  placeholder = "Futbol hakkında bir şeyler sorun...",
+  placeholder,
   maxLength = 500
 }) => {
+  const { t } = useTranslation('chat');
+  const effectivePlaceholder = placeholder ?? t('input.placeholder');
   const [message, setMessage] = useState('');
   const [showQuickPrompts, setShowQuickPrompts] = useState(true);
   const [isFocused, setIsFocused] = useState(false);
@@ -138,7 +141,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               setIsFocused(true);
             }}
             onBlur={() => setIsFocused(false)}
-            placeholder={disabled && disabledReason ? disabledReason : placeholder}
+            placeholder={disabled && disabledReason ? disabledReason : effectivePlaceholder}
             disabled={disabled || isLoading}
             className={cn(
               "min-h-[48px] max-h-[120px] resize-none rounded-3xl text-sm",
@@ -178,7 +181,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             onClick={handleSend}
             disabled={!message.trim() || isLoading || disabled || isOverLimit}
             size="icon"
-            aria-label="Mesaj gönder"
+            aria-label={t('actions.send')}
             className={cn(
               "min-h-[44px] min-w-[44px] h-auto w-auto rounded-full shrink-0 transition-all duration-200",
               "bg-gradient-to-br from-primary to-primary/80",

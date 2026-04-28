@@ -1,0 +1,98 @@
+{
+  "header": {
+    "title": "VARio",
+    "subtitle": "Asistente IA",
+    "fullTitle": "VARio - Asistente IA",
+    "admin": "Admin",
+    "pro": "Pro",
+    "plus": "Plus",
+    "basic": "Basic"
+  },
+  "actions": {
+    "clear": "Limpiar chat",
+    "send": "Enviar mensaje",
+    "copy": "Copiar",
+    "helpful": "Útil",
+    "needsImprovement": "Por mejorar",
+    "back": "Atrás",
+    "later": "Más tarde",
+    "openVario": "Desbloquear VARio"
+  },
+  "input": {
+    "placeholder": "Pregunta lo que quieras sobre fútbol...",
+    "matchPlaceholder": "Pregunta sobre {{home}} vs {{away}}..."
+  },
+  "context": {
+    "autoMessage": "Analiza el partido {{home}} vs {{away}}. Dame un desglose detallado.",
+    "limitReached": "Has alcanzado tu límite diario"
+  },
+  "welcome": {
+    "greeting": "¡Hola! Soy VARio 👋",
+    "tagline": "Aquí para tus análisis de fútbol"
+  },
+  "dates": {
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "daysAgo": "hace {{count}} días",
+    "justNow": "Justo ahora",
+    "minutes": "{{count}}m",
+    "hours": "{{count}}h"
+  },
+  "feedback": {
+    "thanks": "¡Gracias!",
+    "received": "Hemos recibido tu opinión",
+    "copied": "Copiado",
+    "copyFailed": "No se pudo copiar"
+  },
+  "typing": {
+    "thinking": "Pensando",
+    "analyzing": "Analizando",
+    "preparing": "Preparándose"
+  },
+  "usage": {
+    "unlimited": "Acceso ilimitado",
+    "exhausted": "Límite agotado",
+    "remaining": "{{count}} restantes"
+  },
+  "loading": "Cargando...",
+  "guestGate": {
+    "title": "Bienvenido a VARio - Asistente IA",
+    "description": "Inicia sesión para acceder a análisis y predicciones con IA.",
+    "featuresTitle": "Con VARio:",
+    "feature1": "Predicciones y análisis de partidos",
+    "feature2": "Evaluación de la forma del equipo",
+    "feature3": "Insights basados en estadísticas",
+    "feature4": "Análisis H2H y de liga",
+    "login": "Iniciar sesión",
+    "signup": "Crear cuenta",
+    "footer": "Crea una cuenta gratis para acceder a los análisis.\nVARio es exclusivo para usuarios Premium."
+  },
+  "premiumGate": {
+    "title": "VARio - Asistente IA",
+    "subtitle": "Análisis de partidos con IA ilimitado",
+    "previewUser": "Analiza el partido Fenerbahçe - Galatasaray",
+    "previewAi": "Fenerbahçe tiene un 72% de victorias en sus últimos 5 partidos. Considerando la ventaja local y la forma...",
+    "feature1": "Comentarios ilimitados de IA",
+    "feature2": "Explicaciones estadísticas detalladas",
+    "feature3": "Análisis de nivel de riesgo",
+    "feature4": "Insights en vivo",
+    "feature5": "Experiencia sin anuncios"
+  },
+  "limitSheet": {
+    "title": "Has agotado tus mensajes diarios de VARio",
+    "description": "Has usado tu cuota de {{limit}} mensajes hoy.",
+    "resetIn": "Se reinicia en {{time}}.",
+    "upgradeTitle": "Mejora tu plan para más mensajes de IA",
+    "currentPlan": "Actual: {{plan}} ({{limit}} msj/día)",
+    "upgradeCta": "Mejorar plan",
+    "tryTomorrow": "Reintenta mañana",
+    "atTopPlan": "Ya tienes el plan más alto. El límite se reiniciará mañana.",
+    "autoRenew": "La suscripción se renueva automáticamente. Puedes cancelar en Google Play Store > Suscripciones.",
+    "hours": "{{hours}}h {{minutes}}m",
+    "minutes": "{{minutes}}m",
+    "options": {
+      "plus": { "label": "Premium Plus", "description": "5 mensajes IA/día" },
+      "pro": { "label": "Premium Pro", "description": "10 mensajes IA/día" }
+    }
+  }
+}

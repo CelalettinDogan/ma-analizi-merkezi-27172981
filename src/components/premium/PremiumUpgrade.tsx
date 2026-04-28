@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Crown, Brain, Ban, History, Check, MessageSquare, Sparkles, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,16 +19,9 @@ interface PremiumUpgradeProps {
   onClose?: () => void;
 }
 
-const features = [
-  { icon: Brain, label: 'Sınırsız Analiz', description: 'Günlük limit olmadan maç analizi' },
-  { icon: MessageSquare, label: 'AI Asistan', description: 'Planına göre günlük AI mesaj hakkı' },
-  { icon: Ban, label: 'Reklamsız', description: 'Kesintisiz, temiz deneyim' },
-  { icon: History, label: 'Analiz Geçmişi', description: 'Tüm geçmiş analizlerine erişim' },
-];
-
 interface PlanConfig {
   id: 'premium_basic' | 'premium_plus' | 'premium_pro';
-  name: string;
+  nameKey: 'basic' | 'plus' | 'pro';
   monthlyId: string;
   yearlyId: string;
   chatLimit: number;
@@ -37,19 +31,19 @@ interface PlanConfig {
 
 const plans: PlanConfig[] = [
   {
-    id: 'premium_basic', name: 'Basic',
+    id: 'premium_basic', nameKey: 'basic',
     monthlyId: PRODUCTS.PREMIUM_BASIC_MONTHLY, yearlyId: PRODUCTS.PREMIUM_BASIC_YEARLY,
     chatLimit: PLAN_PRODUCTS.premium_basic.chatLimit, popular: false,
     color: 'from-blue-500 to-blue-600',
   },
   {
-    id: 'premium_plus', name: 'Plus',
+    id: 'premium_plus', nameKey: 'plus',
     monthlyId: PRODUCTS.PREMIUM_PLUS_MONTHLY, yearlyId: PRODUCTS.PREMIUM_PLUS_YEARLY,
     chatLimit: PLAN_PRODUCTS.premium_plus.chatLimit, popular: true,
     color: 'from-purple-500 to-purple-600',
   },
   {
-    id: 'premium_pro', name: 'Pro',
+    id: 'premium_pro', nameKey: 'pro',
     monthlyId: PRODUCTS.PREMIUM_PRO_MONTHLY, yearlyId: PRODUCTS.PREMIUM_PRO_YEARLY,
     chatLimit: PLAN_PRODUCTS.premium_pro.chatLimit, popular: false,
     color: 'from-amber-500 to-orange-600',
@@ -57,9 +51,10 @@ const plans: PlanConfig[] = [
 ];
 
 export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
+  const { t } = useTranslation('premium');
   const { isNative } = usePlatform();
   const { refetch } = usePlatformPremium();
-  const { getPrice, getPriceAmount, isLoading: pricesLoading } = useStoreProducts();
+  const { getPrice, isLoading: pricesLoading } = useStoreProducts();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanConfig['id']>('premium_plus');
   const [isYearly, setIsYearly] = useState(true);
@@ -67,7 +62,14 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
   const selectedPlanConfig = plans.find(p => p.id === selectedPlan)!;
   const productId = isYearly ? selectedPlanConfig.yearlyId : selectedPlanConfig.monthlyId;
   const priceStr = getPrice(productId);
-  const planName = PLAN_PRODUCTS[selectedPlan].name;
+  const planName = t(`plans.${selectedPlanConfig.nameKey}.name`);
+
+  const features = [
+    { icon: Brain, label: t('features.unlimitedAnalysis'), description: t('features.unlimitedAnalysisDesc') },
+    { icon: MessageSquare, label: t('features.aiAssistant'), description: t('features.aiAssistantDesc') },
+    { icon: Ban, label: t('features.noAds'), description: t('features.noAdsDesc') },
+    { icon: History, label: t('features.history'), description: t('features.historyDesc') },
+  ];
 
   const handlePurchase = async () => {
     setIsLoading(true);
@@ -76,23 +78,22 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
         const result = await purchaseService.purchaseSubscription(productId);
         if (result.success) {
           refetch();
-          toast.success(`${planName} üyeliğin aktif edildi!`);
+          toast.success(t('messages.purchaseSuccessUpgrade', { plan: planName }));
           onClose?.();
         } else {
           const isActivationError = result.error?.includes('doğrulanamadı') || result.error?.includes('kaydedilemedi');
           if (isActivationError) {
-            toast.error('Ödemeniz alındı ancak aktivasyon başarısız oldu. "Satın Almaları Geri Yükle" ile tekrar deneyin.');
+            toast.error(t('messages.activationFailedAlt'));
           } else {
-            toast.error(result.error || 'Satın alma başarısız');
+            toast.error(result.error || t('messages.purchaseFailed'));
           }
         }
       } else {
-        console.log('Purchase simulation - native platform required for real purchases');
-        toast.info('Satın alma testi: Gerçek satın alma için mobil uygulama gerekli');
+        toast.info(t('messages.nativeRequiredTest'));
       }
     } catch (error) {
       console.error('Purchase error:', error);
-      toast.error('Bir hata oluştu');
+      toast.error(t('messages.genericError'));
     } finally {
       setIsLoading(false);
     }
@@ -104,14 +105,14 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
       const result = await purchaseService.restorePurchases();
       if (result.success) {
         refetch();
-        toast.success('Satın almalar geri yüklendi!');
+        toast.success(t('messages.restoreSuccessFull'));
         onClose?.();
       } else {
-        toast.info(result.error || 'Geri yüklenecek satın alma bulunamadı');
+        toast.info(result.error || t('messages.restoreNone'));
       }
     } catch (error) {
       console.error('Restore error:', error);
-      toast.error('Geri yükleme başarısız');
+      toast.error(t('messages.restoreFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -128,20 +129,19 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
           <div className="mx-auto mb-4 p-3 rounded-full bg-primary/10 w-fit">
             <Crown className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Premium'a Yükselt</CardTitle>
+          <CardTitle className="text-2xl">{t('upgrade.title')}</CardTitle>
           <p className="text-muted-foreground text-sm mt-2">
-            Sınırsız analiz ve AI Asistan'a eriş
+            {t('upgrade.subtitle')}
           </p>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Billing Period Toggle */}
           <div className="flex items-center justify-center gap-4 p-3 rounded-xl bg-muted/50">
-            <Label 
-              htmlFor="billing-toggle" 
+            <Label
+              htmlFor="billing-toggle"
               className={`text-sm cursor-pointer transition-colors ${!isYearly ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
             >
-              Aylık
+              {t('billing.monthly')}
             </Label>
             <Switch
               id="billing-toggle"
@@ -149,27 +149,27 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
               onCheckedChange={setIsYearly}
             />
             <div className="flex items-center gap-1">
-              <Label 
-                htmlFor="billing-toggle" 
+              <Label
+                htmlFor="billing-toggle"
                 className={`text-sm cursor-pointer transition-colors ${isYearly ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
               >
-                Yıllık
+                {t('billing.yearly')}
               </Label>
               {isYearly && (
                 <Badge variant="secondary" className="text-micro bg-green-500/10 text-green-600">
-                  2 ay bedava
+                  {t('billing.twoMonthsFree')}
                 </Badge>
               )}
             </div>
           </div>
 
-          {/* Plan Selection */}
           <div className="grid grid-cols-3 gap-2">
             {plans.map((plan) => {
               const isSelected = selectedPlan === plan.id;
               const currentProductId = isYearly ? plan.yearlyId : plan.monthlyId;
               const displayPrice = getPrice(currentProductId);
-              
+              const pName = t(`plans.${plan.nameKey}.name`);
+
               return (
                 <button
                   key={plan.id}
@@ -183,18 +183,18 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
                   {plan.popular && (
                     <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 text-micro px-2">
                       <Sparkles className="w-3 h-3 mr-1" />
-                      Popüler
+                      {t('plans.popular')}
                     </Badge>
                   )}
-                  
+
                   <div className={`w-8 h-8 mx-auto mb-2 rounded-lg bg-gradient-to-br ${plan.color} flex items-center justify-center`}>
                     {plan.id === 'premium_basic' && <Zap className="w-4 h-4 text-white" />}
                     {plan.id === 'premium_plus' && <Crown className="w-4 h-4 text-white" />}
                     {plan.id === 'premium_pro' && <Sparkles className="w-4 h-4 text-white" />}
                   </div>
-                  
-                  <p className="font-semibold text-sm">{plan.name}</p>
-                  
+
+                  <p className="font-semibold text-sm">{pName}</p>
+
                   {pricesLoading ? (
                     <Skeleton className="h-6 w-14 mx-auto mt-1 rounded" />
                   ) : (
@@ -203,16 +203,16 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
                     </p>
                   )}
                   <p className="text-micro text-muted-foreground">
-                    {isYearly ? '/yıl' : '/ay'}
+                    {isYearly ? t('billing.perYear') : t('billing.perMonth')}
                   </p>
-                  
+
                   <div className="flex items-center justify-center gap-1 mt-2">
                     <MessageSquare className="w-3 h-3 text-muted-foreground" />
                     <span className="text-micro text-muted-foreground">
-                      {plan.chatLimit}/gün
+                      {t('plans.chatPerDay', { count: plan.chatLimit })}
                     </span>
                   </div>
-                  
+
                   {isSelected && (
                     <div className="absolute top-1 right-1">
                       <Check className="h-4 w-4 text-primary" />
@@ -223,7 +223,6 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
             })}
           </div>
 
-          {/* Features */}
           <div className="grid grid-cols-2 gap-2">
             {features.map((feature, index) => (
               <motion.div
@@ -244,13 +243,12 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
             ))}
           </div>
 
-          {/* Selected Plan Summary */}
           <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-semibold">{planName}</p>
                 <p className="text-xs text-muted-foreground">
-                  {selectedPlanConfig.chatLimit} AI mesajı/gün • Sınırsız analiz
+                  {t('plans.summaryLine', { count: selectedPlanConfig.chatLimit })}
                 </p>
               </div>
               <div className="text-right">
@@ -260,13 +258,12 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
                   <p className="text-xl font-bold text-primary">{priceStr}</p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  {isYearly ? '/yıl' : '/ay'}
+                  {isYearly ? t('billing.perYear') : t('billing.perMonth')}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Purchase Button */}
           <Button
             onClick={handlePurchase}
             disabled={isLoading}
@@ -276,17 +273,16 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <span className="animate-spin">⏳</span>
-                İşleniyor...
+                {t('actions.processing')}
               </span>
             ) : (
               <span className="flex items-center gap-2">
                 <Crown className="h-5 w-5" />
-                Satın Al
+                {t('actions.buy')}
               </span>
             )}
           </Button>
 
-          {/* Restore Purchases (Native only) */}
           {isNative && (
             <Button
               variant="ghost"
@@ -294,32 +290,46 @@ export const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ onClose }) => {
               disabled={isLoading}
               className="w-full text-sm"
             >
-              Satın Almaları Geri Yükle
+              {t('actions.restore')}
             </Button>
           )}
 
-          {/* Cancel */}
           {onClose && (
             <Button
               variant="ghost"
               onClick={onClose}
               className="w-full text-muted-foreground"
             >
-              Şimdilik Atla
+              {t('actions.skip')}
             </Button>
           )}
 
-          {/* Legal Terms */}
           <div className="space-y-2 text-center">
             <p className="text-micro text-muted-foreground leading-relaxed">
-              Abonelik dönem sonunda otomatik olarak yenilenir. 
-              İstediğiniz zaman Google Play Store &gt; Abonelikler bölümünden iptal edebilirsiniz. 
-              İptal, mevcut dönem sonunda geçerli olur.
+              {t('billing.autoRenewNotice')}
             </p>
             <p className="text-micro text-muted-foreground">
-              Satın alarak{' '}
-              <Link to="/terms" className="underline hover:text-foreground">Kullanım Şartları</Link> ve{' '}
-              <Link to="/privacy" className="underline hover:text-foreground">Gizlilik Politikası</Link>'nı kabul etmiş olursunuz.
+              {t('billing.termsAcceptance', {
+                terms: '__TERMS__',
+                privacy: '__PRIVACY__',
+              }).split('__TERMS__').map((part, i, arr) => {
+                if (i === arr.length - 1) {
+                  const [before, after] = part.split('__PRIVACY__');
+                  return (
+                    <React.Fragment key={i}>
+                      {before}
+                      <Link to="/privacy" className="underline hover:text-foreground">{t('billing.privacyLink')}</Link>
+                      {after}
+                    </React.Fragment>
+                  );
+                }
+                return (
+                  <React.Fragment key={i}>
+                    {part}
+                    <Link to="/terms" className="underline hover:text-foreground">{t('billing.termsLink')}</Link>
+                  </React.Fragment>
+                );
+              })}
             </p>
           </div>
         </CardContent>

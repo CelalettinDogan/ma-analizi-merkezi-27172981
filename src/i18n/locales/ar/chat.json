@@ -1,0 +1,98 @@
+{
+  "header": {
+    "title": "VARio",
+    "subtitle": "مساعد الذكاء الاصطناعي",
+    "fullTitle": "VARio - مساعد الذكاء الاصطناعي",
+    "admin": "مسؤول",
+    "pro": "Pro",
+    "plus": "Plus",
+    "basic": "Basic"
+  },
+  "actions": {
+    "clear": "مسح المحادثة",
+    "send": "إرسال رسالة",
+    "copy": "نسخ",
+    "helpful": "مفيد",
+    "needsImprovement": "يحتاج تحسينًا",
+    "back": "رجوع",
+    "later": "لاحقًا",
+    "openVario": "فتح VARio"
+  },
+  "input": {
+    "placeholder": "اسأل أي شيء عن كرة القدم...",
+    "matchPlaceholder": "اسأل عن {{home}} ضد {{away}}..."
+  },
+  "context": {
+    "autoMessage": "حلل مباراة {{home}} ضد {{away}}. أعطني تحليلًا مفصلًا.",
+    "limitReached": "وصلت إلى الحد اليومي"
+  },
+  "welcome": {
+    "greeting": "مرحبًا! أنا VARio 👋",
+    "tagline": "هنا من أجل تحليلاتك الكروية"
+  },
+  "dates": {
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "daysAgo": "منذ {{count}} أيام",
+    "justNow": "الآن",
+    "minutes": "{{count}}د",
+    "hours": "{{count}}س"
+  },
+  "feedback": {
+    "thanks": "شكرًا!",
+    "received": "تم استلام ملاحظتك",
+    "copied": "تم النسخ",
+    "copyFailed": "تعذر النسخ"
+  },
+  "typing": {
+    "thinking": "يفكر",
+    "analyzing": "يحلل",
+    "preparing": "يستعد"
+  },
+  "usage": {
+    "unlimited": "وصول غير محدود",
+    "exhausted": "انتهى الحد",
+    "remaining": "{{count}} متبقية"
+  },
+  "loading": "جاري التحميل...",
+  "guestGate": {
+    "title": "مرحبًا بك في VARio - مساعد الذكاء الاصطناعي",
+    "description": "سجّل الدخول للوصول إلى تحليلات وتوقعات مدعومة بالذكاء الاصطناعي.",
+    "featuresTitle": "مع VARio:",
+    "feature1": "توقعات وتحليلات للمباريات",
+    "feature2": "تقييم شكل الفريق",
+    "feature3": "رؤى مبنية على الإحصائيات",
+    "feature4": "تحليلات H2H والدوريات",
+    "login": "تسجيل الدخول",
+    "signup": "إنشاء حساب",
+    "footer": "أنشئ حسابًا مجانيًا للوصول إلى التحليلات.\nVARio حصري لمستخدمي بريميوم."
+  },
+  "premiumGate": {
+    "title": "VARio - مساعد الذكاء الاصطناعي",
+    "subtitle": "تحليل غير محدود للمباريات بالذكاء الاصطناعي",
+    "previewUser": "حلّل مباراة فنربخشة وجالاطة سراي",
+    "previewAi": "حقق فنربخشة نسبة فوز 72% في آخر 5 مباريات. مع ميزة اللعب على أرضه وحالة الفريق...",
+    "feature1": "تعليقات غير محدودة بالذكاء الاصطناعي",
+    "feature2": "شروحات إحصائية مفصلة",
+    "feature3": "تحليل مستوى المخاطرة",
+    "feature4": "رؤى مباشرة للمباريات",
+    "feature5": "تجربة بدون إعلانات"
+  },
+  "limitSheet": {
+    "title": "انتهت رسائل VARio اليومية",
+    "description": "لقد استخدمت حصتك اليومية البالغة {{limit}} رسالة.",
+    "resetIn": "ستتجدد خلال {{time}}.",
+    "upgradeTitle": "ارفع باقتك للحصول على المزيد من الرسائل",
+    "currentPlan": "الحالي: {{plan}} ({{limit}} رسالة/يوم)",
+    "upgradeCta": "ترقية الباقة",
+    "tryTomorrow": "أعد المحاولة غدًا",
+    "atTopPlan": "أنت تستخدم أعلى باقة. سيتجدد الحد غدًا.",
+    "autoRenew": "يتجدد الاشتراك تلقائيًا. يمكنك الإلغاء من Google Play Store > الاشتراكات.",
+    "hours": "{{hours}} ساعة {{minutes}} دقيقة",
+    "minutes": "{{minutes}} دقيقة",
+    "options": {
+      "plus": { "label": "Premium Plus", "description": "5 رسائل ذكاء/يوم" },
+      "pro": { "label": "Premium Pro", "description": "10 رسائل ذكاء/يوم" }
+    }
+  }
+}

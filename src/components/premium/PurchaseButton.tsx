@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Crown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { purchaseService } from '@/services/purchaseService';
@@ -28,10 +29,10 @@ export const PurchaseButton: React.FC<PurchaseButtonProps> = ({
   onSuccess,
   onError,
 }) => {
+  const { t } = useTranslation('premium');
   const [isLoading, setIsLoading] = React.useState(false);
   const { refetch } = usePlatformPremium();
 
-  // Get plan name from product ID if not provided
   const displayPlanName = planName || purchaseService.getPlanNameFromProductId(productId);
 
   const handlePurchase = async () => {
@@ -42,15 +43,15 @@ export const PurchaseButton: React.FC<PurchaseButtonProps> = ({
 
       if (result.success) {
         refetch();
-        toast.success(`${displayPlanName} üyeliğin aktif!`);
+        toast.success(t('messages.purchaseSuccessShort', { plan: displayPlanName }));
         onSuccess?.();
       } else {
-        const error = result.error || 'Satın alma başarısız';
+        const error = result.error || t('messages.purchaseFailed');
         toast.error(error);
         onError?.(error);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Bir hata oluştu';
+      const errorMessage = error instanceof Error ? error.message : t('messages.genericError');
       toast.error(errorMessage);
       onError?.(errorMessage);
     } finally {
@@ -70,7 +71,7 @@ export const PurchaseButton: React.FC<PurchaseButtonProps> = ({
         {isLoading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            İşleniyor...
+            {t('actions.processing')}
           </>
         ) : (
           <>

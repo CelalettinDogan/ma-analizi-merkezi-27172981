@@ -1,50 +1,143 @@
 {
   "title": "بريميوم",
-  "subtitle": "تحليلات غير محدودة، دردشة ذكاء اصطناعي والمزيد",
+  "subtitle": "تحليلات غير محدودة، دردشة بالذكاء الاصطناعي والمزيد",
+  "hero": {
+    "heading": "بريميوم",
+    "tagline": "تميّز بتحليلات متقدمة ورؤى مدعومة بالذكاء الاصطناعي"
+  },
+  "billing": {
+    "monthly": "شهري",
+    "yearly": "سنوي",
+    "savingsBadge": "وفّر",
+    "twoMonthsFree": "شهران مجانًا",
+    "perMonth": "/شهر",
+    "perYear": "/سنة",
+    "approxPerMonth": "≈ {{price}}/شهر",
+    "vatIncluded": "شامل الضرائب",
+    "checkoutNote": "السعر النهائي يظهر عند الدفع",
+    "secure": "دفع آمن عبر Google Play",
+    "managedByPlay": "تتم إدارة الاشتراك عبر Google Play",
+    "autoRenewNotice": "يتجدد الاشتراك تلقائيًا في نهاية الفترة. يمكنك الإلغاء في أي وقت من Google Play Store > الاشتراكات. يسري الإلغاء في نهاية الفترة الحالية.",
+    "autoRenewShort": "يتجدد الاشتراك تلقائيًا. يمكنك الإلغاء من Google Play Store > الاشتراكات. ما لم يُلغَ، يتجدد في نهاية الفترة.",
+    "termsAcceptance": "بالشراء فإنك توافق على {{terms}} و{{privacy}}.",
+    "termsLink": "شروط الاستخدام",
+    "privacyLink": "سياسة الخصوصية"
+  },
   "plans": {
-    "basic": {
-      "name": "بريميوم بيسك",
-      "description": "خطة شهرية",
-      "perMonth": "/شهر"
-    },
-    "pro": {
-      "name": "بريميوم برو",
-      "description": "خطة سنوية",
-      "perYear": "/سنة",
-      "savings": "وفر {{percent}}%"
-    }
+    "popular": "الأكثر شيوعًا",
+    "basic": { "name": "Basic", "tagline": "3 ذكاء/يوم" },
+    "plus": { "name": "Plus", "tagline": "5 ذكاء/يوم" },
+    "pro": { "name": "Pro", "tagline": "10 ذكاء/يوم" },
+    "chatPerDay": "{{count}}/يوم",
+    "summaryLine": "{{count}} رسالة ذكاء/يوم • تحليلات غير محدودة",
+    "fromPrice": "ابتداءً من {{price}}/شهر"
   },
   "features": {
     "title": "مزايا بريميوم",
-    "unlimitedAnalysis": "تحليلات مباريات غير محدودة",
-    "aiChat": "الوصول إلى دردشة الذكاء الاصطناعي",
+    "unlimitedAnalysis": "تحليلات غير محدودة",
+    "unlimitedAnalysisDesc": "تحليل المباريات بدون حد يومي",
+    "noAds": "بدون إعلانات",
+    "noAdsDesc": "تجربة نظيفة ومتواصلة",
+    "history": "الوصول للسجل",
+    "historyDesc": "الوصول إلى كل تحليلاتك السابقة",
+    "aiComments": "تعليقات الذكاء الاصطناعي",
+    "aiAssistant": "مساعد الذكاء الاصطناعي",
+    "aiAssistantDesc": "حصة يومية من رسائل الذكاء حسب الخطة",
     "advancedStats": "إحصائيات متقدمة",
-    "noAds": "تجربة بدون إعلانات",
     "prioritySupport": "دعم ذو أولوية",
-    "earlyAccess": "وصول مبكر للمزايا الجديدة"
+    "earlyAccess": "وصول مبكر للميزات الجديدة",
+    "aiChat": "مساعد دردشة بالذكاء الاصطناعي",
+    "premiumBadge": "بريميوم"
+  },
+  "active": {
+    "adminAccess": "وصول المسؤول",
+    "adminDesc": "وصول كامل لجميع الميزات",
+    "activeSubscription": "اشتراك نشط",
+    "unlimitedAnalysis": "تحليل غير محدود",
+    "noDailyLimit": "بدون حد يومي",
+    "aiAssistant": "مساعد الذكاء",
+    "messagesPerDay": "{{count}} رسالة/يوم",
+    "noAds": "بدون إعلانات",
+    "cleanExperience": "تجربة نظيفة",
+    "historyAccess": "الوصول للسجل",
+    "allAnalyses": "كل التحليلات"
   },
   "actions": {
     "subscribe": "اشترك",
+    "buy": "شراء",
     "restore": "استعادة المشتريات",
     "manage": "إدارة الاشتراك",
-    "upgrade": "ترقية"
+    "upgrade": "الترقية إلى بريميوم",
+    "viewPlans": "عرض الخطط",
+    "later": "لاحقًا",
+    "skip": "تخطّي الآن",
+    "processing": "جاري المعالجة..."
+  },
+  "trust": {
+    "userCount": "أكثر من 10,000 مستخدم يستخدمون GolMetrik AI",
+    "highAccuracy": "تحليلات ذكاء بدقة عالية"
   },
   "status": {
     "active": "نشط",
     "expired": "منتهي",
-    "expiresIn": "ينتهي خلال {{days}} يوم",
+    "expiresIn": "ينتهي خلال {{days}} يومًا",
     "expiresOn": "ينتهي في {{date}}",
-    "free": "خطة مجانية"
-  },
-  "billing": {
-    "vatIncluded": "شامل الضرائب",
-    "checkoutNote": "السعر النهائي يظهر عند الدفع",
-    "secure": "دفع آمن عبر جوجل بلاي"
+    "free": "الخطة المجانية"
   },
   "messages": {
-    "purchaseSuccess": "تم تفعيل الاشتراك بنجاح",
-    "purchaseFailed": "فشلت عملية الشراء",
-    "restoreSuccess": "تم استعادة مشترياتك",
-    "restoreNone": "لا توجد مشتريات للاستعادة"
+    "purchaseSuccess": "تم تفعيل {{plan}}! 🎉",
+    "purchaseSuccessShort": "عضوية {{plan}} نشطة!",
+    "purchaseSuccessUpgrade": "تم تفعيل عضوية {{plan}}!",
+    "purchaseFailed": "فشل الشراء",
+    "activationFailed": "تم استلام الدفعة لكن فشل التفعيل. حاول مرة أخرى عبر \"استعادة\".",
+    "activationFailedAlt": "تم استلام الدفعة لكن فشل التفعيل. حاول مرة أخرى عبر \"استعادة المشتريات\".",
+    "nativeRequired": "الشراء الفعلي يتطلب التطبيق المحمول",
+    "nativeRequiredTest": "اختبار الشراء: الشراء الفعلي يتطلب التطبيق المحمول",
+    "restoreSuccess": "تمت الاستعادة!",
+    "restoreSuccessFull": "تمت استعادة المشتريات!",
+    "restoreNone": "لا توجد مشتريات لاستعادتها",
+    "restoreFailed": "فشلت الاستعادة",
+    "genericError": "حدث خطأ",
+    "shortError": "خطأ",
+    "notFound": "غير موجود"
+  },
+  "limit": {
+    "bannerTitle": "انتهت حصتك اليومية من التحليلات",
+    "resetIn": "تتجدد خلال: {{time}}",
+    "fromPrice": "بريميوم: ابتداءً من {{price}}/شهر",
+    "sheetTitle": "انتهت حصتك اليومية من التحليلات",
+    "sheetDescription": "لقد استخدمت تحليلاتك المجانية اليومية. ستتوفر تحليلات جديدة خلال {{time}}.",
+    "premiumPrompt": "مع بريميوم يمكنك إجراء تحليلات غير محدودة دون انتظار",
+    "viewPlans": "عرض خطط بريميوم",
+    "tryTomorrow": "أعد المحاولة غدًا ({{time}})",
+    "hours": "{{hours}} ساعة {{minutes}} دقيقة",
+    "minutes": "{{minutes}} دقيقة"
+  },
+  "promotion": {
+    "limit": {
+      "title": "وصلت إلى حد التحليلات!",
+      "subtitle": "نفدت تحليلاتك المجانية اليومية (2)",
+      "description": "احصل على تحليلات غير محدودة واستخدم المساعد الذكي مع بريميوم."
+    },
+    "feature": {
+      "title": "ميزة بريميوم",
+      "subtitle": "هذه الميزة حصرية لأعضاء بريميوم",
+      "description": "ترقّ إلى بريميوم للحصول على تحليل عميق وبيانات xG ورؤى تكتيكية."
+    },
+    "general": {
+      "title": "ترقّ إلى بريميوم",
+      "subtitle": "كن متقدمًا بخطوة في تحليل كرة القدم",
+      "description": "توقعات بالذكاء الاصطناعي وتحليلات غير محدودة والمزيد بانتظارك."
+    },
+    "chatbot": {
+      "title": "مساعد الذكاء الاصطناعي حصري لبريميوم",
+      "subtitle": "مستشارك الشخصي لكرة القدم",
+      "description": "حلّل المباريات واحصل على التوقعات واطرح الأسئلة مع المساعد الذكي."
+    },
+    "yearlyHint": "شهران مجانًا في الخطط السنوية!"
+  },
+  "upgrade": {
+    "title": "ترقّ إلى بريميوم",
+    "subtitle": "افتح التحليلات غير المحدودة والمساعد الذكي"
   }
 }

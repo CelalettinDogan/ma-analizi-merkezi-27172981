@@ -1,5 +1,6 @@
 import React, { forwardRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { User, Copy, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
 import varioAvatar from '@/assets/vario-avatar.png';
 import ReactMarkdown from 'react-markdown';
@@ -16,45 +17,44 @@ interface ChatMessageProps {
   skipAnimation?: boolean;
 }
 
-// Format timestamp to relative time
-const formatRelativeTime = (date: Date): string => {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  
-  if (diffMins < 1) return 'Az önce';
-  if (diffMins < 60) return `${diffMins}dk`;
-  if (diffHours < 24) return `${diffHours}sa`;
-  
-  return date.toLocaleTimeString('tr-TR', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
-  });
-};
-
 const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
   ({ role, content, isLoading, timestamp, onFeedback, skipAnimation }, ref) => {
+    const { t, i18n } = useTranslation('chat');
     const isUser = role === 'user';
     const [copied, setCopied] = useState(false);
     const [feedback, setFeedback] = useState<'positive' | 'negative' | null>(null);
     const [showActions, setShowActions] = useState(false);
 
+    const formatRelativeTime = (date: Date): string => {
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      if (diffMins < 1) return t('dates.justNow');
+      if (diffMins < 60) return t('dates.minutes', { count: diffMins });
+      if (diffHours < 24) return t('dates.hours', { count: diffHours });
+      try {
+        return date.toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' });
+      } catch {
+        return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+      }
+    };
+
     const handleCopy = async () => {
       try {
         await navigator.clipboard.writeText(content);
         setCopied(true);
-        toast.success('Kopyalandı');
+        toast.success(t('feedback.copied'));
         setTimeout(() => setCopied(false), 2000);
       } catch {
-        toast.error('Kopyalanamadı');
+        toast.error(t('feedback.copyFailed'));
       }
     };
 
     const handleFeedback = (positive: boolean) => {
       setFeedback(positive ? 'positive' : 'negative');
       onFeedback?.(positive);
-      toast.success(positive ? 'Teşekkürler!' : 'Geri bildiriminiz alındı');
+      toast.success(positive ? t('feedback.thanks') : t('feedback.received'));
     };
 
     // Show loading indicator

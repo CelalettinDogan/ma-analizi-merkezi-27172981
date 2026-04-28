@@ -1,0 +1,98 @@
+{
+  "header": {
+    "title": "VARio",
+    "subtitle": "AI Assistant",
+    "fullTitle": "VARio - AI Assistant",
+    "admin": "Admin",
+    "pro": "Pro",
+    "plus": "Plus",
+    "basic": "Basic"
+  },
+  "actions": {
+    "clear": "Clear chat",
+    "send": "Send message",
+    "copy": "Copy",
+    "helpful": "Helpful",
+    "needsImprovement": "Needs improvement",
+    "back": "Back",
+    "later": "Later",
+    "openVario": "Unlock VARio"
+  },
+  "input": {
+    "placeholder": "Ask anything about football...",
+    "matchPlaceholder": "Ask about {{home}} vs {{away}}..."
+  },
+  "context": {
+    "autoMessage": "Analyze the {{home}} vs {{away}} match. Give me a detailed breakdown.",
+    "limitReached": "You've reached your daily limit"
+  },
+  "welcome": {
+    "greeting": "Hi! I'm VARio 👋",
+    "tagline": "Here for your football analysis"
+  },
+  "dates": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{count}} days ago",
+    "justNow": "Just now",
+    "minutes": "{{count}}m",
+    "hours": "{{count}}h"
+  },
+  "feedback": {
+    "thanks": "Thanks!",
+    "received": "Your feedback has been received",
+    "copied": "Copied",
+    "copyFailed": "Couldn't copy"
+  },
+  "typing": {
+    "thinking": "Thinking",
+    "analyzing": "Analyzing",
+    "preparing": "Getting ready"
+  },
+  "usage": {
+    "unlimited": "Unlimited access",
+    "exhausted": "Limit reached",
+    "remaining": "{{count}} left"
+  },
+  "loading": "Loading...",
+  "guestGate": {
+    "title": "Welcome to VARio - AI Assistant",
+    "description": "Sign in to access AI-powered match analyses and predictions.",
+    "featuresTitle": "With VARio:",
+    "feature1": "Match predictions and analyses",
+    "feature2": "Team form evaluation",
+    "feature3": "Stats-driven insights",
+    "feature4": "H2H and league analytics",
+    "login": "Sign In",
+    "signup": "Create Account",
+    "footer": "Create a free account to access match analyses.\nVARio is exclusive to Premium users."
+  },
+  "premiumGate": {
+    "title": "VARio - AI Assistant",
+    "subtitle": "Unlimited AI Match Analysis",
+    "previewUser": "Analyze the Fenerbahçe vs Galatasaray match",
+    "previewAi": "Fenerbahçe has a 72% win rate in their last 5 matches. Considering home advantage and form...",
+    "feature1": "Unlimited AI match commentary",
+    "feature2": "Detailed statistical explanations",
+    "feature3": "Risk-level analysis",
+    "feature4": "Live match insights",
+    "feature5": "Ad-free experience"
+  },
+  "limitSheet": {
+    "title": "You've Used Your Daily VARio Messages",
+    "description": "You've used your {{limit}} message quota for today.",
+    "resetIn": "Resets in {{time}}.",
+    "upgradeTitle": "Upgrade your plan to get more AI messages",
+    "currentPlan": "Current: {{plan}} ({{limit}} msg/day)",
+    "upgradeCta": "Upgrade Plan",
+    "tryTomorrow": "Try Tomorrow",
+    "atTopPlan": "You're on the highest plan. The limit will reset tomorrow.",
+    "autoRenew": "Subscription auto-renews. You can cancel anytime in Google Play Store > Subscriptions.",
+    "hours": "{{hours}}h {{minutes}}m",
+    "minutes": "{{minutes}}m",
+    "options": {
+      "plus": { "label": "Premium Plus", "description": "5 AI messages/day" },
+      "pro": { "label": "Premium Pro", "description": "10 AI messages/day" }
+    }
+  }
+}
