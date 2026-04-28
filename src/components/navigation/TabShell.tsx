@@ -100,14 +100,7 @@ const TabShell: React.FC = () => {
 
   // Auth guard — loading
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="text-sm text-muted-foreground">Yükleniyor...</p>
-        </div>
-      </div>
-    );
+    return <TabShellLoading />;
   }
 
   if (!user) {
