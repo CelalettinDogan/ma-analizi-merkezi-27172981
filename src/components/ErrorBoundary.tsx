@@ -1,13 +1,14 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { withTranslation, WithTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 
-interface Props extends WithTranslation {
+interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  t?: (key: string) => string;
 }
 
 interface State {
@@ -16,7 +17,7 @@ interface State {
   errorInfo: ErrorInfo | null;
 }
 
-class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundaryInner extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -62,7 +63,7 @@ class ErrorBoundary extends Component<Props, State> {
   };
 
   render() {
-    const { t } = this.props;
+    const t = this.props.t ?? ((k: string) => k);
 
     if (this.state.hasError) {
       if (this.props.fallback) {
@@ -118,4 +119,13 @@ class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-export default withTranslation('common')(ErrorBoundary);
+const ErrorBoundary = ({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) => {
+  const { t } = useTranslation('common');
+  return (
+    <ErrorBoundaryInner t={t} fallback={fallback}>
+      {children}
+    </ErrorBoundaryInner>
+  );
+};
+
+export default ErrorBoundary;
