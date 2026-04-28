@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, Shield, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 
 interface HeroStats {
@@ -39,6 +40,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   stats = { liveCount: 0, totalPredictions: 0, accuracy: 0, premiumAccuracy: 0 },
   onAnalyzeClick
 }) => {
+  const { t } = useTranslation('home');
   const animatedAccuracy = useCountUp(stats.accuracy);
   const animatedPredictions = useCountUp(stats.totalPredictions);
 
@@ -67,9 +69,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({
               <div className="min-w-0">
                 <div className="flex items-center gap-1">
                   <Shield className="w-3 h-3 text-primary shrink-0" />
-                  <span className="text-xs font-semibold text-foreground truncate">AI Doğruluk</span>
+                  <span className="text-xs font-semibold text-foreground truncate">{t('hero.aiAccuracy')}</span>
                 </div>
-                <p className="text-micro text-muted-foreground truncate">{animatedPredictions.toLocaleString()}+ analiz</p>
+                <p className="text-micro text-muted-foreground truncate">{animatedPredictions.toLocaleString()}{t('hero.analysesSuffix')}</p>
               </div>
             </div>
 
@@ -86,7 +88,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
               <motion.div whileTap={{ scale: 0.94 }}>
                 <Button onClick={onAnalyzeClick} size="sm" className="gap-1.5 text-xs px-3 h-8 rounded-xl shadow-sm shadow-primary/10">
                   <Search className="w-3.5 h-3.5" />
-                  Ara
+                  {t('hero.search')}
                 </Button>
               </motion.div>
             </div>
@@ -96,12 +98,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/8 text-xs">
             <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span className="font-medium text-foreground/80">AI destekli maç analizi</span>
+            <span className="font-medium text-foreground/80">{t('hero.tagline')}</span>
           </span>
           <motion.div whileTap={{ scale: 0.94 }}>
             <Button onClick={onAnalyzeClick} size="sm" className="gap-1.5 text-xs px-3 h-8 rounded-xl shadow-sm shadow-primary/10">
               <Search className="w-3.5 h-3.5" />
-              Ara
+              {t('hero.search')}
             </Button>
           </motion.div>
         </motion.div>
