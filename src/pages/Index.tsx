@@ -38,6 +38,7 @@ import { getUpcomingMatches, getTeamNextMatch } from '@/services/footballApiServ
 const Index: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation('home');
   const { analysis, isLoading: analysisLoading, analyzeMatch } = useMatchAnalysis();
   const { user } = useAuth();
   const { showOnboarding, completeOnboarding } = useOnboarding();
