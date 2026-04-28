@@ -1,0 +1,98 @@
+{
+  "header": {
+    "title": "VARio",
+    "subtitle": "AI Asistan",
+    "fullTitle": "VARio - AI Asistan",
+    "admin": "Admin",
+    "pro": "Pro",
+    "plus": "Plus",
+    "basic": "Basic"
+  },
+  "actions": {
+    "clear": "Sohbeti Temizle",
+    "send": "Mesaj gönder",
+    "copy": "Kopyala",
+    "helpful": "Faydalı",
+    "needsImprovement": "Geliştirilmeli",
+    "back": "Geri",
+    "later": "Daha Sonra",
+    "openVario": "VARio'yu Aç"
+  },
+  "input": {
+    "placeholder": "Futbol hakkında bir şeyler sorun...",
+    "matchPlaceholder": "{{home}} vs {{away}} hakkında sorun..."
+  },
+  "context": {
+    "autoMessage": "{{home}} vs {{away}} maçını analiz et. Bu maç hakkında detaylı bilgi ver.",
+    "limitReached": "Günlük limitiniz doldu"
+  },
+  "welcome": {
+    "greeting": "Merhaba! Ben VARio 👋",
+    "tagline": "Futbol analizleri için buradayım"
+  },
+  "dates": {
+    "today": "Bugün",
+    "yesterday": "Dün",
+    "daysAgo": "{{count}} gün önce",
+    "justNow": "Az önce",
+    "minutes": "{{count}}dk",
+    "hours": "{{count}}sa"
+  },
+  "feedback": {
+    "thanks": "Teşekkürler!",
+    "received": "Geri bildiriminiz alındı",
+    "copied": "Kopyalandı",
+    "copyFailed": "Kopyalanamadı"
+  },
+  "typing": {
+    "thinking": "Düşünüyor",
+    "analyzing": "Analiz yapıyor",
+    "preparing": "Hazırlanıyor"
+  },
+  "usage": {
+    "unlimited": "Sınırsız Erişim",
+    "exhausted": "Limit doldu",
+    "remaining": "{{count}} hak"
+  },
+  "loading": "Yükleniyor...",
+  "guestGate": {
+    "title": "VARio - AI Asistan'a Hoş Geldin",
+    "description": "Yapay zeka destekli maç analizleri ve tahminler için giriş yapman gerekiyor.",
+    "featuresTitle": "VARio ile:",
+    "feature1": "Maç tahminleri ve analizler",
+    "feature2": "Takım form değerlendirmesi",
+    "feature3": "İstatistik bazlı öngörüler",
+    "feature4": "H2H ve lig analizleri",
+    "login": "Giriş Yap",
+    "signup": "Hesap Oluştur",
+    "footer": "Ücretsiz hesap oluşturarak maç analizlerine erişebilirsin.\nVARio Premium kullanıcılara özeldir."
+  },
+  "premiumGate": {
+    "title": "VARio - AI Asistan",
+    "subtitle": "Sınırsız Yapay Zeka Maç Analizi",
+    "previewUser": "Fenerbahçe - Galatasaray maçını analiz et",
+    "previewAi": "Fenerbahçe son 5 maçta %72 galibiyet oranı yakaladı. Ev sahibi avantajı ve form durumu göz önüne alındığında...",
+    "feature1": "Sınırsız AI maç yorumu",
+    "feature2": "Detaylı istatistik açıklamaları",
+    "feature3": "Risk seviyesi analizi",
+    "feature4": "Canlı maç içgörüleri",
+    "feature5": "Reklamsız deneyim"
+  },
+  "limitSheet": {
+    "title": "Günlük VARio Mesaj Hakkın Doldu",
+    "description": "Bugün için {{limit}} mesaj hakkını kullandın.",
+    "resetIn": "{{time}} sonra yenilenecek.",
+    "upgradeTitle": "Paketini yükselterek daha fazla AI mesajı al",
+    "currentPlan": "Şu an: {{plan}} ({{limit}} mesaj/gün)",
+    "upgradeCta": "Paketi Yükselt",
+    "tryTomorrow": "Yarın Tekrar Dene",
+    "atTopPlan": "En yüksek paketi kullanıyorsunuz. Limit yarın yenilenecek.",
+    "autoRenew": "Abonelik otomatik yenilenir. İstediğiniz zaman Google Play Store > Abonelikler bölümünden iptal edebilirsiniz.",
+    "hours": "{{hours}} saat {{minutes}} dakika",
+    "minutes": "{{minutes}} dakika",
+    "options": {
+      "plus": { "label": "Premium Plus", "description": "Günde 5 AI mesajı" },
+      "pro": { "label": "Premium Pro", "description": "Günde 10 AI mesajı" }
+    }
+  }
+}

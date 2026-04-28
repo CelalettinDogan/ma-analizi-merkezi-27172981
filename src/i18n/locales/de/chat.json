@@ -1,0 +1,98 @@
+{
+  "header": {
+    "title": "VARio",
+    "subtitle": "KI-Assistent",
+    "fullTitle": "VARio - KI-Assistent",
+    "admin": "Admin",
+    "pro": "Pro",
+    "plus": "Plus",
+    "basic": "Basic"
+  },
+  "actions": {
+    "clear": "Chat löschen",
+    "send": "Nachricht senden",
+    "copy": "Kopieren",
+    "helpful": "Hilfreich",
+    "needsImprovement": "Verbesserungsbedarf",
+    "back": "Zurück",
+    "later": "Später",
+    "openVario": "VARio freischalten"
+  },
+  "input": {
+    "placeholder": "Frag etwas zum Fußball...",
+    "matchPlaceholder": "Frage zu {{home}} vs {{away}}..."
+  },
+  "context": {
+    "autoMessage": "Analysiere das Spiel {{home}} vs {{away}}. Gib mir eine detaillierte Einschätzung.",
+    "limitReached": "Tageslimit erreicht"
+  },
+  "welcome": {
+    "greeting": "Hi! Ich bin VARio 👋",
+    "tagline": "Hier für deine Fußballanalysen"
+  },
+  "dates": {
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "daysAgo": "vor {{count}} Tagen",
+    "justNow": "Gerade eben",
+    "minutes": "{{count}} Min.",
+    "hours": "{{count}} Std."
+  },
+  "feedback": {
+    "thanks": "Danke!",
+    "received": "Dein Feedback wurde empfangen",
+    "copied": "Kopiert",
+    "copyFailed": "Kopieren fehlgeschlagen"
+  },
+  "typing": {
+    "thinking": "Denkt nach",
+    "analyzing": "Analysiert",
+    "preparing": "Bereitet sich vor"
+  },
+  "usage": {
+    "unlimited": "Unbegrenzter Zugriff",
+    "exhausted": "Limit erreicht",
+    "remaining": "noch {{count}}"
+  },
+  "loading": "Wird geladen...",
+  "guestGate": {
+    "title": "Willkommen bei VARio - KI-Assistent",
+    "description": "Melde dich an, um KI-gestützte Spielanalysen und Prognosen zu nutzen.",
+    "featuresTitle": "Mit VARio:",
+    "feature1": "Spielprognosen und Analysen",
+    "feature2": "Bewertung der Teamform",
+    "feature3": "Statistikbasierte Einsichten",
+    "feature4": "H2H- und Liga-Analysen",
+    "login": "Anmelden",
+    "signup": "Konto erstellen",
+    "footer": "Erstelle ein kostenloses Konto, um auf Spielanalysen zuzugreifen.\nVARio ist exklusiv für Premium-Nutzer."
+  },
+  "premiumGate": {
+    "title": "VARio - KI-Assistent",
+    "subtitle": "Unbegrenzte KI-Spielanalyse",
+    "previewUser": "Analysiere das Spiel Fenerbahçe - Galatasaray",
+    "previewAi": "Fenerbahçe hat in den letzten 5 Spielen eine Siegquote von 72% erreicht. Mit Heimvorteil und Form...",
+    "feature1": "Unbegrenzte KI-Spielkommentare",
+    "feature2": "Detaillierte Statistikerklärungen",
+    "feature3": "Risikoeinschätzung",
+    "feature4": "Live-Spiel-Einblicke",
+    "feature5": "Werbefreies Erlebnis"
+  },
+  "limitSheet": {
+    "title": "Tägliches VARio-Nachrichtenlimit erreicht",
+    "description": "Du hast heute deine {{limit}} Nachrichten genutzt.",
+    "resetIn": "Wird in {{time}} zurückgesetzt.",
+    "upgradeTitle": "Upgrade deinen Plan für mehr KI-Nachrichten",
+    "currentPlan": "Aktuell: {{plan}} ({{limit}} Nachr./Tag)",
+    "upgradeCta": "Plan upgraden",
+    "tryTomorrow": "Morgen erneut versuchen",
+    "atTopPlan": "Du nutzt bereits den höchsten Plan. Das Limit wird morgen zurückgesetzt.",
+    "autoRenew": "Das Abonnement verlängert sich automatisch. Du kannst es jederzeit im Google Play Store > Abos kündigen.",
+    "hours": "{{hours}} Std. {{minutes}} Min.",
+    "minutes": "{{minutes}} Min.",
+    "options": {
+      "plus": { "label": "Premium Plus", "description": "5 KI-Nachrichten/Tag" },
+      "pro": { "label": "Premium Pro", "description": "10 KI-Nachrichten/Tag" }
+    }
+  }
+}
