@@ -243,7 +243,7 @@ const Index: React.FC = () => {
 
   const handleCommandTeamSelect = async (teamName: string, leagueCode: string) => {
     setCommandOpen(false);
-    toast.info(`${teamName} için maç aranıyor...`);
+    toast.info(t('toasts.searchingTeam', { team: teamName }));
     
     try {
       const nextMatch = await getTeamNextMatch(teamName);
@@ -251,13 +251,13 @@ const Index: React.FC = () => {
       if (nextMatch) {
         handleMatchSelect(nextMatch);
       } else {
-        toast.warning(`${teamName} için yaklaşan maç bulunamadı.`);
+        toast.warning(t('toasts.noUpcomingForTeam', { team: teamName }));
         // Fallback: Select the league and scroll to upcoming matches
         setSelectedLeague(leagueCode as CompetitionCode);
       }
     } catch (error) {
       console.error('Team match search error:', error);
-      toast.error('Maç aranırken hata oluştu');
+      toast.error(t('toasts.teamSearchError'));
     }
   };
 
