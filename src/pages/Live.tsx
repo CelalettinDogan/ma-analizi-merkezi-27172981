@@ -258,7 +258,7 @@ const LivePage: React.FC = () => {
               <WifiOff className="w-14 h-14 mx-auto mb-4 text-muted-foreground/40" />
               <p className="text-sm text-muted-foreground mb-4">{error}</p>
               <Button variant="outline" onClick={syncLiveMatches} disabled={isSyncing} size="sm">
-                Tekrar Dene
+                {t('live.retry')}
               </Button>
             </div>
           ) : liveMatches.length === 0 ? (
