@@ -40,6 +40,12 @@ const TeamLogo = ({ name, crest }: { name: string; crest?: string }) => {
 const AnalysisLoadingState: React.FC<AnalysisLoadingStateProps> = ({
   homeTeam, awayTeam, homeTeamCrest, awayTeamCrest, isComplete = false,
 }) => {
+  const { t } = useTranslation('analysis');
+  const LOADING_STEPS = STEP_KEYS.map((key, i) => ({
+    id: i + 1,
+    message: t(`loadingState.steps.${key}`),
+    icon: STEP_ICONS[i],
+  }));
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
 
