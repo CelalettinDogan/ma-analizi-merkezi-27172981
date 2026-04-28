@@ -3,6 +3,7 @@ import { Match } from '@/types/footballApi';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Radio, Clock, Activity } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 interface LiveMatchCardProps {
@@ -11,6 +12,7 @@ interface LiveMatchCardProps {
 }
 
 const LiveMatchCard: React.FC<LiveMatchCardProps> = ({ match, onClick }) => {
+  const { t } = useTranslation('home');
   const isInPlay = match.status === 'IN_PLAY';
   const isPaused = match.status === 'PAUSED';
   const isLive = isInPlay || isPaused;
@@ -38,7 +40,7 @@ const LiveMatchCard: React.FC<LiveMatchCardProps> = ({ match, onClick }) => {
       return (
         <Badge className="bg-red-500/20 text-red-400 border-red-500/30 animate-pulse gap-1">
           <Radio className="w-3 h-3" />
-          CANLI
+          {t('live.card.live')}
         </Badge>
       );
     }
@@ -46,7 +48,7 @@ const LiveMatchCard: React.FC<LiveMatchCardProps> = ({ match, onClick }) => {
       return (
         <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 gap-1">
           <Clock className="w-3 h-3" />
-          DEVRE ARASI
+          {t('live.card.halfTime')}
         </Badge>
       );
     }
@@ -61,7 +63,7 @@ const LiveMatchCard: React.FC<LiveMatchCardProps> = ({ match, onClick }) => {
       )}
       onClick={onClick}
       role="button"
-      aria-label={`${match.homeTeam.shortName || match.homeTeam.name} vs ${match.awayTeam.shortName || match.awayTeam.name}${isLive ? ' - Canlı' : ''}`}
+      aria-label={`${match.homeTeam.shortName || match.homeTeam.name} vs ${match.awayTeam.shortName || match.awayTeam.name}${isLive ? ' - ' + t('live.card.ariaLive') : ''}`}
     >
       {/* Live indicator pulse */}
       {isLive && (
@@ -144,11 +146,10 @@ const LiveMatchCard: React.FC<LiveMatchCardProps> = ({ match, onClick }) => {
           </div>
         </div>
 
-        {/* Half-time score if available */}
         {match.score.halfTime.home !== null && (
           <div className="mt-3 pt-3 border-t border-border/50 text-center">
             <span className="text-xs text-muted-foreground">
-              İlk Yarı: {match.score.halfTime.home} - {match.score.halfTime.away}
+              {t('live.card.halfTimeScore', { home: match.score.halfTime.home, away: match.score.halfTime.away })}
             </span>
           </div>
         )}
@@ -157,7 +158,7 @@ const LiveMatchCard: React.FC<LiveMatchCardProps> = ({ match, onClick }) => {
         {isLive && (
           <div className="mt-3 flex items-center justify-center gap-2 text-xs text-red-400">
             <Activity className="w-3 h-3 animate-pulse" />
-            <span>Canlı yayın</span>
+            <span>{t('live.card.liveStream')}</span>
           </div>
         )}
       </div>
