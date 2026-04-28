@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 import { User } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { tr, enUS, de, es, ar } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,17 +33,20 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 }
 };
 
+const DATE_LOCALES: Record<string, Locale> = { tr, en: enUS, de, es, ar };
+
 const Profile = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation(['profile', 'common']);
   const { user, isLoading: authLoading, signOut } = useAuth();
   const { favorites, getFavoritesByType } = useFavorites();
   const { theme, setTheme } = useTheme();
-  
+
   const {
     isPremium, planDisplayName, dailyAnalysisLimit, dailyChatLimit,
     hasUnlimitedAnalyses, canUseAIChat, isAdmin
   } = useAccessLevel();
-  
+
   const { remaining: analysisRemaining } = useAnalysisLimit();
   const { usage: chatUsage } = useChatbot();
 
@@ -85,9 +89,9 @@ const Profile = () => {
           <Card className="w-full max-w-md glass-card">
             <CardContent className="pt-6 text-center">
               <User className="h-14 w-14 text-muted-foreground mx-auto mb-3" />
-              <h2 className="text-lg font-bold mb-2">Giriş Yapın</h2>
-              <p className="text-sm text-muted-foreground mb-4">Profilinizi görüntülemek için lütfen giriş yapın</p>
-              <Link to="/auth"><Button className="w-full">Giriş Yap</Button></Link>
+              <h2 className="text-lg font-bold mb-2">{t('profile:guest.title')}</h2>
+              <p className="text-sm text-muted-foreground mb-4">{t('profile:guest.description')}</p>
+              <Link to="/auth"><Button className="w-full">{t('profile:guest.loginButton')}</Button></Link>
             </CardContent>
           </Card>
         </main>
@@ -95,9 +99,10 @@ const Profile = () => {
     );
   }
 
-  const displayName = user.user_metadata?.display_name || user.email?.split('@')[0] || 'Kullanıcı';
+  const displayName = user.user_metadata?.display_name || user.email?.split('@')[0] || t('common:nav.profile');
   const initials = displayName.slice(0, 2).toUpperCase();
-  const memberSince = user.created_at ? format(new Date(user.created_at), 'MMMM yyyy', { locale: tr }) : null;
+  const dateLocale = DATE_LOCALES[i18n.language] ?? tr;
+  const memberSince = user.created_at ? format(new Date(user.created_at), 'MMMM yyyy', { locale: dateLocale }) : null;
   const favoriteLeagues = getFavoritesByType('league');
   const favoriteTeams = getFavoritesByType('team');
 
@@ -148,7 +153,7 @@ const Profile = () => {
           </motion.div>
 
           <p className="text-micro text-muted-foreground text-center px-4 pb-2">
-            ⚠️ Tüm içerikler istatistiksel analiz amaçlıdır ve tavsiye niteliği taşımaz.
+            {t('profile:footer.disclaimer')}
           </p>
         </motion.div>
       </main>
