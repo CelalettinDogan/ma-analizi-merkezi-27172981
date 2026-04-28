@@ -1,0 +1,50 @@
+{
+  "title": "Premium",
+  "subtitle": "Sınırsız analiz, AI sohbet ve daha fazlası",
+  "plans": {
+    "basic": {
+      "name": "Premium Basic",
+      "description": "Aylık plan",
+      "perMonth": "/ay"
+    },
+    "pro": {
+      "name": "Premium Pro",
+      "description": "Yıllık plan",
+      "perYear": "/yıl",
+      "savings": "%{{percent}} tasarruf"
+    }
+  },
+  "features": {
+    "title": "Premium Avantajları",
+    "unlimitedAnalysis": "Sınırsız maç analizi",
+    "aiChat": "AI sohbet erişimi",
+    "advancedStats": "Gelişmiş istatistikler",
+    "noAds": "Reklamsız deneyim",
+    "prioritySupport": "Öncelikli destek",
+    "earlyAccess": "Yeni özelliklere erken erişim"
+  },
+  "actions": {
+    "subscribe": "Abone Ol",
+    "restore": "Satın Alımları Geri Yükle",
+    "manage": "Aboneliği Yönet",
+    "upgrade": "Yükselt"
+  },
+  "status": {
+    "active": "Aktif",
+    "expired": "Süresi Doldu",
+    "expiresIn": "{{days}} gün sonra sona eriyor",
+    "expiresOn": "{{date}} tarihinde sona eriyor",
+    "free": "Ücretsiz Plan"
+  },
+  "billing": {
+    "vatIncluded": "Vergiler dahil",
+    "checkoutNote": "Nihai fiyat ödeme adımında gösterilir",
+    "secure": "Google Play ile güvenli ödeme"
+  },
+  "messages": {
+    "purchaseSuccess": "Abonelik başarıyla aktif edildi",
+    "purchaseFailed": "Satın alma başarısız oldu",
+    "restoreSuccess": "Satın alımlarınız geri yüklendi",
+    "restoreNone": "Geri yüklenecek satın alım bulunamadı"
+  }
+}

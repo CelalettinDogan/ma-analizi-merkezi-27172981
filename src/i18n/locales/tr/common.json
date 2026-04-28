@@ -1,0 +1,77 @@
+{
+  "appName": "GolMetrik AI",
+  "tagline": "AI Destekli Futbol Tahmin Platformu",
+  "actions": {
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "close": "Kapat",
+    "back": "Geri",
+    "next": "İleri",
+    "continue": "Devam Et",
+    "confirm": "Onayla",
+    "retry": "Tekrar Dene",
+    "loading": "Yükleniyor...",
+    "search": "Ara",
+    "share": "Paylaş",
+    "copy": "Kopyala",
+    "copied": "Kopyalandı",
+    "send": "Gönder",
+    "submit": "Gönder",
+    "ok": "Tamam",
+    "yes": "Evet",
+    "no": "Hayır",
+    "viewAll": "Tümünü Gör",
+    "seeMore": "Daha Fazla",
+    "seeLess": "Daha Az",
+    "refresh": "Yenile"
+  },
+  "nav": {
+    "home": "Ana",
+    "live": "Canlı",
+    "ai": "AI",
+    "league": "Lig",
+    "profile": "Profil",
+    "premium": "Pro",
+    "settings": "Ayarlar",
+    "history": "Geçmiş",
+    "logout": "Çıkış Yap",
+    "login": "Giriş Yap"
+  },
+  "language": {
+    "label": "Dil",
+    "select": "Dil Seç",
+    "current": "Mevcut Dil"
+  },
+  "theme": {
+    "light": "Açık Tema",
+    "dark": "Koyu Tema",
+    "system": "Sistem"
+  },
+  "errors": {
+    "generic": "Bir hata oluştu. Lütfen tekrar deneyin.",
+    "network": "İnternet bağlantınızı kontrol edin",
+    "notFound": "Bulunamadı",
+    "unauthorized": "Bu işlem için giriş yapmalısınız",
+    "tryAgain": "Tekrar deneyin"
+  },
+  "status": {
+    "online": "Çevrimiçi",
+    "offline": "Çevrimdışı",
+    "live": "CANLI",
+    "finished": "Bitti",
+    "scheduled": "Planlandı",
+    "postponed": "Ertelendi",
+    "cancelled": "İptal"
+  },
+  "time": {
+    "today": "Bugün",
+    "yesterday": "Dün",
+    "tomorrow": "Yarın",
+    "now": "Şimdi",
+    "minutesAgo": "{{count}} dakika önce",
+    "hoursAgo": "{{count}} saat önce",
+    "daysAgo": "{{count}} gün önce"
+  }
+}

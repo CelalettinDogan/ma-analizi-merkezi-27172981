@@ -1,0 +1,37 @@
+{
+  "types": {
+    "matchResult": "Maç Sonucu",
+    "overUnder": "Toplam Gol Alt/Üst",
+    "btts": "Karşılıklı Gol",
+    "correctScore": "Doğru Skor",
+    "firstHalf": "İlk Yarı Sonucu",
+    "halfTimeFullTime": "İlk Yarı / Maç Sonucu",
+    "firstHalfOverUnder": "İki Yarıda da Gol"
+  },
+  "shortLabels": {
+    "matchResult": "1X2",
+    "overUnder": "Ü/A",
+    "btts": "KG",
+    "correctScore": "DS",
+    "firstHalf": "İY",
+    "halfTimeFullTime": "İY/MS",
+    "firstHalfOverUnder": "İY Ü/A"
+  },
+  "outcomes": {
+    "homeWin": "Ev Sahibi Kazanır",
+    "draw": "Beraberlik",
+    "awayWin": "Deplasman Kazanır",
+    "over": "Üst",
+    "under": "Alt",
+    "yes": "Var",
+    "no": "Yok"
+  },
+  "leagues": {
+    "PL": "İngiltere Premier Ligi",
+    "BL1": "Almanya Bundesliga",
+    "PD": "İspanya La Liga",
+    "SA": "İtalya Serie A",
+    "FL1": "Fransa Ligue 1",
+    "CL": "UEFA Şampiyonlar Ligi"
+  }
+}
