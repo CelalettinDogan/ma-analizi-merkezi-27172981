@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Lock, Eye, EyeOff, CheckCircle, ArrowLeft, KeyRound } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,7 +12,10 @@ const NATIVE_SCHEME = 'golmetrik://';
 const isMobileUserAgent = () =>
   /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
+const STRENGTH_KEYS = ['veryWeak', 'weak', 'medium', 'strong', 'veryStrong'] as const;
+
 const ResetPassword = () => {
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const { toast } = useToast();
   const [password, setPassword] = useState('');
@@ -23,7 +27,7 @@ const ResetPassword = () => {
   const [isCheckingSession, setIsCheckingSession] = useState(true);
 
   useEffect(() => {
-    document.title = 'Şifre Sıfırla | GolMetrik AI';
+    document.title = t('resetPassword.pageTitle');
 
     const checkSession = async () => {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -31,7 +35,6 @@ const ResetPassword = () => {
       const refreshToken = hashParams.get('refresh_token');
       const type = hashParams.get('type');
       
-      // If recovery tokens present and on mobile browser → redirect to native app
       if (type === 'recovery' && accessToken && refreshToken && isMobileUserAgent()) {
         const nativeUrl = `${NATIVE_SCHEME}reset-password?access_token=${encodeURIComponent(accessToken)}&refresh_token=${encodeURIComponent(refreshToken)}&type=recovery`;
         window.location.href = nativeUrl;
@@ -65,7 +68,7 @@ const ResetPassword = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [t]);
 
   const getPasswordStrength = (pass: string): { strength: number; label: string; color: string } => {
     let strength = 0;
@@ -74,12 +77,12 @@ const ResetPassword = () => {
     if (/\d/.test(pass)) strength++;
     if (/[^a-zA-Z0-9]/.test(pass)) strength++;
 
-    const labels = ['Çok Zayıf', 'Zayıf', 'Orta', 'Güçlü', 'Çok Güçlü'];
     const colors = ['bg-destructive', 'bg-orange-500', 'bg-yellow-500', 'bg-primary', 'bg-green-500'];
+    const key = STRENGTH_KEYS[strength] || STRENGTH_KEYS[0];
 
     return {
       strength,
-      label: labels[strength] || labels[0],
+      label: t(`resetPassword.strength.${key}`),
       color: colors[strength] || colors[0],
     };
   };
@@ -90,12 +93,12 @@ const ResetPassword = () => {
     e.preventDefault();
 
     if (password.length < 6) {
-      toast({ title: 'Hata', description: 'Şifre en az 6 karakter olmalıdır.', variant: 'destructive' });
+      toast({ title: t('errors.genericErrorTitle'), description: t('errors.passwordTooShort'), variant: 'destructive' });
       return;
     }
 
     if (password !== confirmPassword) {
-      toast({ title: 'Hata', description: 'Şifreler eşleşmiyor.', variant: 'destructive' });
+      toast({ title: t('errors.genericErrorTitle'), description: t('errors.passwordMismatch'), variant: 'destructive' });
       return;
     }
 
@@ -106,10 +109,10 @@ const ResetPassword = () => {
       if (error) throw error;
 
       setIsSuccess(true);
-      toast({ title: 'Başarılı', description: 'Şifreniz başarıyla güncellendi.' });
+      toast({ title: t('errors.passwordUpdateSuccessTitle'), description: t('errors.passwordUpdateSuccessDescription') });
       setTimeout(() => navigate('/'), 2000);
     } catch (error: any) {
-      toast({ title: 'Hata', description: error.message || 'Şifre güncellenirken bir hata oluştu.', variant: 'destructive' });
+      toast({ title: t('errors.genericErrorTitle'), description: error.message || t('errors.passwordUpdateError'), variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
@@ -140,15 +143,15 @@ const ResetPassword = () => {
             <KeyRound className="h-7 w-7 text-destructive" />
           </motion.div>
           <div className="space-y-2">
-            <h1 className="text-lg font-bold">Geçersiz veya Süresi Dolmuş Link</h1>
+            <h1 className="text-lg font-bold">{t('resetPassword.invalidTitle')}</h1>
             <p className="text-sm text-muted-foreground">
-              Bu şifre sıfırlama linki geçersiz veya süresi dolmuş. Lütfen yeni bir şifre sıfırlama isteği gönderin.
+              {t('resetPassword.invalidDescription')}
             </p>
           </div>
           <motion.div whileTap={{ scale: 0.97 }}>
             <Button onClick={() => navigate('/auth')} className="w-full h-12 rounded-2xl text-sm font-semibold">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Giriş Sayfasına Dön
+              {t('resetPassword.backToLogin')}
             </Button>
           </motion.div>
         </motion.div>
@@ -173,9 +176,9 @@ const ResetPassword = () => {
           >
             <CheckCircle className="h-7 w-7 text-primary" />
           </motion.div>
-          <h1 className="text-lg font-bold">Şifreniz Güncellendi!</h1>
+          <h1 className="text-lg font-bold">{t('resetPassword.successTitle')}</h1>
           <p className="text-sm text-muted-foreground">
-            Yeni şifrenizle giriş yapabilirsiniz. Anasayfaya yönlendiriliyorsunuz...
+            {t('resetPassword.successDescription')}
           </p>
         </motion.div>
       </div>
@@ -190,21 +193,19 @@ const ResetPassword = () => {
         transition={{ duration: 0.4 }}
         className="w-full max-w-sm space-y-6"
       >
-        {/* Header */}
         <div className="text-center space-y-3">
           <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
             <Lock className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-lg font-bold">Yeni Şifre Belirle</h1>
-            <p className="text-sm text-muted-foreground mt-1">Hesabınız için yeni bir şifre belirleyin.</p>
+            <h1 className="text-lg font-bold">{t('resetPassword.title')}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t('resetPassword.subtitle')}</p>
           </div>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="password">Yeni Şifre</label>
+            <label className="text-sm font-medium" htmlFor="password">{t('resetPassword.newPassword')}</label>
             <div className="relative">
               <input
                 id="password"
@@ -236,13 +237,13 @@ const ResetPassword = () => {
                     />
                   ))}
                 </div>
-                <p className="text-xs text-muted-foreground">Şifre gücü: {passwordStrength.label}</p>
+                <p className="text-xs text-muted-foreground">{t('resetPassword.strengthLabel')}: {passwordStrength.label}</p>
               </div>
             )}
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="confirmPassword">Şifre Tekrar</label>
+            <label className="text-sm font-medium" htmlFor="confirmPassword">{t('resetPassword.confirmPassword')}</label>
             <input
               id="confirmPassword"
               type={showPassword ? 'text' : 'password'}
@@ -254,7 +255,7 @@ const ResetPassword = () => {
               minLength={6}
             />
             {confirmPassword && password !== confirmPassword && (
-              <p className="text-xs text-destructive">Şifreler eşleşmiyor</p>
+              <p className="text-xs text-destructive">{t('resetPassword.mismatch')}</p>
             )}
           </div>
 
@@ -267,10 +268,10 @@ const ResetPassword = () => {
               {isLoading ? (
                 <>
                   <span className="animate-spin mr-2">⏳</span>
-                  Güncelleniyor...
+                  {t('resetPassword.submitting')}
                 </>
               ) : (
-                'Şifreyi Güncelle'
+                t('resetPassword.submit')
               )}
             </Button>
           </motion.div>
@@ -284,7 +285,7 @@ const ResetPassword = () => {
               className="text-muted-foreground active:text-foreground h-11 rounded-xl"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Anasayfaya Dön
+              {t('resetPassword.backHome')}
             </Button>
           </motion.div>
         </div>

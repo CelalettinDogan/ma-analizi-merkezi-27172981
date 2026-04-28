@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { 
@@ -18,33 +19,33 @@ interface OnboardingProps {
 interface OnboardingStep {
   icon: React.ElementType;
   iconColor: string;
-  title: string;
-  description: string;
+  titleKey: string;
+  descriptionKey: string;
 }
 
-// Reduced to 3 essential steps for faster onboarding
 const steps: OnboardingStep[] = [
   {
     icon: Sparkles,
     iconColor: 'text-yellow-400',
-    title: "GolMetrik AI'a Hoş Geldin! ⚽",
-    description: "Yapay zeka destekli maç analizi. Sadece 3 adımda profesyonel tahminlere ulaşın."
+    titleKey: 'onboarding.steps.welcome.title',
+    descriptionKey: 'onboarding.steps.welcome.description',
   },
   {
     icon: Trophy,
     iconColor: 'text-primary',
-    title: "Lig Seç, Maça Tıkla",
-    description: "Premier Lig, La Liga, Serie A... İstediğiniz ligden bir maç seçin, AI anında analiz etsin."
+    titleKey: 'onboarding.steps.select.title',
+    descriptionKey: 'onboarding.steps.select.description',
   },
   {
     icon: BarChart3,
     iconColor: 'text-blue-400',
-    title: "Detaylı Analiz Al",
-    description: "Form, H2H, gol istatistikleri ve AI önerileri tek ekranda. Hemen deneyin!"
+    titleKey: 'onboarding.steps.analyze.title',
+    descriptionKey: 'onboarding.steps.analyze.description',
   }
 ];
 
 const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComplete }, ref) => {
+  const { t } = useTranslation('auth');
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(0);
 
@@ -108,7 +109,7 @@ const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComple
       <button
         onClick={handleSkip}
         className="absolute top-4 right-4 p-2 rounded-full hover:bg-muted transition-colors z-10 mt-safe"
-        aria-label="Kapat"
+        aria-label={t('onboarding.close')}
       >
         <X className="w-5 h-5 text-muted-foreground" />
       </button>
@@ -124,12 +125,12 @@ const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComple
         <div className="px-6 pt-6">
           <Progress value={progress} className="h-1.5" />
           <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-            <span>Adım {currentStep + 1} / {steps.length}</span>
+            <span>{t('onboarding.stepLabel', { current: currentStep + 1, total: steps.length })}</span>
             <button 
               onClick={handleSkip}
               className="hover:text-foreground transition-colors"
             >
-              Atla
+              {t('onboarding.skip')}
             </button>
           </div>
         </div>
@@ -147,7 +148,6 @@ const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComple
               transition={{ duration: 0.3, ease: 'easeInOut' }}
               className="flex flex-col items-center text-center"
             >
-              {/* Icon */}
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -159,24 +159,22 @@ const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComple
                 </div>
               </motion.div>
 
-              {/* Title */}
               <motion.h2 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
                 className="text-2xl font-display font-bold text-foreground mb-3"
               >
-                {step.title}
+                {t(step.titleKey)}
               </motion.h2>
 
-              {/* Description */}
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
                 className="text-muted-foreground leading-relaxed max-w-sm"
               >
-                {step.description}
+                {t(step.descriptionKey)}
               </motion.p>
             </motion.div>
           </AnimatePresence>
@@ -196,7 +194,7 @@ const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComple
                   ? 'w-6 bg-primary' 
                   : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
               }`}
-              aria-label={`Adım ${index + 1}`}
+              aria-label={t('onboarding.stepAria', { index: index + 1 })}
             />
           ))}
         </div>
@@ -210,13 +208,13 @@ const Onboarding = React.forwardRef<HTMLDivElement, OnboardingProps>(({ onComple
             className="flex-1 gap-1"
           >
             <ChevronLeft className="w-4 h-4" />
-            Önceki
+            {t('onboarding.previous')}
           </Button>
           <Button
             onClick={goToNext}
             className="flex-1 gap-1 bg-gradient-to-r from-primary to-emerald-500 hover:from-primary/90 hover:to-emerald-500/90"
           >
-            {isLastStep ? 'Başla' : 'Sonraki'}
+            {isLastStep ? t('onboarding.start') : t('onboarding.next')}
             {!isLastStep && <ChevronRight className="w-4 h-4" />}
           </Button>
         </div>

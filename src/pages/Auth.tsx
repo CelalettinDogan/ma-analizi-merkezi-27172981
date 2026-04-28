@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +17,7 @@ import logoImg from '@/assets/logo.png';
 type AuthTab = 'login' | 'register';
 
 const Auth: React.FC = () => {
+  const { t } = useTranslation('auth');
   const [activeTab, setActiveTab] = useState<AuthTab>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -27,7 +29,6 @@ const Auth: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Focus tracking for icon color
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,12 +53,12 @@ const Auth: React.FC = () => {
     const { error } = await signIn(loginEmail, loginPassword);
     if (error) {
       let msg = error.message === 'Invalid login credentials'
-        ? 'E-posta veya şifre hatalı'
+        ? t('errors.invalidCredentials')
         : error.message;
       if (error.message.toLowerCase().includes('rate limit') || error.message.includes('429')) {
-        msg = 'Çok fazla giriş denemesi. Lütfen birkaç dakika bekleyin.';
+        msg = t('errors.rateLimitLogin');
       }
-      toast({ title: 'Giriş Hatası', description: msg, variant: 'destructive' });
+      toast({ title: t('errors.loginErrorTitle'), description: msg, variant: 'destructive' });
       setIsLoading(false);
     }
   };
@@ -65,12 +66,12 @@ const Auth: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!termsAccepted) {
-      toast({ title: 'Onay Gerekli', description: 'Gizlilik Politikası ve Kullanım Şartları\'nı kabul etmelisiniz.', variant: 'destructive' });
+      toast({ title: t('errors.consentRequiredTitle'), description: t('errors.consentRequiredDescription'), variant: 'destructive' });
       return;
     }
     setIsLoading(true);
     if (registerPassword.length < 6) {
-      toast({ title: 'Şifre Hatası', description: 'Şifre en az 6 karakter olmalıdır.', variant: 'destructive' });
+      toast({ title: t('errors.passwordErrorTitle'), description: t('errors.passwordTooShort'), variant: 'destructive' });
       setIsLoading(false);
       return;
     }
@@ -78,18 +79,18 @@ const Auth: React.FC = () => {
     if (error) {
       let msg = error.message;
       if (error.message.toLowerCase().includes('rate limit') || error.message.includes('429')) {
-        msg = 'Çok fazla deneme yaptınız. Lütfen birkaç dakika bekleyin.';
+        msg = t('errors.rateLimitSignup');
       }
-      toast({ title: 'Kayıt Hatası', description: msg, variant: 'destructive' });
+      toast({ title: t('errors.registerErrorTitle'), description: msg, variant: 'destructive' });
       setIsLoading(false);
       return;
     }
     if (data?.user?.identities?.length === 0) {
-      toast({ title: 'Bu e-posta zaten kayıtlı', description: 'Giriş Yap sekmesinden giriş yapın.', variant: 'destructive' });
+      toast({ title: t('errors.emailAlreadyRegisteredTitle'), description: t('errors.emailAlreadyRegisteredDescription'), variant: 'destructive' });
       setIsLoading(false);
       return;
     }
-    toast({ title: 'Kayıt Başarılı!', description: 'Hoş geldiniz! Ana sayfaya yönlendiriliyorsunuz.' });
+    toast({ title: t('signup.successTitle'), description: t('signup.successDescription') });
     navigate('/');
   };
 
@@ -99,9 +100,9 @@ const Auth: React.FC = () => {
     setIsResetting(true);
     const { error } = await resetPassword(resetEmail);
     if (error) {
-      toast({ title: 'Hata', description: error.message, variant: 'destructive' });
+      toast({ title: t('errors.genericErrorTitle'), description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'E-posta Gönderildi', description: 'Şifre sıfırlama bağlantısı gönderildi.' });
+      toast({ title: t('passwordReset.successTitle'), description: t('passwordReset.successDescription') });
       setShowResetDialog(false);
       setResetEmail('');
     }
@@ -123,7 +124,7 @@ const Auth: React.FC = () => {
           GolMetrik AI
         </h1>
         <p className="text-[13px] text-muted-foreground/70 tracking-widest uppercase mt-0.5">
-          Akıllı Futbol Analizi
+          {t('brand.tagline')}
         </p>
       </div>
 
@@ -140,7 +141,7 @@ const Auth: React.FC = () => {
               className="relative flex-1 py-2.5 text-sm font-medium z-10 rounded-xl transition-colors duration-200"
               style={{ color: activeTab === tab ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))' }}
             >
-              {tab === 'login' ? 'Giriş Yap' : 'Kayıt Ol'}
+              {tab === 'login' ? t('tabs.login') : t('tabs.register')}
               {activeTab === tab && (
                 <motion.div
                   layoutId="authSegment"
@@ -166,14 +167,14 @@ const Auth: React.FC = () => {
             >
               <div className="space-y-2">
                 <Label htmlFor="login-email" className={`text-sm transition-colors duration-200 ${focusedField === 'login-email' ? 'text-foreground' : 'text-muted-foreground'}`}>
-                  E-posta
+                  {t('login.email')}
                 </Label>
                 <div className="relative">
                   <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-200 ${focusedField === 'login-email' ? 'text-primary' : 'text-muted-foreground'}`} />
                   <Input
                     id="login-email"
                     type="email"
-                    placeholder="ornek@email.com"
+                    placeholder={t('login.emailPlaceholder')}
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     onFocus={() => setFocusedField('login-email')}
@@ -186,14 +187,14 @@ const Auth: React.FC = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="login-password" className={`text-sm transition-colors duration-200 ${focusedField === 'login-password' ? 'text-foreground' : 'text-muted-foreground'}`}>
-                    Şifre
+                    {t('login.password')}
                   </Label>
                   <button
                     type="button"
                     onClick={() => setShowResetDialog(true)}
                     className="text-[11px] text-muted-foreground/60 active:text-primary touch-manipulation transition-colors"
                   >
-                    Şifremi Unuttum
+                    {t('login.forgotPassword')}
                   </button>
                 </div>
                 <div className="relative">
@@ -201,7 +202,7 @@ const Auth: React.FC = () => {
                   <Input
                     id="login-password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
+                    placeholder={t('login.passwordPlaceholder')}
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                     onFocus={() => setFocusedField('login-password')}
@@ -224,7 +225,7 @@ const Auth: React.FC = () => {
                   className="w-full h-[52px] rounded-2xl text-[15px] font-semibold shadow-[0_4px_16px_hsl(var(--primary)/0.3)]"
                   disabled={isLoading}
                 >
-                  {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Giriş yapılıyor...</> : 'Giriş Yap'}
+                  {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t('login.submitting')}</> : t('login.submit')}
                 </Button>
               </motion.div>
             </motion.form>
@@ -240,14 +241,14 @@ const Auth: React.FC = () => {
             >
               <div className="space-y-1.5">
                 <Label htmlFor="register-name" className={`text-sm transition-colors duration-200 ${focusedField === 'register-name' ? 'text-foreground' : 'text-muted-foreground'}`}>
-                  İsim
+                  {t('signup.name')}
                 </Label>
                 <div className="relative">
                   <User className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-200 ${focusedField === 'register-name' ? 'text-primary' : 'text-muted-foreground'}`} />
                   <Input
                     id="register-name"
                     type="text"
-                    placeholder="Adınız"
+                    placeholder={t('signup.namePlaceholder')}
                     value={registerName}
                     onChange={(e) => setRegisterName(e.target.value)}
                     onFocus={() => setFocusedField('register-name')}
@@ -258,14 +259,14 @@ const Auth: React.FC = () => {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="register-email" className={`text-sm transition-colors duration-200 ${focusedField === 'register-email' ? 'text-foreground' : 'text-muted-foreground'}`}>
-                  E-posta
+                  {t('signup.email')}
                 </Label>
                 <div className="relative">
                   <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-200 ${focusedField === 'register-email' ? 'text-primary' : 'text-muted-foreground'}`} />
                   <Input
                     id="register-email"
                     type="email"
-                    placeholder="ornek@email.com"
+                    placeholder={t('signup.emailPlaceholder')}
                     value={registerEmail}
                     onChange={(e) => setRegisterEmail(e.target.value)}
                     onFocus={() => setFocusedField('register-email')}
@@ -277,14 +278,14 @@ const Auth: React.FC = () => {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="register-password" className={`text-sm transition-colors duration-200 ${focusedField === 'register-password' ? 'text-foreground' : 'text-muted-foreground'}`}>
-                  Şifre
+                  {t('signup.password')}
                 </Label>
                 <div className="relative">
                   <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-200 ${focusedField === 'register-password' ? 'text-primary' : 'text-muted-foreground'}`} />
                   <Input
                     id="register-password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="En az 6 karakter"
+                    placeholder={t('signup.passwordPlaceholder')}
                     value={registerPassword}
                     onChange={(e) => setRegisterPassword(e.target.value)}
                     onFocus={() => setFocusedField('register-password')}
@@ -311,14 +312,15 @@ const Auth: React.FC = () => {
                   className="mt-0.5"
                 />
                 <label htmlFor="terms" className="text-xs text-muted-foreground leading-tight">
+                  {t('signup.agreePrefix')}
                   <button type="button" onClick={() => setShowPrivacySheet(true)} className="text-primary active:opacity-70">
-                    Gizlilik Politikası
+                    {t('signup.privacyLink')}
                   </button>
-                  {' '}ve{' '}
+                  {t('signup.agreeMid')}
                   <button type="button" onClick={() => setShowTermsSheet(true)} className="text-primary active:opacity-70">
-                    Kullanım Şartları
+                    {t('signup.termsLink')}
                   </button>
-                  'nı kabul ediyorum.
+                  {t('signup.agreeSuffix')}
                 </label>
               </div>
 
@@ -328,7 +330,7 @@ const Auth: React.FC = () => {
                   className="w-full h-11 rounded-2xl text-[15px] font-semibold shadow-[0_4px_16px_hsl(var(--primary)/0.3)]"
                   disabled={isLoading || !termsAccepted}
                 >
-                  {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Kayıt yapılıyor...</> : 'Kayıt Ol'}
+                  {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t('signup.submitting')}</> : t('signup.submit')}
                 </Button>
               </motion.div>
             </motion.form>
@@ -336,7 +338,7 @@ const Auth: React.FC = () => {
         </AnimatePresence>
 
         <p className="text-[10px] text-muted-foreground/40 text-center mt-6 pb-0">
-          İçerikler bilgilendirme amaçlıdır ve tavsiye niteliği taşımaz.
+          {t('brand.disclaimer')}
         </p>
       </div>
 
@@ -344,8 +346,8 @@ const Auth: React.FC = () => {
       <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Şifre Sıfırlama</DialogTitle>
-            <DialogDescription>E-posta adresinize şifre sıfırlama bağlantısı göndereceğiz.</DialogDescription>
+            <DialogTitle>{t('passwordReset.dialogTitle')}</DialogTitle>
+            <DialogDescription>{t('passwordReset.dialogDescription')}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleResetPassword} className="space-y-4">
             <div className="relative">
@@ -353,7 +355,7 @@ const Auth: React.FC = () => {
               <Input
                 id="reset-email"
                 type="email"
-                placeholder="ornek@email.com"
+                placeholder={t('login.emailPlaceholder')}
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
                 className="pl-11 h-12 rounded-xl"
@@ -362,10 +364,10 @@ const Auth: React.FC = () => {
             </div>
             <div className="flex gap-3">
               <Button type="button" variant="outline" className="flex-1 h-12 rounded-xl" onClick={() => setShowResetDialog(false)}>
-                İptal
+                {t('passwordReset.cancel')}
               </Button>
               <Button type="submit" className="flex-1 h-12 rounded-xl" disabled={isResetting}>
-                {isResetting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Gönderiliyor...</> : 'Bağlantı Gönder'}
+                {isResetting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t('passwordReset.submitting')}</> : t('passwordReset.submit')}
               </Button>
             </div>
           </form>
@@ -376,11 +378,12 @@ const Auth: React.FC = () => {
       <Sheet open={showPrivacySheet} onOpenChange={setShowPrivacySheet}>
         <SheetContent side="bottom" className="h-[85vh] p-0">
           <SheetHeader className="px-6 py-4 border-b border-border">
-            <SheetTitle>Gizlilik Politikası</SheetTitle>
+            <SheetTitle>{t('legal.privacyTitle')}</SheetTitle>
           </SheetHeader>
           <ScrollArea className="h-[calc(85vh-80px)] px-6 py-4">
             <div className="prose prose-sm dark:prose-invert max-w-none pb-8">
-              <p className="text-muted-foreground text-sm mb-6">Son güncelleme: 25 Ocak 2026</p>
+              <p className="text-muted-foreground text-sm mb-6">{t('legal.lastUpdated')}</p>
+              <p className="text-xs text-muted-foreground/70 italic mb-4">{t('legal.translationNotice')}</p>
               <h2 className="text-lg font-semibold mt-6 mb-3">1. Veri Toplama</h2>
               <p className="text-muted-foreground">GolMetrik AI olarak, kullanıcı deneyimini iyileştirmek için aşağıdaki verileri topluyoruz:</p>
               <ul className="list-disc list-inside text-muted-foreground space-y-2 mt-2">
@@ -414,11 +417,12 @@ const Auth: React.FC = () => {
       <Sheet open={showTermsSheet} onOpenChange={setShowTermsSheet}>
         <SheetContent side="bottom" className="h-[85vh] p-0">
           <SheetHeader className="px-6 py-4 border-b border-border">
-            <SheetTitle>Kullanım Şartları</SheetTitle>
+            <SheetTitle>{t('legal.termsTitle')}</SheetTitle>
           </SheetHeader>
           <ScrollArea className="h-[calc(85vh-80px)] px-6 py-4">
             <div className="prose prose-sm dark:prose-invert max-w-none pb-8">
-              <p className="text-muted-foreground text-sm mb-6">Son güncelleme: 25 Ocak 2026</p>
+              <p className="text-muted-foreground text-sm mb-6">{t('legal.lastUpdated')}</p>
+              <p className="text-xs text-muted-foreground/70 italic mb-4">{t('legal.translationNotice')}</p>
               <h2 className="text-lg font-semibold mt-6 mb-3">1. Hizmet Tanımı</h2>
               <p className="text-muted-foreground">GolMetrik AI, futbol maçları için istatistiksel analizler sunan bir bilgilendirme platformudur.</p>
               <h2 className="text-lg font-semibold mt-6 mb-3">2. Kullanım Koşulları</h2>

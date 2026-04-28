@@ -1,44 +1,79 @@
-## Plan: Profil Sayfası Çevirisi (Faz 1 — Devam)
+## Hedef
+Uygulamadaki tüm hardcoded Türkçe metinleri `useTranslation` hook'una taşıyarak 5 dil desteğini (TR, EN, DE, ES, AR + RTL) tüm sayfa ve bileşenlere yaymak.
 
-### Sorun
-İlk i18n kurulumunda sadece **BottomNav + Header (dil seçici)** çevrildi. Profil sayfasındaki tüm metinler hâlâ kod içinde hardcoded Türkçe — bu yüzden dil değiştirildiğinde değişmiyor.
+## Mevcut Durum
+- ✅ i18n altyapısı kurulu (`src/i18n/`)
+- ✅ 7 namespace × 5 dil = 35 JSON dosyası mevcut
+- ✅ Çevrilmiş: `BottomNav`, `AppHeader`, `Profile` + alt bileşenleri, `LanguageSwitcher`
+- ❌ Çevrilmemiş: ~75 bileşen + 13 sayfa (~22K satır)
 
-### Yapılacaklar
+## Kapsam Dışı (Bu Plan)
+- **Admin paneli** (`Admin.tsx`, `src/components/admin/*`) → sadece TR (yönetici aracı)
+- **Yasal metinler uzun içerikleri** (Privacy/Terms) → başlıklar çevrilir, içerik TR kalır + disclaimer
+- **AI Chatbot edge function yanıtları** → ayrı bir görev (model'e dil parametresi geçirme)
+- **Veritabanı içerikleri** (lig adları, takım adları) → API'den geldiği gibi
 
-**1. `profile.json` namespace'ini genişlet (5 dil)**
+## Uygulama Fazları
 
-Mevcut `profile.json` dosyalarına eksik anahtarları ekle — her 5 dil için (tr, en, de, es, ar):
-- `guest.*` — giriş yapmamış kullanıcı kartı
-- `header.*` — ProfileHeader: "Üye:", "Ücretsiz Kullanıcı", "Günlük Analiz", "AI Asistan", "Sınırsız", "Kapalı", "Analiz Motoru" + açıklama
-- `settings.*` — Ayarlar başlık, "Tema", "AI Nasıl Çalışır?", "Gizlilik", "Şartlar", "Hesabı Sil", "Çıkış", versiyon satırı
-- `themeSheet.*` — tema seçim drawer'ı (Açık/Koyu/Sistem + açıklamaları)
-- `aiInfo.*` — "AI Nasıl Çalışır" drawer içeriği (4 madde + giriş/çıkış + uyarı)
-- `deleteAccount.*` — silme drawer'ı (uyarı, 4 madde, "SİL" onay, butonlar, KVKK notu)
-- `footer.disclaimer` — sayfa altı uyarı
+### Faz 1 — Onboarding + Auth (Giriş kapısı, en kritik)
+- `Onboarding.tsx`, `Auth.tsx`, `AuthCallback.tsx`, `ResetPassword.tsx`, `DeleteAccount.tsx`
+- `src/components/auth/*` (LoginForm, RegisterForm, vb.)
+- Namespace: `auth.json` genişletilecek (~40 yeni anahtar)
+- Tahmini: ~80 string
 
-**2. Üç bileşeni `useTranslation` ile bağla**
+### Faz 2 — Ana Sayfa & Maç Listesi
+- `Index.tsx`, `HeroSection.tsx`, `TodaysMatches.tsx`, `UpcomingMatches.tsx`
+- `MatchCard`, `LeagueSelector`, `LeagueGrid`, `LiveMatchesSection`, `LiveMatchCard`
+- `EmptyState`, `OfflineBanner`, `PullToRefresh`, `MatchInsightBadges`
+- Namespace: `home.json` + yeni `match.json`
+- Tahmini: ~120 string
 
-| Dosya | Değişiklik |
-|-------|------------|
-| `src/pages/Profile.tsx` | Hardcoded "Giriş Yapın", "Kullanıcı", "Üye:" stringlerini `t()` çağrılarına dönüştür. `date-fns` locale'i aktif dile göre dinamik yükle (tr/enUS/de/es/ar). |
-| `src/components/profile/ProfileHeader.tsx` | "Üye:", "Ücretsiz Kullanıcı", "Admin", "Günlük Analiz", "AI Asistan", "Sınırsız", "Kapalı", "Analiz Motoru" + açıklama → `t()` |
-| `src/components/profile/SettingsMenu.tsx` | "Ayarlar", tema etiketleri, "AI Nasıl Çalışır?", "Gizlilik Politikası", "Kullanım Şartları", "Hesabı Sil", "Çıkış Yap", versiyon satırı, tüm sheet içerikleri (tema, AI bilgi, hesap silme) → `t()` |
+### Faz 3 — Analiz Akışı (Çekirdek özellik)
+- `MatchInputForm`, `TeamSelector`, `AnalysisSection`, `PredictionCard`
+- `TeamStatsCard`, `PowerComparisonCard`, `MatchContextCard`, `HeadToHeadCard`
+- `SimilarMatchesSection`, `FilteredPredictionsSection`, `AdvancedFilters`, `ShareCard`
+- `src/components/analysis/*`, `src/components/analysis-set/*`, `src/components/charts/*`
+- `AnalysisHistory.tsx`
+- Namespace: `analysis.json` + `predictions.json` genişletilecek (~80 yeni anahtar)
+- Tahmini: ~250 string (en büyük faz)
 
-**3. Hesap Silme Onay Anahtarı**
+### Faz 4 — Premium, Live, Standings, Chat
+- `Premium.tsx` + `src/components/premium/*` (PremiumGate, plan kartları)
+- `Live.tsx` + `src/components/live/*`
+- `Standings.tsx` + `src/components/standings/*`
+- `Chat.tsx` + `src/components/chat/*` (UI etiketleri; bot yanıtları hariç)
+- Namespace: `premium.json` genişletilecek + yeni `live.json`, `standings.json`, `chat.json`
+- Tahmini: ~150 string
 
-Şu an `if (deleteConfirmText !== 'SİL')` kontrolü hardcoded. Bunu `t('profile:deleteAccount.confirmKeyword')` ile değiştir — böylece her dilde kendi anahtar kelimesi (DELETE / LÖSCHEN / ELIMINAR / حذف) kabul edilir.
+### Faz 5 — Diğer & Cilalama
+- `NotFound.tsx`, `Privacy.tsx`, `Terms.tsx` (başlıklar)
+- `LegalDisclaimer`, `ThemeToggle`, `UserMenu`, `NavLink`
+- Toast mesajları (uygulama genelinde `sonner` çağrıları)
+- `MatchHeader` ve diğer kalan utility bileşenler
+- date-fns lokalizasyonu kontrolü, RTL düzen testleri (Arapça için flex-direction)
+- Tahmini: ~80 string
 
-**4. Gizlilik & Kullanım Şartları**
+## Teknik Yaklaşım
 
-Bu iki sheet uzun yasal metinler içeriyor. Faz 1'de:
-- **Sadece başlıklar** çevrilecek ("Gizlilik Politikası", "Kullanım Şartları", "Kapat", "Son güncelleme")
-- **Madde içerikleri Türkçe kalacak** (yasal metinler, profesyonel çeviri gerektirir)
-- Açıklayıcı not eklenecek: "Bu metinlerin diğer dillerdeki versiyonları yakında eklenecek"
+**Her faz için tutarlı süreç:**
+1. İlgili bileşenleri tara → tüm Türkçe metinleri tespit et
+2. 5 dil için JSON dosyalarına anahtar ekle (TR doğal dil, diğerleri profesyonel çeviri)
+3. Bileşenlere `const { t } = useTranslation('namespace')` ekle
+4. Hardcoded stringleri `{t('key')}` ile değiştir
+5. Dinamik içerikler için interpolation kullan: `t('welcome', { name })`
+6. Tarih/sayı formatlama için `date-fns` lokali ve `Intl.NumberFormat` ile dil senkronizasyonu
 
-> Faz 2'de yasal metinler ayrıca lokalize edilebilir.
+**Çeviri kalite standardı:**
+- Spor/bahis terminolojisi → her dilde standart karşılıkları (xG, form, momentum vb.)
+- Kısa UI etiketleri → mobil ekran sınırlarına uygun (Almanca uzun kelimeler için dikkat)
+- Arapça → RTL akışı + sayısal değerler için LTR override (`dir="ltr"` numerik span'ler)
 
-### Kapsam Dışı (Bu Plan)
-- Onboarding, Auth, HeroSection, Premium sayfası — sırayla sonraki adımda
-- PredictionCard, MatchCard, AnalysisDrawer
-- Edge function'ların çok dilli yanıtları
-- Yasal metin (Privacy/Terms) tam çevirisi
+**Çakışma önleme:**
+- Mevcut anahtarlar bozulmayacak; sadece yeni anahtar eklenecek
+- Namespace'ler mantıksal gruplara göre genişletilecek
+
+## Uygulama Sırası ve Onay
+
+Bu plan onaylanırsa **Faz 1'den başlayarak sırayla** uygulayacağım. Her fazın sonunda kısa bir özet vereceğim, böylece preview'da kontrol edip bir sonrakine geçebilirsin. Tüm fazlar tahmini 5 ayrı build döngüsü sürecek (her faz tek mesajda tamamlanacak).
+
+İstersen sıralamayı değiştirebilir veya bir fazı atlayabilirsin.
