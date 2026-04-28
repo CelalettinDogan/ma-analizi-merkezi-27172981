@@ -21,6 +21,7 @@ import trAnalysis from './locales/tr/analysis.json';
 import trPremium from './locales/tr/premium.json';
 import trProfile from './locales/tr/profile.json';
 import trPredictions from './locales/tr/predictions.json';
+import trChat from './locales/tr/chat.json';
 
 // EN
 import enCommon from './locales/en/common.json';
@@ -30,6 +31,7 @@ import enAnalysis from './locales/en/analysis.json';
 import enPremium from './locales/en/premium.json';
 import enProfile from './locales/en/profile.json';
 import enPredictions from './locales/en/predictions.json';
+import enChat from './locales/en/chat.json';
 
 // DE
 import deCommon from './locales/de/common.json';
@@ -39,6 +41,7 @@ import deAnalysis from './locales/de/analysis.json';
 import dePremium from './locales/de/premium.json';
 import deProfile from './locales/de/profile.json';
 import dePredictions from './locales/de/predictions.json';
+import deChat from './locales/de/chat.json';
 
 // ES
 import esCommon from './locales/es/common.json';
@@ -48,6 +51,7 @@ import esAnalysis from './locales/es/analysis.json';
 import esPremium from './locales/es/premium.json';
 import esProfile from './locales/es/profile.json';
 import esPredictions from './locales/es/predictions.json';
+import esChat from './locales/es/chat.json';
 
 // AR
 import arCommon from './locales/ar/common.json';
@@ -57,13 +61,14 @@ import arAnalysis from './locales/ar/analysis.json';
 import arPremium from './locales/ar/premium.json';
 import arProfile from './locales/ar/profile.json';
 import arPredictions from './locales/ar/predictions.json';
+import arChat from './locales/ar/chat.json';
 
 const resources = {
-  tr: { common: trCommon, auth: trAuth, home: trHome, analysis: trAnalysis, premium: trPremium, profile: trProfile, predictions: trPredictions },
-  en: { common: enCommon, auth: enAuth, home: enHome, analysis: enAnalysis, premium: enPremium, profile: enProfile, predictions: enPredictions },
-  de: { common: deCommon, auth: deAuth, home: deHome, analysis: deAnalysis, premium: dePremium, profile: deProfile, predictions: dePredictions },
-  es: { common: esCommon, auth: esAuth, home: esHome, analysis: esAnalysis, premium: esPremium, profile: esProfile, predictions: esPredictions },
-  ar: { common: arCommon, auth: arAuth, home: arHome, analysis: arAnalysis, premium: arPremium, profile: arProfile, predictions: arPredictions },
+  tr: { common: trCommon, auth: trAuth, home: trHome, analysis: trAnalysis, premium: trPremium, profile: trProfile, predictions: trPredictions, chat: trChat },
+  en: { common: enCommon, auth: enAuth, home: enHome, analysis: enAnalysis, premium: enPremium, profile: enProfile, predictions: enPredictions, chat: enChat },
+  de: { common: deCommon, auth: deAuth, home: deHome, analysis: deAnalysis, premium: dePremium, profile: deProfile, predictions: dePredictions, chat: deChat },
+  es: { common: esCommon, auth: esAuth, home: esHome, analysis: esAnalysis, premium: esPremium, profile: esProfile, predictions: esPredictions, chat: esChat },
+  ar: { common: arCommon, auth: arAuth, home: arHome, analysis: arAnalysis, premium: arPremium, profile: arProfile, predictions: arPredictions, chat: arChat },
 };
 
 /**
