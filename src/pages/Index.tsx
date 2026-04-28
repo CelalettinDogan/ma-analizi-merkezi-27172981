@@ -101,7 +101,7 @@ const Index: React.FC = () => {
       setUpcomingMatches(matches.slice(0, 10));
     } catch (e) {
       console.error('Error fetching matches:', e);
-      toast.error('Maç verileri yüklenirken hata oluştu.');
+      toast.error(t('toasts.matchLoadError'));
     } finally {
       setIsLoadingMatches(false);
     }
