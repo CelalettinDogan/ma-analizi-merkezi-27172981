@@ -209,7 +209,7 @@ const LivePage: React.FC = () => {
 
   const formatLastUpdated = () => {
     if (!lastUpdated) return '';
-    return lastUpdated.toLocaleTimeString('tr-TR', { 
+    return lastUpdated.toLocaleTimeString(i18n.language, { 
       hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
   };
