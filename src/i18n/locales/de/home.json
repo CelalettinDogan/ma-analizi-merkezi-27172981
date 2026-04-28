@@ -46,6 +46,11 @@
   },
   "live": {
     "title": "Live-Spiele",
+    "scoresTitle": "Live-Ergebnisse",
+    "delayNote": "Daten können ~15 Min. verzögert sein",
+    "emptyCta": "Zu kommenden Spielen",
+    "standingsLoading": "Tabelle wird geladen...",
+    "standingsError": "Tabelle konnte nicht geladen werden",
     "lastUpdated": "Letzte Aktualisierung: {{time}}",
     "matchesCount": "{{count}} Spiele",
     "selectLeague": "Liga wählen",
