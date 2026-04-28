@@ -64,14 +64,7 @@ const Privacy: React.FC = () => {
           ))}
 
           <Section title={t('privacy.sections.contact.title')}>
-            <p>
-              <Trans
-                i18nKey="privacy.sections.contact.body"
-                t={t}
-                values={{ email: 'info@golmetrik.com' }}
-                components={{ 1: <span className="text-primary active:opacity-70" /> }}
-              />
-            </p>
+            <p>{t('privacy.sections.contact.body', { email: 'info@golmetrik.com' })}</p>
           </Section>
 
           <Section title={t('privacy.sections.deletion.title')}>
