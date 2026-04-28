@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Trash2, Crown, Sparkles, Star, MoreVertical, X } from 'lucide-react';
 import varioAvatar from '@/assets/vario-avatar.png';
