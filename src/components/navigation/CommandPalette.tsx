@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Home, BarChart3, Zap, User, Trophy, Clock, X, Loader2, Shield } from 'lucide-react';
 import { Command as CommandPrimitive } from 'cmdk';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { SUPPORTED_COMPETITIONS, CompetitionCode } from '@/types/footballApi';
 import { getTeams } from '@/services/footballApiService';
@@ -27,13 +28,14 @@ interface TeamResult {
 const RECENT_SEARCHES_KEY = 'golmetrik_recent_searches';
 const MAX_RECENT_SEARCHES = 5;
 
-const CommandPalette: React.FC<CommandPaletteProps> = ({ 
-  open, 
+const CommandPalette: React.FC<CommandPaletteProps> = ({
+  open,
   onOpenChange,
   onLeagueSelect,
   onTeamSelect
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation('common');
   const [searchQuery, setSearchQuery] = useState('');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [teamResults, setTeamResults] = useState<TeamResult[]>([]);
