@@ -88,10 +88,10 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   ].filter(Boolean).length;
 
   const getConfidenceLabel = (value: number) => {
-    if (value === 0) return 'Tümü';
-    if (value <= 33) return 'Düşük+';
-    if (value <= 66) return 'Orta+';
-    return 'Yüksek';
+    if (value === 0) return t('filters.confidence.all');
+    if (value <= 33) return t('filters.confidence.low');
+    if (value <= 66) return t('filters.confidence.medium');
+    return t('filters.confidence.high');
   };
 
   return (
