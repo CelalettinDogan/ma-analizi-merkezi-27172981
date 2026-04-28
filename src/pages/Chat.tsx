@@ -243,28 +243,28 @@ const Chat: React.FC = () => {
                 {isAdmin && (
                   <Badge variant="secondary" className="text-micro min-h-[16px] h-auto px-1.5 bg-amber-500/20 text-amber-600 border-0">
                     <Crown className="w-2.5 h-2.5 mr-0.5" />
-                    Admin
+                    {t('header.admin')}
                   </Badge>
                 )}
                 {isPremiumPro && !isAdmin && (
                   <Badge variant="secondary" className="text-micro min-h-[16px] h-auto px-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600 border-0">
                     <Star className="w-2.5 h-2.5 mr-0.5" />
-                    Pro
+                    {t('header.pro')}
                   </Badge>
                 )}
                 {isPremiumPlus && !isAdmin && (
                   <Badge variant="secondary" className="text-micro min-h-[16px] h-auto px-1.5 bg-primary/20 text-primary border-0">
                     <Sparkles className="w-2.5 h-2.5 mr-0.5" />
-                    Plus
+                    {t('header.plus')}
                   </Badge>
                 )}
                 {isPremiumBasic && !isAdmin && (
                   <Badge variant="secondary" className="text-micro min-h-[16px] h-auto px-1.5 bg-emerald-500/20 text-emerald-600 border-0">
-                    Basic
+                    {t('header.basic')}
                   </Badge>
                 )}
                 </div>
-                <span className="text-micro text-emerald-500 font-medium">AI Asistan</span>
+                <span className="text-micro text-emerald-500 font-medium">{t('header.subtitle')}</span>
               </div>
             </div>
           </div>
