@@ -140,11 +140,36 @@ serve(async (req) => {
 
     console.log(`Fetching: ${url}`);
 
-    const response = await fetch(url, {
-      headers: {
-        'X-Auth-Token': apiKey,
-      },
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        headers: { 'X-Auth-Token': apiKey },
+        signal: controller.signal,
+      });
+    } catch (fetchErr) {
+      clearTimeout(timeoutId);
+      console.error('Upstream fetch failed:', fetchErr);
+      // Serve stale cache if available
+      if (cached) {
+        return new Response(JSON.stringify(cached.data), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-Cache': 'STALE-ERROR' },
+        });
+      }
+      // Graceful empty payload for h2h so the UI doesn't break
+      if (action === 'head2head') {
+        return new Response(
+          JSON.stringify({ aggregates: { numberOfMatches: 0, homeTeam: {}, awayTeam: {} }, matches: [] }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-Cache': 'EMPTY-FALLBACK' } }
+        );
+      }
+      return new Response(
+        JSON.stringify({ error: 'upstream_unavailable', message: 'Football API geçici olarak erişilemiyor.' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    clearTimeout(timeoutId);
 
     // Handle rate limiting with retry-after
     if (response.status === 429) {
