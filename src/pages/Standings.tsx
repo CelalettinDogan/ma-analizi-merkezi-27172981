@@ -133,12 +133,12 @@ const StandingsPage: React.FC = () => {
               isLoading ? (
                 <div className="flex flex-col items-center justify-center py-16">
                   <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
-                  <p className="text-muted-foreground text-sm">Puan durumu yükleniyor...</p>
+                  <p className="text-muted-foreground text-sm">{t('standings.loading')}</p>
                 </div>
               ) : error ? (
                 <div className="text-center py-16">
                   <p className="text-muted-foreground mb-4 text-sm">{error}</p>
-                  <Button variant="outline" onClick={() => fetchStandings()}>Tekrar Dene</Button>
+                  <Button variant="outline" onClick={() => fetchStandings()}>{t('standings.retry')}</Button>
                 </div>
               ) : (
                 <StandingsTable standings={standings} />
