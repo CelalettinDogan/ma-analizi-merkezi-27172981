@@ -54,6 +54,7 @@ interface MatchContext {
 const Chat: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation('chat');
   const { user, isLoading: authLoading } = useAuth();
   const { 
     planType, 
