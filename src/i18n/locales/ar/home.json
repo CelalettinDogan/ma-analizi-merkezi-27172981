@@ -1,37 +1,96 @@
 {
   "hero": {
-    "title": "توقعات كرة القدم بالذكاء الاصطناعي",
-    "subtitle": "توقعات المباريات بالذكاء الاصطناعي والتحليل الإحصائي",
-    "cta": "ابدأ الآن",
-    "ctaSecondary": "كيف يعمل"
+    "aiAccuracy": "دقة الذكاء الاصطناعي",
+    "analysesSuffix": "+ تحليلًا",
+    "search": "بحث",
+    "searchAria": "ابحث عن فريق أو دوري",
+    "searchPlaceholder": "بحث...",
+    "tagline": "تحليل المباريات بالذكاء الاصطناعي"
   },
   "sections": {
     "todaysMatches": "مباريات اليوم",
-    "upcomingMatches": "المباريات القادمة",
-    "liveMatches": "المباريات المباشرة",
-    "popularLeagues": "الدوريات الشهيرة",
-    "smartPicks": "اختيارات ذكية",
-    "filteredPredictions": "التوقعات المفلترة"
+    "upcomingMatchesShort": "المباريات القادمة",
+    "liveMatches": "مباريات مباشرة",
+    "clear": "مسح"
   },
-  "match": {
-    "vs": "ضد",
-    "tbd": "لم يحدد",
-    "predict": "توقع",
-    "analyze": "تحليل",
-    "viewDetails": "عرض التفاصيل",
-    "noMatches": "لا توجد مباريات",
-    "loadingMatches": "جارٍ تحميل المباريات..."
+  "todays": {
+    "title": "مباريات اليوم",
+    "upcomingTitle": "المباريات القادمة",
+    "noScheduledTitle": "لا توجد مباريات مجدولة",
+    "noScheduledHint": "اختر دوريًا لعرض المباريات",
+    "viewAll": "عرض الكل (+{{count}})",
+    "analyzing": "جارٍ التحليل...",
+    "viewAIAnalysis": "عرض تحليل الذكاء الاصطناعي",
+    "reasons": {
+      "bigMatch": "مباراة كبيرة",
+      "soonest": "الأقرب",
+      "recommended": "موصى بها"
+    },
+    "dates": {
+      "today": "اليوم",
+      "tomorrow": "غدًا"
+    }
   },
-  "filters": {
-    "all": "الكل",
-    "today": "اليوم",
-    "tomorrow": "غداً",
-    "thisWeek": "هذا الأسبوع",
-    "league": "الدوري",
-    "allLeagues": "كل الدوريات"
+  "upcoming": {
+    "loading": "جارٍ تحميل المباريات...",
+    "empty": "لا توجد مباريات قادمة",
+    "header": "المباريات القادمة ({{count}})",
+    "matchday": "الجولة {{number}}",
+    "vs": "ضد"
   },
-  "empty": {
-    "title": "لا توجد بيانات بعد",
-    "description": "تحقق لاحقاً"
+  "carousel": {
+    "live": "مباشر",
+    "finished": "انتهت",
+    "analyze": "تحليل ←",
+    "empty": "لا توجد مباريات قادمة"
+  },
+  "live": {
+    "title": "مباريات مباشرة",
+    "lastUpdated": "آخر تحديث: {{time}}",
+    "matchesCount": "{{count}} مباراة",
+    "selectLeague": "اختر دوريًا",
+    "allLeagues": "كل الدوريات",
+    "loading": "جارٍ تحميل المباريات المباشرة...",
+    "loadError": "تعذّر تحميل المباريات المباشرة",
+    "retry": "حاول مجددًا",
+    "emptyTitle": "لا توجد مباريات مباشرة حاليًا",
+    "emptyDescription": "لا توجد مباريات قيد اللعب في الدوريات المدعومة.",
+    "emptyHint": "تحديث تلقائي كل 30 ثانية",
+    "autoRefresh": "التحديث التلقائي مفعّل (30 ث)",
+    "card": {
+      "live": "مباشر",
+      "halfTime": "بين الشوطين",
+      "halfTimeScore": "بين الشوطين: {{home}} - {{away}}",
+      "liveStream": "بث مباشر",
+      "ariaLive": "مباشر"
+    }
+  },
+  "leagues": {
+    "liveBadge": "{{count}} مباشر"
+  },
+  "offline": {
+    "noConnection": "لا يوجد اتصال بالإنترنت"
+  },
+  "insights": {
+    "derby": "ديربي",
+    "criticalMatch": "مباراة حاسمة",
+    "hotForm": "حالة ممتازة",
+    "coldForm": "حالة سيئة",
+    "rising": "في صعود",
+    "falling": "في هبوط",
+    "defenseMaster": "إتقان دفاعي",
+    "goalMachine": "آلة أهداف",
+    "more": "+{{count}} أخرى",
+    "team": {
+      "home": "مضيف",
+      "away": "ضيف"
+    }
+  },
+  "toasts": {
+    "matchLoadError": "تعذّر تحميل بيانات المباراة.",
+    "analysisLoadError": "تعذّر تحميل التحليل",
+    "searchingTeam": "جارٍ البحث عن مباراة لـ {{team}}...",
+    "noUpcomingForTeam": "لم يتم العثور على مباراة قادمة لـ {{team}}.",
+    "teamSearchError": "فشل البحث عن المباراة"
   }
 }

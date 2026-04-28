@@ -1,37 +1,96 @@
 {
   "hero": {
-    "title": "AI-Powered Football Predictions",
-    "subtitle": "Match predictions powered by AI and statistical analysis",
-    "cta": "Get Started",
-    "ctaSecondary": "How It Works"
+    "aiAccuracy": "AI Accuracy",
+    "analysesSuffix": "+ analyses",
+    "search": "Search",
+    "searchAria": "Search team or league",
+    "searchPlaceholder": "Search...",
+    "tagline": "AI-powered match analysis"
   },
   "sections": {
     "todaysMatches": "Today's Matches",
-    "upcomingMatches": "Upcoming Matches",
+    "upcomingMatchesShort": "Upcoming Matches",
     "liveMatches": "Live Matches",
-    "popularLeagues": "Popular Leagues",
-    "smartPicks": "Smart Picks",
-    "filteredPredictions": "Filtered Predictions"
+    "clear": "Clear"
   },
-  "match": {
-    "vs": "vs",
-    "tbd": "TBD",
-    "predict": "Predict",
-    "analyze": "Analyze",
-    "viewDetails": "View Details",
-    "noMatches": "No matches found",
-    "loadingMatches": "Loading matches..."
+  "todays": {
+    "title": "Today's Matches",
+    "upcomingTitle": "Upcoming Matches",
+    "noScheduledTitle": "No scheduled matches",
+    "noScheduledHint": "Select a league to see matches",
+    "viewAll": "View All (+{{count}})",
+    "analyzing": "Analyzing...",
+    "viewAIAnalysis": "View AI Analysis",
+    "reasons": {
+      "bigMatch": "Big Match",
+      "soonest": "Soonest",
+      "recommended": "Recommended"
+    },
+    "dates": {
+      "today": "Today",
+      "tomorrow": "Tomorrow"
+    }
   },
-  "filters": {
-    "all": "All",
-    "today": "Today",
-    "tomorrow": "Tomorrow",
-    "thisWeek": "This Week",
-    "league": "League",
-    "allLeagues": "All Leagues"
+  "upcoming": {
+    "loading": "Loading matches...",
+    "empty": "No upcoming matches",
+    "header": "Upcoming Matches ({{count}})",
+    "matchday": "Matchday {{number}}",
+    "vs": "vs"
   },
-  "empty": {
-    "title": "No data yet",
-    "description": "Check back later"
+  "carousel": {
+    "live": "LIVE",
+    "finished": "Finished",
+    "analyze": "Analyze →",
+    "empty": "No upcoming matches"
+  },
+  "live": {
+    "title": "Live Matches",
+    "lastUpdated": "Last updated: {{time}}",
+    "matchesCount": "{{count}} matches",
+    "selectLeague": "Select league",
+    "allLeagues": "All Leagues",
+    "loading": "Loading live matches...",
+    "loadError": "Failed to load live matches",
+    "retry": "Try Again",
+    "emptyTitle": "No live matches right now",
+    "emptyDescription": "There are no matches being played in the supported leagues.",
+    "emptyHint": "Auto-refreshes every 30 seconds",
+    "autoRefresh": "Auto-refresh active (30s)",
+    "card": {
+      "live": "LIVE",
+      "halfTime": "HALF TIME",
+      "halfTimeScore": "Half Time: {{home}} - {{away}}",
+      "liveStream": "Live broadcast",
+      "ariaLive": "Live"
+    }
+  },
+  "leagues": {
+    "liveBadge": "{{count}} LIVE"
+  },
+  "offline": {
+    "noConnection": "No internet connection"
+  },
+  "insights": {
+    "derby": "Derby",
+    "criticalMatch": "Critical Match",
+    "hotForm": "Hot Form",
+    "coldForm": "Cold Form",
+    "rising": "Rising",
+    "falling": "Falling",
+    "defenseMaster": "Defense Master",
+    "goalMachine": "Goal Machine",
+    "more": "+{{count}} more",
+    "team": {
+      "home": "Home",
+      "away": "Away"
+    }
+  },
+  "toasts": {
+    "matchLoadError": "Failed to load match data.",
+    "analysisLoadError": "Failed to load analysis",
+    "searchingTeam": "Searching match for {{team}}...",
+    "noUpcomingForTeam": "No upcoming match found for {{team}}.",
+    "teamSearchError": "Failed to search match"
   }
 }
