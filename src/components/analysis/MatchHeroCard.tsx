@@ -1,9 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, MapPin } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { MatchInput, MatchInsights } from '@/types/match';
 import MatchInsightBadges from '@/components/MatchInsightBadges';
 import { SUPPORTED_COMPETITIONS } from '@/types/footballApi';
+import { getDateFnsLocale } from '@/i18n/dateLocale';
+import { format } from 'date-fns';
 
 interface MatchHeroCardProps {
   match: MatchInput;
