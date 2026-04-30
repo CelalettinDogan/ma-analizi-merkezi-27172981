@@ -87,6 +87,7 @@ interface TodaysMatchesProps {
   loadingMatchId?: number | null;
   onMatchSelect: (match: Match) => void;
   lastUpdated?: Date | null;
+  isPremium?: boolean;
 }
 
 const BIG_TEAMS = [
