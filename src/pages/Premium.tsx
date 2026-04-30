@@ -396,7 +396,7 @@ const Premium = () => {
                   priceNum={getPriceAmount(currentProductId)}
                   monthlyPriceNum={getPriceAmount(plan.monthlyId)}
                   pricesLoading={pricesLoading}
-                  onSelect={() => setSelectedPlan(plan.id)}
+                  onSelect={() => { tapLight(); setSelectedPlan(plan.id); }}
                 />
               );
             })}
