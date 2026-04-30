@@ -205,6 +205,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
   }, [matches, t]);
 
   const displayedMatches = showAll ? otherMatches : otherMatches.slice(0, 5);
+  const [showDailyDetail, setShowDailyDetail] = useState(false);
 
   if (isLoading) {
     return (
@@ -215,8 +216,6 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
       </div>
     );
   }
-
-  const [showDailyDetail, setShowDailyDetail] = useState(false);
 
   const dailyPickRowEl = dailyPick ? (
     <div key="daily-pick-row" className="space-y-0">
