@@ -93,9 +93,20 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
 
         {/* Main Prediction */}
         <div className="text-center mb-5">
-          <h3 className="text-2xl font-bold text-foreground mb-1">
-            {mainPrediction.prediction}
-          </h3>
+          {mainPrediction.type === PREDICTION_TYPES.CORRECT_SCORE && !canSeeFullReasoning ? (
+            <div className="relative inline-block">
+              <h3 className="text-2xl font-bold text-foreground mb-1 select-none" style={{ filter: 'blur(8px)' }}>
+                {mainPrediction.prediction}
+              </h3>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-amber-500/70" />
+              </div>
+            </div>
+          ) : (
+            <h3 className="text-2xl font-bold text-foreground mb-1">
+              {mainPrediction.prediction}
+            </h3>
+          )}
           <div className="flex items-center justify-center gap-2 flex-wrap">
             <p className="text-sm text-muted-foreground">{mainPrediction.type}</p>
             {mainPrediction.riskLevel && (
