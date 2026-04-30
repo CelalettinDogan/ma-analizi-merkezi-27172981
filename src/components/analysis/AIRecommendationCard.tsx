@@ -10,6 +10,8 @@ import { cn, getHybridConfidence, getConfidenceLevel } from '@/lib/utils';
 import ShareCard from '@/components/ShareCard';
 import { formatMatchDate } from '@/lib/utils';
 import ConfidenceBreakdownTooltip from './ConfidenceBreakdownTooltip';
+import { useAccessLevel } from '@/hooks/useAccessLevel';
+import PremiumTeaserOverlay from '@/components/premium/PremiumTeaserOverlay';
 
 interface AIRecommendationCardProps {
   predictions: Prediction[];
@@ -18,6 +20,8 @@ interface AIRecommendationCardProps {
 
 const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions, matchInput }) => {
   const { t } = useTranslation('analysis');
+  const { isPremium, isAdmin } = useAccessLevel();
+  const canSeeFullReasoning = isPremium || isAdmin;
   const confidenceConfig = {
     'yüksek': { icon: Star, label: t('confidence.highBadge'), color: 'text-emerald-400', bg: 'bg-emerald-500/20' },
     'orta': { icon: Info, label: t('confidence.mediumBadge'), color: 'text-amber-400', bg: 'bg-amber-500/20' },
