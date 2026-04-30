@@ -438,6 +438,8 @@ const Index: React.FC = () => {
         isOpen={analysisLimitSheet.isOpen}
         onClose={analysisLimitSheet.close}
       />
+
+      <SmartPromotionTrigger />
     </div>
   );
 };
