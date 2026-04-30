@@ -12,6 +12,8 @@ import { usePlatform } from '@/hooks/usePlatform';
 import { useStoreProducts } from '@/hooks/useStoreProducts';
 import { purchaseService, PRODUCTS, PLAN_PRODUCTS } from '@/services/purchaseService';
 import AppHeader from '@/components/layout/AppHeader';
+import PlanComparisonTable from '@/components/premium/PlanComparisonTable';
+import SocialProofCounter from '@/components/premium/SocialProofCounter';
 import { toast } from 'sonner';
 
 // ─── Plan data ─────────────────────────────────────────────
