@@ -79,7 +79,7 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
               {mainPrediction.prediction}
             </h2>
             <div className="absolute inset-0 flex items-center justify-center">
-              <Lock className="w-4 h-4 text-amber-500/70" />
+              <LockIcon className="w-4 h-4 text-amber-500/70" />
             </div>
           </div>
         ) : (
@@ -152,7 +152,7 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
                   <span className="text-lg font-bold text-foreground select-none" style={{ filter: 'blur(8px)' }}>
                     {mostLikelyScore.homeGoals}-{mostLikelyScore.awayGoals}
                   </span>
-                  <Lock className="absolute w-3.5 h-3.5 text-amber-500/70" />
+                  <LockIcon className="absolute w-3.5 h-3.5 text-amber-500/70" />
                 </>
               )}
             </div>
