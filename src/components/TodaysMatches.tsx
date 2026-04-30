@@ -216,47 +216,74 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
     );
   }
 
+  const [showDailyDetail, setShowDailyDetail] = useState(false);
+
   const dailyPickRowEl = dailyPick ? (
-    <motion.button
-      key="daily-pick-row"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.05 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={() => !isPremium && navigate('/premium')}
-      className={cn(
-        "w-full relative grid grid-cols-[1fr_auto_1fr] items-center gap-1 px-3 py-2.5 rounded-xl transition-colors",
-        "min-h-[48px] border border-primary/20 bg-card/60 backdrop-blur-sm",
-      )}
-    >
-      <div className={cn('contents', !isPremium && 'blur-sm select-none pointer-events-none')}>
-        <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-sm truncate whitespace-nowrap min-w-0 font-medium">{dailyPick.homeTeam.replace(/ FC$| CF$| SC$/i, '').trim()}</span>
+    <div key="daily-pick-row" className="space-y-0">
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.05 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => {
+          if (!isPremium) {
+            navigate('/premium');
+          } else {
+            setShowDailyDetail(prev => !prev);
+          }
+        }}
+        className={cn(
+          "w-full grid grid-cols-[auto_1fr_auto] items-center gap-2 px-3 py-2.5 transition-colors",
+          "min-h-[48px] border border-amber-500/20 bg-amber-500/5",
+          showDailyDetail ? "rounded-t-xl" : "rounded-xl",
+        )}
+      >
+        <div className="flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+          <span className="text-sm font-semibold text-amber-500">{t('dailyPick.title', 'Günün Skoru')}</span>
         </div>
-        <div className="flex items-center gap-1.5 shrink-0 px-1">
-          <span className="text-xs font-bold tabular-nums text-primary">{dailyPick.predictionValue}</span>
-        </div>
-        <div className="flex items-center gap-1.5 min-w-0 justify-end">
-          <span className="text-sm truncate whitespace-nowrap min-w-0 text-right font-medium">{dailyPick.awayTeam.replace(/ FC$| CF$| SC$/i, '').trim()}</span>
-        </div>
-      </div>
-      {!isPremium && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/40 backdrop-blur-[2px]">
+        <div className="flex-1" />
+        {!isPremium ? (
           <div className="flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-xs font-semibold text-amber-500">{t('dailyPick.unlockCta', 'Premium ile Gör')}</span>
+            <Lock className="w-3.5 h-3.5 text-amber-500/60" />
+            <span className="text-xs font-medium text-amber-500/60">{t('dailyPick.unlockCta', 'Premium ile Gör')}</span>
+            <ChevronRight className="w-3 h-3 text-amber-500/40" />
           </div>
-        </div>
-      )}
-      {isPremium && (
-        <div className="absolute top-1 left-2">
-          <span className="text-micro text-primary/60 font-medium flex items-center gap-1">
-            <Sparkles className="w-2.5 h-2.5" />
-            {t('dailyPick.title', 'Günün Skor Tahmini')}
-          </span>
-        </div>
-      )}
-    </motion.button>
+        ) : (
+          <ChevronRight className={cn("w-3.5 h-3.5 text-amber-500/60 transition-transform", showDailyDetail && "rotate-90")} />
+        )}
+      </motion.button>
+
+      <AnimatePresence>
+        {isPremium && showDailyDetail && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-3 py-2.5 border border-t-0 border-amber-500/20 rounded-b-xl bg-card/60 space-y-1">
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1">
+                <span className="text-sm font-medium truncate">{dailyPick.homeTeam.replace(/ FC$| CF$| SC$/i, '').trim()}</span>
+                <span className="text-xs text-muted-foreground px-1">vs</span>
+                <span className="text-sm font-medium truncate text-right">{dailyPick.awayTeam.replace(/ FC$| CF$| SC$/i, '').trim()}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">{dailyPick.predictionType}</span>
+                <span className="text-xs font-bold text-primary">{dailyPick.predictionValue}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-micro text-muted-foreground/60">{dailyPick.league} · {dailyPick.matchDate}</span>
+                <span className={cn("text-micro font-bold tabular-nums", dailyPick.hybridConfidence >= 70 ? 'text-emerald-400' : 'text-amber-400')}>
+                  %{Math.round(dailyPick.hybridConfidence)}
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   ) : null;
 
   if (matches.length === 0) {
