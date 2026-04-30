@@ -199,5 +199,24 @@
   "yearly": {
     "saveBadge": "وفّر {{percent}}%",
     "strikePerYear": "بدلاً من {{price}}/سنة"
-  }
+  },
+  "success": {
+    "title": "مرحباً بك في Premium!",
+    "description": "خطة {{plan}} الخاصة بك نشطة الآن. تم فتح جميع الميزات!",
+    "continue": "ابدأ الاستكشاف",
+    "features": {
+      "unlimitedAnalysis": "تحليل غير محدود",
+      "aiChat": "دردشة مساعد AI",
+      "prioritySupport": "دعم أولوي"
+    }
+  },
+  "promo": {
+    "limitedTitle": "خصم {{discount}}%!",
+    "limitedSubtitle": "لفترة محدودة",
+    "seasonalTitle": "عرض الموسم",
+    "seasonalSubtitle": "حلل كل مباراة مع Premium",
+    "streakBonus": "{{days}} يوم متتالي!"
+  },
+  "dismiss": "إغلاق",
+  "viewPlans": "عرض الخطط"
 }

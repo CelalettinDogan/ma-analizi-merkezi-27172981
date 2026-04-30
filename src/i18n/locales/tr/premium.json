@@ -199,5 +199,24 @@
   "yearly": {
     "saveBadge": "{{percent}}% tasarruf",
     "strikePerYear": "{{price}}/yıl yerine"
-  }
+  },
+  "success": {
+    "title": "Premium Aktif!",
+    "description": "{{plan}} planın başarıyla etkinleştirildi. Tüm özelliklerin kilidi açıldı!",
+    "continue": "Keşfetmeye Başla",
+    "features": {
+      "unlimitedAnalysis": "Sınırsız Maç Analizi",
+      "aiChat": "AI Asistan Sohbet",
+      "prioritySupport": "Öncelikli Destek"
+    }
+  },
+  "promo": {
+    "limitedTitle": "%{{discount}} İndirim Fırsatı!",
+    "limitedSubtitle": "Sınırlı süreyle geçerli",
+    "seasonalTitle": "Sezon Fırsatı",
+    "seasonalSubtitle": "Premium ile tüm maçları analiz et",
+    "streakBonus": "{{days}} gün seri!"
+  },
+  "dismiss": "Kapat",
+  "viewPlans": "Planları Gör"
 }

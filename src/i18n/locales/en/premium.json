@@ -199,5 +199,24 @@
   "yearly": {
     "saveBadge": "Save {{percent}}%",
     "strikePerYear": "instead of {{price}}/yr"
-  }
+  },
+  "success": {
+    "title": "Welcome to Premium!",
+    "description": "Your {{plan}} plan is now active. All features unlocked!",
+    "continue": "Start Exploring",
+    "features": {
+      "unlimitedAnalysis": "Unlimited Match Analysis",
+      "aiChat": "AI Assistant Chat",
+      "prioritySupport": "Priority Support"
+    }
+  },
+  "promo": {
+    "limitedTitle": "{{discount}}% Off — Limited Time!",
+    "limitedSubtitle": "Available for a limited time",
+    "seasonalTitle": "Season Special",
+    "seasonalSubtitle": "Analyze every match with Premium",
+    "streakBonus": "{{days}} day streak!"
+  },
+  "dismiss": "Dismiss",
+  "viewPlans": "View Plans"
 }
