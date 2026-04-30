@@ -1,10 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ChevronUp } from 'lucide-react';
+import { ChevronUp, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MatchAnalysis, Prediction } from '@/types/match';
 import { getHybridConfidence, getConfidenceLevel, cn } from '@/lib/utils';
 import ConfidenceBreakdownTooltip from './ConfidenceBreakdownTooltip';
+import { useAccessLevel } from '@/hooks/useAccessLevel';
+import PremiumTeaserOverlay from '@/components/premium/PremiumTeaserOverlay';
+import { PREDICTION_TYPES } from '@/constants/predictions';
 
 interface AnalysisHeroSummaryProps {
   analysis: MatchAnalysis;
@@ -12,6 +15,8 @@ interface AnalysisHeroSummaryProps {
 
 const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) => {
   const { t } = useTranslation('analysis');
+  const { isPremium, isAdmin } = useAccessLevel();
+  const canSeeScore = isPremium || isAdmin;
   const sortedPredictions = [...analysis.predictions].sort(
     (a, b) => getHybridConfidence(b) - getHybridConfidence(a)
   );
