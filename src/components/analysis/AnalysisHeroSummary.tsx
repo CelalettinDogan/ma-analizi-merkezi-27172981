@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ChevronUp, Lock } from 'lucide-react';
+import { ChevronUp, Lock as LockIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MatchAnalysis, Prediction } from '@/types/match';
 import { getHybridConfidence, getConfidenceLevel, cn } from '@/lib/utils';
