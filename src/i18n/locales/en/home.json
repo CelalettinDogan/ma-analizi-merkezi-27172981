@@ -29,7 +29,9 @@
     "dates": {
       "today": "Today",
       "tomorrow": "Tomorrow"
-    }
+    },
+    "highConfidence": "Today's Top Pick",
+    "unlockPremium": "Unlock with Premium"
   },
   "upcoming": {
     "loading": "Loading matches...",

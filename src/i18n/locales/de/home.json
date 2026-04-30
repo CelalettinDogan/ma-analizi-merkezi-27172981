@@ -29,7 +29,9 @@
     "dates": {
       "today": "Heute",
       "tomorrow": "Morgen"
-    }
+    },
+    "highConfidence": "Top-Tipp des Tages",
+    "unlockPremium": "Mit Premium freischalten"
   },
   "upcoming": {
     "loading": "Spiele werden geladen...",

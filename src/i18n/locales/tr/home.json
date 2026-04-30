@@ -29,7 +29,9 @@
     "dates": {
       "today": "Bugün",
       "tomorrow": "Yarın"
-    }
+    },
+    "highConfidence": "Günün Yüksek İhtimali",
+    "unlockPremium": "Premium ile Gör"
   },
   "upcoming": {
     "loading": "Maçlar yükleniyor...",
