@@ -27,12 +27,14 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
     isLoading: premiumLoading 
   } = usePlatformPremium();
   const { isAdmin, isLoading: roleLoading } = useUserRole();
+  const { bonusCredits, useBonusCredit } = useStreakRewards();
   
   const [usageCount, setUsageCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Get daily limit from centralized access levels
-  const dailyLimit = isAdmin ? 999 : PLAN_ACCESS_LEVELS[planType].dailyAnalysis;
+  // Get daily limit from centralized access levels + bonus
+  const baseDailyLimit = isAdmin ? 999 : PLAN_ACCESS_LEVELS[planType].dailyAnalysis;
+  const dailyLimit = baseDailyLimit + bonusCredits.bonus_analysis;
   
   const remaining = Math.max(0, dailyLimit - usageCount);
   const canAnalyze = remaining > 0 || hasUnlimitedAnalysis(planType, isAdmin);
