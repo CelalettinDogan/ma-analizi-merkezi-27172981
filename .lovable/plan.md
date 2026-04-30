@@ -1,23 +1,25 @@
 
-## Skor Tahminlerini Premium'a Kilitleme
+## Premium Sayfası UI/UX Düzeltmeleri
 
-Analiz ekranında "Doğru Skor" (correct score) içeriklerini free kullanıcılar için blur'layıp, premium kullanıcılara yönlendireceğiz. 3 bileşen etkileniyor:
+### 1. Badge Cakismasini Duzelt (PlanCard)
+- "Save XX%" badge pozisyonu `right-1.5 -top-2.5` ile Popular badge (`-top-3.5 left-1/2`) cakisiyor
+- Popular kartinda savings badge'i kaldirip, sadece plan adi altinda yesil text olarak goster: "Save 32%"
+- Non-popular kartlarda badge kalabilir cunku Popular badge yok
 
-### 1. AnalysisHeroSummary — "Most Likely Score" kutusu
-- `useAccessLevel` hook'u eklenir
-- `mostLikelyScore` kutusu (satır 124-133): free kullanıcılar icin skor blur + PremiumTeaserOverlay
-- Küçük kilit ikonu ile "Premium" etiketi eklenir
+### 2. Seasonal Promo Banner Icerigi Guclendir
+- Emoji (futbol topu) kaldır (memory: no emojis)
+- Yerine futbol sahasi ikonu (lucide `Goal` veya `Trophy`) koy
+- Subtitle kismina ne sunuldugunu belirt
 
-### 2. PredictionPillSelector — "Doğru Skor" pill'i ve detay paneli
-- `useAccessLevel` hook'u eklenir  
-- Pill'de `prediction.type === 'Doğru Skor'` kontrolü: free kullanıcılarda pill tıklanabilir ama detay panelinde prediction value blur'lu + PremiumTeaserOverlay gösterilir
-- PREDICTION_TYPES.CORRECT_SCORE sabiti import edilir
+### 3. Compare Plans CTA Butonunu Duzelt
+- Compare Plans zaten `/premium` sayfasinda, CTA butonu tekrar `/premium?from=compare-X` sayfasina yonlendiriyor (gereksiz navigasyon)
+- Yerine sayfa basina scroll yap veya secili plani CTA'ya bagla
 
-### 3. AIRecommendationCard — Eğer ana tahmin "Doğru Skor" ise
-- Zaten `useAccessLevel` kullanıyor
-- Ana tahmin `Doğru Skor` ise: prediction value (satır 95-96) free kullanıcılar için blur'lu gösterilir + üstüne küçük PremiumTeaserOverlay
+### 4. Plan Kartlarinda Fiyat Tasmasini Onle
+- Price container'a `overflow-hidden text-ellipsis` ekle
+- Min-width: 0 zaten var, ama price text icin `whitespace-nowrap` ile `max-w-full` kombine et
 
-### Dosya Değişiklikleri
-- `src/components/analysis/AnalysisHeroSummary.tsx` — blur + overlay ekleme
-- `src/components/analysis/PredictionPillSelector.tsx` — blur + overlay ekleme
-- `src/components/analysis/AIRecommendationCard.tsx` — skor tahmini blur ekleme
+### 5. Dosya Degisiklikleri
+- `src/pages/Premium.tsx` — PlanCard savings badge pozisyon duzeltmesi, popular kart icin inline savings
+- `src/components/premium/PromoBanner.tsx` — Emoji yerine ikon, no emojis kurali
+- `src/components/premium/PlanComparisonTable.tsx` — CTA butonunu scroll-to-top veya secili plani set eden handler'a cevir
