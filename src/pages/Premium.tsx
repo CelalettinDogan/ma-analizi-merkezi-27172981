@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Crown, Check, Sparkles, Zap, Shield, Brain, MessageSquare, Ban, History, Loader2 } from 'lucide-react';
+import { Crown, Check, Sparkles, Zap, Shield, Brain, MessageSquare, Ban, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAccessLevel } from '@/hooks/useAccessLevel';
 import { usePlatformPremium } from '@/hooks/usePlatformPremium';
@@ -58,79 +59,48 @@ const ActivePlanView = ({ plans: plansList, planType, isAdmin }: { plans: PlanCo
   const { t } = useTranslation('premium');
   const currentPlan = plansList.find(p => p.id === planType) || plansList[1];
   const planName = currentPlan ? t(`plans.${currentPlan.nameKey}.name`) : t('title');
-  const Icon = currentPlan?.icon || Crown;
-
-  const features = [
-    { icon: Brain, label: t('active.unlimitedAnalysis'), desc: t('active.noDailyLimit') },
-    { icon: MessageSquare, label: t('active.aiAssistant'), desc: t('active.messagesPerDay', { count: currentPlan?.chatLimit ?? '∞' }) },
-    { icon: Ban, label: t('active.noAds'), desc: t('active.cleanExperience') },
-    { icon: History, label: t('active.historyAccess'), desc: t('active.allAnalyses') },
-  ];
-
   return (
-    <div className="h-screen bg-background flex flex-col" style={{ userSelect: 'none' }}>
-      <AppHeader showBack />
-      <main
-        className="flex-1 overflow-y-auto px-4 py-4"
-        style={{
-          paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
-          overscrollBehavior: 'contain',
-        }}
-      >
-        <div className="w-full max-w-sm mx-auto space-y-5">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center p-6 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] to-background relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.04] to-transparent pointer-events-none" />
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
-              className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-primary p-[1.5px] mx-auto mb-4"
-            >
-              <div className="w-full h-full rounded-2xl bg-background flex items-center justify-center">
-                <Icon className="h-7 w-7 text-primary" />
-              </div>
-            </motion.div>
-            <motion.h2 initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-lg font-bold relative">
+    <div className="h-screen bg-background flex flex-col">
+      <AppHeader />
+      <main className="flex-1 overflow-y-auto px-4 py-4" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
+        <div className="w-full max-w-sm mx-auto space-y-4">
+          <div className="text-center p-5 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+              <Crown className="h-6 w-6 text-primary" />
+            </div>
+            <h2 className="text-lg font-bold mb-0.5">
               {isAdmin ? t('active.adminAccess') : planName}
-            </motion.h2>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="text-xs text-muted-foreground mt-1 relative">
+            </h2>
+            <p className="text-xs text-muted-foreground">
               {isAdmin ? t('active.adminDesc') : t('active.activeSubscription')}
-            </motion.p>
-          </motion.div>
-
-          <div className="grid grid-cols-2 gap-2.5">
-            {features.map((f, idx) => (
-              <motion.div
-                key={f.label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + idx * 0.06 }}
-                whileTap={{ scale: 0.97 }}
-                className="p-3.5 rounded-2xl bg-muted/20 border border-border/30"
-              >
-                <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
-                  <f.icon className="w-4 h-4 text-primary" />
-                </div>
-                <p className="text-[11px] font-semibold">{f.label}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{f.desc}</p>
-              </motion.div>
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { icon: Brain, label: t('active.unlimitedAnalysis'), desc: t('active.noDailyLimit') },
+              { icon: MessageSquare, label: t('active.aiAssistant'), desc: t('active.messagesPerDay', { count: currentPlan?.chatLimit ?? '∞' }) },
+              { icon: Ban, label: t('active.noAds'), desc: t('active.cleanExperience') },
+              { icon: History, label: t('active.historyAccess'), desc: t('active.allAnalyses') },
+            ].map(f => (
+              <div key={f.label} className="p-3 rounded-xl bg-muted/20 border border-border/30">
+                <f.icon className="w-4 h-4 text-primary mb-1.5" />
+                <p className="text-xs font-semibold">{f.label}</p>
+                <p className="text-[10px] text-muted-foreground">{f.desc}</p>
+              </div>
             ))}
           </div>
-
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }} className="p-3 rounded-xl bg-muted/10 border border-border/20 text-center">
-            <p className="text-[10px] text-muted-foreground">{t('billing.managedByPlay')}</p>
-          </motion.div>
+          <div className="p-3 rounded-xl bg-muted/10 border border-border/20 text-center">
+            <p className="text-[10px] text-muted-foreground">
+              {t('billing.managedByPlay')}
+            </p>
+          </div>
         </div>
       </main>
     </div>
   );
 };
 
-// ─── Plan Card (Vertical Full-Width) ──────────────────────
+// ─── Plan Card ────────────────────────────────────────────
 interface PlanCardProps {
   plan: PlanConfig;
   isSelected: boolean;
@@ -151,85 +121,102 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, monthlyPrice
   const tagline = t(`plans.${plan.nameKey}.tagline`);
 
   const formatMonthly = (n: number) => {
-    try { return new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 }).format(n); }
-    catch { return String(n); }
+    try {
+      return new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 }).format(n);
+    } catch {
+      return String(n);
+    }
   };
 
   const yearlyEquivalent = monthlyPriceNum * 12;
-  const savingsPercent = yearlyEquivalent > 0 ? Math.round(((yearlyEquivalent - priceNum) / yearlyEquivalent) * 100) : 0;
+  const savingsAmount = yearlyEquivalent - priceNum;
+  const savingsPercent = yearlyEquivalent > 0 ? Math.round((savingsAmount / yearlyEquivalent) * 100) : 0;
   const showSavings = isYearly && priceNum > 0 && monthlyPriceNum > 0 && savingsPercent >= 5;
 
   return (
     <motion.button
-      whileTap={{ scale: 0.98 }}
+      whileTap={{ scale: 0.97 }}
       onClick={onSelect}
       role="radio"
       aria-checked={isSelected}
       aria-label={`${planName} — ${tagline}`}
-      className={`relative w-full flex items-center gap-4 rounded-2xl border-[1.5px] p-4 transition-all duration-200 ${
-        isSelected
-          ? 'border-primary bg-primary/[0.04] shadow-[0_4px_24px_-4px_hsl(var(--primary)/0.2)]'
-          : 'border-border/40 bg-card/80'
-      } ${isPopular && isSelected ? 'scale-[1.01]' : ''}`}
-      style={{ WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
+      className={`relative flex flex-col items-center text-center rounded-2xl border-[1.5px] transition-all duration-300 overflow-visible ${
+        isPopular ? 'flex-[1.2] z-10 scale-[1.05]' : 'flex-1 z-0 opacity-90'
+      } ${
+        isPopular
+          ? isSelected
+            ? 'border-primary bg-card shadow-[0_12px_48px_-8px_hsl(var(--primary)/0.25)]'
+            : 'border-primary/30 bg-card shadow-[0_8px_32px_-6px_hsl(var(--primary)/0.15)]'
+          : isSelected
+            ? 'border-primary/50 bg-card shadow-[0_4px_20px_-4px_hsl(var(--foreground)/0.1)]'
+            : 'border-border/40 bg-card shadow-[0_2px_12px_-2px_hsl(var(--foreground)/0.06)]'
+      }`}
+      style={{ minWidth: 0 }}
     >
-      {/* Popular badge */}
       {isPopular && (
-        <div className="absolute -top-3 left-4 z-10">
-          <div className="bg-gradient-to-r from-primary to-accent text-primary-foreground text-[10px] font-bold px-3 py-0.5 rounded-full shadow-[0_4px_12px_-2px_hsl(var(--primary)/0.4)] flex items-center gap-1">
-            <Sparkles className="w-2.5 h-2.5" />
+        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20">
+          <div className="bg-gradient-to-r from-primary to-accent text-primary-foreground text-[10px] font-bold px-4 py-1 rounded-full shadow-[0_4px_16px_-2px_hsl(var(--primary)/0.5)] ring-2 ring-primary/20 flex items-center gap-1 whitespace-nowrap">
+            <Sparkles className="w-3 h-3" />
             {t('plans.popular')}
           </div>
         </div>
       )}
 
-      {/* Savings badge */}
       {showSavings && (
-        <div className="absolute -top-2.5 right-4 z-10">
-          <div className="bg-amber-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow-md">
+        <div className="absolute -top-2.5 right-1.5 z-20">
+          <div className="bg-amber-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow-md whitespace-nowrap">
             {t('yearly.saveBadge', { percent: savingsPercent })}
           </div>
         </div>
       )}
 
-      {/* Icon */}
-      <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
-        isSelected ? 'bg-primary/15' : 'bg-muted/40'
-      }`}>
-        <Icon className={`w-5 h-5 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
-      </div>
+      <div className={`flex flex-col items-center w-full px-2.5 pb-5 ${isPopular ? 'pt-6' : 'pt-5'}`}>
+        <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-2 ${
+          isPopular ? 'bg-primary/10' : 'bg-muted/50'
+        }`}>
+          <Icon className={`w-4 h-4 ${isPopular ? 'text-primary' : 'text-muted-foreground'}`} />
+        </div>
 
-      {/* Info */}
-      <div className="flex-1 min-w-0 text-left">
-        <p className="font-bold text-[14px] leading-tight">{planName}</p>
-        <p className="text-[11px] text-muted-foreground mt-0.5">{tagline}</p>
-      </div>
+        <p className={`font-bold truncate max-w-full ${isPopular ? 'text-sm' : 'text-xs'}`}>
+          {planName}
+        </p>
 
-      {/* Price + radio */}
-      <div className="flex items-center gap-3 shrink-0">
         {pricesLoading ? (
-          <div className="w-16 h-6 rounded-lg bg-muted animate-pulse" />
+          <Skeleton className="h-8 w-14 mt-3 rounded-lg" />
         ) : (
-          <div className="text-right">
-            <div className="flex items-baseline gap-0.5">
-              <span className="font-extrabold text-[15px] tracking-tight leading-none">
+          <div className="flex flex-col items-center mt-3 min-w-0 max-w-full">
+            <div className="flex items-baseline gap-0.5 min-w-0 max-w-full overflow-hidden">
+              <span
+                className={`font-extrabold tracking-tight leading-none ${isPopular ? 'text-lg' : 'text-[15px]'}`}
+                style={{ fontSize: isPopular ? 'clamp(1rem, 4vw, 1.25rem)' : 'clamp(0.8rem, 3.2vw, 0.9375rem)' }}
+              >
                 {cleanPrice(priceStr)}
               </span>
-              <span className="text-[9px] text-muted-foreground font-medium">
+              <span className="text-[10px] text-muted-foreground font-medium shrink-0">
                 {periodLabel}
               </span>
             </div>
+
+            {showSavings && (
+              <p className="text-[9px] text-muted-foreground/70 line-through whitespace-nowrap mt-0.5">
+                ₺{formatMonthly(yearlyEquivalent)}
+              </p>
+            )}
+
             {isYearly && priceNum > 0 && (
-              <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
-                {t('billing.approxPerMonth', { price: `${formatMonthly(Math.round(priceNum / 12))}` })}
+              <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1.5 whitespace-nowrap">
+                {t('billing.approxPerMonth', { price: `₺${formatMonthly(priceNum / 12)}` })}
               </p>
             )}
           </div>
         )}
 
-        {/* Radio */}
-        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-          isSelected ? 'border-primary bg-primary' : 'border-muted-foreground/25'
+        <p className="text-[11px] text-muted-foreground mt-3 whitespace-nowrap">
+          {tagline}
+        </p>
+
+        <div className={`w-5 h-5 rounded-full border-2 mt-4 flex items-center justify-center transition-all duration-200 ${
+          isSelected ? 'border-primary bg-primary scale-110' : 'border-muted-foreground/20'
         }`}>
           {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
         </div>
@@ -267,6 +254,7 @@ const Premium = () => {
     { icon: MessageSquare, label: t('features.aiComments') },
   ];
 
+  // Show promo for power users (streak ≥ 5)
   const showStreakPromo = streak.current_streak >= 5;
 
   const handlePurchase = async () => {
@@ -281,7 +269,11 @@ const Premium = () => {
           setShowSuccess(true);
         } else {
           const isActivationError = result.error?.includes('doğrulanamadı') || result.error?.includes('kaydedilemedi');
-          toast.error(isActivationError ? t('messages.activationFailed') : (result.error || t('messages.purchaseFailed')));
+          if (isActivationError) {
+            toast.error(t('messages.activationFailed'));
+          } else {
+            toast.error(result.error || t('messages.purchaseFailed'));
+          }
         }
       } else {
         toast.info(t('messages.nativeRequired'));
@@ -300,19 +292,18 @@ const Premium = () => {
     finally { setIsLoading(false); }
   };
 
-  // Loading skeleton with shimmer
   if (authLoading) {
     return (
-      <div className="h-screen bg-background flex flex-col">
-        <AppHeader showBack />
-        <div className="flex-1 flex items-center justify-center px-4">
-          <div className="space-y-4 w-full max-w-sm">
-            <div className="h-12 bg-muted rounded-2xl skeleton-shimmer" />
-            <div className="h-10 bg-muted rounded-2xl w-48 mx-auto skeleton-shimmer" />
-            <div className="space-y-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-20 bg-muted rounded-2xl skeleton-shimmer" style={{ animationDelay: `${i * 0.15}s` }} />
-              ))}
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <div className="flex items-center justify-center flex-1 py-20">
+          <div className="animate-pulse space-y-4 w-full max-w-sm px-4">
+            <div className="h-10 bg-muted rounded-xl" />
+            <div className="h-8 bg-muted rounded-full w-40 mx-auto" />
+            <div className="flex gap-3">
+              <div className="h-44 bg-muted rounded-2xl flex-1" />
+              <div className="h-48 bg-muted rounded-2xl flex-[1.2]" />
+              <div className="h-44 bg-muted rounded-2xl flex-1" />
             </div>
           </div>
         </div>
@@ -325,9 +316,10 @@ const Premium = () => {
   }
 
   return (
-    <div className="h-screen bg-background flex flex-col" style={{ userSelect: 'none' }}>
-      <AppHeader showBack />
+    <div className="h-screen bg-background flex flex-col">
+      <AppHeader />
 
+      {/* Upgrade Success Overlay */}
       <AnimatePresence>
         {showSuccess && (
           <UpgradeSuccessScreen
@@ -339,13 +331,10 @@ const Premium = () => {
 
       <main
         className="flex-1 overflow-y-auto relative"
-        style={{
-          paddingBottom: 'calc(160px + env(safe-area-inset-bottom, 0px))',
-          overscrollBehavior: 'contain',
-        }}
+        style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
       >
         <HeroGlow />
-        <div className="w-full max-w-md mx-auto space-y-5 py-4 relative px-4">
+        <div className="w-full max-w-md mx-auto px-3 sm:px-5 space-y-5 py-4 relative">
 
           {/* Hero */}
           <motion.div
@@ -368,25 +357,40 @@ const Premium = () => {
             </p>
           </motion.div>
 
-          {/* Promo banner */}
-          {showStreakPromo ? (
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-              <PromoBanner type="limited" discount={20} expiresLabel={t('promo.streakBonus', { days: streak.current_streak })} />
+          {/* Streak promo for power users */}
+          {showStreakPromo && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+            >
+              <PromoBanner
+                type="limited"
+                discount={20}
+                expiresLabel={t('promo.streakBonus', { days: streak.current_streak })}
+              />
             </motion.div>
-          ) : (
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          )}
+
+          {/* Seasonal promo (always show if no streak promo) */}
+          {!showStreakPromo && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+            >
               <PromoBanner type="seasonal" />
             </motion.div>
           )}
 
-          {/* Period Toggle — flex-based */}
+          {/* Period Toggle */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.08 }}
             className="flex justify-center"
           >
-            <div className="relative flex bg-muted/50 rounded-2xl p-1 border border-border/30 w-full max-w-[280px]">
+            <div className="relative inline-flex bg-muted/50 rounded-2xl p-1 border border-border/30">
               <motion.div
                 layout
                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}
@@ -397,54 +401,46 @@ const Premium = () => {
                 }}
               />
               <button
-                onClick={() => { tapLight(); setIsYearly(false); }}
-                className={`relative z-10 flex-1 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
+                onClick={() => setIsYearly(false)}
+                className={`relative z-10 px-7 py-2 rounded-xl text-xs font-semibold transition-colors ${
                   !isYearly ? 'text-foreground' : 'text-muted-foreground'
                 }`}
-                style={{ WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
               >
                 {t('billing.monthly')}
               </button>
               <button
-                onClick={() => { tapLight(); setIsYearly(true); }}
-                className={`relative z-10 flex-1 py-2.5 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1 ${
+                onClick={() => setIsYearly(true)}
+                className={`relative z-10 px-7 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 ${
                   isYearly ? 'text-foreground' : 'text-muted-foreground'
                 }`}
-                style={{ WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
               >
                 {t('billing.yearly')}
-                <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400">{t('billing.savingsBadge')}</span>
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">{t('billing.savingsBadge')}</span>
               </button>
             </div>
           </motion.div>
 
-          {/* Plan Cards — Vertical Stack */}
+          {/* Plan Cards */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
-            className="space-y-3 pt-1"
+            className="flex items-stretch gap-2 pt-3"
           >
-            {plans.map((plan, idx) => {
+            {plans.map((plan) => {
               const currentProductId = isYearly ? plan.yearlyId : plan.monthlyId;
               return (
-                <motion.div
+                <PlanCard
                   key={plan.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.14 + idx * 0.05 }}
-                >
-                  <PlanCard
-                    plan={plan}
-                    isSelected={selectedPlan === plan.id}
-                    isYearly={isYearly}
-                    priceStr={getPrice(currentProductId)}
-                    priceNum={getPriceAmount(currentProductId)}
-                    monthlyPriceNum={getPriceAmount(plan.monthlyId)}
-                    pricesLoading={pricesLoading}
-                    onSelect={() => { tapLight(); setSelectedPlan(plan.id); }}
-                  />
-                </motion.div>
+                  plan={plan}
+                  isSelected={selectedPlan === plan.id}
+                  isYearly={isYearly}
+                  priceStr={getPrice(currentProductId)}
+                  priceNum={getPriceAmount(currentProductId)}
+                  monthlyPriceNum={getPriceAmount(plan.monthlyId)}
+                  pricesLoading={pricesLoading}
+                  onSelect={() => { tapLight(); setSelectedPlan(plan.id); }}
+                />
               );
             })}
           </motion.div>
@@ -453,24 +449,28 @@ const Premium = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.28 }}
-            className="flex items-center justify-center gap-2 flex-wrap"
+            transition={{ delay: 0.18 }}
+            className="flex items-center justify-center gap-2.5 flex-wrap"
           >
             {includedFeatures.map(f => (
-              <motion.div
+              <div
                 key={f.label}
-                whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-1.5 bg-primary/[0.08] text-primary rounded-full px-3.5 py-2 border border-primary/10"
+                className="flex items-center gap-1.5 bg-primary/[0.08] text-primary rounded-full px-4 py-2.5 border border-primary/10"
               >
                 <f.icon className="w-3.5 h-3.5 shrink-0" />
                 <span className="text-[11px] font-semibold whitespace-nowrap">{f.label}</span>
-              </motion.div>
+              </div>
             ))}
           </motion.div>
 
           {/* Streak badge */}
           {streak.current_streak > 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="flex justify-center">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="flex justify-center"
+            >
               <StreakBadge />
             </motion.div>
           )}
@@ -485,52 +485,58 @@ const Premium = () => {
           <TrustBadges />
 
           {/* Trust copy */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="flex flex-col items-center gap-1 py-1">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="flex flex-col items-center gap-1 py-1"
+          >
             <span className="text-[11px] text-muted-foreground/70 text-center">
               {t('trust.highAccuracy')}
             </span>
           </motion.div>
+
+          {/* CTA */}
+          <div className="px-2 pt-2 pb-4 space-y-2.5">
+            <motion.div whileTap={{ scale: 0.95 }}>
+              <Button
+                onClick={handlePurchase}
+                disabled={isLoading}
+                className="w-full h-14 text-[15px] font-bold bg-gradient-to-r from-primary via-emerald-600 to-emerald-500 active:opacity-90 relative overflow-hidden rounded-2xl shadow-[0_8px_32px_-4px_hsl(var(--primary)/0.45)] border-0"
+                size="lg"
+              >
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.07] to-transparent"
+                  animate={{ x: ['-100%', '100%'] }}
+                  transition={{ duration: 3, repeat: Infinity, repeatDelay: 2.5 }}
+                />
+                {isLoading ? (
+                  <span className="flex items-center gap-2 relative">
+                    <span className="animate-spin">⏳</span> {t('actions.processing')}
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2.5 relative">
+                    <Crown className="h-5 w-5" /> {t('actions.upgrade')}
+                  </span>
+                )}
+              </Button>
+            </motion.div>
+
+            <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground/70 leading-tight">
+              <Shield className="w-3 h-3 text-emerald-600/60 dark:text-emerald-400/60 shrink-0" />
+              <span>{t('billing.secure')}</span>
+              <span className="mx-0.5">·</span>
+              <button onClick={handleRestore} className="underline">{t('actions.restore')}</button>
+            </div>
+
+            <p className="text-[10px] text-muted-foreground/50 text-center leading-tight">
+              {t('billing.autoRenewShort').split('.')[0]}.{' '}
+              <Link to="/terms" className="underline">{t('billing.termsLink')}</Link>{' · '}
+              <Link to="/privacy" className="underline">{t('billing.privacyLink')}</Link>
+            </p>
+          </div>
         </div>
       </main>
-
-      {/* ─── Sticky CTA ─────────────────────────────────── */}
-      <div
-        className="sticky bottom-0 z-40 bg-background/90 backdrop-blur-xl border-t border-border/30 px-4 pt-3"
-        style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px) + 8px)' }}
-      >
-        <motion.div whileTap={{ scale: 0.96 }}>
-          <Button
-            onClick={handlePurchase}
-            disabled={isLoading}
-            className="w-full h-[52px] text-[15px] font-bold bg-gradient-to-r from-primary via-emerald-600 to-emerald-500 active:opacity-90 relative overflow-hidden rounded-2xl shadow-[0_8px_32px_-4px_hsl(var(--primary)/0.45)] border-0"
-            size="lg"
-          >
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.07] to-transparent"
-              animate={{ x: ['-100%', '100%'] }}
-              transition={{ duration: 3, repeat: Infinity, repeatDelay: 2.5 }}
-            />
-            {isLoading ? (
-              <span className="flex items-center gap-2 relative">
-                <Loader2 className="w-4 h-4 animate-spin" /> {t('actions.processing')}
-              </span>
-            ) : (
-              <span className="flex items-center gap-2.5 relative">
-                <Crown className="h-5 w-5" /> {t('actions.upgrade')}
-              </span>
-            )}
-          </Button>
-        </motion.div>
-
-        <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground/70 leading-tight mt-2">
-          <Shield className="w-3 h-3 text-emerald-600/60 dark:text-emerald-400/60 shrink-0" />
-          <span>{t('billing.secure')}</span>
-          <span className="mx-0.5">&middot;</span>
-          <button onClick={handleRestore} className="underline" style={{ WebkitTapHighlightColor: 'transparent' }}>{t('actions.restore')}</button>
-          <span className="mx-0.5">&middot;</span>
-          <Link to="/terms" className="underline">{t('billing.termsLink')}</Link>
-        </div>
-      </div>
     </div>
   );
 };

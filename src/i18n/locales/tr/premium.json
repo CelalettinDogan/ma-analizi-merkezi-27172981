@@ -156,12 +156,7 @@
   "teaser": {
     "unlockFull": "Premium ile aç",
     "premiumOnly": "Premium'a özel",
-    "locked": "Kilitli",
-    "streakCta": "{{days}} gün seri — Premium ile devam!",
-    "lastChanceCta": "Son hakkını kullan — Premium'a geç",
-    "powerUser": "Güçlü kullanıcı teklifi",
-    "limitReached": "Günlük limit doldu",
-    "detailedReasoning": "AI Detaylı Analiz"
+    "locked": "Kilitli"
   },
   "social": {
     "thisWeek": "Bu hafta {{count}} kişi Premium'a geçti",

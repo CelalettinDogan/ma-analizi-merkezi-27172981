@@ -156,12 +156,7 @@
   "teaser": {
     "unlockFull": "Desbloquéalo todo con Premium",
     "premiumOnly": "Solo Premium",
-    "locked": "Bloqueado",
-    "streakCta": "{{days}} días de racha — ¡Hazte Premium!",
-    "lastChanceCta": "Última oportunidad — Desbloquea Premium",
-    "powerUser": "Oferta para usuarios activos",
-    "limitReached": "Límite diario alcanzado",
-    "detailedReasoning": "Análisis Detallado AI"
+    "locked": "Bloqueado"
   },
   "social": {
     "thisWeek": "{{count}} personas se pasaron a Premium esta semana",

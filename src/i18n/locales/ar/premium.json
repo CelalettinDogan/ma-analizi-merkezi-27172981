@@ -156,12 +156,7 @@
   "teaser": {
     "unlockFull": "افتح الكل مع Premium",
     "premiumOnly": "حصري لـ Premium",
-    "locked": "مقفل",
-    "streakCta": "{{days}} يوم متتالي — انتقل إلى Premium!",
-    "lastChanceCta": "فرصة أخيرة — افتح Premium",
-    "powerUser": "عرض للمستخدمين النشطين",
-    "limitReached": "تم الوصول للحد اليومي",
-    "detailedReasoning": "تحليل AI مفصل"
+    "locked": "مقفل"
   },
   "social": {
     "thisWeek": "ترقّى {{count}} شخصًا إلى Premium هذا الأسبوع",

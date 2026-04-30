@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Flame, Trophy } from 'lucide-react';
+import { Clock, Flame } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface PromoBannerProps {
@@ -48,21 +48,21 @@ const PromoBanner: React.FC<PromoBannerProps> = ({ type, discount = 20, expiresL
     );
   }
 
-  // Seasonal — Trophy icon instead of emoji
+  // Seasonal
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       className="relative rounded-2xl overflow-hidden border border-primary/20"
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.08] via-emerald-500/5 to-primary/[0.08]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/8 via-emerald-500/5 to-primary/8" />
       <div className="relative px-4 py-3 flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
           <motion.div
             animate={{ rotate: [0, 10, -10, 0] }}
             transition={{ repeat: Infinity, duration: 3 }}
           >
-            <Trophy className="w-5 h-5 text-primary" />
+            <span className="text-lg">⚽</span>
           </motion.div>
         </div>
         <div className="flex-1 min-w-0">
