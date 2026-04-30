@@ -39,6 +39,7 @@ import enChat from './locales/en/chat.json';
 import enLegal from './locales/en/legal.json';
 import enStreak from './locales/en/streak.json';
 import enPredictor from './locales/en/predictor.json';
+import enRewards from './locales/en/rewards.json';
 
 // DE
 import deCommon from './locales/de/common.json';
