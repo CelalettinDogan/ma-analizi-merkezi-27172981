@@ -73,9 +73,20 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
         transition={{ delay: 0.1 }}
         className="text-center"
       >
-        <h2 className="text-xl font-bold text-foreground mb-1">
-          {mainPrediction.prediction}
-        </h2>
+        {mainPrediction.type === PREDICTION_TYPES.CORRECT_SCORE && !canSeeScore ? (
+          <div className="relative inline-block">
+            <h2 className="text-xl font-bold text-foreground mb-1 select-none" style={{ filter: 'blur(8px)' }}>
+              {mainPrediction.prediction}
+            </h2>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Lock className="w-4 h-4 text-amber-500/70" />
+            </div>
+          </div>
+        ) : (
+          <h2 className="text-xl font-bold text-foreground mb-1">
+            {mainPrediction.prediction}
+          </h2>
+        )}
         <p className="text-xs text-muted-foreground">{mainPrediction.type}</p>
       </motion.div>
 
