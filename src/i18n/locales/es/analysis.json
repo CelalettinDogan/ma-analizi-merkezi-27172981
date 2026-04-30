@@ -63,7 +63,8 @@
     "showing": "Mostrando {{filtered}} / {{total}} predicciones",
     "results": "{{count}} resultados",
     "noResults": "No se encontraron resultados",
-    "noResultsHint": "Ninguna predicción coincide con los filtros seleccionados. Prueba a cambiarlos."
+    "noResultsHint": "Ninguna predicción coincide con los filtros seleccionados. Prueba a cambiarlos.",
+    "aiDetailedReasoning": "Análisis Detallado IA"
   },
   "confidence": {
     "low": "Baja",

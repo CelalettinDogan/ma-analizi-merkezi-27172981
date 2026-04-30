@@ -84,7 +84,11 @@
   },
   "trust": {
     "userCount": "10.000+ Nutzer verwenden GolMetrik AI",
-    "highAccuracy": "KI-Analysen mit hoher Genauigkeit"
+    "highAccuracy": "KI-Analysen mit hoher Genauigkeit",
+    "cancelAnytime": "Jederzeit kündbar",
+    "instantAccess": "Sofortiger Zugriff",
+    "securePayment": "Sichere Zahlung",
+    "moneyBack": "Google Play geschützt"
   },
   "status": {
     "active": "Aktiv",
@@ -151,14 +155,16 @@
   },
   "teaser": {
     "unlockFull": "Mit Premium vollständig freischalten",
-    "premiumOnly": "Nur Premium"
+    "premiumOnly": "Nur Premium",
+    "locked": "Gesperrt"
   },
   "social": {
     "thisWeek": "{{count}} Personen sind diese Woche zu Premium gewechselt",
-    "thisWeekZero": "Diese Woche kommen neue Premium-Mitglieder dazu"
+    "thisWeekZero": "Diese Woche kommen neue Premium-Mitglieder dazu",
+    "joinedThisWeek": "haben diese Woche upgegradet"
   },
   "lastFreeAnalysis": {
-    "title": "Deine letzte kostenlose Analyse",
+    "title": "Heute noch 1 freie Analyse",
     "subtitle": "Mit Premium unbegrenzt analysieren",
     "cta": "Upgrade"
   },
@@ -186,7 +192,9 @@
       "priority": "Priorisierter Support"
     },
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "selectPlan": "Wähle einen Plan zum Vergleich mit Free",
+    "upgradeTo": "Upgrade auf {{plan}} →"
   },
   "yearly": {
     "saveBadge": "{{percent}}% sparen",

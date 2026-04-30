@@ -63,7 +63,8 @@
     "showing": "{{filtered}} / {{total}} Vorhersagen angezeigt",
     "results": "{{count}} Ergebnisse",
     "noResults": "Keine Ergebnisse gefunden",
-    "noResultsHint": "Keine Vorhersagen entsprechen den ausgewählten Filtern. Filter ändern."
+    "noResultsHint": "Keine Vorhersagen entsprechen den ausgewählten Filtern. Filter ändern.",
+    "aiDetailedReasoning": "Detaillierte KI-Analyse"
   },
   "confidence": {
     "low": "Niedrig",
