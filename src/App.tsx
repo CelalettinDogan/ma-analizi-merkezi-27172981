@@ -158,6 +158,7 @@ const AppContent = () => {
           <Route path="/delete-account" element={<DeleteAccount />} />
           <Route path="/admin" element={<AuthGuard><Admin /></AuthGuard>} />
           <Route path="/analysis-history" element={<AuthGuard><AnalysisHistory /></AuthGuard>} />
+          <Route path="/rewards" element={<AuthGuard><Rewards /></AuthGuard>} />
           {/* Tab paths are handled by TabShell — render nothing here for them */}
           <Route path="/" element={null} />
           <Route path="/live" element={null} />
