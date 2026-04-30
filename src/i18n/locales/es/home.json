@@ -92,5 +92,9 @@
     "searchingTeam": "Buscando partido de {{team}}...",
     "noUpcomingForTeam": "No se encontró próximo partido para {{team}}.",
     "teamSearchError": "Error al buscar el partido"
+  },
+  "dailyPick": {
+    "title": "Selección del Día",
+    "unlockCta": "Desbloquear con Premium"
   }
 }
