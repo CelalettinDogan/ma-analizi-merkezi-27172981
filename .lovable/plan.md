@@ -1,35 +1,32 @@
+## Gunun Skor Tahmini -- Mac Listesine Tasima
 
-## "Gunun Yuksek Ihtimalli Skoru" Premium Teaser Bolumu
+Standalone `DailyTopPrediction` kartini kaldiracak, yerine mac listesinin 2. satirinda (ilk normal mactan sonra) ayni boyutta bir "Gunun Skor Tahmini" satiri gosterilecek.
 
-Ana sayfaya, mevcut `smartPicksService` verisini kullanarak en yuksek confidence'li tahmini gosteren bir kart eklenecek. Free kullanicilar icerik blur'lu gorecek ve premium sayfasina yonlendirilecek.
+### Degisiklikler
 
-### Yeni Bilesenler
+**1. `src/pages/Index.tsx`**
+- `DailyTopPrediction` import ve kullanimini kaldir
+- `TodaysMatches`'e `isPremium` prop'u ekle
 
-**1. `src/components/home/DailyTopPrediction.tsx`**
+**2. `src/components/TodaysMatches.tsx`**
+- `isPremium` prop'u ekle
+- `smartPicksService` icin `useQuery` ekle (daily-top-prediction, limit 1)
+- Mac listesi render'inda (`displayedMatches.map` icinde), `index === 0` satirindan sonra (yani 2. sirada) ozel bir "Gunun Skor Tahmini" satiri ekle
+- Bu satir normal mac satiriyla ayni boyutta olacak (`grid grid-cols-[1fr_auto_1fr]`, `min-h-[48px]`, ayni padding/radius)
+- Icerik: Takim isimleri + skor tahmini gosterilecek ama tamamina `blur-sm` uygulanacak
+- Uzerinde kucuk bir `PremiumTeaserOverlay` veya basit bir kilit ikonu + "Premium ile Gor" CTA'si
+- Premium kullanicilar icin blur kalkar, tahmin gorunur
+- Veri yoksa bu satir render edilmez
 
-- `getSmartPicks(1)` ile en yuksek confidence'li tahmini ceker
-- Iki gorunum modu:
-  - **Premium kullanici**: Tam icerik -- takimlar, skor tahmini, confidence yuzdesi, tahmin tipi
-  - **Free kullanici**: Ayni kart ama icerik `blur-lg` ile bulanik, uzerinde `PremiumTeaserOverlay` ile "Premium ile Gor" CTA butonu
-- Kart tasarimi:
-  - Glassmorphism (`bg-card/60 backdrop-blur-sm border border-border/50`)
-  - Sol ust: "Gunun Secimi" baslik + Sparkles ikonu
-  - Ortada: Takim armalar + isimler + skor tahmini + confidence bar
-  - Sag ust: Confidence badge (emerald renk)
-- Veri yoksa veya yuklenmiyorsa bilesen render edilmez (graceful hide)
-- `useQuery` ile cache'lenir (`staleTime: 5 * 60 * 1000`)
+**3. `src/components/home/DailyTopPrediction.tsx`**
+- Dosya silinecek (artik kullanilmiyor)
 
-### Entegrasyon
-
-**2. `src/pages/Index.tsx` Guncelleme**
-
-- `DailyTopPrediction` bilesenini `StreakBadge` ile `LeagueGrid` arasina yerlestirir
-- `usePlatformPremium` hook'u zaten mevcut -- `isPremium` degeri prop olarak iletilir
+**4. i18n Guncelleme**
+- `dailyPick.title` -> "Gunun Skor Tahmini" olarak guncelle (tr, en, de, es, ar)
 
 ### Teknik Detaylar
-
-- Mevcut `smartPicksService.ts` ve `PremiumTeaserOverlay.tsx` yeniden kullanilir
-- Ek API cagrisi yok -- DB'deki predictions tablosundan cekilir
-- i18n: `src/i18n/locales/tr/home.json` ve diger dillere `dailyPick` keyleri eklenir
-- Tasarim: 8px grid, 12px radius, emerald/amber renk sistemi, `motion` animasyonlari
-- Premium kontrol: `usePlatformPremium().isPremium` ile
+- Satir tasarimi: Normal mac satiriyla birebir ayni grid yapisi, sadece icerik blurlu
+- Sol: Ev sahibi takim, Orta: skor tahmini + kilit ikonu, Sag: Deplasan takim
+- Free kullanicilarda `blur-sm` + navigate('/premium') onClick
+- Premium kullanicilarda tam gorunum, tiklandiginda analiz baslatilmaz (sadece bilgi)
+- Glassmorphism border ile ayrismasi icin hafif `border-primary/20` eklenir
