@@ -38,12 +38,17 @@ interface UseChatbotReturn {
 export const useChatbot = (): UseChatbotReturn => {
   const { user, session } = useAuth();
   const { canUseAIChat, isAdmin, dailyChatLimit, planType } = useAccessLevel();
+  const { bonusCredits } = useStreakRewards();
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [usage, setUsage] = useState<ChatUsage | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if user has access via plan or bonus credits
+  const hasBonusChatAccess = bonusCredits.bonus_chat > 0;
+  const hasAccess = canUseAIChat || hasBonusChatAccess || isAdmin;
 
   // Load usage on mount for Pro/Ultra users
   useEffect(() => {
@@ -59,8 +64,8 @@ export const useChatbot = (): UseChatbotReturn => {
         return;
       }
 
-      // Only Pro and Ultra have chat access
-      if (!canUseAIChat) {
+      // No plan access AND no bonus credits
+      if (!canUseAIChat && !hasBonusChatAccess) {
         setUsage(null);
         return;
       }
