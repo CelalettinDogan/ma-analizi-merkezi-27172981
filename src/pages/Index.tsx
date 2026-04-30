@@ -10,7 +10,7 @@ import AppHeader from '@/components/layout/AppHeader';
 
 import LeagueGrid from '@/components/league/LeagueGrid';
 import MatchCarousel from '@/components/match/MatchCarousel';
-import DailyTopPrediction from '@/components/home/DailyTopPrediction';
+
 
 import CommandPalette from '@/components/navigation/CommandPalette';
 import Onboarding from '@/components/Onboarding';
@@ -296,9 +296,6 @@ const Index: React.FC = () => {
         </div>
         <LastFreeAnalysisBanner />
 
-        {/* Daily Top Prediction — Premium Teaser */}
-        <DailyTopPrediction isPremium={isPremium} />
-
         {/* League Selection - Compact Pills with Scroll Indicator */}
         <motion.section 
           initial={{ opacity: 0, y: 10 }}
@@ -323,6 +320,7 @@ const Index: React.FC = () => {
             loadingMatchId={loadingMatchId}
             onMatchSelect={handleMatchSelect}
             lastUpdated={lastUpdated}
+            isPremium={isPremium}
           />
         </motion.section>
 
