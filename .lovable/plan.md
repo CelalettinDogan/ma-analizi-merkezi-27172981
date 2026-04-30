@@ -1,37 +1,24 @@
-## Yerel Zamanlanmis Bildirimler (Firebase Gerektirmez)
 
-`@capacitor/local-notifications` eklentisi ile cihaz uzerinde zamanlanmis bildirimler olusturulacak. Sunucu tarafina ihtiyac yok, tamamen cihazda calisir.
+## Bildirim İzin Durumu Bilgilendirmesi
 
-### 1. Eklenti Kurulumu
+`NotificationSettings` bileşenine, bildirim izin durumunu (granted / prompt / denied) gerçek zamanlı kontrol edip kullanıcıya uygun banner gösteren bir sistem eklenecek.
 
-- `@capacitor/local-notifications` paketini yukle
+### Yapılacaklar
 
-### 2. `useLocalNotifications.ts` Hook Olustur
+**1. NotificationSettings.tsx Güncellemesi**
 
-- Uygulama acildiginda bildirim izni iste
-- Su bildirimleri zamanla:
-  - **Gunluk mac hatirlatmasi** (her gun 18:00) -- "Bugunun maclarini analiz ettin mi?"
-  - **Seri hatirlatmasi** (her gun 20:00) -- "Serini kirma! Bugun giris yap" (sadece streak > 0 ise)
-  - **Haftalik ozet** (Pazartesi 10:00) -- "Gecen haftaki tahminlerin dogru cikti!"
-- Kullanici giris yaptiginda bildirimleri yeniden zamanla (streak degerine gore mesaj guncelle)
-- Bildirim tiklama deep-link destegi (ana sayfa, analiz vb.)
+- Component mount'ta `LocalNotifications.checkPermissions()` ile izin durumu sorgulanacak
+- 3 durum için farklı banner gösterilecek:
+  - **granted** (izin var): Yeşil/emerald mini banner -- "Bildirimler aktif"
+  - **prompt** (henüz sorulmadı): Amber bilgilendirme banner -- "Bildirimleri etkinleştir" butonu ile izin isteme
+  - **denied** (engellendi): Kırmızı/destructive banner -- "Bildirimler engellendi. Ayarlardan etkinleştirin." + "Ayarları Aç" butonu
+- "Ayarları Aç" butonu Android sistem bildirim ayarlarını açacak (`@capacitor/app-launcher` veya `NativeSettings` yerine Android intent URL kullanılacak -- mevcut Capacitor API ile `App.openUrl` veya `Browser.open` ile `app-settings` açılacak)
+- İzin `denied` ise toggle switch'ler disabled olacak
+- İzin istendikten sonra durum yeniden kontrol edilecek
 
-### 3. Bildirim Tercih Ayarlari
+**2. Teknik Detaylar**
 
-- Profil sayfasina bildirim acma/kapama toggle'lari ekle:
-  - Mac Hatirlatmalari (acik/kapali)
-  - Seri Hatirlatmalari (acik/kapali)
-- Tercihler `@capacitor/preferences` ile cihazda saklanir
-
-### 4. App.tsx Entegrasyonu
-
-- Hook'u TabShell icinde cagir
-- Kullanici giris yaptiginda otomatik zamanla
-
-### Teknik Detay
-
-- `@capacitor/local-notifications` Capacitor 8 uyumlu
-- Bildirimler cihazda zamanlanir, uygulama kapali olsa da calisir
-- Android notification channel olusturulur (`golmetrik_reminders`)
-- Mevcut `usePushNotifications.ts` (FCM) korunur -- ileride FCM eklenirse birlikte calisir
-- `npx cap sync` sonrasi cihazda test edilebilir
+- `LocalNotifications.checkPermissions()` -> `{ display: 'granted' | 'prompt' | 'denied' }`
+- `LocalNotifications.requestPermissions()` ile izin isteme
+- Android ayarlarını açmak için `@capacitor/core` NativeSettings plugin veya intent URL
+- Mevcut tasarım diline uygun: glassmorphism kartlar, emerald/amber/red renk kodları, 8px grid
