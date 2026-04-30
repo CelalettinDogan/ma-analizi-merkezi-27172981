@@ -25,9 +25,18 @@
   },
   "plans": {
     "popular": "Popular",
-    "basic": { "name": "Basic", "tagline": "3 IA/día" },
-    "plus": { "name": "Plus", "tagline": "5 IA/día" },
-    "pro": { "name": "Pro", "tagline": "10 IA/día" },
+    "basic": {
+      "name": "Basic",
+      "tagline": "3 IA/día"
+    },
+    "plus": {
+      "name": "Plus",
+      "tagline": "5 IA/día"
+    },
+    "pro": {
+      "name": "Pro",
+      "tagline": "10 IA/día"
+    },
     "chatPerDay": "{{count}}/día",
     "summaryLine": "{{count}} mensajes IA/día • Análisis ilimitado",
     "fromPrice": "Desde {{price}}/mes"
@@ -139,5 +148,48 @@
   "upgrade": {
     "title": "Pasa a Premium",
     "subtitle": "Desbloquea análisis ilimitados y el Asistente IA"
+  },
+  "teaser": {
+    "unlockFull": "Desbloquéalo todo con Premium",
+    "premiumOnly": "Solo Premium"
+  },
+  "social": {
+    "thisWeek": "{{count}} personas se pasaron a Premium esta semana",
+    "thisWeekZero": "Nuevos miembros Premium se unen esta semana"
+  },
+  "lastFreeAnalysis": {
+    "title": "Tu último análisis gratis",
+    "subtitle": "Hazlo ilimitado con Premium",
+    "cta": "Mejorar"
+  },
+  "compare": {
+    "title": "Comparar planes",
+    "subtitle": "Elige lo que te encaja",
+    "cols": {
+      "feature": "Función",
+      "free": "Free",
+      "basic": "Basic",
+      "plus": "Plus",
+      "pro": "Pro"
+    },
+    "rows": {
+      "analysis": "Análisis/día",
+      "analysisFree": "2/día",
+      "analysisUnlimited": "Ilimitado",
+      "chat": "Mensajes IA/día",
+      "chatFree": "Ninguno",
+      "history": "Historial",
+      "historyFree": "7 días",
+      "historyPremium": "Todos",
+      "ads": "Sin anuncios",
+      "deepStats": "Estadísticas avanzadas",
+      "priority": "Soporte prioritario"
+    },
+    "yes": "Sí",
+    "no": "No"
+  },
+  "yearly": {
+    "saveBadge": "Ahorra {{percent}}%",
+    "strikePerYear": "en lugar de {{price}}/año"
   }
 }

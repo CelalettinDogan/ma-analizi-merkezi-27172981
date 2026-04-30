@@ -25,9 +25,18 @@
   },
   "plans": {
     "popular": "Popüler",
-    "basic": { "name": "Basic", "tagline": "3 AI/gün" },
-    "plus": { "name": "Plus", "tagline": "5 AI/gün" },
-    "pro": { "name": "Pro", "tagline": "10 AI/gün" },
+    "basic": {
+      "name": "Basic",
+      "tagline": "3 AI/gün"
+    },
+    "plus": {
+      "name": "Plus",
+      "tagline": "5 AI/gün"
+    },
+    "pro": {
+      "name": "Pro",
+      "tagline": "10 AI/gün"
+    },
     "chatPerDay": "{{count}}/gün",
     "summaryLine": "{{count}} AI mesajı/gün • Sınırsız analiz",
     "fromPrice": "{{price}}/ay'dan başlayan fiyatlarla"
@@ -139,5 +148,48 @@
   "upgrade": {
     "title": "Premium'a Yükselt",
     "subtitle": "Sınırsız analiz ve AI Asistan'a eriş"
+  },
+  "teaser": {
+    "unlockFull": "Tamamını Premium ile aç",
+    "premiumOnly": "Premium'a özel"
+  },
+  "social": {
+    "thisWeek": "Bu hafta {{count}} kişi Premium'a geçti",
+    "thisWeekZero": "Bu hafta yeni Premium üyeler aramıza katılıyor"
+  },
+  "lastFreeAnalysis": {
+    "title": "Son ücretsiz analizin",
+    "subtitle": "Premium ile sınırsız analiz yap",
+    "cta": "Yükselt"
+  },
+  "compare": {
+    "title": "Planları Karşılaştır",
+    "subtitle": "Sana uygun olanı seç",
+    "cols": {
+      "feature": "Özellik",
+      "free": "Free",
+      "basic": "Basic",
+      "plus": "Plus",
+      "pro": "Pro"
+    },
+    "rows": {
+      "analysis": "Günlük analiz",
+      "analysisFree": "2/gün",
+      "analysisUnlimited": "Sınırsız",
+      "chat": "AI mesaj/gün",
+      "chatFree": "Yok",
+      "history": "Geçmiş erişim",
+      "historyFree": "7 gün",
+      "historyPremium": "Tümü",
+      "ads": "Reklamsız",
+      "deepStats": "Derin istatistik",
+      "priority": "Öncelikli destek"
+    },
+    "yes": "Var",
+    "no": "Yok"
+  },
+  "yearly": {
+    "saveBadge": "{{percent}}% tasarruf",
+    "strikePerYear": "{{price}}/yıl yerine"
   }
 }
