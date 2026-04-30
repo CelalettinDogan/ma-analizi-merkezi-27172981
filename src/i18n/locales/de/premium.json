@@ -199,5 +199,24 @@
   "yearly": {
     "saveBadge": "{{percent}}% sparen",
     "strikePerYear": "statt {{price}}/Jahr"
-  }
+  },
+  "success": {
+    "title": "Willkommen bei Premium!",
+    "description": "Dein {{plan}} Plan ist jetzt aktiv. Alle Funktionen freigeschaltet!",
+    "continue": "Jetzt Erkunden",
+    "features": {
+      "unlimitedAnalysis": "Unbegrenzte Spielanalyse",
+      "aiChat": "AI-Assistent Chat",
+      "prioritySupport": "Prioritärer Support"
+    }
+  },
+  "promo": {
+    "limitedTitle": "{{discount}}% Rabatt!",
+    "limitedSubtitle": "Zeitlich begrenzt",
+    "seasonalTitle": "Saison-Angebot",
+    "seasonalSubtitle": "Analysiere jedes Spiel mit Premium",
+    "streakBonus": "{{days}} Tage Serie!"
+  },
+  "dismiss": "Schließen",
+  "viewPlans": "Pläne ansehen"
 }

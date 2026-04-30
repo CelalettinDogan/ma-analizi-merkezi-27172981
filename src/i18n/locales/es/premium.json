@@ -199,5 +199,24 @@
   "yearly": {
     "saveBadge": "Ahorra {{percent}}%",
     "strikePerYear": "en lugar de {{price}}/año"
-  }
+  },
+  "success": {
+    "title": "¡Bienvenido a Premium!",
+    "description": "Tu plan {{plan}} está activo. ¡Todas las funciones desbloqueadas!",
+    "continue": "Empezar a Explorar",
+    "features": {
+      "unlimitedAnalysis": "Análisis Ilimitado",
+      "aiChat": "Chat con Asistente AI",
+      "prioritySupport": "Soporte Prioritario"
+    }
+  },
+  "promo": {
+    "limitedTitle": "¡{{discount}}% de Descuento!",
+    "limitedSubtitle": "Por tiempo limitado",
+    "seasonalTitle": "Oferta de Temporada",
+    "seasonalSubtitle": "Analiza cada partido con Premium",
+    "streakBonus": "¡{{days}} días de racha!"
+  },
+  "dismiss": "Cerrar",
+  "viewPlans": "Ver Planes"
 }
