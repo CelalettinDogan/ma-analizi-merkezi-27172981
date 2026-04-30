@@ -290,6 +290,9 @@ const Index: React.FC = () => {
 
       {/* Main Content - Clean Single Column Flow */}
       <div className="container mx-auto px-4 py-5 space-y-7">
+        <div className="flex items-center gap-2 flex-wrap">
+          <StreakBadge />
+        </div>
         <LastFreeAnalysisBanner />
         {/* League Selection - Compact Pills with Scroll Indicator */}
         <motion.section 
