@@ -140,8 +140,11 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
               const { color } = confidenceConfig[confidenceLevel];
               const inSet = isInSet(selectedPrediction);
               
+              const isScorePrediction = selectedPrediction.type === PREDICTION_TYPES.CORRECT_SCORE;
+              const isLocked = isScorePrediction && !canSeeScore;
+
               return (
-                <div className="p-4 rounded-xl bg-card border border-border/50 space-y-4 active:scale-[0.98] transition-transform">
+                <div className="p-4 rounded-xl bg-card border border-border/50 space-y-4 active:scale-[0.98] transition-transform relative overflow-hidden">
                   {/* Header */}
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
@@ -149,9 +152,14 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
                       <p className="text-xs text-muted-foreground mt-0.5">{t('sections.predictionDetail')}</p>
                     </div>
                     <div className="text-right shrink-0 ml-2">
-                      <div className="text-xl font-bold text-foreground">
+                      <div className={cn("text-xl font-bold text-foreground relative", isLocked && "select-none")} style={isLocked ? { filter: 'blur(8px)' } : undefined}>
                         {selectedPrediction.prediction}
                       </div>
+                      {isLocked && (
+                        <div className="absolute right-6 top-4">
+                          <LockIcon className="w-4 h-4 text-amber-500/70" />
+                        </div>
+                      )}
                       <span className={cn("text-sm font-medium", color)}>
                         %{Math.round(hybridConfidence)} {t('confidence.label').toLowerCase()}
                       </span>
@@ -171,27 +179,32 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
 
                   {/* Reasoning */}
                   {selectedPrediction.reasoning && (
-                    <p className="text-sm text-muted-foreground leading-relaxed">
+                    <p className={cn("text-sm text-muted-foreground leading-relaxed", isLocked && "select-none")} style={isLocked ? { filter: 'blur(5px)' } : undefined}>
                       {selectedPrediction.reasoning}
                     </p>
                   )}
 
-                  {/* Add to Set */}
-                  <Button
-                    size="sm"
-                    onClick={() => handleAddToSetClick(selectedPrediction)}
-                    disabled={inSet}
-                    className={cn(
-                      "w-full gap-2 min-h-[44px] touch-manipulation",
-                      inSet && "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
-                    )}
-                  >
-                    {inSet ? (
-                      <><Check className="w-4 h-4" /> {t('actions.addedToSet')}</>
-                    ) : (
-                      <><Plus className="w-4 h-4" /> {t('actions.addToSet')}</>
-                    )}
-                  </Button>
+                  {/* Premium teaser for locked score */}
+                  {isLocked ? (
+                    <PremiumTeaserOverlay source="score-prediction" className="relative inset-auto" />
+                  ) : (
+                    /* Add to Set */
+                    <Button
+                      size="sm"
+                      onClick={() => handleAddToSetClick(selectedPrediction)}
+                      disabled={inSet}
+                      className={cn(
+                        "w-full gap-2 min-h-[44px] touch-manipulation",
+                        inSet && "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
+                      )}
+                    >
+                      {inSet ? (
+                        <><Check className="w-4 h-4" /> {t('actions.addedToSet')}</>
+                      ) : (
+                        <><Plus className="w-4 h-4" /> {t('actions.addToSet')}</>
+                      )}
+                    </Button>
+                  )}
                 </div>
               );
             })()}
