@@ -138,11 +138,23 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
 
         {/* Most likely score */}
         {mostLikelyScore && (
-          <div className="flex flex-col items-center gap-1">
-            <div className="w-16 h-16 rounded-2xl bg-muted/30 border border-border/30 flex items-center justify-center">
-              <span className="text-lg font-bold text-foreground">
-                {mostLikelyScore.homeGoals}-{mostLikelyScore.awayGoals}
-              </span>
+          <div className="relative flex flex-col items-center gap-1">
+            <div className={cn(
+              "w-16 h-16 rounded-2xl bg-muted/30 border border-border/30 flex items-center justify-center",
+              !canSeeScore && "border-amber-500/20"
+            )}>
+              {canSeeScore ? (
+                <span className="text-lg font-bold text-foreground">
+                  {mostLikelyScore.homeGoals}-{mostLikelyScore.awayGoals}
+                </span>
+              ) : (
+                <>
+                  <span className="text-lg font-bold text-foreground select-none" style={{ filter: 'blur(8px)' }}>
+                    {mostLikelyScore.homeGoals}-{mostLikelyScore.awayGoals}
+                  </span>
+                  <Lock className="absolute w-3.5 h-3.5 text-amber-500/70" />
+                </>
+              )}
             </div>
             <span className="text-micro text-muted-foreground">{t('predictions.likelyScore')}</span>
           </div>
