@@ -104,8 +104,7 @@ export const useChatbot = (): UseChatbotReturn => {
     loadUsage();
   }, [user, isAdmin, canUseAIChat, dailyChatLimit]);
 
-  // Access check based on plan (Pro, Ultra, Admin)
-  const hasAccess = canUseAIChat;
+  // Access already computed above (includes bonus credits)
   
   // For backward compatibility - check if any premium plan
   const isVip = planType === 'premium_basic' || planType === 'premium_plus' || planType === 'premium_pro';
