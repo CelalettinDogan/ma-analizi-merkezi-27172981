@@ -70,8 +70,8 @@ export const useChatbot = (): UseChatbotReturn => {
         return;
       }
 
-      // Get chat limit from plan
-      const limit = dailyChatLimit;
+      // Get chat limit from plan + bonus credits
+      const limit = dailyChatLimit + bonusCredits.bonus_chat;
       
       // Ultra has unlimited
       if (limit >= 999) {
