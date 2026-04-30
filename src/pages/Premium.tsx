@@ -99,11 +99,12 @@ interface PlanCardProps {
   isYearly: boolean;
   priceStr: string;
   priceNum: number;
+  monthlyPriceNum: number;
   pricesLoading: boolean;
   onSelect: () => void;
 }
 
-const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoading, onSelect }: PlanCardProps) => {
+const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, monthlyPriceNum, pricesLoading, onSelect }: PlanCardProps) => {
   const { t, i18n } = useTranslation('premium');
   const Icon = plan.icon;
   const isPopular = plan.popular;
@@ -118,6 +119,12 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoadin
       return String(n);
     }
   };
+
+  // Yearly savings vs monthly × 12
+  const yearlyEquivalent = monthlyPriceNum * 12;
+  const savingsAmount = yearlyEquivalent - priceNum;
+  const savingsPercent = yearlyEquivalent > 0 ? Math.round((savingsAmount / yearlyEquivalent) * 100) : 0;
+  const showSavings = isYearly && priceNum > 0 && monthlyPriceNum > 0 && savingsPercent >= 5;
 
   return (
     <motion.button
@@ -148,6 +155,14 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoadin
         </div>
       )}
 
+      {showSavings && (
+        <div className="absolute -top-2.5 right-1.5 z-20">
+          <div className="bg-amber-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow-md whitespace-nowrap">
+            {t('yearly.saveBadge', { percent: savingsPercent })}
+          </div>
+        </div>
+      )}
+
       <div className={`flex flex-col items-center w-full px-2.5 pb-5 ${isPopular ? 'pt-6' : 'pt-5'}`}>
         <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-2 ${
           isPopular ? 'bg-primary/10' : 'bg-muted/50'
@@ -174,6 +189,12 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, pricesLoadin
                 {periodLabel}
               </span>
             </div>
+
+            {showSavings && (
+              <p className="text-[9px] text-muted-foreground/70 line-through whitespace-nowrap mt-0.5">
+                ₺{formatMonthly(yearlyEquivalent)}
+              </p>
+            )}
 
             {isYearly && priceNum > 0 && (
               <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1.5 whitespace-nowrap">
