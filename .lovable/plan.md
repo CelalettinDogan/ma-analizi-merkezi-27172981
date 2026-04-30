@@ -1,32 +1,15 @@
-## Gunun Skor Tahmini -- Mac Listesine Tasima
+## Fix: Daily Pick Row Not Visible
 
-Standalone `DailyTopPrediction` kartini kaldiracak, yerine mac listesinin 2. satirinda (ilk normal mactan sonra) ayni boyutta bir "Gunun Skor Tahmini" satiri gosterilecek.
+The daily pick row is inside `displayedMatches.map` so it only renders when matches exist. The match list is currently empty, so nothing shows.
 
-### Degisiklikler
+### Changes to `src/components/TodaysMatches.tsx`
 
-**1. `src/pages/Index.tsx`**
-- `DailyTopPrediction` import ve kullanimini kaldir
-- `TodaysMatches`'e `isPremium` prop'u ekle
+1. **Extract `dailyPickRow` JSX** from inside the `displayedMatches.map` callback to a standalone variable defined before the empty-state check (around line 219).
 
-**2. `src/components/TodaysMatches.tsx`**
-- `isPremium` prop'u ekle
-- `smartPicksService` icin `useQuery` ekle (daily-top-prediction, limit 1)
-- Mac listesi render'inda (`displayedMatches.map` icinde), `index === 0` satirindan sonra (yani 2. sirada) ozel bir "Gunun Skor Tahmini" satiri ekle
-- Bu satir normal mac satiriyla ayni boyutta olacak (`grid grid-cols-[1fr_auto_1fr]`, `min-h-[48px]`, ayni padding/radius)
-- Icerik: Takim isimleri + skor tahmini gosterilecek ama tamamina `blur-sm` uygulanacak
-- Uzerinde kucuk bir `PremiumTeaserOverlay` veya basit bir kilit ikonu + "Premium ile Gor" CTA'si
-- Premium kullanicilar icin blur kalkar, tahmin gorunur
-- Veri yoksa bu satir render edilmez
+2. **Show in empty state**: In the `matches.length === 0` early return, insert `{dailyPickRow}` after the section header so the daily pick is visible even with no matches.
 
-**3. `src/components/home/DailyTopPrediction.tsx`**
-- Dosya silinecek (artik kullanilmiyor)
+3. **Show in match list**: In the `<div className="space-y-1">` match list section, insert `{dailyPickRow}` after the first match row. Remove the old `dailyPickRow` definition and render from inside the `.map()` callback.
 
-**4. i18n Guncelleme**
-- `dailyPick.title` -> "Gunun Skor Tahmini" olarak guncelle (tr, en, de, es, ar)
+4. **Remove duplicate code**: The dailyPickRow variable inside `.map` (lines 323-364) and the `{dailyPickRow}` render on line 403 will be replaced by a single insertion after the first item using a conditional check outside the map, or by splitting the displayed matches and inserting in between.
 
-### Teknik Detaylar
-- Satir tasarimi: Normal mac satiriyla birebir ayni grid yapisi, sadece icerik blurlu
-- Sol: Ev sahibi takim, Orta: skor tahmini + kilit ikonu, Sag: Deplasan takim
-- Free kullanicilarda `blur-sm` + navigate('/premium') onClick
-- Premium kullanicilarda tam gorunum, tiklandiginda analiz baslatilmaz (sadece bilgi)
-- Glassmorphism border ile ayrismasi icin hafif `border-primary/20` eklenir
+This ensures the "Gunun Skor Tahmini" row is always visible regardless of whether the match list is empty or populated.
