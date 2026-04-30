@@ -52,6 +52,7 @@ const TabShell: React.FC = () => {
   const location = useLocation();
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
+  useLocalNotifications();
 
   const activeTab: TabPath | null = isTabPath(location.pathname) ? location.pathname : null;
   const prevTabRef = useRef<TabPath | null>(activeTab);
