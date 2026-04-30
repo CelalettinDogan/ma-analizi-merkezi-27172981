@@ -25,6 +25,7 @@ import trChat from './locales/tr/chat.json';
 import trLegal from './locales/tr/legal.json';
 import trStreak from './locales/tr/streak.json';
 import trPredictor from './locales/tr/predictor.json';
+import trRewards from './locales/tr/rewards.json';
 
 // EN
 import enCommon from './locales/en/common.json';
