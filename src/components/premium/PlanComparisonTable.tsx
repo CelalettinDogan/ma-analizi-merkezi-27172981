@@ -169,7 +169,7 @@ const PlanComparisonTable: React.FC = () => {
 
       {/* Sticky CTA strip */}
       <button
-        onClick={() => { tap(); navigate(`/premium?from=compare-${selected}`); }}
+        onClick={() => { tap(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
         className="w-full px-4 py-3.5 bg-gradient-to-r from-primary/15 to-emerald-500/10 border-t border-primary/20 text-[13px] font-bold text-primary active:opacity-80 transition-opacity flex items-center justify-center gap-1.5"
         style={{ WebkitTapHighlightColor: 'transparent' }}
       >

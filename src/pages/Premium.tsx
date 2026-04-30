@@ -162,7 +162,7 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, monthlyPrice
         </div>
       )}
 
-      {showSavings && (
+      {showSavings && !isPopular && (
         <div className="absolute -top-2.5 right-1.5 z-20">
           <div className="bg-amber-500 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow-md whitespace-nowrap">
             {t('yearly.saveBadge', { percent: savingsPercent })}
@@ -180,6 +180,11 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, monthlyPrice
         <p className={`font-bold truncate max-w-full ${isPopular ? 'text-sm' : 'text-xs'}`}>
           {planName}
         </p>
+        {showSavings && isPopular && (
+          <span className="text-[10px] font-bold text-emerald-400 mt-0.5">
+            {t('yearly.saveBadge', { percent: savingsPercent })}
+          </span>
+        )}
 
         {pricesLoading ? (
           <Skeleton className="h-8 w-14 mt-3 rounded-lg" />
