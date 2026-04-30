@@ -99,7 +99,7 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
                 {mainPrediction.prediction}
               </h3>
               <div className="absolute inset-0 flex items-center justify-center">
-                <Lock className="w-5 h-5 text-amber-500/70" />
+                <LockIcon className="w-5 h-5 text-amber-500/70" />
               </div>
             </div>
           ) : (
