@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useAccessLevel } from './useAccessLevel';
-import { PLAN_ACCESS_LEVELS } from '@/constants/accessLevels';
 import { useStreakRewards } from './useStreakRewards';
 
 export interface ChatMessage {
@@ -18,6 +17,8 @@ interface ChatUsage {
   current: number | string;
   limit: number | string;
   remaining: number | string;
+  /** Bonus credits available (separate from plan limit) */
+  bonusRemaining?: number;
 }
 
 interface UseChatbotReturn {
@@ -35,10 +36,23 @@ interface UseChatbotReturn {
   loadHistory: () => Promise<void>;
 }
 
+/**
+ * Chatbot + Premium + Streak Bonus Etkileşim Kuralları:
+ * 
+ * 1. Admin: Sınırsız (limit yok)
+ * 2. Premium Pro (10/gün): Plan limiti kullanılır, bonus bittiyse ek hak verir
+ * 3. Premium Plus (5/gün): Plan limiti kullanılır, bonus bittiyse ek hak verir
+ * 4. Premium Basic (3/gün): Plan limiti kullanılır, bonus bittiyse ek hak verir
+ * 5. Free (0/gün): SADECE bonus credit varsa erişebilir, her mesajda bonus tüketilir
+ * 
+ * Öncelik sırası:
+ * - Premium kullanıcılar: Önce plan limiti kullanılır → Plan limiti dolunca bonus credit tüketilir
+ * - Free kullanıcılar: Her mesaj için bonus credit tüketilir (use_bonus_credit RPC)
+ */
 export const useChatbot = (): UseChatbotReturn => {
   const { user, session } = useAuth();
   const { canUseAIChat, isAdmin, dailyChatLimit, planType } = useAccessLevel();
-  const { bonusCredits } = useStreakRewards();
+  const { bonusCredits, useBonusCredit } = useStreakRewards();
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,11 +60,11 @@ export const useChatbot = (): UseChatbotReturn => {
   const [usage, setUsage] = useState<ChatUsage | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Check if user has access via plan or bonus credits
+  // Free user with bonus credits can access
   const hasBonusChatAccess = bonusCredits.bonus_chat > 0;
   const hasAccess = canUseAIChat || hasBonusChatAccess || isAdmin;
 
-  // Load usage on mount for Pro/Ultra users
+  // Load usage on mount
   useEffect(() => {
     const loadUsage = async () => {
       if (!user) {
@@ -58,28 +72,32 @@ export const useChatbot = (): UseChatbotReturn => {
         return;
       }
 
-      // Admin has unlimited
       if (isAdmin) {
         setUsage({ current: 0, limit: "∞", remaining: "∞" });
         return;
       }
 
-      // No plan access AND no bonus credits
-      if (!canUseAIChat && !hasBonusChatAccess) {
-        setUsage(null);
+      // Free user — only bonus credits matter
+      if (!canUseAIChat) {
+        if (hasBonusChatAccess) {
+          setUsage({
+            current: 0,
+            limit: bonusCredits.bonus_chat,
+            remaining: bonusCredits.bonus_chat,
+            bonusRemaining: bonusCredits.bonus_chat,
+          });
+        } else {
+          setUsage(null);
+        }
         return;
       }
 
-      // Get chat limit from plan + bonus credits
-      const limit = dailyChatLimit + bonusCredits.bonus_chat;
-      
-      // Ultra has unlimited
-      if (limit >= 999) {
+      // Premium user — plan limit + bonus overflow
+      if (dailyChatLimit >= 999) {
         setUsage({ current: 0, limit: "∞", remaining: "∞" });
         return;
       }
 
-      // Load usage for Pro users
       try {
         const today = new Date().toISOString().split('T')[0];
         const { data: usageData } = await supabase
@@ -90,26 +108,31 @@ export const useChatbot = (): UseChatbotReturn => {
           .maybeSingle();
 
         const current = usageData?.usage_count ?? 0;
+        const planRemaining = Math.max(0, dailyChatLimit - current);
+        
         setUsage({
           current,
-          limit,
-          remaining: Math.max(0, limit - current),
+          limit: dailyChatLimit,
+          remaining: planRemaining + bonusCredits.bonus_chat,
+          bonusRemaining: bonusCredits.bonus_chat,
         });
       } catch (e) {
         console.error('Error loading chat usage:', e);
-        setUsage({ current: 0, limit, remaining: limit });
+        setUsage({
+          current: 0,
+          limit: dailyChatLimit,
+          remaining: dailyChatLimit + bonusCredits.bonus_chat,
+          bonusRemaining: bonusCredits.bonus_chat,
+        });
       }
     };
 
     loadUsage();
   }, [user, isAdmin, canUseAIChat, dailyChatLimit, hasBonusChatAccess, bonusCredits.bonus_chat]);
 
-  // Access already computed above (includes bonus credits)
-  
-  // For backward compatibility - check if any premium plan
   const isVip = planType === 'premium_basic' || planType === 'premium_plus' || planType === 'premium_pro';
 
-  // Load chat history - fetch LATEST 50 messages (descending) then reverse for UI
+  // Load chat history
   const loadHistory = useCallback(async () => {
     if (!user) return;
 
@@ -153,20 +176,35 @@ export const useChatbot = (): UseChatbotReturn => {
 
     if (!message.trim()) return;
 
-    // Check chat limit for Pro users (not unlimited)
-    if (dailyChatLimit < 999 && !isAdmin && usage) {
-      const remaining = typeof usage.remaining === 'number' ? usage.remaining : 0;
+    // Determine if we need to consume a bonus credit
+    const isFreePlan = !canUseAIChat;
+    let needsBonusCredit = false;
+
+    if (!isAdmin) {
+      const remaining = typeof usage?.remaining === 'number' ? usage.remaining : 0;
+      
       if (remaining <= 0) {
         setError('Günlük AI Asistan limitiniz doldu');
         toast.warning('Günlük limitiniz doldu. Yarın tekrar deneyin!');
         return;
+      }
+
+      // Free user: always consume bonus credit
+      if (isFreePlan) {
+        needsBonusCredit = true;
+      }
+      // Premium user: consume bonus only when plan limit exhausted
+      else if (dailyChatLimit < 999 && usage) {
+        const planRemaining = Math.max(0, dailyChatLimit - (typeof usage.current === 'number' ? usage.current : 0));
+        if (planRemaining <= 0) {
+          needsBonusCredit = true;
+        }
       }
     }
 
     setIsLoading(true);
     setError(null);
 
-    // Add user message immediately
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
       role: 'user',
@@ -174,7 +212,6 @@ export const useChatbot = (): UseChatbotReturn => {
       createdAt: new Date(),
     };
 
-    // Add loading assistant message
     const loadingMessage: ChatMessage = {
       id: `assistant-${Date.now()}`,
       role: 'assistant',
@@ -186,10 +223,21 @@ export const useChatbot = (): UseChatbotReturn => {
     setMessages(prev => [...prev, userMessage, loadingMessage]);
 
     try {
-      // Prepare conversation history (last 5 messages for context)
+      // Consume bonus credit BEFORE sending if needed
+      if (needsBonusCredit) {
+        const consumed = await useBonusCredit('bonus_chat');
+        if (!consumed) {
+          setError('Bonus hakkınız kalmadı');
+          toast.warning('Bonus chat hakkınız tükendi');
+          setMessages(prev => prev.filter(m => !m.isLoading));
+          setIsLoading(false);
+          return;
+        }
+      }
+
       const conversationHistory = messages.slice(-5).map(m => ({
         role: m.role,
-        content: m.content
+        content: m.content,
       }));
 
       const response = await fetch(
@@ -198,12 +246,12 @@ export const useChatbot = (): UseChatbotReturn => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
+            Authorization: `Bearer ${session.access_token}`,
           },
-          body: JSON.stringify({ 
-            message: message.trim(), 
+          body: JSON.stringify({
+            message: message.trim(),
             context,
-            conversationHistory 
+            conversationHistory,
           }),
         }
       );
@@ -215,7 +263,7 @@ export const useChatbot = (): UseChatbotReturn => {
           setError('Oturum süresi dolmuş olabilir. Lütfen tekrar giriş yapın.');
           toast.error('Oturum hatası');
         } else if (data.code === 'ACCESS_DENIED') {
-          setError('Bu özelliğe erişmek için VIP veya Admin olmanız gerekiyor');
+          setError('Bu özelliğe erişmek için Premium veya Admin olmanız gerekiyor');
           toast.error('Erişim reddedildi');
         } else if (data.code === 'LIMIT_EXCEEDED') {
           setUsage(data.usage);
@@ -231,23 +279,40 @@ export const useChatbot = (): UseChatbotReturn => {
       }
 
       // Update with actual response
-      setMessages(prev => 
-        prev.map(m => 
-          m.isLoading 
+      setMessages(prev =>
+        prev.map(m =>
+          m.isLoading
             ? { ...m, content: data.message || data.response, isLoading: false }
             : m
         )
       );
 
-      // Update usage for Pro users (not unlimited)
-      if (data.usage && dailyChatLimit < 999 && !isAdmin) {
-        setUsage({
-          current: data.usage.current,
-          limit: dailyChatLimit,
-          remaining: Math.max(0, dailyChatLimit - data.usage.current)
-        });
+      // Update usage counters
+      if (!isAdmin) {
+        if (isFreePlan) {
+          // Free user: decrement bonus remaining
+          const newBonusRemaining = Math.max(0, (usage?.bonusRemaining ?? 0) - 1);
+          setUsage(prev => prev ? {
+            ...prev,
+            remaining: newBonusRemaining,
+            bonusRemaining: newBonusRemaining,
+          } : null);
+        } else if (data.usage && dailyChatLimit < 999) {
+          // Premium user: update from server response
+          const current = data.usage.current;
+          const planRemaining = Math.max(0, dailyChatLimit - current);
+          const bonusRem = needsBonusCredit
+            ? Math.max(0, (usage?.bonusRemaining ?? 0) - 1)
+            : (usage?.bonusRemaining ?? 0);
+          
+          setUsage({
+            current,
+            limit: dailyChatLimit,
+            remaining: planRemaining + bonusRem,
+            bonusRemaining: bonusRem,
+          });
+        }
       }
-
     } catch (e) {
       console.error('Chatbot error:', e);
       setError('Bağlantı hatası oluştu');
@@ -256,7 +321,7 @@ export const useChatbot = (): UseChatbotReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, session, messages, isAdmin, dailyChatLimit, usage]);
+  }, [user, session, messages, isAdmin, dailyChatLimit, usage, canUseAIChat, useBonusCredit]);
 
   // Clear messages
   const clearMessages = useCallback(async () => {

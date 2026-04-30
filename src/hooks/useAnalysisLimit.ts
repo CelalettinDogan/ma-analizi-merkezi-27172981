@@ -32,12 +32,13 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
   const [usageCount, setUsageCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Get daily limit from centralized access levels + bonus
+  // Plan limit (not including bonus — bonus consumed separately via RPC)
   const baseDailyLimit = isAdmin ? 999 : PLAN_ACCESS_LEVELS[planType].dailyAnalysis;
-  const dailyLimit = baseDailyLimit + bonusCredits.bonus_analysis;
-  
-  const remaining = Math.max(0, dailyLimit - usageCount);
-  const canAnalyze = remaining > 0 || hasUnlimitedAnalysis(planType, isAdmin);
+  const planRemaining = Math.max(0, baseDailyLimit - usageCount);
+  const totalRemaining = planRemaining + bonusCredits.bonus_analysis;
+  const dailyLimit = baseDailyLimit;
+  const remaining = totalRemaining;
+  const canAnalyze = totalRemaining > 0 || hasUnlimitedAnalysis(planType, isAdmin);
 
   const fetchUsage = useCallback(async () => {
     if (!user) {
@@ -77,6 +78,18 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
       return true;
     }
 
+    // Check if plan limit is exhausted → consume bonus credit
+    const planRem = Math.max(0, baseDailyLimit - usageCount);
+    if (planRem <= 0 && bonusCredits.bonus_analysis > 0) {
+      try {
+        const consumed = await useBonusCredit('bonus_analysis');
+        if (consumed) return true;
+      } catch (e) {
+        console.error('Error consuming bonus analysis credit:', e);
+      }
+      return false;
+    }
+
     try {
       const { data, error } = await supabase.rpc('increment_analysis_usage');
 
@@ -91,20 +104,19 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
       console.error('Error incrementing analysis usage:', e);
       return false;
     }
-  }, [user, planType, isAdmin, usageCount]);
+  }, [user, planType, isAdmin, usageCount, baseDailyLimit, bonusCredits.bonus_analysis, useBonusCredit]);
 
   const checkLimit = useCallback(async (): Promise<boolean> => {
-    // Users with unlimited analysis always can analyze
     if (hasUnlimitedAnalysis(planType, isAdmin)) {
       return true;
     }
 
-    // Use direct RPC return value instead of stale React state
     const { data } = await supabase.rpc('get_daily_analysis_usage');
     const currentUsage = data || 0;
     setUsageCount(currentUsage);
-    return currentUsage < dailyLimit;
-  }, [planType, isAdmin, dailyLimit]);
+    const planRem = Math.max(0, baseDailyLimit - currentUsage);
+    return (planRem + bonusCredits.bonus_analysis) > 0;
+  }, [planType, isAdmin, baseDailyLimit, bonusCredits.bonus_analysis]);
 
   return {
     canAnalyze,
