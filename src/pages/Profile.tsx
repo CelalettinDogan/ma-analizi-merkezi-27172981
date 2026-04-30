@@ -155,6 +155,10 @@ const Profile = () => {
           </motion.div>
 
           <motion.div variants={itemVariants}>
+            <NotificationSettings />
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
             <SettingsMenu
               theme={theme}
               setTheme={setTheme}
