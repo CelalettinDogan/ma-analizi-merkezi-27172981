@@ -1,15 +1,21 @@
-## Fix: Daily Pick Row Not Visible
+## "Gunun Skoru" Satirini Guncelle
 
-The daily pick row is inside `displayedMatches.map` so it only renders when matches exist. The match list is currently empty, so nothing shows.
+### Degisiklik: `src/components/TodaysMatches.tsx`
 
-### Changes to `src/components/TodaysMatches.tsx`
+Mevcut blurlu satiri kaldiracak, yerine temiz bir "Gunun Skoru" etiketli satir gelecek:
 
-1. **Extract `dailyPickRow` JSX** from inside the `displayedMatches.map` callback to a standalone variable defined before the empty-state check (around line 219).
+1. **Kapatilabilir satir**: "Gunun Skoru" yazisi + Sparkles ikonu amber renkli. Sagda:
+   - Free kullanicilar: Kilit ikonu + "Premium ile Gor" + ChevronRight -> `/premium`'a yonlendirir
+   - Premium kullanicilar: ChevronRight ok isareti -> tiklaninca detay acilir/kapanir
 
-2. **Show in empty state**: In the `matches.length === 0` early return, insert `{dailyPickRow}` after the section header so the daily pick is visible even with no matches.
+2. **Expandable detay (sadece premium)**: Tiklandiginda asagiya acilan panel:
+   - Takim isimleri (Home vs Away)
+   - Tahmin tipi ve degeri (orn. "Karsilikli Gol: Evet")
+   - Lig, tarih ve guven yuzdesi
 
-3. **Show in match list**: In the `<div className="space-y-1">` match list section, insert `{dailyPickRow}` after the first match row. Remove the old `dailyPickRow` definition and render from inside the `.map()` callback.
+3. **State**: `showDailyDetail` useState ile toggle
+4. **AnimatePresence** import'u eklenmeli (zaten dosyada yoksa)
+5. Blur/overlay tamamen kaldirilacak, yerine temiz etiketli tasarim
 
-4. **Remove duplicate code**: The dailyPickRow variable inside `.map` (lines 323-364) and the `{dailyPickRow}` render on line 403 will be replaced by a single insertion after the first item using a conditional check outside the map, or by splitting the displayed matches and inserting in between.
-
-This ensures the "Gunun Skor Tahmini" row is always visible regardless of whether the match list is empty or populated.
+### i18n Guncelleme
+- `dailyPick.title`: "Gunun Skoru" (tr), "Daily Score" (en), "Tagestor" (de), "Gol del Dia" (es), "هدف اليوم" (ar)
