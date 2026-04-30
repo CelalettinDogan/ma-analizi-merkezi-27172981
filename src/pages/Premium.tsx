@@ -18,7 +18,7 @@ import HeroGlow from '@/components/premium/HeroGlow';
 import TrustBadges from '@/components/premium/TrustBadges';
 import UpgradeSuccessScreen from '@/components/premium/UpgradeSuccessScreen';
 import PromoBanner from '@/components/premium/PromoBanner';
-import StreakBadge from '@/components/streak/StreakBadge';
+
 import { useHapticTap } from '@/hooks/useHapticTap';
 import { useStreak } from '@/hooks/useStreak';
 import { toast } from 'sonner';
