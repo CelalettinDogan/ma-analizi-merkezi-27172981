@@ -127,30 +127,44 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
 
         {/* Reasoning */}
         {reasoning && (
-          <div className={cn('mb-4 relative', !canSeeFullReasoning && 'overflow-hidden')}>
-            <p
-              className={cn(
-                'text-sm text-muted-foreground transition-all',
-                !canSeeFullReasoning
-                  ? 'max-h-16 overflow-hidden'
-                  : !showFullReasoning && isLongReasoning && 'line-clamp-2',
-              )}
-            >
-              {reasoning}
-            </p>
-            {canSeeFullReasoning && isLongReasoning && (
-              <button
-                onClick={() => setShowFullReasoning(!showFullReasoning)}
-                className="min-h-[44px] text-xs text-primary active:opacity-70 mt-1 touch-manipulation flex items-center transition-opacity"
-                aria-label={showFullReasoning ? t('actions.showLess') : t('actions.showMore')}
+          canSeeFullReasoning ? (
+            <div className="mb-4 relative">
+              <p
+                className={cn(
+                  'text-sm text-muted-foreground transition-all',
+                  !showFullReasoning && isLongReasoning && 'line-clamp-2',
+                )}
               >
-                {showFullReasoning ? t('actions.showLess') : t('actions.showMore')}
-              </button>
-            )}
-            {!canSeeFullReasoning && isLongReasoning && (
-              <PremiumTeaserOverlay />
-            )}
-          </div>
+                {reasoning}
+              </p>
+              {isLongReasoning && (
+                <button
+                  onClick={() => setShowFullReasoning(!showFullReasoning)}
+                  className="min-h-[44px] text-xs text-primary active:opacity-70 mt-1 touch-manipulation flex items-center transition-opacity"
+                  aria-label={showFullReasoning ? t('actions.showLess') : t('actions.showMore')}
+                >
+                  {showFullReasoning ? t('actions.showLess') : t('actions.showMore')}
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="mb-4 relative">
+              <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/70 mb-1.5 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-primary/80" />
+                {t('predictions.aiDetailedReasoning', 'AI Detailed Reasoning')}
+              </p>
+              <div className="relative h-28 overflow-hidden rounded-lg">
+                <p
+                  aria-hidden="true"
+                  className="text-sm text-muted-foreground select-none pointer-events-none"
+                  style={{ filter: 'blur(5px) saturate(1.4)', opacity: 0.55, willChange: 'filter' }}
+                >
+                  {reasoning}
+                </p>
+                <PremiumTeaserOverlay source="ai-reasoning" />
+              </div>
+            </div>
+          )
         )}
 
         {/* Disclaimer */}

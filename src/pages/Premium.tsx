@@ -14,6 +14,9 @@ import { purchaseService, PRODUCTS, PLAN_PRODUCTS } from '@/services/purchaseSer
 import AppHeader from '@/components/layout/AppHeader';
 import PlanComparisonTable from '@/components/premium/PlanComparisonTable';
 import SocialProofCounter from '@/components/premium/SocialProofCounter';
+import HeroGlow from '@/components/premium/HeroGlow';
+import TrustBadges from '@/components/premium/TrustBadges';
+import { useHapticTap } from '@/hooks/useHapticTap';
 import { toast } from 'sonner';
 
 // ─── Plan data ─────────────────────────────────────────────
