@@ -1297,6 +1297,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_activity_date: string | null
+          longest_streak: number
+          streak_freeze_used: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number
+          streak_freeze_used?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number
+          streak_freeze_used?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       overall_stats: {
@@ -1396,6 +1429,7 @@ export type Database = {
       get_daily_usage:
         | { Args: never; Returns: number }
         | { Args: { p_user_id: string }; Returns: number }
+      get_my_predictor_stats: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1412,6 +1446,7 @@ export type Database = {
       is_premium_user:
         | { Args: never; Returns: boolean }
         | { Args: { p_user_id: string }; Returns: boolean }
+      update_user_streak: { Args: never; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "vip"
