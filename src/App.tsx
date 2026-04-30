@@ -25,6 +25,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import DeleteAccount from "./pages/DeleteAccount";
 import AuthCallback from "./pages/AuthCallback";
+import Rewards from "./pages/Rewards";
 import NotFound from "./pages/NotFound";
 import BottomNav from "@/components/navigation/BottomNav";
 import TabShell from "@/components/navigation/TabShell";
