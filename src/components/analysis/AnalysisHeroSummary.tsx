@@ -1,10 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ChevronUp } from 'lucide-react';
+import { ChevronUp, Lock as LockIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MatchAnalysis, Prediction } from '@/types/match';
 import { getHybridConfidence, getConfidenceLevel, cn } from '@/lib/utils';
 import ConfidenceBreakdownTooltip from './ConfidenceBreakdownTooltip';
+import { useAccessLevel } from '@/hooks/useAccessLevel';
+import PremiumTeaserOverlay from '@/components/premium/PremiumTeaserOverlay';
+import { PREDICTION_TYPES } from '@/constants/predictions';
 
 interface AnalysisHeroSummaryProps {
   analysis: MatchAnalysis;
@@ -12,6 +15,8 @@ interface AnalysisHeroSummaryProps {
 
 const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) => {
   const { t } = useTranslation('analysis');
+  const { isPremium, isAdmin } = useAccessLevel();
+  const canSeeScore = isPremium || isAdmin;
   const sortedPredictions = [...analysis.predictions].sort(
     (a, b) => getHybridConfidence(b) - getHybridConfidence(a)
   );
@@ -68,9 +73,20 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
         transition={{ delay: 0.1 }}
         className="text-center"
       >
-        <h2 className="text-xl font-bold text-foreground mb-1">
-          {mainPrediction.prediction}
-        </h2>
+        {mainPrediction.type === PREDICTION_TYPES.CORRECT_SCORE && !canSeeScore ? (
+          <div className="relative inline-block">
+            <h2 className="text-xl font-bold text-foreground mb-1 select-none" style={{ filter: 'blur(8px)' }}>
+              {mainPrediction.prediction}
+            </h2>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <LockIcon className="w-4 h-4 text-amber-500/70" />
+            </div>
+          </div>
+        ) : (
+          <h2 className="text-xl font-bold text-foreground mb-1">
+            {mainPrediction.prediction}
+          </h2>
+        )}
         <p className="text-xs text-muted-foreground">{mainPrediction.type}</p>
       </motion.div>
 
@@ -122,11 +138,23 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
 
         {/* Most likely score */}
         {mostLikelyScore && (
-          <div className="flex flex-col items-center gap-1">
-            <div className="w-16 h-16 rounded-2xl bg-muted/30 border border-border/30 flex items-center justify-center">
-              <span className="text-lg font-bold text-foreground">
-                {mostLikelyScore.homeGoals}-{mostLikelyScore.awayGoals}
-              </span>
+          <div className="relative flex flex-col items-center gap-1">
+            <div className={cn(
+              "w-16 h-16 rounded-2xl bg-muted/30 border border-border/30 flex items-center justify-center",
+              !canSeeScore && "border-amber-500/20"
+            )}>
+              {canSeeScore ? (
+                <span className="text-lg font-bold text-foreground">
+                  {mostLikelyScore.homeGoals}-{mostLikelyScore.awayGoals}
+                </span>
+              ) : (
+                <>
+                  <span className="text-lg font-bold text-foreground select-none" style={{ filter: 'blur(8px)' }}>
+                    {mostLikelyScore.homeGoals}-{mostLikelyScore.awayGoals}
+                  </span>
+                  <LockIcon className="absolute w-3.5 h-3.5 text-amber-500/70" />
+                </>
+              )}
             </div>
             <span className="text-micro text-muted-foreground">{t('predictions.likelyScore')}</span>
           </div>
