@@ -24,6 +24,7 @@ import { supabase } from '@/integrations/supabase/client';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import RecentAnalyses from '@/components/profile/RecentAnalyses';
 import SettingsMenu from '@/components/profile/SettingsMenu';
+import NotificationSettings from '@/components/profile/NotificationSettings';
 
 const containerVariants = {
   hidden: { opacity: 0 },
