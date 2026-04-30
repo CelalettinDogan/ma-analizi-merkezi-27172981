@@ -1,0 +1,16 @@
+{
+  "title": "Streak Rewards",
+  "description": "Log in daily, earn rewards!",
+  "day3": "+1 Bonus Analysis",
+  "day5": "+1 AI Chat Credit",
+  "day7": "+2 AI Chat Credits",
+  "day14": "+3 AI Chat + Special Badge",
+  "day30": "1 Day Premium Trial",
+  "bonusAnalysis": "Bonus Analysis",
+  "bonusChat": "Bonus Chat",
+  "available": "{{count}} available",
+  "earned": "Earned!",
+  "streakReward": "{{days}}-day streak reward!",
+  "newReward": "New reward earned!",
+  "badge": "Streak Badge"
+}

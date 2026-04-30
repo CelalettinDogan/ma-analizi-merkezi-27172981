@@ -16,6 +16,7 @@ import { App as CapApp, URLOpenListenerEvent } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
 import { supabase } from "@/integrations/supabase/client";
 import { purchaseService } from "@/services/purchaseService";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
@@ -120,6 +121,9 @@ const AppContent = () => {
   useEffect(() => {
     purchaseService.initialize().catch(console.error);
   }, []);
+
+  // Initialize push notifications
+  usePushNotifications();
 
   // Handle Android back button
   useEffect(() => {

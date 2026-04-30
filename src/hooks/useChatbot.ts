@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useAccessLevel } from './useAccessLevel';
 import { PLAN_ACCESS_LEVELS } from '@/constants/accessLevels';
+import { useStreakRewards } from './useStreakRewards';
 
 export interface ChatMessage {
   id: string;
@@ -37,12 +38,17 @@ interface UseChatbotReturn {
 export const useChatbot = (): UseChatbotReturn => {
   const { user, session } = useAuth();
   const { canUseAIChat, isAdmin, dailyChatLimit, planType } = useAccessLevel();
+  const { bonusCredits } = useStreakRewards();
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [usage, setUsage] = useState<ChatUsage | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if user has access via plan or bonus credits
+  const hasBonusChatAccess = bonusCredits.bonus_chat > 0;
+  const hasAccess = canUseAIChat || hasBonusChatAccess || isAdmin;
 
   // Load usage on mount for Pro/Ultra users
   useEffect(() => {
@@ -58,14 +64,14 @@ export const useChatbot = (): UseChatbotReturn => {
         return;
       }
 
-      // Only Pro and Ultra have chat access
-      if (!canUseAIChat) {
+      // No plan access AND no bonus credits
+      if (!canUseAIChat && !hasBonusChatAccess) {
         setUsage(null);
         return;
       }
 
-      // Get chat limit from plan
-      const limit = dailyChatLimit;
+      // Get chat limit from plan + bonus credits
+      const limit = dailyChatLimit + bonusCredits.bonus_chat;
       
       // Ultra has unlimited
       if (limit >= 999) {
@@ -96,10 +102,9 @@ export const useChatbot = (): UseChatbotReturn => {
     };
 
     loadUsage();
-  }, [user, isAdmin, canUseAIChat, dailyChatLimit]);
+  }, [user, isAdmin, canUseAIChat, dailyChatLimit, hasBonusChatAccess, bonusCredits.bonus_chat]);
 
-  // Access check based on plan (Pro, Ultra, Admin)
-  const hasAccess = canUseAIChat;
+  // Access already computed above (includes bonus credits)
   
   // For backward compatibility - check if any premium plan
   const isVip = planType === 'premium_basic' || planType === 'premium_plus' || planType === 'premium_pro';

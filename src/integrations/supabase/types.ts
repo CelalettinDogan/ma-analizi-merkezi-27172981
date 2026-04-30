@@ -1249,6 +1249,45 @@ export type Database = {
         }
         Relationships: []
       }
+      streak_rewards: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          granted_at: string
+          id: string
+          quantity: number
+          reward_type: string
+          streak_day: number
+          used: boolean
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          id?: string
+          quantity?: number
+          reward_type: string
+          streak_day: number
+          used?: boolean
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          id?: string
+          quantity?: number
+          reward_type?: string
+          streak_day?: number
+          used?: boolean
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_favorites: {
         Row: {
           created_at: string | null
@@ -1423,6 +1462,7 @@ export type Database = {
       cleanup_old_chatbot_usage: { Args: never; Returns: undefined }
       cleanup_old_features: { Args: never; Returns: undefined }
       cleanup_old_predictions: { Args: never; Returns: undefined }
+      get_bonus_credits: { Args: never; Returns: Json }
       get_daily_analysis_usage:
         | { Args: never; Returns: number }
         | { Args: { p_user_id: string }; Returns: number }
@@ -1430,6 +1470,7 @@ export type Database = {
         | { Args: never; Returns: number }
         | { Args: { p_user_id: string }; Returns: number }
       get_my_predictor_stats: { Args: never; Returns: Json }
+      grant_streak_reward: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1447,6 +1488,7 @@ export type Database = {
         | { Args: never; Returns: boolean }
         | { Args: { p_user_id: string }; Returns: boolean }
       update_user_streak: { Args: never; Returns: Json }
+      use_bonus_credit: { Args: { credit_type: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "vip"

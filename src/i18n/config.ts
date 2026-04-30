@@ -25,6 +25,7 @@ import trChat from './locales/tr/chat.json';
 import trLegal from './locales/tr/legal.json';
 import trStreak from './locales/tr/streak.json';
 import trPredictor from './locales/tr/predictor.json';
+import trRewards from './locales/tr/rewards.json';
 
 // EN
 import enCommon from './locales/en/common.json';
@@ -38,6 +39,7 @@ import enChat from './locales/en/chat.json';
 import enLegal from './locales/en/legal.json';
 import enStreak from './locales/en/streak.json';
 import enPredictor from './locales/en/predictor.json';
+import enRewards from './locales/en/rewards.json';
 
 // DE
 import deCommon from './locales/de/common.json';
@@ -51,6 +53,7 @@ import deChat from './locales/de/chat.json';
 import deLegal from './locales/de/legal.json';
 import deStreak from './locales/de/streak.json';
 import dePredictor from './locales/de/predictor.json';
+import deRewards from './locales/de/rewards.json';
 
 // ES
 import esCommon from './locales/es/common.json';
@@ -64,6 +67,7 @@ import esChat from './locales/es/chat.json';
 import esLegal from './locales/es/legal.json';
 import esStreak from './locales/es/streak.json';
 import esPredictor from './locales/es/predictor.json';
+import esRewards from './locales/es/rewards.json';
 
 // AR
 import arCommon from './locales/ar/common.json';
@@ -77,13 +81,14 @@ import arChat from './locales/ar/chat.json';
 import arLegal from './locales/ar/legal.json';
 import arStreak from './locales/ar/streak.json';
 import arPredictor from './locales/ar/predictor.json';
+import arRewards from './locales/ar/rewards.json';
 
 const resources = {
-  tr: { common: trCommon, auth: trAuth, home: trHome, analysis: trAnalysis, premium: trPremium, profile: trProfile, predictions: trPredictions, chat: trChat, legal: trLegal, streak: trStreak, predictor: trPredictor },
-  en: { common: enCommon, auth: enAuth, home: enHome, analysis: enAnalysis, premium: enPremium, profile: enProfile, predictions: enPredictions, chat: enChat, legal: enLegal, streak: enStreak, predictor: enPredictor },
-  de: { common: deCommon, auth: deAuth, home: deHome, analysis: deAnalysis, premium: dePremium, profile: deProfile, predictions: dePredictions, chat: deChat, legal: deLegal, streak: deStreak, predictor: dePredictor },
-  es: { common: esCommon, auth: esAuth, home: esHome, analysis: esAnalysis, premium: esPremium, profile: esProfile, predictions: esPredictions, chat: esChat, legal: esLegal, streak: esStreak, predictor: esPredictor },
-  ar: { common: arCommon, auth: arAuth, home: arHome, analysis: arAnalysis, premium: arPremium, profile: arProfile, predictions: arPredictions, chat: arChat, legal: arLegal, streak: arStreak, predictor: arPredictor },
+  tr: { common: trCommon, auth: trAuth, home: trHome, analysis: trAnalysis, premium: trPremium, profile: trProfile, predictions: trPredictions, chat: trChat, legal: trLegal, streak: trStreak, predictor: trPredictor, rewards: trRewards },
+  en: { common: enCommon, auth: enAuth, home: enHome, analysis: enAnalysis, premium: enPremium, profile: enProfile, predictions: enPredictions, chat: enChat, legal: enLegal, streak: enStreak, predictor: enPredictor, rewards: enRewards },
+  de: { common: deCommon, auth: deAuth, home: deHome, analysis: deAnalysis, premium: dePremium, profile: deProfile, predictions: dePredictions, chat: deChat, legal: deLegal, streak: deStreak, predictor: dePredictor, rewards: deRewards },
+  es: { common: esCommon, auth: esAuth, home: esHome, analysis: esAnalysis, premium: esPremium, profile: esProfile, predictions: esPredictions, chat: esChat, legal: esLegal, streak: esStreak, predictor: esPredictor, rewards: esRewards },
+  ar: { common: arCommon, auth: arAuth, home: arHome, analysis: arAnalysis, premium: arPremium, profile: arProfile, predictions: arPredictions, chat: arChat, legal: arLegal, streak: arStreak, predictor: arPredictor, rewards: arRewards },
 };
 
 /**
@@ -162,7 +167,7 @@ i18n
     fallbackLng: FALLBACK_LANGUAGE,
     supportedLngs: SUPPORTED_LANGUAGES.map((l) => l.code),
     defaultNS: 'common',
-    ns: ['common', 'auth', 'home', 'analysis', 'premium', 'profile', 'predictions', 'chat', 'legal', 'streak', 'predictor'],
+    ns: ['common', 'auth', 'home', 'analysis', 'premium', 'profile', 'predictions', 'chat', 'legal', 'streak', 'predictor', 'rewards'],
     interpolation: { escapeValue: false },
     react: { useSuspense: false },
   });

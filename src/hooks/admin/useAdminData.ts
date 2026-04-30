@@ -599,16 +599,28 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
   }, [user, logAction]);
 
   const sendNotification = useCallback(async (data: { title: string; body: string; targetAudience: string }) => {
-    const { error } = await supabase.from('push_notifications').insert({
-      title: data.title,
-      body: data.body,
-      target_audience: data.targetAudience,
-      sent_by: user?.id,
-      sent_at: new Date().toISOString(),
+    // Call edge function to send via FCM + log
+    const { data: result, error } = await supabase.functions.invoke('send-push-notification', {
+      body: {
+        title: data.title,
+        body: data.body,
+        target_audience: data.targetAudience,
+      },
     });
 
-    if (error) throw error;
-    await logAction('send_notification', 'push_notifications', undefined, data);
+    if (error) {
+      // Fallback: just insert notification record if edge function fails
+      console.error('Edge function error, falling back to DB insert:', error);
+      await supabase.from('push_notifications').insert({
+        title: data.title,
+        body: data.body,
+        target_audience: data.targetAudience,
+        sent_by: user?.id,
+        sent_at: new Date().toISOString(),
+      });
+    }
+
+    await logAction('send_notification', 'push_notifications', undefined, { ...data, result });
     await fetchNotifications();
   }, [user, logAction, fetchNotifications]);
 

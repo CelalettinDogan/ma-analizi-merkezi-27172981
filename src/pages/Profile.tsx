@@ -18,6 +18,7 @@ import { useChatbot } from '@/hooks/useChatbot';
 import { useTheme } from 'next-themes';
 import AppHeader from '@/components/layout/AppHeader';
 import PredictorRankCard from '@/components/predictor/PredictorRankCard';
+import StreakRewardsCard from '@/components/streak/StreakRewardsCard';
 import { supabase } from '@/integrations/supabase/client';
 
 import ProfileHeader from '@/components/profile/ProfileHeader';
@@ -136,6 +137,10 @@ const Profile = () => {
 
           <motion.div variants={itemVariants}>
             <PredictorRankCard />
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <StreakRewardsCard />
           </motion.div>
 
           <motion.div variants={itemVariants}>
