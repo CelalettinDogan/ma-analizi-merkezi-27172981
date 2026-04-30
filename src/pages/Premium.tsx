@@ -247,12 +247,6 @@ const Premium = () => {
   const productId = isYearly ? sel.yearlyId : sel.monthlyId;
   const planName = t(`plans.${sel.nameKey}.name`);
 
-  const includedFeatures = [
-    { icon: Brain, label: t('features.unlimitedAnalysis') },
-    { icon: Ban, label: t('features.noAds') },
-    { icon: History, label: t('features.history') },
-    { icon: MessageSquare, label: t('features.aiComments') },
-  ];
 
   // Show promo for power users (streak ≥ 5)
   const showStreakPromo = streak.current_streak >= 5;
