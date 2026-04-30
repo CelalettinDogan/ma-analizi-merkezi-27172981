@@ -67,6 +67,7 @@ import esChat from './locales/es/chat.json';
 import esLegal from './locales/es/legal.json';
 import esStreak from './locales/es/streak.json';
 import esPredictor from './locales/es/predictor.json';
+import esRewards from './locales/es/rewards.json';
 
 // AR
 import arCommon from './locales/ar/common.json';
