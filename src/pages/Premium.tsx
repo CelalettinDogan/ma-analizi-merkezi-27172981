@@ -413,6 +413,12 @@ const Premium = () => {
             ))}
           </motion.div>
 
+          {/* Plan comparison */}
+          <PlanComparisonTable />
+
+          {/* Social proof */}
+          <SocialProofCounter />
+
           {/* Trust */}
           <motion.div
             initial={{ opacity: 0 }}
