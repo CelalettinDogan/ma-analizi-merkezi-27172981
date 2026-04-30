@@ -29,7 +29,9 @@
     "dates": {
       "today": "اليوم",
       "tomorrow": "غدًا"
-    }
+    },
+    "highConfidence": "أعلى احتمال اليوم",
+    "unlockPremium": "افتح مع بريميوم"
   },
   "upcoming": {
     "loading": "جارٍ تحميل المباريات...",

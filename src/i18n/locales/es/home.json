@@ -29,7 +29,9 @@
     "dates": {
       "today": "Hoy",
       "tomorrow": "Mañana"
-    }
+    },
+    "highConfidence": "Mejor Apuesta del Día",
+    "unlockPremium": "Desbloquear con Premium"
   },
   "upcoming": {
     "loading": "Cargando partidos...",
