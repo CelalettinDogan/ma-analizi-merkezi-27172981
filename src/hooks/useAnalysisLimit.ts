@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlatformPremium } from './usePlatformPremium';
 import { useUserRole } from './useUserRole';
+import { useStreakRewards } from './useStreakRewards';
 import { 
   PLAN_ACCESS_LEVELS, 
   hasUnlimitedAnalysis 
