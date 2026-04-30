@@ -97,9 +97,5 @@
     "searchingTeam": "Spiel für {{team}} wird gesucht...",
     "noUpcomingForTeam": "Kein kommendes Spiel für {{team}} gefunden.",
     "teamSearchError": "Suche fehlgeschlagen"
-  },
-  "dailyPick": {
-    "title": "Tipp des Tages",
-    "unlockCta": "Mit Premium freischalten"
   }
 }

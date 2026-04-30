@@ -97,9 +97,5 @@
     "searchingTeam": "Searching match for {{team}}...",
     "noUpcomingForTeam": "No upcoming match found for {{team}}.",
     "teamSearchError": "Failed to search match"
-  },
-  "dailyPick": {
-    "title": "Today's Pick",
-    "unlockCta": "Unlock with Premium"
   }
 }

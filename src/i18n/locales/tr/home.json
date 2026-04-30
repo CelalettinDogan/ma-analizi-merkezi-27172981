@@ -97,9 +97,5 @@
     "searchingTeam": "{{team}} için maç aranıyor...",
     "noUpcomingForTeam": "{{team}} için yaklaşan maç bulunamadı.",
     "teamSearchError": "Maç aranırken hata oluştu"
-  },
-  "dailyPick": {
-    "title": "Günün Seçimi",
-    "unlockCta": "Premium ile Gör"
   }
 }
