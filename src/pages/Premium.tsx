@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Crown, Check, Sparkles, Zap, Shield, Brain, MessageSquare, Ban, History, Users } from 'lucide-react';
+import { Crown, Check, Sparkles, Zap, Shield, Brain, MessageSquare, Ban, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,6 +14,9 @@ import { purchaseService, PRODUCTS, PLAN_PRODUCTS } from '@/services/purchaseSer
 import AppHeader from '@/components/layout/AppHeader';
 import PlanComparisonTable from '@/components/premium/PlanComparisonTable';
 import SocialProofCounter from '@/components/premium/SocialProofCounter';
+import HeroGlow from '@/components/premium/HeroGlow';
+import TrustBadges from '@/components/premium/TrustBadges';
+import { useHapticTap } from '@/hooks/useHapticTap';
 import { toast } from 'sonner';
 
 // ─── Plan data ─────────────────────────────────────────────
@@ -233,6 +236,8 @@ const Premium = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanConfig['id']>('premium_plus');
   const [isYearly, setIsYearly] = useState(true);
+  const tapMedium = useHapticTap('medium');
+  const tapLight = useHapticTap('light');
 
   const sel = plans.find(p => p.id === selectedPlan)!;
   const productId = isYearly ? sel.yearlyId : sel.monthlyId;
@@ -246,6 +251,7 @@ const Premium = () => {
   ];
 
   const handlePurchase = async () => {
+    tapMedium();
     if (!user) { navigate('/auth'); return; }
     setIsLoading(true);
     try {
@@ -307,10 +313,11 @@ const Premium = () => {
       <AppHeader />
 
       <main
-        className="flex-1 overflow-y-auto"
+        className="flex-1 overflow-y-auto relative"
         style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
       >
-        <div className="w-full max-w-md mx-auto px-3 sm:px-5 space-y-5 py-4">
+        <HeroGlow />
+        <div className="w-full max-w-md mx-auto px-3 sm:px-5 space-y-5 py-4 relative">
 
           {/* Hero */}
           <motion.div
@@ -389,7 +396,7 @@ const Premium = () => {
                   priceNum={getPriceAmount(currentProductId)}
                   monthlyPriceNum={getPriceAmount(plan.monthlyId)}
                   pricesLoading={pricesLoading}
-                  onSelect={() => setSelectedPlan(plan.id)}
+                  onSelect={() => { tapLight(); setSelectedPlan(plan.id); }}
                 />
               );
             })}
@@ -419,20 +426,17 @@ const Premium = () => {
           {/* Social proof */}
           <SocialProofCounter />
 
-          {/* Trust */}
+          {/* Trust badges (4 icon strip) */}
+          <TrustBadges />
+
+          {/* Trust copy */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="flex flex-col items-center gap-1.5 py-1"
+            transition={{ delay: 0.4 }}
+            className="flex flex-col items-center gap-1 py-1"
           >
-            <div className="flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-muted-foreground/60 shrink-0" />
-              <span className="text-[11px] text-muted-foreground font-medium">
-                {t('trust.userCount')}
-              </span>
-            </div>
-            <span className="text-[11px] text-muted-foreground/70">
+            <span className="text-[11px] text-muted-foreground/70 text-center">
               {t('trust.highAccuracy')}
             </span>
           </motion.div>

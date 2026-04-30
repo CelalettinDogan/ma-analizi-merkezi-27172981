@@ -84,7 +84,11 @@
   },
   "trust": {
     "userCount": "أكثر من 10,000 مستخدم يستخدمون GolMetrik AI",
-    "highAccuracy": "تحليلات ذكاء بدقة عالية"
+    "highAccuracy": "تحليلات ذكاء بدقة عالية",
+    "cancelAnytime": "إلغاء في أي وقت",
+    "instantAccess": "وصول فوري",
+    "securePayment": "دفع آمن",
+    "moneyBack": "محمي بواسطة Google Play"
   },
   "status": {
     "active": "نشط",
@@ -151,14 +155,16 @@
   },
   "teaser": {
     "unlockFull": "افتح الكل مع Premium",
-    "premiumOnly": "حصري لـ Premium"
+    "premiumOnly": "حصري لـ Premium",
+    "locked": "مقفل"
   },
   "social": {
     "thisWeek": "ترقّى {{count}} شخصًا إلى Premium هذا الأسبوع",
-    "thisWeekZero": "ينضمّ أعضاء Premium جدد هذا الأسبوع"
+    "thisWeekZero": "ينضمّ أعضاء Premium جدد هذا الأسبوع",
+    "joinedThisWeek": "قاموا بالترقية هذا الأسبوع"
   },
   "lastFreeAnalysis": {
-    "title": "آخر تحليل مجاني لك",
+    "title": "بقي تحليل مجاني واحد اليوم",
     "subtitle": "تحليل غير محدود مع Premium",
     "cta": "ترقية"
   },
@@ -186,7 +192,9 @@
       "priority": "دعم ذو أولوية"
     },
     "yes": "نعم",
-    "no": "لا"
+    "no": "لا",
+    "selectPlan": "اضغط على خطة للمقارنة مع المجانية",
+    "upgradeTo": "الترقية إلى {{plan}} ←"
   },
   "yearly": {
     "saveBadge": "وفّر {{percent}}%",

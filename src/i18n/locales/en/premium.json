@@ -84,7 +84,11 @@
   },
   "trust": {
     "userCount": "10,000+ users use GolMetrik AI",
-    "highAccuracy": "AI analysis with high accuracy"
+    "highAccuracy": "AI analysis with high accuracy",
+    "cancelAnytime": "Cancel anytime",
+    "instantAccess": "Instant access",
+    "securePayment": "Secure payment",
+    "moneyBack": "Google Play protected"
   },
   "status": {
     "active": "Active",
@@ -151,14 +155,16 @@
   },
   "teaser": {
     "unlockFull": "Unlock the full take with Premium",
-    "premiumOnly": "Premium only"
+    "premiumOnly": "Premium only",
+    "locked": "Locked"
   },
   "social": {
     "thisWeek": "{{count}} people upgraded to Premium this week",
-    "thisWeekZero": "New Premium members are joining this week"
+    "thisWeekZero": "New Premium members are joining this week",
+    "joinedThisWeek": "upgraded this week"
   },
   "lastFreeAnalysis": {
-    "title": "Your last free analysis",
+    "title": "1 free analysis left today",
     "subtitle": "Go unlimited with Premium",
     "cta": "Upgrade"
   },
@@ -186,7 +192,9 @@
       "priority": "Priority support"
     },
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "selectPlan": "Tap a plan to compare with Free",
+    "upgradeTo": "Upgrade to {{plan}} →"
   },
   "yearly": {
     "saveBadge": "Save {{percent}}%",

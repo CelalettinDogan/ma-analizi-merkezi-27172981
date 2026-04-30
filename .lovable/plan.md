@@ -1,201 +1,110 @@
 
-# Premium Teşvik & Ek Gelir Yol Haritası
+# 2026 Native Premium UX Yükseltmesi
 
-Ücretsiz deneme ve haftalık plan hariç tutuldu. 4 faz halinde, her faz tek başına yayınlanabilir ve değer üretir. Tüm faturalandırma Google Play (Android-only) üzerinden, hiçbir web ödeme akışı eklenmez.
+## Dürüst Mevcut Durum Analizi
 
----
+Phase 1 bileşenleri **fonksiyonel ama henüz "premium native" değil**. Şu an 7/10. Spotify Premium, Revolut Metal, Strava Subscribe, Apple One gibi 2026 referanslarına göre eksikler:
 
-## Faz 1 — Mevcut Premium'a Dönüşümü Artırma (Düşük risk, hızlı kazanım)
-
-Yeni Play Store ürünü gerektirmeyen, sadece UI/UX ve mevcut limit akışlarına dokunan değişiklikler.
-
-### 1.1 AI Yorum "Teaser" (Blur Önizleme)
-- Free kullanıcı analiz açtığında AI yorumu/AI özetini ilk 1-2 satır net, kalanı `backdrop-blur-md` + gradient mask.
-- Üzerine "Premium ile tamamını aç" CTA → `/premium`.
-- Dosyalar: `AnalysisHeroSummary.tsx`, `AIRecommendationCard.tsx`, yeni `PremiumTeaserOverlay` component.
-
-### 1.2 Limit Yaklaşma Uyarısı
-- 1/2 kullanıma gelen Free kullanıcıya 2. analizden önce ince bir banner: "Son ücretsiz analizin. Premium ile sınırsız."
-- `useAnalysisLimit` zaten `remaining` veriyor → `FilteredPredictionsSection` üzerine `LastAnalysisWarningBanner`.
-
-### 1.3 Yıllık Plan Tasarruf Vurgusu Güçlendirme
-- `Premium.tsx` plan kartlarında yıllık seçildiğinde:
-  - Üstü çizili aylık × 12 fiyat
-  - "₺X tasarruf" rozeti (Amber)
-  - Ay bazında kıyas barı (yatay progress)
-- Sadece i18n + render değişikliği.
-
-### 1.4 Karşılaştırma Tablosu
-- Premium sayfasında plan kartlarının altında Free vs Basic vs Plus vs Pro tablo (sınırsız analiz, AI mesaj, geçmiş, derinlik, vb.).
-- Sticky kolon başlıkları, mobile-first 4 sütun.
-
-### 1.5 Sosyal Kanıt — Gerçek Veri
-- `Premium.tsx` üst kısmına: "Bu hafta 47 kullanıcı Premium'a geçti" (admin_activity_logs veya premium_subscriptions tablosundan rolling 7 gün count).
-- Yeni RPC: `get_recent_premium_count()` (security definer, sadece sayı döner).
-
-**Faz 1 sonunda:** Tüm bunlar çalışır, ek satın alma yok, sadece dönüşüm artırma.
+| Bileşen | Sorun | Etki |
+|---|---|---|
+| `PremiumTeaserOverlay` | `max-h-16` ile sadece "kesilmiş" metin. `blur-sm` yok, gerçek frosted-glass yok. CTA pill statik. | Kullanıcı "eksik" hissetmiyor, "kırık" hissediyor. |
+| `LastFreeAnalysisBanner` | Basit gradient + statik ikon. Pulse/shimmer yok. Haptic yok. Aciliyet hissi zayıf. | Atlanıyor, fark edilmiyor. |
+| `PlanComparisonTable` | Klasik HTML tablo. Mobilde 4 kolon 390px'e sıkışıyor, `text-[11px]` okunmuyor. "Plus" highlight çok soluk. | Karşılaştırma yapılmadan kapatılıyor. |
+| `SocialProofCounter` | Tek satır küçük gri yazı. `count===0` durumunda bile gösteriliyor (ters etki). Animasyon yok. | Görünmez. |
+| `AIRecommendationCard` blur | Sadece `max-h-16 overflow-hidden` — gerçek blur yok. Premium içerik "saklı" değil "kesik". | Teaser etkisi sıfır. |
 
 ---
 
-## Faz 2 — Lojalti & Davranışsal Tetikleyiciler
+## Yapılacak İyileştirmeler
 
-Hâlâ ek Play Store ürünü yok; mevcut planlara talep yaratmak için.
+### 1. PremiumTeaserOverlay — Gerçek Cinematic Blur
+- `AIRecommendationCard`'da içeriği `max-h-24 + blur-[6px] + opacity-60 + saturate-150` ile kapla → gerçek "saklı premium içerik" hissi
+- Overlay'e **3 katmanlı gradient**: alt karartma + üstte ince light sweep
+- CTA pill'e **shimmer animasyonu** (2s loop, sol→sağ ışık geçişi)
+- Tıklamada **Capacitor Haptics `ImpactStyle.Medium`** + scale 0.94 spring
+- Crown ikonuna **hafif rotate-12 + glow** (drop-shadow primary)
+- Üstte küçük "🔒 Locked" mikro etiket (spam değil, gerçek kilit hissi)
 
-### 2.1 Streak Sistemi (Analiz Serisi)
-- Yeni tablo: `user_streaks (user_id, current_streak, longest_streak, last_active_date)`.
-- Her analizde RPC: `update_streak()` günü +1, gap olduğunda sıfırlar.
-- Profile'da görünür: "🔥 7 gün serisi". 7/14/30 günde içsel rozet.
-- 30 gün serisi tamamlayan Free kullanıcıya bir defaya mahsus indirim kuponu (Faz 3'te kullanılır).
+### 2. LastFreeAnalysisBanner — Aciliyet & Hareket
+- Sol kenarda **3px dikey amber accent bar** (Apple Mail flag tarzı)
+- Crown ikonu yerine **animated countdown ring** (1/3 dolu daire içinde "1")
+- Arkaplan: `bg-gradient-to-r` yerine **çift katman** (glassmorphism + animated mesh gradient)
+- Mount'ta **subtle pulse** (sadece ilk 3 saniye, sonra durur — iOS Mail unread)
+- "Son ücretsiz analiz" yerine güçlü dil: **"1 analysis left today"** + alt satırda count-up "Join 247 users who upgraded"
+- Tıklamada **`ImpactStyle.Light` haptic**
 
-### 2.2 Doğruluk Rozetleri (Predictor Score)
-- `predictions` tablosu mevcut → kullanıcının kaydettiği tahminlerin doğruluğu zaten hesaplanabilir.
-- Profile sayfasında "Predictor Score: %68" + rozet (Bronze/Silver/Gold/Pro).
-- %70 üstü kullanıcıya "Pro Predictor" rozeti + Premium yükseltme indirimi.
+### 3. PlanComparisonTable — Mobile-First Kart Tasarımı
+- Klasik tabloyu **kart-bazlı yatay snap-scroll** ile değiştir (Apple One karşılaştırma sayfası tarzı)
+- **2 kolon** göster: "Free" (sol, sticky, soluk) + seçilen plan (sağ, vurgulu)
+- Üstte **pill segmented control** plan seçimi (Basic / Plus / Pro), Plus default
+- Her satırda Free tarafında ❌ veya kısıtlı sayı (örn. "3/day"), Plus tarafında ✓ + emerald glow
+- Geçişlerde **layout animation** (framer-motion `layoutId`)
+- Sticky CTA bar altta: "Upgrade to {selectedPlan} →"
 
-### 2.3 Davranışsal Tetikleyiciler (Smart Promotions)
-`usePremiumPromotion` hook'u genişletilir, yeni triggers:
+### 4. SocialProofCounter — Görünür & Güvenilir
+- `count === 0` ise **hiç render etme** (mevcut fallback ters etki yaratıyor)
+- Eşik: sadece `count >= 5` olunca göster
+- **Avatar stack** (3 fake/anonim yuvarlak gradient avatar, üst üste -ml-2)
+- Yanında count-up animasyon (`useCountUp` benzeri, 0→count, 800ms)
+- Yeşil **live dot** (pulse 2s) + "247 upgraded this week"
+- Yumuşak `bg-emerald-500/5` rounded-full pill içinde
 
-| Tetikleyici | Promotion Type |
-|-------------|----------------|
-| 5. analiz denemesi (Free) | `power_user` |
-| AI Chat tıklama (Free) | `chatbot` (mevcut) |
-| Aynı maç 2. analiz | `deep_dive` |
-| 7 gün üst üste açık (Free) | `loyal_user` |
-| Premium iptal sayfası | `downgrade_save` |
+### 5. AIRecommendationCard Teaser Entegrasyonu
+- Premium olmayan kullanıcı için reasoning bloğunu **`relative h-28 overflow-hidden`** içine al
+- İçerik: `blur-[5px] opacity-50 select-none pointer-events-none`
+- Üstte **"AI Detailed Reasoning"** mikro başlık + lock ikonu
+- Yeni `PremiumTeaserOverlay`'i bunun üzerine yerleştir
+- CTA tıklanınca `/premium` sayfasına **`?from=ai-reasoning` query** ile git → Premium sayfasında tracking için
 
-Her trigger için yeni i18n key + `PremiumPromotionModal` varyantı.
+### 6. Premium Sayfasında Cinematic Detaylar
+- Sayfa açılışta **staggered fade-up** (her bileşen 80ms gecikme)
+- En üste **dinamik "Hero Glow"**: arkaplanda yavaşça hareket eden iki radial gradient (primary + amber)
+- PlanCard'larda Plus'a **subtle floating animation** (y: [0, -3, 0], 4s loop)
+- "Save X%" badge'ine **ribbon shape** (sağ üst köşede çapraz, daha pro)
+- Sayfa altına **"30-day money back" + "Cancel anytime"** trust badges (4 ikonlu satır)
 
-### 2.4 Push Bildirim Tetikleri
-- `push_notifications` tablosu mevcut → maç günü kampanya pushları için cron edge function: `send-promo-push`.
-- Hedefli: "Free 7+ gün aktif" segmenti, "Premium 30+ gün aktif" segmenti.
-
-**Faz 2 sonunda:** Kullanıcı bağlılığı + akıllı upsell, hâlâ tek satış kanalı abonelik.
-
----
-
-## Faz 3 — Yeni Satın Alma Kanalları (Consumable + Non-Consumable)
-
-İlk gerçek yeni gelir akışları. Google Play Console'da yeni ürünler oluşturulması gerekir.
-
-### 3.1 Backend Altyapı
-**Yeni tablo:** `user_credits`
-```
-- id, user_id, credit_type ('analysis' | 'chat'), 
-- amount, source ('purchase' | 'gift' | 'streak_reward'),
-- expires_at (nullable, pass'ler için),
-- created_at, used_at
-```
-
-**Yeni tablo:** `iap_purchases` (consumable + non-consumable lifetime ürünler için)
-```
-- id, user_id, product_id, purchase_token (unique),
-- order_id, purchase_type ('consumable' | 'non_consumable'),
-- consumed (bool), created_at, verified_at
-```
-
-**Yeni RPC'ler:**
-- `get_user_credits(credit_type)` → toplam kredi
-- `consume_credit(credit_type, amount)` → atomik tüketim
-- `add_credits(credit_type, amount, source, expires_at)` (service role only)
-
-**Edge function genişletmesi:** `verify-purchase` → `purchaseType` parametresi alıp:
-- `subscription` → mevcut akış
-- `inapp` → Play `products.purchases.get` API + consume + `iap_purchases` insert + kredi/lifetime aktivasyon
-
-**`useAnalysisLimit` & `useChatLimit` güncellemesi:**
-- Plan limiti dolduğunda → önce `user_credits` kontrol → varsa consume_credit, yoksa limit sheet.
-
-### 3.2 İlk Consumable Ürünler (Play Console'da oluşturulur)
-
-| Product ID | Tür | Fiyat | Verir |
-|------------|-----|-------|-------|
-| `credits_analysis_5` | consumable | ₺19,99 | +5 analiz (30 gün geçerli) |
-| `credits_chat_10` | consumable | ₺14,99 | +10 AI mesaj (30 gün geçerli) |
-| `pass_match_day_24h` | consumable | ₺29,99 | 24 saat sınırsız analiz + chat |
-
-### 3.3 İlk Non-Consumable Ürünler
-
-| Product ID | Tür | Fiyat | Verir |
-|------------|-----|-------|-------|
-| `lifetime_no_ads` | non-consumable | ₺99,99 | Free kullanıcı için reklamsız (gelecek hazırlığı) |
-| `lifetime_history_365d` | non-consumable | ₺149,99 | Geçmiş 7 gün → 365 gün |
-
-**Not:** Lifetime ürünler `premium_subscriptions` yerine yeni `user_entitlements` tablosunda tutulur, `useAccessLevel` bu entitlement'ları okur.
-
-### 3.4 UI Entegrasyonu
-- Limit sheet'lere "Bekleme yapma, paket al" alternatifi (`AnalysisLimitSheet`, `ChatLimitSheet`).
-- `Premium.tsx` üzerine yeni "Tek Seferlik Paketler" sekmesi (Abonelik | Paketler segmented control).
-- Yeni `OneTimePurchaseCard` component, mevcut `PurchaseButton` genişletilir (`purchaseType` prop).
-
-### 3.5 Play Console İş Yükü (Kullanıcı yapar)
-- 5 yeni in-app product oluştur
-- Service account zaten `androidpublisher` scope'una sahip → ek izin gerekmez
-- Localized fiyatlar Play Console'dan otomatik gelir
-
-**Faz 3 sonunda:** Free kullanıcılar abone olmadan ödeyebilir; ARPU artar.
+### 7. Yeni Ortak Yardımcı: `useHapticTap`
+- Tek satır hook: `const tap = useHapticTap('light' | 'medium')`
+- Tüm CTA'larda `onClick={() => { tap(); navigate(...) }}`
+- Capacitor mevcut değilse no-op (web fallback)
 
 ---
 
-## Faz 4 — Premium Kullanıcı LTV & Sosyal Büyüme
+## Teknik Detaylar
 
-Mevcut Premium tabanından daha fazla gelir + organik büyüme.
+**Dosyalar:**
+- `src/hooks/useHapticTap.ts` (yeni)
+- `src/components/premium/PremiumTeaserOverlay.tsx` (yeniden yaz — shimmer + 3-layer gradient)
+- `src/components/premium/LastFreeAnalysisBanner.tsx` (accent bar + countdown ring + pulse)
+- `src/components/premium/PlanComparisonTable.tsx` (tablo → kart, segmented control)
+- `src/components/premium/SocialProofCounter.tsx` (avatar stack + count-up + threshold)
+- `src/components/premium/HeroGlow.tsx` (yeni — animated radial gradient bg)
+- `src/components/premium/TrustBadges.tsx` (yeni — 4 ikon trust strip)
+- `src/components/analysis/AIRecommendationCard.tsx` (teaser bloğu yeniden — gerçek blur)
+- `src/pages/Premium.tsx` (HeroGlow + TrustBadges + stagger animation)
+- `src/i18n/locales/{tr,en,de,es,ar}/premium.json` (yeni anahtarlar: `teaser.locked`, `teaser.detailedReasoning`, `lastFreeAnalysis.urgentTitle`, `compare.selectPlan`, `social.joinedThisWeek`, `trust.moneyBack`, `trust.cancelAnytime`, `trust.securePayment`, `trust.instantAccess`)
 
-### 4.1 Sezon/Etkinlik Paketleri (Non-Consumable, dönemsel)
-| Product ID | Fiyat | Açıklama |
-|------------|-------|----------|
-| `pack_derby_2026` | ₺79,99 | Sezonun 10 büyük derbisi için derinleştirilmiş analiz + özel rozet |
-| `pack_champions_league_2026` | ₺99,99 | Tüm CL maçları için xG+, taktik board, manager analizi |
+**Animasyonlar:**
+- Shimmer: pure CSS keyframe (`@keyframes shimmer` index.css'e ekle, GPU-friendly transform-only)
+- Count-up: küçük inline hook (rAF based, dependency yok)
+- Pulse: `motion.div` `animate={{ scale: [1, 1.02, 1] }} transition={{ repeat: 3 }}`
 
-- `match_tags` tablosuna `derby`, `cl_special` etiketleri eklenmiş zaten.
-- Premium kullanıcının bile satın alabildiği "derinlik" katmanı.
-- `AnalysisHeroSummary` üst köşede "Derby Pack ile aç" CTA.
+**Haptics:**
+- `@capacitor/haptics` zaten projede mevcut (memory'den biliyoruz)
+- `useHapticTap`: try/catch ile native check, fail olursa sessizce geç
 
-### 4.2 Premium Hediye Etme (Gift Codes)
-- Yeni tablo: `gift_codes (code, sender_user_id, plan_type, duration_days, redeemed_by, redeemed_at, expires_at)`.
-- Yeni Play Console ürünü: `gift_premium_basic_1month` (₺94,99), `gift_premium_plus_1month` (₺149,99).
-- Satın alındığında `verify-purchase` benzersiz 12-haneli kod üretir → kullanıcı paylaşır.
-- Yeni sayfa: `/gift/redeem` (deep link `golmetrik://gift?code=XXX`).
-- Profile'da "Hediye Et" menü öğesi.
+**Performans:**
+- Tüm blur'lar `will-change: filter` ile GPU'ya at
+- HeroGlow `pointer-events-none` + `aria-hidden`
+- Avatar stack SVG tek dosyada (3 küçük gradient circle, ~400 byte)
 
-### 4.3 Davet Et & Kazan (Referral)
-- `profiles` tablosuna `referral_code` (unique 8-char) eklenir, trigger'la otomatik üretilir.
-- Yeni tablo: `referrals (referrer_id, referred_id, status, rewarded_at)`.
-- Yeni RPC: `claim_referral(code)` — yeni kullanıcı kayıt olduktan sonra kod girer.
-- Ödül kuralı: 3 başarılı referans → 1 ay Plus ücretsiz (`add_credits` ile entitlement uzatma).
-- Profile'da "Arkadaşını Davet Et" + paylaşım sheet.
-
-### 4.4 Aile Paketi (Yeni Subscription Tier)
-- Yeni Play Console aboneliği: `premium_family_monthly` (₺149,99/ay), `premium_family_yearly` (₺1499/yıl).
-- 1 hesap → 4 cihaza kadar oturum.
-- Yeni tablo: `family_groups (id, owner_user_id, plan_type)` + `family_members (group_id, user_id, joined_at)`.
-- Owner Profile'dan davet kodu üretir, üye `golmetrik://family?code=XXX` ile katılır.
-- `useAccessLevel` family üyeliğini de `isPremium` olarak okur.
-
-**Faz 4 sonunda:** Mevcut Premium kullanıcılardan ek satın alma + organik kullanıcı kazanımı.
+**Erişilebilirlik:**
+- Tüm CTA'larda `aria-label`
+- Blur'lı içerik `aria-hidden="true"` (screen reader sadece CTA'yı okusun)
+- `prefers-reduced-motion` kontrolü: shimmer/pulse disable
 
 ---
 
-## Teknik Notlar
+## Beklenen Sonuç
 
-- **Uyumluluk:** Tüm satın almalar Google Play Billing üzerinden yapılır, "guaranteed profits" gibi ifadeler kullanılmaz, AI mesajları olasılıksal dilde kalır (mevcut memory kuralları).
-- **Backend Authorization:** Yeni RPC'lerin tümü `auth.uid()` kullanır, hiçbiri `user_id` parametresi almaz (mevcut hardening kuralı).
-- **i18n:** Her faz için 5 dilde (TR/EN/DE/ES/AR) lokalizasyon `premium.json` içine eklenir.
-- **Versiyon:** Faz 3 ve 4'te yeni Play Console ürünleri eklendikten sonra Capacitor `versionCode` artırılır (mevcut süreç).
-- **Test:** Her faz Play Console "License Tester" hesabı ile sandbox'ta doğrulanır.
-
----
-
-## Faz Süresi & Öncelik
-
-| Faz | Tahmini İş | Yeni Play Ürünü | Yeni DB Tablosu | Hemen Etkisi |
-|-----|------------|-----------------|-----------------|--------------|
-| 1   | 1-2 oturum | Yok             | Yok             | Dönüşüm +    |
-| 2   | 2-3 oturum | Yok             | 1 (streaks)     | Bağlılık +   |
-| 3   | 3-4 oturum | 5               | 2 (credits, iap) | ARPU ++     |
-| 4   | 4-5 oturum | 4               | 4 (gift, referral, family) | Büyüme + LTV ++ |
-
----
-
-## Onay Sonrası Akış
-
-Onayladığında **Faz 1**'den başlarım. Her fazın sonunda durup test et, sonra bir sonraki faza geçeriz. Bir fazı atlamak veya sıralamayı değiştirmek istersen şimdi söyle.
+7/10 → **9.5/10**. Spotify Premium / Apple One / Revolut Metal upsell ekranlarıyla aynı liga. Onaylarsan tek seferde uygularım.

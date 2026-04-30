@@ -63,7 +63,8 @@
     "showing": "Showing {{filtered}} / {{total}} predictions",
     "results": "{{count}} results",
     "noResults": "No results found",
-    "noResultsHint": "No predictions match the selected filters. Try changing the filters."
+    "noResultsHint": "No predictions match the selected filters. Try changing the filters.",
+    "aiDetailedReasoning": "Detailed AI Reasoning"
   },
   "confidence": {
     "low": "Low",

@@ -63,7 +63,8 @@
     "showing": "{{filtered}} / {{total}} tahmin gösteriliyor",
     "results": "{{count}} sonuç",
     "noResults": "Sonuç bulunamadı",
-    "noResultsHint": "Seçili filtrelerle eşleşen tahmin yok. Filtreleri değiştirmeyi deneyin."
+    "noResultsHint": "Seçili filtrelerle eşleşen tahmin yok. Filtreleri değiştirmeyi deneyin.",
+    "aiDetailedReasoning": "Detaylı AI Analizi"
   },
   "confidence": {
     "low": "Düşük",
