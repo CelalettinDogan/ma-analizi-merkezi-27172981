@@ -107,17 +107,16 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
   }, [user, planType, isAdmin, usageCount, baseDailyLimit, bonusCredits.bonus_analysis, useBonusCredit]);
 
   const checkLimit = useCallback(async (): Promise<boolean> => {
-    // Users with unlimited analysis always can analyze
     if (hasUnlimitedAnalysis(planType, isAdmin)) {
       return true;
     }
 
-    // Use direct RPC return value instead of stale React state
     const { data } = await supabase.rpc('get_daily_analysis_usage');
     const currentUsage = data || 0;
     setUsageCount(currentUsage);
-    return currentUsage < dailyLimit;
-  }, [planType, isAdmin, dailyLimit]);
+    const planRem = Math.max(0, baseDailyLimit - currentUsage);
+    return (planRem + bonusCredits.bonus_analysis) > 0;
+  }, [planType, isAdmin, baseDailyLimit, bonusCredits.bonus_analysis]);
 
   return {
     canAnalyze,
