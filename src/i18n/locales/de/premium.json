@@ -156,7 +156,12 @@
   "teaser": {
     "unlockFull": "Mit Premium vollständig freischalten",
     "premiumOnly": "Nur Premium",
-    "locked": "Gesperrt"
+    "locked": "Gesperrt",
+    "streakCta": "{{days}} Tage Serie — Premium holen!",
+    "lastChanceCta": "Letzte Chance — Premium freischalten",
+    "powerUser": "Power-User Angebot",
+    "limitReached": "Tageslimit erreicht",
+    "detailedReasoning": "AI Detaillierte Analyse"
   },
   "social": {
     "thisWeek": "{{count}} Personen sind diese Woche zu Premium gewechselt",

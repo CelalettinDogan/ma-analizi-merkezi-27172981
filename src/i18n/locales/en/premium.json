@@ -156,7 +156,12 @@
   "teaser": {
     "unlockFull": "Unlock the full take with Premium",
     "premiumOnly": "Premium only",
-    "locked": "Locked"
+    "locked": "Locked",
+    "streakCta": "{{days}} day streak — Go Premium!",
+    "lastChanceCta": "Last chance — Unlock Premium",
+    "powerUser": "Power user offer",
+    "limitReached": "Daily limit reached",
+    "detailedReasoning": "AI Detailed Reasoning"
   },
   "social": {
     "thisWeek": "{{count}} people upgraded to Premium this week",
