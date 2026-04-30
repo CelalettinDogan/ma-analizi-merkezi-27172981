@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useAccessLevel } from './useAccessLevel';
 import { PLAN_ACCESS_LEVELS } from '@/constants/accessLevels';
+import { useStreakRewards } from './useStreakRewards';
 
 export interface ChatMessage {
   id: string;
