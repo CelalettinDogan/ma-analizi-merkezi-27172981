@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useAnalysisSet } from '@/contexts/AnalysisSetContext';
 import { cn, getHybridConfidence, getConfidenceLevel } from '@/lib/utils';
 import ShareCard from '@/components/ShareCard';
+import { PREDICTION_TYPES } from '@/constants/predictions';
 import { formatMatchDate } from '@/lib/utils';
 import ConfidenceBreakdownTooltip from './ConfidenceBreakdownTooltip';
 import { useAccessLevel } from '@/hooks/useAccessLevel';
