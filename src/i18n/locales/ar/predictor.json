@@ -1,0 +1,13 @@
+{
+  "accuracy": "الدقة",
+  "totalPredictions": "التنبؤات",
+  "verified": "مُتحققة",
+  "correct": "صحيحة",
+  "ranks": {
+    "rookie": "مبتدئ",
+    "amateur": "هاوي",
+    "analyst": "محلل",
+    "expert": "خبير",
+    "master": "محترف"
+  }
+}

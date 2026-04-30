@@ -1,0 +1,6 @@
+{
+  "days": "day streak",
+  "milestone": "{{days}} day streak! You're on fire!",
+  "currentStreak": "Current Streak",
+  "longestStreak": "Longest Streak"
+}
