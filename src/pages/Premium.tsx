@@ -236,6 +236,8 @@ const Premium = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanConfig['id']>('premium_plus');
   const [isYearly, setIsYearly] = useState(true);
+  const tapMedium = useHapticTap('medium');
+  const tapLight = useHapticTap('light');
 
   const sel = plans.find(p => p.id === selectedPlan)!;
   const productId = isYearly ? sel.yearlyId : sel.monthlyId;
@@ -249,6 +251,7 @@ const Premium = () => {
   ];
 
   const handlePurchase = async () => {
+    tapMedium();
     if (!user) { navigate('/auth'); return; }
     setIsLoading(true);
     try {
