@@ -135,6 +135,10 @@ const Profile = () => {
           </motion.div>
 
           <motion.div variants={itemVariants}>
+            <PredictorRankCard />
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
             <RecentAnalyses
               recentAnalyses={recentAnalyses}
               analysesLoading={analysesLoading}
