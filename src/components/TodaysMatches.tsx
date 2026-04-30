@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles, Swords } from 'lucide-react';
+import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles, Swords, Lock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Match } from '@/types/footballApi';
 import { format, isToday, isTomorrow } from 'date-fns';
@@ -9,6 +11,7 @@ import { getDateLocale } from '@/i18n/dateLocale';
 import { cn } from '@/lib/utils';
 import H2HSummaryBadge from '@/components/match/H2HSummaryBadge';
 import { useH2HPreview } from '@/hooks/useH2HPreview';
+import { getSmartPicks } from '@/services/smartPicksService';
 import { useMatchAIPreview, useMatchAIPreviewExists } from '@/hooks/useMatchAIPreview';
 
 const TEAM_OVERRIDES: Record<string, string> = {
