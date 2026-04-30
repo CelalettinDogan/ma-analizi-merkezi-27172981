@@ -364,49 +364,6 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
           const prevMatch = displayedMatches[index - 1];
           const showDateSeparator = !hasMatchesToday && prevMatch && match.utcDate.split('T')[0] !== prevMatch.utcDate.split('T')[0];
 
-          const dailyPickRow = index === 0 && dailyPick ? (
-            <motion.button
-              key="daily-pick-row"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.05 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => !isPremium && navigate('/premium')}
-              className={cn(
-                "w-full relative grid grid-cols-[1fr_auto_1fr] items-center gap-1 px-3 py-2.5 rounded-xl transition-colors",
-                "min-h-[48px] border border-primary/20 bg-card/60 backdrop-blur-sm",
-              )}
-            >
-              <div className={cn('contents', !isPremium && 'blur-sm select-none pointer-events-none')}>
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-sm truncate whitespace-nowrap min-w-0 font-medium">{dailyPick.homeTeam.replace(/ FC$| CF$| SC$/i, '').trim()}</span>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0 px-1">
-                  <span className="text-xs font-bold tabular-nums text-primary">{dailyPick.predictionValue}</span>
-                </div>
-                <div className="flex items-center gap-1.5 min-w-0 justify-end">
-                  <span className="text-sm truncate whitespace-nowrap min-w-0 text-right font-medium">{dailyPick.awayTeam.replace(/ FC$| CF$| SC$/i, '').trim()}</span>
-                </div>
-              </div>
-              {!isPremium && (
-                <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/40 backdrop-blur-[2px]">
-                  <div className="flex items-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5 text-amber-500" />
-                    <span className="text-xs font-semibold text-amber-500">{t('dailyPick.unlockCta', 'Premium ile Gör')}</span>
-                  </div>
-                </div>
-              )}
-              {isPremium && (
-                <div className="absolute top-1 left-2">
-                  <span className="text-micro text-primary/60 font-medium flex items-center gap-1">
-                    <Sparkles className="w-2.5 h-2.5" />
-                    {t('dailyPick.title', 'Günün Skor Tahmini')}
-                  </span>
-                </div>
-              )}
-            </motion.button>
-          ) : null;
-
           return (
             <React.Fragment key={match.id}>
               {showDateSeparator && <div className="text-micro text-muted-foreground/60 font-medium px-3 py-1.5 mt-2">{getDateLabel(match.utcDate)}</div>}
@@ -444,7 +401,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
                   {match.awayTeam.crest && <img src={match.awayTeam.crest} alt="" className="w-4 h-4 object-contain shrink-0" />}
                 </div>
               </motion.button>
-              {dailyPickRow}
+              {index === 0 && dailyPickRowEl}
             </React.Fragment>
           );
         })}
