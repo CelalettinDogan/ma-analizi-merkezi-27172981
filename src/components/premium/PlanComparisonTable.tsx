@@ -31,7 +31,7 @@ const rows: Row[] = [
  */
 const PlanComparisonTable: React.FC = () => {
   const { t } = useTranslation('premium');
-  const navigate = useNavigate();
+  
   const tap = useHapticTap('light');
   const [selected, setSelected] = useState<PlanKey>('plus');
 
