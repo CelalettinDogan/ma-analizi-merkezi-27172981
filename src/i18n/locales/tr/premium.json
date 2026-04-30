@@ -84,7 +84,11 @@
   },
   "trust": {
     "userCount": "10.000+ kullanıcı GolMetrik AI kullanıyor",
-    "highAccuracy": "Yüksek doğruluk oranına sahip AI analizler"
+    "highAccuracy": "Yüksek doğruluk oranına sahip AI analizler",
+    "cancelAnytime": "İstediğin zaman iptal",
+    "instantAccess": "Anında erişim",
+    "securePayment": "Güvenli ödeme",
+    "moneyBack": "Google Play güvencesi"
   },
   "status": {
     "active": "Aktif",
@@ -150,15 +154,17 @@
     "subtitle": "Sınırsız analiz ve AI Asistan'a eriş"
   },
   "teaser": {
-    "unlockFull": "Tamamını Premium ile aç",
-    "premiumOnly": "Premium'a özel"
+    "unlockFull": "Premium ile aç",
+    "premiumOnly": "Premium'a özel",
+    "locked": "Kilitli"
   },
   "social": {
     "thisWeek": "Bu hafta {{count}} kişi Premium'a geçti",
-    "thisWeekZero": "Bu hafta yeni Premium üyeler aramıza katılıyor"
+    "thisWeekZero": "Bu hafta yeni Premium üyeler aramıza katılıyor",
+    "joinedThisWeek": "kişi bu hafta yükseltti"
   },
   "lastFreeAnalysis": {
-    "title": "Son ücretsiz analizin",
+    "title": "Bugün 1 ücretsiz analiz kaldı",
     "subtitle": "Premium ile sınırsız analiz yap",
     "cta": "Yükselt"
   },
