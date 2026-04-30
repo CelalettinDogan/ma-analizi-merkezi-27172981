@@ -290,6 +290,11 @@ const Index: React.FC = () => {
 
       {/* Main Content - Clean Single Column Flow */}
       <div className="container mx-auto px-4 py-5 space-y-7">
+        <LastFreeAnalysisBanner />
+        {/* High Confidence Score - Premium Only */}
+        {todaysMatches.length > 0 && (
+          <HighConfidenceScoreRow matches={todaysMatches} />
+        )}
         {/* League Selection - Compact Pills with Scroll Indicator */}
         <motion.section 
           initial={{ opacity: 0, y: 10 }}
