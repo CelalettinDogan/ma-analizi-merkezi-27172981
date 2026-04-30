@@ -102,7 +102,7 @@ export const useChatbot = (): UseChatbotReturn => {
     };
 
     loadUsage();
-  }, [user, isAdmin, canUseAIChat, dailyChatLimit]);
+  }, [user, isAdmin, canUseAIChat, dailyChatLimit, hasBonusChatAccess, bonusCredits.bonus_chat]);
 
   // Access already computed above (includes bonus credits)
   
