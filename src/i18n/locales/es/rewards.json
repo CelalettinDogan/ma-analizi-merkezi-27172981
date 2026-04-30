@@ -1,0 +1,16 @@
+{
+  "title": "Recompensas de Racha",
+  "description": "¡Inicia sesión cada día y gana recompensas!",
+  "day3": "+1 Análisis Extra",
+  "day5": "+1 Chat IA",
+  "day7": "+2 Chats IA",
+  "day14": "+3 Chats IA + Insignia",
+  "day30": "1 Día Premium de Prueba",
+  "bonusAnalysis": "Análisis Extra",
+  "bonusChat": "Chat Extra",
+  "available": "{{count}} disponibles",
+  "earned": "¡Ganado!",
+  "streakReward": "¡Recompensa por {{days}} días de racha!",
+  "newReward": "¡Nueva recompensa ganada!",
+  "badge": "Insignia de Racha"
+}
