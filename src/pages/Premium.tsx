@@ -385,6 +385,7 @@ const Premium = () => {
                   isYearly={isYearly}
                   priceStr={getPrice(currentProductId)}
                   priceNum={getPriceAmount(currentProductId)}
+                  monthlyPriceNum={getPriceAmount(plan.monthlyId)}
                   pricesLoading={pricesLoading}
                   onSelect={() => setSelectedPlan(plan.id)}
                 />
