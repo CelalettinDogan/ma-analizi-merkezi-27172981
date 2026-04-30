@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Crown, Check, Sparkles, Zap, Shield, Brain, MessageSquare, Ban, History } from 'lucide-react';
@@ -16,7 +16,11 @@ import PlanComparisonTable from '@/components/premium/PlanComparisonTable';
 import SocialProofCounter from '@/components/premium/SocialProofCounter';
 import HeroGlow from '@/components/premium/HeroGlow';
 import TrustBadges from '@/components/premium/TrustBadges';
+import UpgradeSuccessScreen from '@/components/premium/UpgradeSuccessScreen';
+import PromoBanner from '@/components/premium/PromoBanner';
+import StreakBadge from '@/components/streak/StreakBadge';
 import { useHapticTap } from '@/hooks/useHapticTap';
+import { useStreak } from '@/hooks/useStreak';
 import { toast } from 'sonner';
 
 // ─── Plan data ─────────────────────────────────────────────
@@ -48,10 +52,9 @@ const plans: PlanConfig[] = [
   },
 ];
 
-/** Strip trailing period text like "/yıl", "/ay" from price string if present */
 const cleanPrice = (s: string): string => s.replace(/\s*\/(yıl|ay|year|month|yr|mo|jahr|año|سنة|شهر)\s*$/i, '').trim();
 
-// ─── Active Plan View (for premium/admin users) ───────────
+// ─── Active Plan View ─────────────────────────────────────
 const ActivePlanView = ({ plans: plansList, planType, isAdmin }: { plans: PlanConfig[]; planType: string; isAdmin: boolean }) => {
   const { t } = useTranslation('premium');
   const currentPlan = plansList.find(p => p.id === planType) || plansList[1];
@@ -97,7 +100,7 @@ const ActivePlanView = ({ plans: plansList, planType, isAdmin }: { plans: PlanCo
   );
 };
 
-// ─── Plan Card Component ──────────────────────────────────
+// ─── Plan Card ────────────────────────────────────────────
 interface PlanCardProps {
   plan: PlanConfig;
   isSelected: boolean;
@@ -125,7 +128,6 @@ const PlanCard = ({ plan, isSelected, isYearly, priceStr, priceNum, monthlyPrice
     }
   };
 
-  // Yearly savings vs monthly × 12
   const yearlyEquivalent = monthlyPriceNum * 12;
   const savingsAmount = yearlyEquivalent - priceNum;
   const savingsPercent = yearlyEquivalent > 0 ? Math.round((savingsAmount / yearlyEquivalent) * 100) : 0;
@@ -232,10 +234,12 @@ const Premium = () => {
   const { isPremium, isAdmin } = useAccessLevel();
   const { planType, refetch } = usePlatformPremium();
   const { getPrice, getPriceAmount, isLoading: pricesLoading } = useStoreProducts();
+  const { streak } = useStreak();
 
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanConfig['id']>('premium_plus');
   const [isYearly, setIsYearly] = useState(true);
+  const [showSuccess, setShowSuccess] = useState(false);
   const tapMedium = useHapticTap('medium');
   const tapLight = useHapticTap('light');
 
@@ -250,6 +254,9 @@ const Premium = () => {
     { icon: MessageSquare, label: t('features.aiComments') },
   ];
 
+  // Show promo for power users (streak ≥ 5)
+  const showStreakPromo = streak.current_streak >= 5;
+
   const handlePurchase = async () => {
     tapMedium();
     if (!user) { navigate('/auth'); return; }
@@ -258,8 +265,8 @@ const Premium = () => {
       if (isNative) {
         const result = await purchaseService.purchaseSubscription(productId);
         if (result.success) {
-          toast.success(t('messages.purchaseSuccess', { plan: planName }));
           refetch();
+          setShowSuccess(true);
         } else {
           const isActivationError = result.error?.includes('doğrulanamadı') || result.error?.includes('kaydedilemedi');
           if (isActivationError) {
@@ -312,6 +319,16 @@ const Premium = () => {
     <div className="h-screen bg-background flex flex-col">
       <AppHeader />
 
+      {/* Upgrade Success Overlay */}
+      <AnimatePresence>
+        {showSuccess && (
+          <UpgradeSuccessScreen
+            planName={planName}
+            onDismiss={() => { setShowSuccess(false); navigate('/'); }}
+          />
+        )}
+      </AnimatePresence>
+
       <main
         className="flex-1 overflow-y-auto relative"
         style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
@@ -340,11 +357,37 @@ const Premium = () => {
             </p>
           </motion.div>
 
+          {/* Streak promo for power users */}
+          {showStreakPromo && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+            >
+              <PromoBanner
+                type="limited"
+                discount={20}
+                expiresLabel={t('promo.streakBonus', { days: streak.current_streak })}
+              />
+            </motion.div>
+          )}
+
+          {/* Seasonal promo (always show if no streak promo) */}
+          {!showStreakPromo && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+            >
+              <PromoBanner type="seasonal" />
+            </motion.div>
+          )}
+
           {/* Period Toggle */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.05 }}
+            transition={{ delay: 0.08 }}
             className="flex justify-center"
           >
             <div className="relative inline-flex bg-muted/50 rounded-2xl p-1 border border-border/30">
@@ -381,7 +424,7 @@ const Premium = () => {
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: 0.12 }}
             className="flex items-stretch gap-2 pt-3"
           >
             {plans.map((plan) => {
@@ -406,7 +449,7 @@ const Premium = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.15 }}
+            transition={{ delay: 0.18 }}
             className="flex items-center justify-center gap-2.5 flex-wrap"
           >
             {includedFeatures.map(f => (
@@ -420,13 +463,25 @@ const Premium = () => {
             ))}
           </motion.div>
 
+          {/* Streak badge */}
+          {streak.current_streak > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="flex justify-center"
+            >
+              <StreakBadge />
+            </motion.div>
+          )}
+
           {/* Plan comparison */}
           <PlanComparisonTable />
 
           {/* Social proof */}
           <SocialProofCounter />
 
-          {/* Trust badges (4 icon strip) */}
+          {/* Trust badges */}
           <TrustBadges />
 
           {/* Trust copy */}
