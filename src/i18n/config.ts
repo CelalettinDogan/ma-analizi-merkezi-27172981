@@ -81,6 +81,7 @@ import arChat from './locales/ar/chat.json';
 import arLegal from './locales/ar/legal.json';
 import arStreak from './locales/ar/streak.json';
 import arPredictor from './locales/ar/predictor.json';
+import arRewards from './locales/ar/rewards.json';
 
 const resources = {
   tr: { common: trCommon, auth: trAuth, home: trHome, analysis: trAnalysis, premium: trPremium, profile: trProfile, predictions: trPredictions, chat: trChat, legal: trLegal, streak: trStreak, predictor: trPredictor },
