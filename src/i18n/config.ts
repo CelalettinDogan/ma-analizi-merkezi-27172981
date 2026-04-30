@@ -53,6 +53,7 @@ import deChat from './locales/de/chat.json';
 import deLegal from './locales/de/legal.json';
 import deStreak from './locales/de/streak.json';
 import dePredictor from './locales/de/predictor.json';
+import deRewards from './locales/de/rewards.json';
 
 // ES
 import esCommon from './locales/es/common.json';
