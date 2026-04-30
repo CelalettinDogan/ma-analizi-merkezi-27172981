@@ -25,6 +25,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import DeleteAccount from "./pages/DeleteAccount";
 import AuthCallback from "./pages/AuthCallback";
+import Rewards from "./pages/Rewards";
 import NotFound from "./pages/NotFound";
 import BottomNav from "@/components/navigation/BottomNav";
 import TabShell from "@/components/navigation/TabShell";
@@ -157,6 +158,7 @@ const AppContent = () => {
           <Route path="/delete-account" element={<DeleteAccount />} />
           <Route path="/admin" element={<AuthGuard><Admin /></AuthGuard>} />
           <Route path="/analysis-history" element={<AuthGuard><AnalysisHistory /></AuthGuard>} />
+          <Route path="/rewards" element={<AuthGuard><Rewards /></AuthGuard>} />
           {/* Tab paths are handled by TabShell — render nothing here for them */}
           <Route path="/" element={null} />
           <Route path="/live" element={null} />

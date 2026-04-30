@@ -141,7 +141,9 @@ const Profile = () => {
           </motion.div>
 
           <motion.div variants={itemVariants}>
-            <StreakRewardsCard />
+            <Link to="/rewards">
+              <StreakRewardsCard />
+            </Link>
           </motion.div>
 
           <motion.div variants={itemVariants}>
