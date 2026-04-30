@@ -1,12 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Sparkles, Check, Star, AlertTriangle, Info, Crown } from 'lucide-react';
+import { Plus, Sparkles, Check, Star, AlertTriangle, Info, Crown, Lock as LockIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Prediction, MatchInput } from '@/types/match';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useAnalysisSet } from '@/contexts/AnalysisSetContext';
 import { cn, getHybridConfidence, getConfidenceLevel } from '@/lib/utils';
+import { useAccessLevel } from '@/hooks/useAccessLevel';
+import PremiumTeaserOverlay from '@/components/premium/PremiumTeaserOverlay';
+import { PREDICTION_TYPES } from '@/constants/predictions';
 
 interface PredictionPillSelectorProps {
   predictions: Prediction[];
