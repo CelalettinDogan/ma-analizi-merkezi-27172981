@@ -140,6 +140,10 @@ const Profile = () => {
           </motion.div>
 
           <motion.div variants={itemVariants}>
+            <StreakRewardsCard />
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
             <RecentAnalyses
               recentAnalyses={recentAnalyses}
               analysesLoading={analysesLoading}
