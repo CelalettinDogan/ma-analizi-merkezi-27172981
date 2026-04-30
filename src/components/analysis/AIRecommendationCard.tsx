@@ -127,14 +127,18 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
 
         {/* Reasoning */}
         {reasoning && (
-          <div className="mb-4">
-            <p className={cn(
-              "text-sm text-muted-foreground transition-all",
-              !showFullReasoning && isLongReasoning && "line-clamp-2"
-            )}>
+          <div className={cn('mb-4 relative', !canSeeFullReasoning && 'overflow-hidden')}>
+            <p
+              className={cn(
+                'text-sm text-muted-foreground transition-all',
+                !canSeeFullReasoning
+                  ? 'max-h-16 overflow-hidden'
+                  : !showFullReasoning && isLongReasoning && 'line-clamp-2',
+              )}
+            >
               {reasoning}
             </p>
-            {isLongReasoning && (
+            {canSeeFullReasoning && isLongReasoning && (
               <button
                 onClick={() => setShowFullReasoning(!showFullReasoning)}
                 className="min-h-[44px] text-xs text-primary active:opacity-70 mt-1 touch-manipulation flex items-center transition-opacity"
@@ -142,6 +146,9 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
               >
                 {showFullReasoning ? t('actions.showLess') : t('actions.showMore')}
               </button>
+            )}
+            {!canSeeFullReasoning && isLongReasoning && (
+              <PremiumTeaserOverlay />
             )}
           </div>
         )}
