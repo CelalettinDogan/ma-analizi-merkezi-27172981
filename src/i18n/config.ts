@@ -84,11 +84,11 @@ import arPredictor from './locales/ar/predictor.json';
 import arRewards from './locales/ar/rewards.json';
 
 const resources = {
-  tr: { common: trCommon, auth: trAuth, home: trHome, analysis: trAnalysis, premium: trPremium, profile: trProfile, predictions: trPredictions, chat: trChat, legal: trLegal, streak: trStreak, predictor: trPredictor },
-  en: { common: enCommon, auth: enAuth, home: enHome, analysis: enAnalysis, premium: enPremium, profile: enProfile, predictions: enPredictions, chat: enChat, legal: enLegal, streak: enStreak, predictor: enPredictor },
-  de: { common: deCommon, auth: deAuth, home: deHome, analysis: deAnalysis, premium: dePremium, profile: deProfile, predictions: dePredictions, chat: deChat, legal: deLegal, streak: deStreak, predictor: dePredictor },
-  es: { common: esCommon, auth: esAuth, home: esHome, analysis: esAnalysis, premium: esPremium, profile: esProfile, predictions: esPredictions, chat: esChat, legal: esLegal, streak: esStreak, predictor: esPredictor },
-  ar: { common: arCommon, auth: arAuth, home: arHome, analysis: arAnalysis, premium: arPremium, profile: arProfile, predictions: arPredictions, chat: arChat, legal: arLegal, streak: arStreak, predictor: arPredictor },
+  tr: { common: trCommon, auth: trAuth, home: trHome, analysis: trAnalysis, premium: trPremium, profile: trProfile, predictions: trPredictions, chat: trChat, legal: trLegal, streak: trStreak, predictor: trPredictor, rewards: trRewards },
+  en: { common: enCommon, auth: enAuth, home: enHome, analysis: enAnalysis, premium: enPremium, profile: enProfile, predictions: enPredictions, chat: enChat, legal: enLegal, streak: enStreak, predictor: enPredictor, rewards: enRewards },
+  de: { common: deCommon, auth: deAuth, home: deHome, analysis: deAnalysis, premium: dePremium, profile: deProfile, predictions: dePredictions, chat: deChat, legal: deLegal, streak: deStreak, predictor: dePredictor, rewards: deRewards },
+  es: { common: esCommon, auth: esAuth, home: esHome, analysis: esAnalysis, premium: esPremium, profile: esProfile, predictions: esPredictions, chat: esChat, legal: esLegal, streak: esStreak, predictor: esPredictor, rewards: esRewards },
+  ar: { common: arCommon, auth: arAuth, home: arHome, analysis: arAnalysis, premium: arPremium, profile: arProfile, predictions: arPredictions, chat: arChat, legal: arLegal, streak: arStreak, predictor: arPredictor, rewards: arRewards },
 };
 
 /**
