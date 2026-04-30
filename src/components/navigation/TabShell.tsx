@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { useLocalNotifications } from '@/hooks/useLocalNotifications';
 
 // Index stays eager (first screen), rest are lazy loaded for bundle optimization
 import Index from '@/pages/Index';
@@ -51,6 +52,7 @@ const TabShell: React.FC = () => {
   const location = useLocation();
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
+  useLocalNotifications();
 
   const activeTab: TabPath | null = isTabPath(location.pathname) ? location.pathname : null;
   const prevTabRef = useRef<TabPath | null>(activeTab);
