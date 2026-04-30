@@ -78,6 +78,18 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
       return true;
     }
 
+    // Check if plan limit is exhausted → consume bonus credit
+    const planRem = Math.max(0, baseDailyLimit - usageCount);
+    if (planRem <= 0 && bonusCredits.bonus_analysis > 0) {
+      try {
+        const consumed = await useBonusCredit('bonus_analysis');
+        if (consumed) return true;
+      } catch (e) {
+        console.error('Error consuming bonus analysis credit:', e);
+      }
+      return false;
+    }
+
     try {
       const { data, error } = await supabase.rpc('increment_analysis_usage');
 
@@ -92,7 +104,7 @@ export const useAnalysisLimit = (): UseAnalysisLimitReturn => {
       console.error('Error incrementing analysis usage:', e);
       return false;
     }
-  }, [user, planType, isAdmin, usageCount]);
+  }, [user, planType, isAdmin, usageCount, baseDailyLimit, bonusCredits.bonus_analysis, useBonusCredit]);
 
   const checkLimit = useCallback(async (): Promise<boolean> => {
     // Users with unlimited analysis always can analyze
