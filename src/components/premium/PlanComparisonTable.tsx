@@ -167,14 +167,12 @@ const PlanComparisonTable: React.FC = () => {
         </div>
       </div>
 
-      {/* Sticky CTA strip */}
-      <button
-        onClick={() => { tap(); navigate(`/premium?from=compare-${selected}`); }}
-        className="w-full px-4 py-3.5 bg-gradient-to-r from-primary/15 to-emerald-500/10 border-t border-primary/20 text-[13px] font-bold text-primary active:opacity-80 transition-opacity flex items-center justify-center gap-1.5"
-        style={{ WebkitTapHighlightColor: 'transparent' }}
-      >
-        {t('compare.upgradeTo', { plan: t(`compare.cols.${selected}`), defaultValue: `Upgrade to ${t(`compare.cols.${selected}`)} →` })}
-      </button>
+      {/* Bottom accent bar */}
+      <div className="px-4 py-3 border-t border-border/15 flex items-center justify-center">
+        <span className="text-[11px] text-muted-foreground/60 font-medium">
+          {t('compare.upgradeTo', { plan: t(`compare.cols.${selected}`), defaultValue: `${t(`compare.cols.${selected}`)} — scroll up to select` })}
+        </span>
+      </div>
     </motion.section>
   );
 };

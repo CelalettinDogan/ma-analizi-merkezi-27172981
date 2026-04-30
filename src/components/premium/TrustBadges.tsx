@@ -17,15 +17,17 @@ const TrustBadges: React.FC = () => {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.35 }}
-      className="grid grid-cols-4 gap-2"
+      className="grid grid-cols-2 gap-2"
     >
       {items.map(({ icon: Icon, key }) => (
         <div
           key={key}
-          className="flex flex-col items-center text-center gap-1.5 px-1 py-2.5 rounded-xl bg-muted/15 border border-border/25"
+          className="flex items-center gap-2.5 px-3 py-3 rounded-xl bg-muted/15 border border-border/25"
         >
-          <Icon className="w-3.5 h-3.5 text-primary/80 shrink-0" />
-          <span className="text-[9.5px] font-semibold text-muted-foreground leading-tight">
+          <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <Icon className="w-3.5 h-3.5 text-primary/80" />
+          </div>
+          <span className="text-[11px] font-semibold text-muted-foreground leading-tight">
             {t(`trust.${key}`)}
           </span>
         </div>
