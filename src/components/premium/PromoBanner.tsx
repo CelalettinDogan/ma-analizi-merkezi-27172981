@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Flame } from 'lucide-react';
+import { Clock, Flame, Trophy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface PromoBannerProps {
@@ -62,7 +62,7 @@ const PromoBanner: React.FC<PromoBannerProps> = ({ type, discount = 20, expiresL
             animate={{ rotate: [0, 10, -10, 0] }}
             transition={{ repeat: Infinity, duration: 3 }}
           >
-            <span className="text-lg">⚽</span>
+            <Trophy className="w-5 h-5 text-primary" />
           </motion.div>
         </div>
         <div className="flex-1 min-w-0">

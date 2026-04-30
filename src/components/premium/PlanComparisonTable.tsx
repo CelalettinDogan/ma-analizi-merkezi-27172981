@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useHapticTap } from '@/hooks/useHapticTap';
@@ -32,7 +31,7 @@ const rows: Row[] = [
  */
 const PlanComparisonTable: React.FC = () => {
   const { t } = useTranslation('premium');
-  const navigate = useNavigate();
+  
   const tap = useHapticTap('light');
   const [selected, setSelected] = useState<PlanKey>('plus');
 
@@ -169,7 +168,7 @@ const PlanComparisonTable: React.FC = () => {
 
       {/* Sticky CTA strip */}
       <button
-        onClick={() => { tap(); navigate(`/premium?from=compare-${selected}`); }}
+        onClick={() => { tap(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
         className="w-full px-4 py-3.5 bg-gradient-to-r from-primary/15 to-emerald-500/10 border-t border-primary/20 text-[13px] font-bold text-primary active:opacity-80 transition-opacity flex items-center justify-center gap-1.5"
         style={{ WebkitTapHighlightColor: 'transparent' }}
       >
