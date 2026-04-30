@@ -192,7 +192,9 @@
       "priority": "Öncelikli destek"
     },
     "yes": "Var",
-    "no": "Yok"
+    "no": "Yok",
+    "selectPlan": "Free ile karşılaştırmak için bir plan seç",
+    "upgradeTo": "{{plan}}'a geç →"
   },
   "yearly": {
     "saveBadge": "{{percent}}% tasarruf",
