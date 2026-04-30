@@ -61,7 +61,7 @@ const localStoragePersister = {
   },
 };
 
-const HIDE_BOTTOM_NAV_ROUTES = ['/auth', '/reset-password', '/terms', '/privacy', '/delete-account', '/admin', '/callback'];
+const HIDE_BOTTOM_NAV_ROUTES = ['/auth', '/reset-password', '/terms', '/privacy', '/delete-account', '/admin', '/callback', '/rewards'];
 
 const GlobalBottomNav = () => {
   const location = useLocation();
