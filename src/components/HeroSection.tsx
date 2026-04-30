@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { Search, Shield, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import StreakBadge from '@/components/streak/StreakBadge';
 
 interface HeroStats {
   liveCount: number;
@@ -72,10 +71,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                   <Shield className="w-3 h-3 text-primary shrink-0" />
                   <span className="text-xs font-semibold text-foreground truncate">{t('hero.aiAccuracy')}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <p className="text-micro text-muted-foreground truncate">{animatedPredictions.toLocaleString()}{t('hero.analysesSuffix')}</p>
-                  <StreakBadge />
-                </div>
+                <p className="text-micro text-muted-foreground truncate">{animatedPredictions.toLocaleString()}{t('hero.analysesSuffix')}</p>
               </div>
             </div>
 

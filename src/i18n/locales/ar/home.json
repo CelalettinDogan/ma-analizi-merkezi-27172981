@@ -29,9 +29,7 @@
     "dates": {
       "today": "اليوم",
       "tomorrow": "غدًا"
-    },
-    "highConfidence": "أعلى احتمال اليوم",
-    "unlockPremium": "افتح مع بريميوم"
+    }
   },
   "upcoming": {
     "loading": "جارٍ تحميل المباريات...",
@@ -94,5 +92,9 @@
     "searchingTeam": "جارٍ البحث عن مباراة لـ {{team}}...",
     "noUpcomingForTeam": "لم يتم العثور على مباراة قادمة لـ {{team}}.",
     "teamSearchError": "فشل البحث عن المباراة"
+  },
+  "dailyPick": {
+    "title": "اختيار اليوم",
+    "unlockCta": "فتح مع بريميوم"
   }
 }

@@ -29,9 +29,7 @@
     "dates": {
       "today": "Today",
       "tomorrow": "Tomorrow"
-    },
-    "highConfidence": "Today's Top Pick",
-    "unlockPremium": "Unlock with Premium"
+    }
   },
   "upcoming": {
     "loading": "Loading matches...",
@@ -99,5 +97,9 @@
     "searchingTeam": "Searching match for {{team}}...",
     "noUpcomingForTeam": "No upcoming match found for {{team}}.",
     "teamSearchError": "Failed to search match"
+  },
+  "dailyPick": {
+    "title": "Today's Pick",
+    "unlockCta": "Unlock with Premium"
   }
 }

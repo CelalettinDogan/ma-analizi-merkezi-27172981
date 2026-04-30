@@ -1,46 +1,35 @@
 
-## Plan: Premium Score Highlight Row + Streak Badge Inline
+## "Gunun Yuksek Ihtimalli Skoru" Premium Teaser Bolumu
 
-### 1. StreakBadge'i HeroSection icerisine tasima
+Ana sayfaya, mevcut `smartPicksService` verisini kullanarak en yuksek confidence'li tahmini gosteren bir kart eklenecek. Free kullanicilar icerik blur'lu gorecek ve premium sayfasina yonlendirilecek.
 
-Suanki durumda `StreakBadge` ana sayfada ayri bir `div` icinde duruyor (satir 293-295) ve asagi itiyor. Bunu `HeroSection` icerisindeki accuracy ring satirina entegre edecegiz — ring'in solunda veya ustunde kompakt sekilde gorunecek. `Index.tsx`'deki ayri StreakBadge div'i kaldirilacak.
+### Yeni Bilesenler
 
-**Degisiklikler:**
-- `HeroSection.tsx`: StreakBadge import edilip accuracy row'unun icine yerlestirilecek (ring yaninda veya stats satirinda)
-- `Index.tsx`: Satir 293-295'teki bagimsiz `StreakBadge` div'i kaldirilacak
+**1. `src/components/home/DailyTopPrediction.tsx`**
 
-### 2. "Gunun Yuksek Ihtimalli Skoru" premium-only blur satiri
+- `getSmartPicks(1)` ile en yuksek confidence'li tahmini ceker
+- Iki gorunum modu:
+  - **Premium kullanici**: Tam icerik -- takimlar, skor tahmini, confidence yuzdesi, tahmin tipi
+  - **Free kullanici**: Ayni kart ama icerik `blur-lg` ile bulanik, uzerinde `PremiumTeaserOverlay` ile "Premium ile Gor" CTA butonu
+- Kart tasarimi:
+  - Glassmorphism (`bg-card/60 backdrop-blur-sm border border-border/50`)
+  - Sol ust: "Gunun Secimi" baslik + Sparkles ikonu
+  - Ortada: Takim armalar + isimler + skor tahmini + confidence bar
+  - Sag ust: Confidence badge (emerald renk)
+- Veri yoksa veya yuklenmiyorsa bilesen render edilmez (graceful hide)
+- `useQuery` ile cache'lenir (`staleTime: 5 * 60 * 1000`)
 
-Maclarin listesinde (TodaysMatches), Featured Match Card'in hemen altina veya match list'in en ustune yeni bir satir eklenecek. Bu satir:
+### Entegrasyon
 
-- Mevcut analiz verilerinden (cached AI preview) en yuksek confidence'a sahip macin skor tahminini gosterecek
-- **Premium kullanicilar**: Skoru net gorebilecek (ornegin "Liverpool 2-1 Arsenal - %78")
-- **Free/Guest kullanicilar**: Icerik `blur-sm` CSS ile bulanik gosterilecek, ustunde kucuk bir kilit ikonu ve "Premium ile gor" butonu olacak. Butona tiklayinca `/premium` sayfasina yonlendirilecek
+**2. `src/pages/Index.tsx` Guncelleme**
 
-**Yeni bilesenler:**
-- `src/components/premium/HighConfidenceScoreRow.tsx`: Blurlu/acik skor satiri. `usePlatformPremium` ile premium kontrolu yapar. Premium degilse blur + overlay + navigate('/premium') CTA gosterir.
+- `DailyTopPrediction` bilesenini `StreakBadge` ile `LeagueGrid` arasina yerlestirir
+- `usePlatformPremium` hook'u zaten mevcut -- `isPremium` degeri prop olarak iletilir
 
-**Entegrasyon:**
-- `TodaysMatches.tsx`: Featured card'dan sonra, match list'ten once `HighConfidenceScoreRow` renderlanacak. `matches` prop'undan en yuksek confidence'li maci secmek icin `useMatchAIPreview` kullanilacak.
+### Teknik Detaylar
 
-**Tasarim:**
-- Mevcut Surface/card stiline uygun, 8px grid, rounded-xl
-- Blur efekti: `filter: blur(6px)` + gradient overlay
-- Kilit ikonu + "Premium ile Gor" CTA butonu
-- Dark theme uyumlu, glassmorphism border
-
-### 3. i18n desteği
-
-Tum diller icin (tr, en, de, es, ar) `home.json` dosyalarina yeni key'ler eklenecek:
-- `todays.highConfidence` — bolum baslik/label
-- `todays.unlockWithPremium` — CTA metni
-
-### Dosya ozeti
-
-| Dosya | Islem |
-|-------|-------|
-| `src/components/premium/HighConfidenceScoreRow.tsx` | Yeni |
-| `src/components/HeroSection.tsx` | StreakBadge entegrasyonu |
-| `src/components/TodaysMatches.tsx` | HighConfidenceScoreRow ekleme |
-| `src/pages/Index.tsx` | Bagimsiz StreakBadge div'i kaldirma |
-| `src/i18n/locales/*/home.json` (5 dil) | Yeni key'ler |
+- Mevcut `smartPicksService.ts` ve `PremiumTeaserOverlay.tsx` yeniden kullanilir
+- Ek API cagrisi yok -- DB'deki predictions tablosundan cekilir
+- i18n: `src/i18n/locales/tr/home.json` ve diger dillere `dailyPick` keyleri eklenir
+- Tasarim: 8px grid, 12px radius, emerald/amber renk sistemi, `motion` animasyonlari
+- Premium kontrol: `usePlatformPremium().isPremium` ile

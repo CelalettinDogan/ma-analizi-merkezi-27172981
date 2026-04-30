@@ -10,6 +10,7 @@ import AppHeader from '@/components/layout/AppHeader';
 
 import LeagueGrid from '@/components/league/LeagueGrid';
 import MatchCarousel from '@/components/match/MatchCarousel';
+import DailyTopPrediction from '@/components/home/DailyTopPrediction';
 
 import CommandPalette from '@/components/navigation/CommandPalette';
 import Onboarding from '@/components/Onboarding';
@@ -20,7 +21,7 @@ import AnalysisLimitBanner from '@/components/premium/AnalysisLimitBanner';
 import AnalysisLimitSheet, { useAnalysisLimitSheet } from '@/components/premium/AnalysisLimitSheet';
 import LastFreeAnalysisBanner from '@/components/premium/LastFreeAnalysisBanner';
 import SmartPromotionTrigger from '@/components/premium/SmartPromotionTrigger';
-import HighConfidenceScoreRow from '@/components/premium/HighConfidenceScoreRow';
+import StreakBadge from '@/components/streak/StreakBadge';
 import {
   AnalysisLoadingState,
 } from '@/components/analysis';
@@ -290,11 +291,14 @@ const Index: React.FC = () => {
 
       {/* Main Content - Clean Single Column Flow */}
       <div className="container mx-auto px-4 py-5 space-y-7">
+        <div className="flex items-center gap-2 flex-wrap">
+          <StreakBadge />
+        </div>
         <LastFreeAnalysisBanner />
-        {/* High Confidence Score - Premium Only */}
-        {todaysMatches.length > 0 && (
-          <HighConfidenceScoreRow matches={todaysMatches} />
-        )}
+
+        {/* Daily Top Prediction — Premium Teaser */}
+        <DailyTopPrediction isPremium={isPremium} />
+
         {/* League Selection - Compact Pills with Scroll Indicator */}
         <motion.section 
           initial={{ opacity: 0, y: 10 }}

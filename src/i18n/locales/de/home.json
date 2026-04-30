@@ -29,9 +29,7 @@
     "dates": {
       "today": "Heute",
       "tomorrow": "Morgen"
-    },
-    "highConfidence": "Top-Tipp des Tages",
-    "unlockPremium": "Mit Premium freischalten"
+    }
   },
   "upcoming": {
     "loading": "Spiele werden geladen...",
@@ -99,5 +97,9 @@
     "searchingTeam": "Spiel für {{team}} wird gesucht...",
     "noUpcomingForTeam": "Kein kommendes Spiel für {{team}} gefunden.",
     "teamSearchError": "Suche fehlgeschlagen"
+  },
+  "dailyPick": {
+    "title": "Tipp des Tages",
+    "unlockCta": "Mit Premium freischalten"
   }
 }
