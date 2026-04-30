@@ -10,6 +10,8 @@ import { cn, getHybridConfidence, getConfidenceLevel } from '@/lib/utils';
 import ShareCard from '@/components/ShareCard';
 import { formatMatchDate } from '@/lib/utils';
 import ConfidenceBreakdownTooltip from './ConfidenceBreakdownTooltip';
+import { useAccessLevel } from '@/hooks/useAccessLevel';
+import PremiumTeaserOverlay from '@/components/premium/PremiumTeaserOverlay';
 
 interface AIRecommendationCardProps {
   predictions: Prediction[];
@@ -18,6 +20,8 @@ interface AIRecommendationCardProps {
 
 const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions, matchInput }) => {
   const { t } = useTranslation('analysis');
+  const { isPremium, isAdmin } = useAccessLevel();
+  const canSeeFullReasoning = isPremium || isAdmin;
   const confidenceConfig = {
     'yüksek': { icon: Star, label: t('confidence.highBadge'), color: 'text-emerald-400', bg: 'bg-emerald-500/20' },
     'orta': { icon: Info, label: t('confidence.mediumBadge'), color: 'text-amber-400', bg: 'bg-amber-500/20' },
@@ -123,14 +127,18 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
 
         {/* Reasoning */}
         {reasoning && (
-          <div className="mb-4">
-            <p className={cn(
-              "text-sm text-muted-foreground transition-all",
-              !showFullReasoning && isLongReasoning && "line-clamp-2"
-            )}>
+          <div className={cn('mb-4 relative', !canSeeFullReasoning && 'overflow-hidden')}>
+            <p
+              className={cn(
+                'text-sm text-muted-foreground transition-all',
+                !canSeeFullReasoning
+                  ? 'max-h-16 overflow-hidden'
+                  : !showFullReasoning && isLongReasoning && 'line-clamp-2',
+              )}
+            >
               {reasoning}
             </p>
-            {isLongReasoning && (
+            {canSeeFullReasoning && isLongReasoning && (
               <button
                 onClick={() => setShowFullReasoning(!showFullReasoning)}
                 className="min-h-[44px] text-xs text-primary active:opacity-70 mt-1 touch-manipulation flex items-center transition-opacity"
@@ -138,6 +146,9 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
               >
                 {showFullReasoning ? t('actions.showLess') : t('actions.showMore')}
               </button>
+            )}
+            {!canSeeFullReasoning && isLongReasoning && (
+              <PremiumTeaserOverlay />
             )}
           </div>
         )}

@@ -25,9 +25,18 @@
   },
   "plans": {
     "popular": "Beliebt",
-    "basic": { "name": "Basic", "tagline": "3 KI/Tag" },
-    "plus": { "name": "Plus", "tagline": "5 KI/Tag" },
-    "pro": { "name": "Pro", "tagline": "10 KI/Tag" },
+    "basic": {
+      "name": "Basic",
+      "tagline": "3 KI/Tag"
+    },
+    "plus": {
+      "name": "Plus",
+      "tagline": "5 KI/Tag"
+    },
+    "pro": {
+      "name": "Pro",
+      "tagline": "10 KI/Tag"
+    },
     "chatPerDay": "{{count}}/Tag",
     "summaryLine": "{{count}} KI-Nachrichten/Tag • Unbegrenzte Analysen",
     "fromPrice": "Ab {{price}}/Monat"
@@ -139,5 +148,48 @@
   "upgrade": {
     "title": "Upgrade auf Premium",
     "subtitle": "Schalte unbegrenzte Analysen und den KI-Assistenten frei"
+  },
+  "teaser": {
+    "unlockFull": "Mit Premium vollständig freischalten",
+    "premiumOnly": "Nur Premium"
+  },
+  "social": {
+    "thisWeek": "{{count}} Personen sind diese Woche zu Premium gewechselt",
+    "thisWeekZero": "Diese Woche kommen neue Premium-Mitglieder dazu"
+  },
+  "lastFreeAnalysis": {
+    "title": "Deine letzte kostenlose Analyse",
+    "subtitle": "Mit Premium unbegrenzt analysieren",
+    "cta": "Upgrade"
+  },
+  "compare": {
+    "title": "Pläne vergleichen",
+    "subtitle": "Wähle, was zu dir passt",
+    "cols": {
+      "feature": "Funktion",
+      "free": "Free",
+      "basic": "Basic",
+      "plus": "Plus",
+      "pro": "Pro"
+    },
+    "rows": {
+      "analysis": "Analysen/Tag",
+      "analysisFree": "2/Tag",
+      "analysisUnlimited": "Unbegrenzt",
+      "chat": "KI-Nachr./Tag",
+      "chatFree": "Keine",
+      "history": "Verlauf",
+      "historyFree": "7 Tage",
+      "historyPremium": "Alle",
+      "ads": "Werbefrei",
+      "deepStats": "Tiefenstatistik",
+      "priority": "Priorisierter Support"
+    },
+    "yes": "Ja",
+    "no": "Nein"
+  },
+  "yearly": {
+    "saveBadge": "{{percent}}% sparen",
+    "strikePerYear": "statt {{price}}/Jahr"
   }
 }

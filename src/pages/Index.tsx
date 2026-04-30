@@ -18,6 +18,7 @@ import { MatchCardSkeleton } from '@/components/ui/skeletons';
 import PremiumPromotionModal from '@/components/premium/PremiumPromotionModal';
 import AnalysisLimitBanner from '@/components/premium/AnalysisLimitBanner';
 import AnalysisLimitSheet, { useAnalysisLimitSheet } from '@/components/premium/AnalysisLimitSheet';
+import LastFreeAnalysisBanner from '@/components/premium/LastFreeAnalysisBanner';
 import {
   AnalysisLoadingState,
 } from '@/components/analysis';
@@ -287,6 +288,7 @@ const Index: React.FC = () => {
 
       {/* Main Content - Clean Single Column Flow */}
       <div className="container mx-auto px-4 py-5 space-y-7">
+        <LastFreeAnalysisBanner />
         {/* League Selection - Compact Pills with Scroll Indicator */}
         <motion.section 
           initial={{ opacity: 0, y: 10 }}

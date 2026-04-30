@@ -25,9 +25,18 @@
   },
   "plans": {
     "popular": "Popular",
-    "basic": { "name": "Basic", "tagline": "3 AI/day" },
-    "plus": { "name": "Plus", "tagline": "5 AI/day" },
-    "pro": { "name": "Pro", "tagline": "10 AI/day" },
+    "basic": {
+      "name": "Basic",
+      "tagline": "3 AI/day"
+    },
+    "plus": {
+      "name": "Plus",
+      "tagline": "5 AI/day"
+    },
+    "pro": {
+      "name": "Pro",
+      "tagline": "10 AI/day"
+    },
     "chatPerDay": "{{count}}/day",
     "summaryLine": "{{count}} AI messages/day • Unlimited analysis",
     "fromPrice": "Starting at {{price}}/mo"
@@ -139,5 +148,48 @@
   "upgrade": {
     "title": "Upgrade to Premium",
     "subtitle": "Unlock unlimited analysis and the AI Assistant"
+  },
+  "teaser": {
+    "unlockFull": "Unlock the full take with Premium",
+    "premiumOnly": "Premium only"
+  },
+  "social": {
+    "thisWeek": "{{count}} people upgraded to Premium this week",
+    "thisWeekZero": "New Premium members are joining this week"
+  },
+  "lastFreeAnalysis": {
+    "title": "Your last free analysis",
+    "subtitle": "Go unlimited with Premium",
+    "cta": "Upgrade"
+  },
+  "compare": {
+    "title": "Compare Plans",
+    "subtitle": "Pick what fits you",
+    "cols": {
+      "feature": "Feature",
+      "free": "Free",
+      "basic": "Basic",
+      "plus": "Plus",
+      "pro": "Pro"
+    },
+    "rows": {
+      "analysis": "Daily analyses",
+      "analysisFree": "2/day",
+      "analysisUnlimited": "Unlimited",
+      "chat": "AI msgs/day",
+      "chatFree": "None",
+      "history": "History access",
+      "historyFree": "7 days",
+      "historyPremium": "All",
+      "ads": "Ad-free",
+      "deepStats": "Deep stats",
+      "priority": "Priority support"
+    },
+    "yes": "Yes",
+    "no": "No"
+  },
+  "yearly": {
+    "saveBadge": "Save {{percent}}%",
+    "strikePerYear": "instead of {{price}}/yr"
   }
 }

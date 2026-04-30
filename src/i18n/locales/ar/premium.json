@@ -25,9 +25,18 @@
   },
   "plans": {
     "popular": "الأكثر شيوعًا",
-    "basic": { "name": "Basic", "tagline": "3 ذكاء/يوم" },
-    "plus": { "name": "Plus", "tagline": "5 ذكاء/يوم" },
-    "pro": { "name": "Pro", "tagline": "10 ذكاء/يوم" },
+    "basic": {
+      "name": "Basic",
+      "tagline": "3 ذكاء/يوم"
+    },
+    "plus": {
+      "name": "Plus",
+      "tagline": "5 ذكاء/يوم"
+    },
+    "pro": {
+      "name": "Pro",
+      "tagline": "10 ذكاء/يوم"
+    },
     "chatPerDay": "{{count}}/يوم",
     "summaryLine": "{{count}} رسالة ذكاء/يوم • تحليلات غير محدودة",
     "fromPrice": "ابتداءً من {{price}}/شهر"
@@ -139,5 +148,48 @@
   "upgrade": {
     "title": "ترقّ إلى بريميوم",
     "subtitle": "افتح التحليلات غير المحدودة والمساعد الذكي"
+  },
+  "teaser": {
+    "unlockFull": "افتح الكل مع Premium",
+    "premiumOnly": "حصري لـ Premium"
+  },
+  "social": {
+    "thisWeek": "ترقّى {{count}} شخصًا إلى Premium هذا الأسبوع",
+    "thisWeekZero": "ينضمّ أعضاء Premium جدد هذا الأسبوع"
+  },
+  "lastFreeAnalysis": {
+    "title": "آخر تحليل مجاني لك",
+    "subtitle": "تحليل غير محدود مع Premium",
+    "cta": "ترقية"
+  },
+  "compare": {
+    "title": "قارن الخطط",
+    "subtitle": "اختر ما يناسبك",
+    "cols": {
+      "feature": "الميزة",
+      "free": "مجاني",
+      "basic": "Basic",
+      "plus": "Plus",
+      "pro": "Pro"
+    },
+    "rows": {
+      "analysis": "تحليلات يوميًا",
+      "analysisFree": "٢/يوم",
+      "analysisUnlimited": "غير محدود",
+      "chat": "رسائل AI/يوم",
+      "chatFree": "لا شيء",
+      "history": "سجل الوصول",
+      "historyFree": "٧ أيام",
+      "historyPremium": "الكل",
+      "ads": "بدون إعلانات",
+      "deepStats": "إحصائيات عميقة",
+      "priority": "دعم ذو أولوية"
+    },
+    "yes": "نعم",
+    "no": "لا"
+  },
+  "yearly": {
+    "saveBadge": "وفّر {{percent}}%",
+    "strikePerYear": "بدلاً من {{price}}/سنة"
   }
 }
