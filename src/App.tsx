@@ -122,6 +122,9 @@ const AppContent = () => {
     purchaseService.initialize().catch(console.error);
   }, []);
 
+  // Initialize push notifications
+  usePushNotifications();
+
   // Handle Android back button
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
