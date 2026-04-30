@@ -19,6 +19,8 @@ import PremiumPromotionModal from '@/components/premium/PremiumPromotionModal';
 import AnalysisLimitBanner from '@/components/premium/AnalysisLimitBanner';
 import AnalysisLimitSheet, { useAnalysisLimitSheet } from '@/components/premium/AnalysisLimitSheet';
 import LastFreeAnalysisBanner from '@/components/premium/LastFreeAnalysisBanner';
+import SmartPromotionTrigger from '@/components/premium/SmartPromotionTrigger';
+import StreakBadge from '@/components/streak/StreakBadge';
 import {
   AnalysisLoadingState,
 } from '@/components/analysis';
@@ -288,6 +290,9 @@ const Index: React.FC = () => {
 
       {/* Main Content - Clean Single Column Flow */}
       <div className="container mx-auto px-4 py-5 space-y-7">
+        <div className="flex items-center gap-2 flex-wrap">
+          <StreakBadge />
+        </div>
         <LastFreeAnalysisBanner />
         {/* League Selection - Compact Pills with Scroll Indicator */}
         <motion.section 
@@ -433,6 +438,8 @@ const Index: React.FC = () => {
         isOpen={analysisLimitSheet.isOpen}
         onClose={analysisLimitSheet.close}
       />
+
+      <SmartPromotionTrigger />
     </div>
   );
 };

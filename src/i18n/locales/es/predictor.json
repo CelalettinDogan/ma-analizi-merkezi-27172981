@@ -1,0 +1,13 @@
+{
+  "accuracy": "Precisión",
+  "totalPredictions": "Predicciones",
+  "verified": "Verificadas",
+  "correct": "Correctas",
+  "ranks": {
+    "rookie": "Novato",
+    "amateur": "Amateur",
+    "analyst": "Analista",
+    "expert": "Experto",
+    "master": "Maestro"
+  }
+}

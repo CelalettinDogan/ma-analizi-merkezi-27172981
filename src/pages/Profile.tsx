@@ -17,6 +17,7 @@ import { useAnalysisLimit } from '@/hooks/useAnalysisLimit';
 import { useChatbot } from '@/hooks/useChatbot';
 import { useTheme } from 'next-themes';
 import AppHeader from '@/components/layout/AppHeader';
+import PredictorRankCard from '@/components/predictor/PredictorRankCard';
 import { supabase } from '@/integrations/supabase/client';
 
 import ProfileHeader from '@/components/profile/ProfileHeader';
@@ -131,6 +132,10 @@ const Profile = () => {
               dailyChatLimit={dailyChatLimit}
               chatRemaining={chatRemaining}
             />
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <PredictorRankCard />
           </motion.div>
 
           <motion.div variants={itemVariants}>

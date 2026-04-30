@@ -1,0 +1,13 @@
+{
+  "accuracy": "İsabet",
+  "totalPredictions": "Tahmin",
+  "verified": "Doğrulanmış",
+  "correct": "Doğru",
+  "ranks": {
+    "rookie": "Çaylak",
+    "amateur": "Amatör",
+    "analyst": "Analist",
+    "expert": "Uzman",
+    "master": "Usta"
+  }
+}
