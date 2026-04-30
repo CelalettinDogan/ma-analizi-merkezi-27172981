@@ -39,6 +39,8 @@ const confidenceConfig = {
 
 const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predictions, matchInput }) => {
   const { t } = useTranslation('analysis');
+  const { isPremium, isAdmin } = useAccessLevel();
+  const canSeeScore = isPremium || isAdmin;
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const { addToSet, items } = useAnalysisSet();
 
