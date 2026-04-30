@@ -1,50 +1,56 @@
 
-# Premium Sayfa -- 2026 Native UI/UX Yukseltme
+# Premium Sayfa -- 2026 Native Capacitor Yukseltmesi
 
-Mevcut sayfa iyi bir temel uzerine kurulu (framer-motion, haptics, glassmorphism) ama bazi alanlarda 2026 native standartlarinin gerisinde kaliyor.
+Mevcut sayfayi inceledim. Temel yapi iyi (framer-motion, haptics, carousel) ama gercek bir native uygulama hissi icin asagidaki iyilestirmeler gerekiyor:
 
-## Degisiklikler
+---
 
-### 1. Plan Kartlari -- Horizontal Scroll Carousel
-- 3 kart yan yana 390px'de cok sikisik ve 9px fontlar okunmuyor
-- Kartlari snap-scroll horizontal carousel'e cevir (popular kart ortada, snap-center)
-- Font boyutlarini 12-14px'e yukselterek okunabilirlik sagla
-- Her karta glassmorphism background ekle
+## 1. BackButton Cakismasi Duzeltme
+- BackButton `absolute` konumda ve AppHeader'in ustune biniyor
+- AppHeader'in icine entegre edilecek: sol tarafa back chevron, ortaya logo, saga mevcut iconlar
+- Premium sayfasinda AppHeader'a `showBack` prop'u gecilecek
 
-### 2. PromoBanner -- Emoji Kaldirma
-- `⚽` emojisini Lucide icon ile degistir (proje kurali: no emojis)
-- Seasonal banner icin `Trophy` veya `Target` icon kullan
+## 2. Plan Kartlari -- Tam Genislik Vertical Stack
+- 72vw horizontal carousel kucuk ekranlarda (320px) sorun cikarir
+- Kartlari dikey stack'e cevir: her biri tam genislikte, secili olan vurgulu
+- Popular kart hafif scale(1.02) ve gradient border ile one cikar
+- Selection radio indicator yerine tum kart highlight olacak
 
-### 3. ActivePlanView -- Canlandirma
-- Giris animasyonu ekle (staggered fade-in)
-- Plan ikonu icin gradient border ve subtle pulse
-- Feature grid'e hover/tap scale efekti
+## 3. Period Toggle -- Layout-based Pozisyonlama
+- `calc(50% - 4px)` hardcoded width hesaplamasi yerine grid/flex tabanli cozum
+- Her buton `flex-1`, aktif olan `bg-card` ile gecis
 
-### 4. Back Navigation Ekleme
-- Secondary page standardi: 44px back button (ArrowLeft)
-- AppHeader yerine veya ustune back chevron ekle
+## 4. CTA Butonu -- Sticky Bottom
+- Scroll ile kaybolmasin, sayfanin altinda sabit kalsin
+- `position: sticky` + `bottom: calc(80px + safe-area)` ile bottom nav ustunde
+- Glassmorphism backdrop ile icerikten ayrissin
 
-### 5. Karsilastirma Tablosu CTA Duzeltme
-- Kendine link veren CTA'yi kaldir veya scroll-to-top + plan secimi mantigi ekle
+## 5. HeroGlow -- Performans Optimizasyonu
+- Surekli framer-motion animasyonu GPU'yu yorar
+- CSS `@keyframes` + `will-change: transform` ile degistirilecek
+- `prefers-reduced-motion` kontrolu eklenir
 
-### 6. Trust Badges Responsive
-- 4-column'dan 2x2 grid veya horizontal scroll'a gecis
-- Font boyutunu 10.5-11px'e yukselterek okunabilirlik
+## 6. Loading Skeleton -- Shimmer Efekti
+- Mevcut skeleton duzgun ama shimmer gradient eksik
+- Pulse yerine soldan saga akan gradient shimmer
 
-### 7. Loading Skeleton Duzeltme
-- `min-h-screen` yerine `h-screen flex flex-col` kullan (proje standardi)
+## 7. Touch/Native Uyumluluk
+- Tum butonlara `user-select: none` ve `-webkit-tap-highlight-color: transparent`
+- `overscroll-behavior: contain` ana scroll alanina
+- Feature pills'e `whileTap={{ scale: 0.95 }}` eklenir
 
-### 8. Period Toggle Iyilestirme
-- Hardcoded width hesaplamasini layout-based cozume cevir
+## 8. Spinner Emoji Kaldirma
+- Loading state'de `&#9203;` (hourglass emoji) var
+- `Loader2` Lucide icon ile degistirilecek (animate-spin)
 
-## Dokunulmayacaklar
-- purchaseService entegrasyonu (calisir durumda)
-- i18n yapilandirmasi (mevcut ceviri anahtarlari korunacak, yeniler eklenecek)
-- Supabase client/types dosyalari
+## 9. Comparison Table -- Unused Navigate Import
+- `useNavigate` import edilmis ama CTA kaldirildigi icin kullanilmiyor
+- Temizlenecek
+
+---
 
 ## Degisecek Dosyalar
-- `src/pages/Premium.tsx` -- Plan kartlari carousel, loading skeleton, back nav
-- `src/components/premium/PromoBanner.tsx` -- Emoji kaldirma
-- `src/components/premium/TrustBadges.tsx` -- Responsive grid
-- `src/components/premium/PlanComparisonTable.tsx` -- CTA duzeltme
-- `src/i18n/locales/*/premium.json` -- Yeni ceviri anahtarlari (5 dil)
+- `src/pages/Premium.tsx` -- Vertical plan cards, sticky CTA, spinner fix, touch props
+- `src/components/layout/AppHeader.tsx` -- `showBack` prop ekleme
+- `src/components/premium/HeroGlow.tsx` -- CSS animasyona gecis
+- `src/components/premium/PlanComparisonTable.tsx` -- Unused import temizleme

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useHapticTap } from '@/hooks/useHapticTap';
@@ -26,13 +25,8 @@ const rows: Row[] = [
   { labelKey: 'priority', free: false,          basic: false,                plus: true,                 pro: true },
 ];
 
-/**
- * Mobile-first 2-column comparison: Free vs selected plan.
- * Plan switcher is a pill segmented control. Selected plan column glows.
- */
 const PlanComparisonTable: React.FC = () => {
   const { t } = useTranslation('premium');
-  const navigate = useNavigate();
   const tap = useHapticTap('light');
   const [selected, setSelected] = useState<PlanKey>('plus');
 
@@ -77,7 +71,6 @@ const PlanComparisonTable: React.FC = () => {
       transition={{ delay: 0.25 }}
       className="rounded-3xl border border-border/40 bg-card/60 backdrop-blur-xl overflow-hidden shadow-[0_8px_32px_-8px_hsl(0_0%_0%/0.4)]"
     >
-      {/* Header */}
       <div className="px-4 pt-4 pb-3">
         <h3 className="text-[15px] font-bold text-foreground">{t('compare.title')}</h3>
         <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -85,10 +78,9 @@ const PlanComparisonTable: React.FC = () => {
         </p>
       </div>
 
-      {/* Segmented control */}
       <div className="px-4 mb-3">
-        <div className="relative inline-flex w-full bg-muted/40 rounded-2xl p-1 border border-border/30">
-          {planOptions.map((opt, idx) => (
+        <div className="relative flex w-full bg-muted/40 rounded-2xl p-1 border border-border/30">
+          {planOptions.map((opt) => (
             <button
               key={opt.key}
               onClick={() => { tap(); setSelected(opt.key); }}
@@ -96,7 +88,7 @@ const PlanComparisonTable: React.FC = () => {
                 'relative flex-1 z-10 py-2 rounded-xl text-[12px] font-bold transition-colors',
                 selected === opt.key ? 'text-primary-foreground' : 'text-muted-foreground',
               )}
-              style={{ WebkitTapHighlightColor: 'transparent' }}
+              style={{ WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
             >
               {selected === opt.key && (
                 <motion.div
@@ -111,7 +103,6 @@ const PlanComparisonTable: React.FC = () => {
         </div>
       </div>
 
-      {/* 2-column compare grid */}
       <div className="px-2 pb-2">
         <div className="grid grid-cols-[1.2fr_0.8fr_1fr] items-center px-2 pb-2">
           <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/60">
@@ -167,10 +158,9 @@ const PlanComparisonTable: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom accent bar */}
       <div className="px-4 py-3 border-t border-border/15 flex items-center justify-center">
         <span className="text-[11px] text-muted-foreground/60 font-medium">
-          {t('compare.upgradeTo', { plan: t(`compare.cols.${selected}`), defaultValue: `${t(`compare.cols.${selected}`)} — scroll up to select` })}
+          {t('compare.upgradeTo', { plan: t(`compare.cols.${selected}`), defaultValue: `${t(`compare.cols.${selected}`)}` })}
         </span>
       </div>
     </motion.section>
