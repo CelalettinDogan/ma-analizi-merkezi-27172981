@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Plus, Star, AlertTriangle, Info, ChevronDown } from 'lucide-react';
+import { Sparkles, Plus, Star, AlertTriangle, Info, ChevronDown, Lock as LockIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Prediction, MatchInput } from '@/types/match';
 import { Progress } from '@/components/ui/progress';
