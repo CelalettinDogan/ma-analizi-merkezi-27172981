@@ -1,41 +1,73 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Check, Minus } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Check, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { useHapticTap } from '@/hooks/useHapticTap';
 
-type CellValue = string | boolean;
+type PlanKey = 'basic' | 'plus' | 'pro';
+type Cell = string | true | false;
 
 interface Row {
   labelKey: string;
-  values: [CellValue, CellValue, CellValue, CellValue]; // free, basic, plus, pro
+  free: Cell;
+  basic: Cell;
+  plus: Cell;
+  pro: Cell;
 }
 
 const rows: Row[] = [
-  { labelKey: 'analysis', values: ['analysisFree', 'analysisUnlimited', 'analysisUnlimited', 'analysisUnlimited'] as any },
-  { labelKey: 'chat',     values: ['chatFree', '3', '5', '10'] },
-  { labelKey: 'history',  values: ['historyFree', 'historyPremium', 'historyPremium', 'historyPremium'] as any },
-  { labelKey: 'ads',      values: [false, true, true, true] },
-  { labelKey: 'deepStats', values: [false, true, true, true] },
-  { labelKey: 'priority', values: [false, false, true, true] },
+  { labelKey: 'analysis', free: 'analysisFree', basic: 'analysisUnlimited', plus: 'analysisUnlimited', pro: 'analysisUnlimited' },
+  { labelKey: 'chat',     free: 'chatFree',     basic: '3',                  plus: '5',                  pro: '10' },
+  { labelKey: 'history',  free: 'historyFree',  basic: 'historyPremium',     plus: 'historyPremium',     pro: 'historyPremium' },
+  { labelKey: 'ads',      free: false,          basic: true,                 plus: true,                 pro: true },
+  { labelKey: 'deepStats',free: false,          basic: true,                 plus: true,                 pro: true },
+  { labelKey: 'priority', free: false,          basic: false,                plus: true,                 pro: true },
 ];
 
+/**
+ * Mobile-first 2-column comparison: Free vs selected plan.
+ * Plan switcher is a pill segmented control. Selected plan column glows.
+ */
 const PlanComparisonTable: React.FC = () => {
   const { t } = useTranslation('premium');
+  const navigate = useNavigate();
+  const tap = useHapticTap('light');
+  const [selected, setSelected] = useState<PlanKey>('plus');
 
-  const renderCell = (val: CellValue, isHighlight: boolean) => {
-    if (val === true) return <Check className={cn('w-4 h-4 mx-auto', isHighlight ? 'text-primary' : 'text-emerald-500')} />;
-    if (val === false) return <Minus className="w-3 h-3 mx-auto text-muted-foreground/40" />;
-    // String — could be a translation key under compare.rows or a literal number string
-    const translated = t(`compare.rows.${val as string}`, { defaultValue: val as string });
-    return <span className={cn('text-[11px]', isHighlight ? 'font-bold text-primary' : 'text-foreground')}>{translated}</span>;
+  const renderCell = (val: Cell, highlight: boolean) => {
+    if (val === true) {
+      return (
+        <div className={cn(
+          'mx-auto w-6 h-6 rounded-full flex items-center justify-center',
+          highlight ? 'bg-primary/20 shadow-[0_0_12px_hsl(var(--primary)/0.4)]' : 'bg-emerald-500/15',
+        )}>
+          <Check className={cn('w-3.5 h-3.5', highlight ? 'text-primary' : 'text-emerald-400')} strokeWidth={3} />
+        </div>
+      );
+    }
+    if (val === false) {
+      return (
+        <div className="mx-auto w-6 h-6 rounded-full bg-muted/30 flex items-center justify-center">
+          <X className="w-3 h-3 text-muted-foreground/50" strokeWidth={2.5} />
+        </div>
+      );
+    }
+    return (
+      <span className={cn(
+        'text-[12px] font-semibold',
+        highlight ? 'text-primary' : 'text-foreground/80',
+      )}>
+        {t(`compare.rows.${val}`, { defaultValue: val })}
+      </span>
+    );
   };
 
-  const cols = [
-    { key: 'free' as const, label: t('compare.cols.free'), highlight: false },
-    { key: 'basic' as const, label: t('compare.cols.basic'), highlight: false },
-    { key: 'plus' as const, label: t('compare.cols.plus'), highlight: true },
-    { key: 'pro' as const, label: t('compare.cols.pro'), highlight: false },
+  const planOptions: { key: PlanKey; label: string }[] = [
+    { key: 'basic', label: t('compare.cols.basic') },
+    { key: 'plus',  label: t('compare.cols.plus') },
+    { key: 'pro',   label: t('compare.cols.pro') },
   ];
 
   return (
@@ -43,52 +75,106 @@ const PlanComparisonTable: React.FC = () => {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.25 }}
-      className="rounded-2xl border border-border/40 bg-card/50 overflow-hidden"
+      className="rounded-3xl border border-border/40 bg-card/60 backdrop-blur-xl overflow-hidden shadow-[0_8px_32px_-8px_hsl(0_0%_0%/0.4)]"
     >
-      <div className="px-4 py-3 border-b border-border/40">
-        <h3 className="text-sm font-bold text-foreground">{t('compare.title')}</h3>
-        <p className="text-[11px] text-muted-foreground mt-0.5">{t('compare.subtitle')}</p>
+      {/* Header */}
+      <div className="px-4 pt-4 pb-3">
+        <h3 className="text-[15px] font-bold text-foreground">{t('compare.title')}</h3>
+        <p className="text-[11px] text-muted-foreground mt-0.5">
+          {t('compare.selectPlan', 'Tap a plan to compare with Free')}
+        </p>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-[11px]">
-          <thead className="bg-muted/20">
-            <tr>
-              <th className="text-left font-semibold text-muted-foreground px-3 py-2.5 sticky left-0 bg-muted/20">
-                {t('compare.cols.feature')}
-              </th>
-              {cols.map(c => (
-                <th
-                  key={c.key}
-                  className={cn(
-                    'text-center font-bold px-2 py-2.5',
-                    c.highlight ? 'text-primary' : 'text-foreground',
-                  )}
-                >
-                  {c.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, idx) => (
-              <tr key={row.labelKey} className={cn('border-t border-border/20', idx % 2 === 1 && 'bg-muted/[0.04]')}>
-                <td className="text-left text-muted-foreground px-3 py-2.5 sticky left-0 bg-card">
-                  {t(`compare.rows.${row.labelKey}`)}
-                </td>
-                {row.values.map((v, i) => (
-                  <td
-                    key={i}
-                    className={cn('text-center px-2 py-2.5', cols[i].highlight && 'bg-primary/[0.04]')}
-                  >
-                    {renderCell(v, cols[i].highlight)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Segmented control */}
+      <div className="px-4 mb-3">
+        <div className="relative inline-flex w-full bg-muted/40 rounded-2xl p-1 border border-border/30">
+          {planOptions.map((opt, idx) => (
+            <button
+              key={opt.key}
+              onClick={() => { tap(); setSelected(opt.key); }}
+              className={cn(
+                'relative flex-1 z-10 py-2 rounded-xl text-[12px] font-bold transition-colors',
+                selected === opt.key ? 'text-primary-foreground' : 'text-muted-foreground',
+              )}
+              style={{ WebkitTapHighlightColor: 'transparent' }}
+            >
+              {selected === opt.key && (
+                <motion.div
+                  layoutId="planCompareSelector"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary to-emerald-600 shadow-[0_4px_16px_-2px_hsl(var(--primary)/0.45)]"
+                />
+              )}
+              <span className="relative">{opt.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* 2-column compare grid */}
+      <div className="px-2 pb-2">
+        <div className="grid grid-cols-[1.2fr_0.8fr_1fr] items-center px-2 pb-2">
+          <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/60">
+            {t('compare.cols.feature')}
+          </span>
+          <span className="text-[11px] font-bold text-muted-foreground/80 text-center">
+            {t('compare.cols.free')}
+          </span>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={selected}
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 4 }}
+              transition={{ duration: 0.15 }}
+              className="text-[11px] font-extrabold text-primary text-center"
+            >
+              {t(`compare.cols.${selected}`)}
+            </motion.span>
+          </AnimatePresence>
+        </div>
+
+        <div className="rounded-2xl bg-background/40 overflow-hidden">
+          {rows.map((row, idx) => {
+            const planVal = row[selected];
+            return (
+              <div
+                key={row.labelKey}
+                className={cn(
+                  'grid grid-cols-[1.2fr_0.8fr_1fr] items-center px-3 py-2.5',
+                  idx !== rows.length - 1 && 'border-b border-border/20',
+                )}
+              >
+                <span className="text-[12px] text-muted-foreground">
+                  {t(`compare.rows.${row.labelKey}`)}
+                </span>
+                <div className="text-center">{renderCell(row.free, false)}</div>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${selected}-${row.labelKey}`}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.12 }}
+                    className="text-center"
+                  >
+                    {renderCell(planVal, true)}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Sticky CTA strip */}
+      <button
+        onClick={() => { tap(); navigate(`/premium?from=compare-${selected}`); }}
+        className="w-full px-4 py-3.5 bg-gradient-to-r from-primary/15 to-emerald-500/10 border-t border-primary/20 text-[13px] font-bold text-primary active:opacity-80 transition-opacity flex items-center justify-center gap-1.5"
+        style={{ WebkitTapHighlightColor: 'transparent' }}
+      >
+        {t('compare.upgradeTo', { plan: t(`compare.cols.${selected}`), defaultValue: `Upgrade to ${t(`compare.cols.${selected}`)} →` })}
+      </button>
     </motion.section>
   );
 };
