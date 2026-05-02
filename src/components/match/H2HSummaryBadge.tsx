@@ -135,7 +135,7 @@ const H2HSummaryBadge = forwardRef<HTMLDivElement, H2HSummaryBadgeProps>(({
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-1.5 text-xs font-semibold border-b border-border/50 pb-2">
               <Swords className="w-3.5 h-3.5 text-primary" />
-              <span>Geçmiş Karşılaşmalar ({total})</span>
+              <span>{`${total > 0 ? `${total} ` : ''}`}H2H</span>
             </div>
             
             {/* Stats */}
