@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useCallback, useState, useLayoutEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, ArrowDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import varioAvatar from '@/assets/vario-avatar.png';
 import ChatMessage from './ChatMessage';
 import { ChatMessage as ChatMessageType } from '@/hooks/useChatbot';
@@ -65,6 +66,8 @@ interface WelcomeMessageProps {
 
 // Minimalist Welcome Message - 2026 Design
 const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ onQuickPrompt }) => {
+  const { t: tChat } = useTranslation('chat');
+  const tWelcome = { greeting: tChat('welcome.greeting'), tagline: tChat('welcome.tagline') };
   const { prompts, isLoading: promptsLoading } = useSmartPrompts(4);
 
   return (
@@ -94,7 +97,7 @@ const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ onQuickPrompt }) => {
         transition={{ delay: 0.1 }}
         className="text-lg font-bold mb-1"
       >
-        Merhaba! Ben VARio 👋
+        {tWelcome.greeting}
       </motion.h2>
 
       <motion.p
@@ -103,7 +106,7 @@ const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ onQuickPrompt }) => {
         transition={{ delay: 0.15 }}
         className="text-muted-foreground mb-5 text-sm"
       >
-        Futbol analizleri için buradayım
+        {tWelcome.tagline}
       </motion.p>
 
       {/* Smart Prompts - Main Focus */}

@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 type PermissionStatus = 'granted' | 'prompt' | 'denied' | 'loading';
 
 const NotificationSettings: React.FC = () => {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation('profile');
   const [prefs, setPrefs] = useState<NotificationPrefs>({
     matchReminders: true,
     streakReminders: true,
@@ -59,13 +59,13 @@ const NotificationSettings: React.FC = () => {
       const result = await LocalNotifications.requestPermissions();
       setPermStatus(result.display as PermissionStatus);
       if (result.display === 'granted') {
-        toast.success('Bildirimler etkinleştirildi!');
+        toast.success(t('notifications.permissionGranted'));
         scheduleNotifications();
       } else if (result.display === 'denied') {
-        toast.error('Bildirim izni reddedildi');
+        toast.error(t('notifications.permissionDenied'));
       }
     } catch {
-      toast.error('İzin isteği başarısız oldu');
+      toast.error(t('notifications.permissionFailed'));
     }
   };
 
@@ -82,7 +82,7 @@ const NotificationSettings: React.FC = () => {
       });
     } catch {
       // Fallback: just inform user
-      toast('Ayarlar > Uygulamalar > GolMetrik > Bildirimler yolunu izleyin');
+      toast(t('notifications.settingsHint'));
     }
   };
 
@@ -109,7 +109,7 @@ const NotificationSettings: React.FC = () => {
           <div className="flex items-center gap-2 mb-2">
             <Bell className="h-4 w-4 text-primary" />
             <span className="text-sm font-semibold text-foreground">
-              {t('settings.notifications', 'Bildirimler')}
+              {t('notifications.title')}
             </span>
           </div>
 
@@ -127,7 +127,7 @@ const NotificationSettings: React.FC = () => {
                   <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                     <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
                     <p className="text-xs text-emerald-400">
-                      Bildirimler aktif — hatırlatmalar zamanında ulaşacak.
+                      {t('notifications.activeMessage')}
                     </p>
                   </div>
                 )}
@@ -137,7 +137,7 @@ const NotificationSettings: React.FC = () => {
                     <div className="flex items-center gap-2.5 min-w-0">
                       <ShieldQuestion className="h-4 w-4 text-amber-500 shrink-0" />
                       <p className="text-xs text-amber-400">
-                        Maç ve seri hatırlatmaları almak için bildirimleri etkinleştirin.
+                        {t('notifications.promptMessage')}
                       </p>
                     </div>
                     <Button
@@ -146,7 +146,7 @@ const NotificationSettings: React.FC = () => {
                       className="shrink-0 h-8 text-xs border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
                       onClick={handleRequestPermission}
                     >
-                      Etkinleştir
+                      {t('notifications.enable')}
                     </Button>
                   </div>
                 )}
@@ -156,7 +156,7 @@ const NotificationSettings: React.FC = () => {
                     <div className="flex items-center gap-2.5">
                       <ShieldAlert className="h-4 w-4 text-destructive shrink-0" />
                       <p className="text-xs text-red-400">
-                        Bildirimler engellendi. Hatırlatma alabilmek için cihaz ayarlarından izin verin.
+                        {t('notifications.deniedMessage')}
                       </p>
                     </div>
                     <Button
@@ -166,7 +166,7 @@ const NotificationSettings: React.FC = () => {
                       onClick={handleOpenSettings}
                     >
                       <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                      Ayarları Aç
+                      {t('notifications.openSettings')}
                     </Button>
                   </div>
                 )}
@@ -175,7 +175,7 @@ const NotificationSettings: React.FC = () => {
                   <div className="flex items-center gap-2.5 p-3 rounded-xl bg-muted/50 border border-border/30">
                     <BellOff className="h-4 w-4 text-muted-foreground shrink-0" />
                     <p className="text-xs text-muted-foreground">
-                      Bildirimler sadece mobil uygulamada çalışır.
+                      {t('notifications.webOnly')}
                     </p>
                   </div>
                 )}
@@ -190,10 +190,10 @@ const NotificationSettings: React.FC = () => {
                 <Trophy className="h-4 w-4 text-emerald-500" />
                 <div>
                   <p className="text-sm font-medium text-foreground">
-                    Maç Hatırlatmaları
+                    {t('notifications.matchTitle')}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
-                    Her gün 18:00'de bugünün maçları
+                    {t('notifications.matchDesc')}
                   </p>
                 </div>
               </div>
@@ -210,10 +210,10 @@ const NotificationSettings: React.FC = () => {
                 <Flame className="h-4 w-4 text-amber-500" />
                 <div>
                   <p className="text-sm font-medium text-foreground">
-                    Seri Hatırlatmaları
+                    {t('notifications.streakTitle')}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
-                    Her gün 20:00'de serini koru
+                    {t('notifications.streakDesc')}
                   </p>
                 </div>
               </div>
