@@ -12,5 +12,17 @@
   "earned": "Verdient!",
   "streakReward": "{{days}}-Tage-Streak-Belohnung!",
   "newReward": "Neue Belohnung verdient!",
-  "badge": "Streak-Abzeichen"
+  "badge": "Streak-Abzeichen",
+  "dailyStreak": "Tägliche Serie",
+  "longest": "Längste",
+  "milestone": "Meilenstein",
+  "activeBonuses": "Aktive Bonus-Guthaben",
+  "planAnalysis": "Plan-Analysen",
+  "planChat": "Plan-Chats",
+  "plan": "Plan",
+  "nextGoal": "Nächstes Ziel",
+  "daySeries": "{{day}}-Tage-Serie",
+  "dayShort": "Tag",
+  "badgeReward": "Belohnung für 14+ Tage Serie",
+  "premiumCta": "Mit Premium mehr Guthaben sichern"
 }

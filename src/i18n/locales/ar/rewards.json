@@ -12,5 +12,17 @@
   "earned": "تم الكسب!",
   "streakReward": "مكافأة سلسلة {{days}} يوم!",
   "newReward": "مكافأة جديدة!",
-  "badge": "شارة السلسلة"
+  "badge": "شارة السلسلة",
+  "dailyStreak": "السلسلة اليومية",
+  "longest": "الأطول",
+  "milestone": "إنجاز",
+  "activeBonuses": "أرصدة المكافآت النشطة",
+  "planAnalysis": "تحليلات الخطة",
+  "planChat": "دردشات الخطة",
+  "plan": "الخطة",
+  "nextGoal": "الهدف التالي",
+  "daySeries": "سلسلة {{day}} يوم",
+  "dayShort": "يوم",
+  "badgeReward": "مكافأة 14+ يوم متتالي",
+  "premiumCta": "احصل على المزيد مع Premium"
 }

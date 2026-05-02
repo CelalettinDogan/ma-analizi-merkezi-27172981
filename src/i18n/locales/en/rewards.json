@@ -12,5 +12,17 @@
   "earned": "Earned!",
   "streakReward": "{{days}}-day streak reward!",
   "newReward": "New reward earned!",
-  "badge": "Streak Badge"
+  "badge": "Streak Badge",
+  "dailyStreak": "Daily Streak",
+  "longest": "Longest",
+  "milestone": "Milestone",
+  "activeBonuses": "Active Bonus Credits",
+  "planAnalysis": "Plan Analysis Credits",
+  "planChat": "Plan Chat Credits",
+  "plan": "Plan",
+  "nextGoal": "Next Goal",
+  "daySeries": "{{day}}-Day Streak",
+  "dayShort": "Day",
+  "badgeReward": "14+ day streak reward",
+  "premiumCta": "Get More Credits with Premium"
 }
