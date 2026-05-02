@@ -64,7 +64,8 @@
     "results": "{{count}} sonuç",
     "noResults": "Sonuç bulunamadı",
     "noResultsHint": "Seçili filtrelerle eşleşen tahmin yok. Filtreleri değiştirmeyi deneyin.",
-    "aiDetailedReasoning": "Detaylı AI Analizi"
+    "aiDetailedReasoning": "Detaylı AI Analizi",
+    "poissonProbability": "Poisson Olasılığı"
   },
   "confidence": {
     "low": "Düşük",

@@ -64,7 +64,8 @@
     "results": "{{count}} results",
     "noResults": "No results found",
     "noResultsHint": "No predictions match the selected filters. Try changing the filters.",
-    "aiDetailedReasoning": "Detailed AI Reasoning"
+    "aiDetailedReasoning": "Detailed AI Reasoning",
+    "poissonProbability": "Poisson Probability"
   },
   "confidence": {
     "low": "Low",

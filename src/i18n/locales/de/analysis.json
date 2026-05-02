@@ -64,7 +64,8 @@
     "results": "{{count}} Ergebnisse",
     "noResults": "Keine Ergebnisse gefunden",
     "noResultsHint": "Keine Vorhersagen entsprechen den ausgewählten Filtern. Filter ändern.",
-    "aiDetailedReasoning": "Detaillierte KI-Analyse"
+    "aiDetailedReasoning": "Detaillierte KI-Analyse",
+    "poissonProbability": "Poisson-Wahrscheinlichkeit"
   },
   "confidence": {
     "low": "Niedrig",
