@@ -99,5 +99,22 @@
     "title": "Seite nicht gefunden",
     "description": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
     "cta": "Zur Startseite"
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "activeMessage": "Benachrichtigungen sind aktiv — Erinnerungen kommen pünktlich an.",
+    "promptMessage": "Aktivieren Sie Benachrichtigungen, um Spiel- und Serien-Erinnerungen zu erhalten.",
+    "enable": "Aktivieren",
+    "deniedMessage": "Benachrichtigungen sind blockiert. Erlauben Sie sie in den Geräteeinstellungen.",
+    "openSettings": "Einstellungen öffnen",
+    "webOnly": "Benachrichtigungen funktionieren nur in der mobilen App.",
+    "matchTitle": "Spielerinnerungen",
+    "matchDesc": "Tägliche Spiele um 18:00 Uhr",
+    "streakTitle": "Serien-Erinnerungen",
+    "streakDesc": "Halte deine Serie täglich um 20:00 Uhr aufrecht",
+    "permissionGranted": "Benachrichtigungen aktiviert!",
+    "permissionDenied": "Benachrichtigungsberechtigung verweigert",
+    "permissionFailed": "Berechtigungsanfrage fehlgeschlagen",
+    "settingsHint": "Einstellungen > Apps > GolMetrik > Benachrichtigungen"
   }
 }

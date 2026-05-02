@@ -62,7 +62,9 @@
       "halfTime": "بين الشوطين",
       "halfTimeScore": "بين الشوطين: {{home}} - {{away}}",
       "liveStream": "بث مباشر",
-      "ariaLive": "مباشر"
+      "ariaLive": "مباشر",
+      "halfTimeShort": "ش1",
+      "quickAnalysis": "تحليل سريع"
     }
   },
   "leagues": {

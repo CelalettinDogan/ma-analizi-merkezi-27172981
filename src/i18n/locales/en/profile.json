@@ -99,5 +99,22 @@
     "title": "Page not found",
     "description": "The page you are looking for does not exist or has been moved.",
     "cta": "Back to Home"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "activeMessage": "Notifications are active — reminders will arrive on time.",
+    "promptMessage": "Enable notifications to receive match and streak reminders.",
+    "enable": "Enable",
+    "deniedMessage": "Notifications are blocked. Grant permission in device settings to receive reminders.",
+    "openSettings": "Open Settings",
+    "webOnly": "Notifications only work in the mobile app.",
+    "matchTitle": "Match Reminders",
+    "matchDesc": "Today's matches every day at 6 PM",
+    "streakTitle": "Streak Reminders",
+    "streakDesc": "Keep your streak alive every day at 8 PM",
+    "permissionGranted": "Notifications enabled!",
+    "permissionDenied": "Notification permission denied",
+    "permissionFailed": "Permission request failed",
+    "settingsHint": "Go to Settings > Apps > GolMetrik > Notifications"
   }
 }

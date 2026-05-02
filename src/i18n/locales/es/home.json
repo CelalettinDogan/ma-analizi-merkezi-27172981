@@ -62,7 +62,9 @@
       "halfTime": "DESCANSO",
       "halfTimeScore": "Descanso: {{home}} - {{away}}",
       "liveStream": "Transmisión en vivo",
-      "ariaLive": "En vivo"
+      "ariaLive": "En vivo",
+      "halfTimeShort": "D",
+      "quickAnalysis": "Análisis Rápido"
     }
   },
   "leagues": {

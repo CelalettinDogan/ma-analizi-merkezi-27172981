@@ -219,6 +219,21 @@
   "standings": {
     "loading": "Cargando clasificación...",
     "errorLoading": "Error al cargar la clasificación",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "team": "Equipo",
+    "championsLeague": "Champions League",
+    "europaLeague": "Europa League",
+    "conferenceLeague": "Conference League",
+    "relegation": "Descenso",
+    "topScorers": "Equipos Más Goleadores",
+    "bestDefense": "Mejores Defensas",
+    "bestDifference": "Mejor Diferencia",
+    "avgGoalsPerMatch": "Goles por Partido",
+    "risingTeams": "Equipos en Alza",
+    "fallingTeams": "Equipos en Caída",
+    "bestPpgSubtitle": "Mejor promedio de puntos por partido",
+    "worstPpgSubtitle": "Menor promedio de puntos por partido",
+    "seasonGeneralNote": "Calculado en base al rendimiento general de la temporada",
+    "ppgUnit": "{{value}} pts/partido"
   }
 }

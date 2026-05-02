@@ -99,5 +99,22 @@
     "title": "Sayfa bulunamadı",
     "description": "Aradığınız sayfa mevcut değil veya taşınmış olabilir.",
     "cta": "Ana Sayfaya Dön"
+  },
+  "notifications": {
+    "title": "Bildirimler",
+    "activeMessage": "Bildirimler aktif — hatırlatmalar zamanında ulaşacak.",
+    "promptMessage": "Maç ve seri hatırlatmaları almak için bildirimleri etkinleştirin.",
+    "enable": "Etkinleştir",
+    "deniedMessage": "Bildirimler engellendi. Hatırlatma alabilmek için cihaz ayarlarından izin verin.",
+    "openSettings": "Ayarları Aç",
+    "webOnly": "Bildirimler sadece mobil uygulamada çalışır.",
+    "matchTitle": "Maç Hatırlatmaları",
+    "matchDesc": "Her gün 18:00'de bugünün maçları",
+    "streakTitle": "Seri Hatırlatmaları",
+    "streakDesc": "Her gün 20:00'de serini koru",
+    "permissionGranted": "Bildirimler etkinleştirildi!",
+    "permissionDenied": "Bildirim izni reddedildi",
+    "permissionFailed": "İzin isteği başarısız oldu",
+    "settingsHint": "Ayarlar > Uygulamalar > GolMetrik > Bildirimler yolunu izleyin"
   }
 }

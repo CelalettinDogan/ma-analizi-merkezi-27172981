@@ -25,7 +25,7 @@
     "factorsBadge": "{{count}} Faktoren"
   },
   "sections": {
-    "powerComparison": "Stärkevergleich",
+    "powerComparison": "Kräftevergleich",
     "headToHead": "Direkter Vergleich",
     "teamStats": "Team-Statistiken",
     "similarMatches": "Ähnliche Spiele",
@@ -298,5 +298,57 @@
   },
   "injuries": {
     "none": "Keine fehlenden Spieler"
+  },
+  "context": {
+    "importance": "Spielbedeutung",
+    "importanceLevel": {
+      "critical": "Kritisch",
+      "high": "Hoch",
+      "medium": "Mittel",
+      "low": "Niedrig"
+    },
+    "seasonPhase": {
+      "early": "Saisonbeginn",
+      "earlyDesc": "Teams finden ihre Form",
+      "mid": "Saisonmitte",
+      "midDesc": "Wettkampf wird intensiver",
+      "late": "Saisonende",
+      "lateDesc": "Jeder Punkt zählt",
+      "final": "Schlussphase",
+      "finalDesc": "Meisterschaftskampf"
+    },
+    "derbyTitle": "Derby",
+    "derbyDesc": "Hohe Motivation und Rivalität",
+    "days": "Tage",
+    "momentum": "Momentum"
+  },
+  "power": {
+    "attack": "Angriff",
+    "defense": "Abwehr",
+    "form": "Form",
+    "attackPower": "Angriffsstärke",
+    "defensePower": "Abwehrstärke",
+    "overallPower": "Gesamtstärke",
+    "directComparison": "Direkter Vergleich",
+    "balanced": "Ausgeglichen",
+    "homeLabel": "Heim",
+    "awayLabel": "Auswärts"
+  },
+  "similar": {
+    "empty": "Keine ähnlichen Spiele gefunden",
+    "summary": "Zusammenfassung ähnlicher Spiele",
+    "homeShort": "Heim",
+    "drawShort": "Unent.",
+    "awayShort": "Ausw.",
+    "homeGoals": "Heimtore",
+    "awayGoals": "Auswärtstore",
+    "bttsYes": "BTS",
+    "over25": "Über 2.5",
+    "topNTitle": "Top {{count}} ähnliche Spiele",
+    "similarityLabel": "Ähnlichkeit"
+  },
+  "h2hBadge": {
+    "pastMatches": "Vergangene Spiele ({{count}})",
+    "draws": "Unentschieden"
   }
 }

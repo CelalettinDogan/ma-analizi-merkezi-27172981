@@ -298,5 +298,57 @@
   },
   "injuries": {
     "none": "لا يوجد لاعبون غائبون"
+  },
+  "context": {
+    "importance": "أهمية المباراة",
+    "importanceLevel": {
+      "critical": "حرج",
+      "high": "مرتفع",
+      "medium": "متوسط",
+      "low": "منخفض"
+    },
+    "seasonPhase": {
+      "early": "بداية الموسم",
+      "earlyDesc": "الفرق تبحث عن جاهزيتها",
+      "mid": "منتصف الموسم",
+      "midDesc": "تشتد المنافسة",
+      "late": "نهاية الموسم",
+      "lateDesc": "كل نقطة مهمة",
+      "final": "الأسابيع الأخيرة",
+      "finalDesc": "صراع على اللقب"
+    },
+    "derbyTitle": "مباراة ديربي",
+    "derbyDesc": "حماس وتنافس عاليان",
+    "days": "يوم",
+    "momentum": "الزخم"
+  },
+  "power": {
+    "attack": "الهجوم",
+    "defense": "الدفاع",
+    "form": "اللياقة",
+    "attackPower": "قوة الهجوم",
+    "defensePower": "قوة الدفاع",
+    "overallPower": "القوة الإجمالية",
+    "directComparison": "مقارنة مباشرة",
+    "balanced": "متوازن",
+    "homeLabel": "مضيف",
+    "awayLabel": "ضيف"
+  },
+  "similar": {
+    "empty": "لا توجد مباريات مماثلة",
+    "summary": "ملخص المباريات المماثلة",
+    "homeShort": "مضيف",
+    "drawShort": "تعادل",
+    "awayShort": "ضيف",
+    "homeGoals": "أهداف المضيف",
+    "awayGoals": "أهداف الضيف",
+    "bttsYes": "كلاهما يسجل",
+    "over25": "أكثر من 2.5",
+    "topNTitle": "أفضل {{count}} مباراة مماثلة",
+    "similarityLabel": "تشابه"
+  },
+  "h2hBadge": {
+    "pastMatches": "المواجهات السابقة ({{count}})",
+    "draws": "تعادلات"
   }
 }

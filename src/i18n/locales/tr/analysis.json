@@ -298,5 +298,57 @@
   },
   "injuries": {
     "none": "Eksik oyuncu yok"
+  },
+  "context": {
+    "importance": "Maç Önemi",
+    "importanceLevel": {
+      "critical": "Kritik",
+      "high": "Yüksek",
+      "medium": "Orta",
+      "low": "Düşük"
+    },
+    "seasonPhase": {
+      "early": "Sezon Başı",
+      "earlyDesc": "Takımlar form arıyor",
+      "mid": "Sezon Ortası",
+      "midDesc": "Rekabet kızışıyor",
+      "late": "Sezon Sonu",
+      "lateDesc": "Her puan kritik",
+      "final": "Final Haftaları",
+      "finalDesc": "Şampiyonluk mücadelesi"
+    },
+    "derbyTitle": "Derbi Maçı",
+    "derbyDesc": "Yüksek motivasyon ve rekabet",
+    "days": "gün",
+    "momentum": "Momentum"
+  },
+  "power": {
+    "attack": "Hücum",
+    "defense": "Savunma",
+    "form": "Form",
+    "attackPower": "Hücum Gücü",
+    "defensePower": "Savunma Gücü",
+    "overallPower": "Toplam Güç",
+    "directComparison": "Doğrudan Karşılaştırma",
+    "balanced": "Dengeli",
+    "homeLabel": "Ev Sahibi",
+    "awayLabel": "Deplasman"
+  },
+  "similar": {
+    "empty": "Benzer maç bulunamadı",
+    "summary": "Benzer Maçların Özeti",
+    "homeShort": "Ev",
+    "drawShort": "Ber",
+    "awayShort": "Dep",
+    "homeGoals": "Ev Golü",
+    "awayGoals": "Dep Golü",
+    "bttsYes": "KG Var",
+    "over25": "Üst 2.5",
+    "topNTitle": "En Benzer {{count}} Maç",
+    "similarityLabel": "benzerlik"
+  },
+  "h2hBadge": {
+    "pastMatches": "Geçmiş Karşılaşmalar ({{count}})",
+    "draws": "Beraberlik"
   }
 }
