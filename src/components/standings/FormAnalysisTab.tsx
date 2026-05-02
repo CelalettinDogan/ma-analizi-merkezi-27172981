@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface StandingData {
   team_name: string;
@@ -62,6 +63,7 @@ const getFormIcon = (result: string) => {
 };
 
 const FormAnalysisTab: React.FC<FormAnalysisTabProps> = ({ standings, isLoading }) => {
+  const { t } = useTranslation('common');
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -115,8 +117,8 @@ const FormAnalysisTab: React.FC<FormAnalysisTabProps> = ({ standings, isLoading 
   );
 
   const sections = [
-    { title: 'Yükselen Takımlar', subtitle: 'En iyi maç başı puan ortalaması', icon: TrendingUp, iconColor: 'text-primary', teams: risingTeams },
-    { title: 'Düşüşte Olanlar', subtitle: 'En düşük maç başı puan ortalaması', icon: TrendingDown, iconColor: 'text-destructive', teams: fallingTeams },
+    { title: t('standings.risingTeams'), subtitle: t('standings.bestPpgSubtitle'), icon: TrendingUp, iconColor: 'text-primary', teams: risingTeams },
+    { title: t('standings.fallingTeams'), subtitle: t('standings.worstPpgSubtitle'), icon: TrendingDown, iconColor: 'text-destructive', teams: fallingTeams },
   ];
 
   return (
@@ -133,11 +135,11 @@ const FormAnalysisTab: React.FC<FormAnalysisTabProps> = ({ standings, isLoading 
             {!hasRealForm && (
               <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-2">
                 <Info className="w-3 h-3" />
-                <span>Sezon geneli performansa göre hesaplanmıştır</span>
+                <span>{t('standings.seasonGeneralNote')}</span>
               </div>
             )}
             <div className="space-y-1">
-              {section.teams.map((t, i) => renderTeamRow(t, i, `${t.pointsPerGame.toFixed(2)} puan/maç`))}
+              {section.teams.map((te, i) => renderTeamRow(te, i, t('standings.ppgUnit', { value: te.pointsPerGame.toFixed(2) })))}
             </div>
           </div>
         );

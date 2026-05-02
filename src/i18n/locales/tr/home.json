@@ -67,7 +67,9 @@
       "halfTime": "DEVRE ARASI",
       "halfTimeScore": "İlk Yarı: {{home}} - {{away}}",
       "liveStream": "Canlı yayın",
-      "ariaLive": "Canlı"
+      "ariaLive": "Canlı",
+      "halfTimeShort": "İY",
+      "quickAnalysis": "Hızlı Analiz"
     }
   },
   "leagues": {

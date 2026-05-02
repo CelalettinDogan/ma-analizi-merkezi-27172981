@@ -219,6 +219,21 @@
   "standings": {
     "loading": "Tabelle wird geladen...",
     "errorLoading": "Tabelle konnte nicht geladen werden",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "team": "Team",
+    "championsLeague": "Champions League",
+    "europaLeague": "Europa League",
+    "conferenceLeague": "Conference League",
+    "relegation": "Abstiegszone",
+    "topScorers": "Beste Angriffsreihen",
+    "bestDefense": "Beste Abwehrreihen",
+    "bestDifference": "Beste Tordifferenz",
+    "avgGoalsPerMatch": "Tore pro Spiel",
+    "risingTeams": "Aufsteigende Teams",
+    "fallingTeams": "Absteigende Teams",
+    "bestPpgSubtitle": "Bester Punkteschnitt",
+    "worstPpgSubtitle": "Niedrigster Punkteschnitt",
+    "seasonGeneralNote": "Berechnet auf Basis der Gesamtsaisonleistung",
+    "ppgUnit": "{{value}} Pkt./Spiel"
   }
 }

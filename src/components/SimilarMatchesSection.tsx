@@ -1,6 +1,7 @@
 import React from 'react';
 import { History, TrendingUp, Minus, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 export interface SimilarMatch {
   homeTeam: string;
@@ -50,45 +51,36 @@ const ResultIndicator: React.FC<{ homeScore: number; awayScore: number }> = ({ h
 };
 
 const SimilarMatchesSection: React.FC<SimilarMatchesSectionProps> = ({ matches, stats }) => {
+  const { t, i18n } = useTranslation('analysis');
   if (matches.length === 0) {
     return (
       <div className="glass-card p-6 text-center">
         <History className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-        <p className="text-muted-foreground">Benzer maç bulunamadı</p>
+        <p className="text-muted-foreground">{t('similar.empty')}</p>
       </div>
     );
   }
+
+  const dateLocale = ({ tr: 'tr-TR', en: 'en-US', de: 'de-DE', es: 'es-ES', ar: 'ar' } as Record<string, string>)[i18n.language] || 'en-US';
 
   return (
     <div className="space-y-4">
       {/* Stats Overview */}
       {stats && (
         <div className="glass-card p-4">
-          <h4 className="text-sm font-medium text-muted-foreground mb-3">Benzer Maçların Özeti</h4>
+          <h4 className="text-sm font-medium text-muted-foreground mb-3">{t('similar.summary')}</h4>
           
           {/* Result Distribution */}
           <div className="mb-4">
             <div className="flex h-3 rounded-full overflow-hidden">
-              <div 
-                className="bg-win transition-all"
-                style={{ width: `${stats.homeWinRate}%` }}
-                title={`Ev Sahibi: ${stats.homeWinRate.toFixed(0)}%`}
-              />
-              <div 
-                className="bg-draw transition-all"
-                style={{ width: `${stats.drawRate}%` }}
-                title={`Beraberlik: ${stats.drawRate.toFixed(0)}%`}
-              />
-              <div 
-                className="bg-loss transition-all"
-                style={{ width: `${stats.awayWinRate}%` }}
-                title={`Deplasman: ${stats.awayWinRate.toFixed(0)}%`}
-              />
+              <div className="bg-win transition-all" style={{ width: `${stats.homeWinRate}%` }} />
+              <div className="bg-draw transition-all" style={{ width: `${stats.drawRate}%` }} />
+              <div className="bg-loss transition-all" style={{ width: `${stats.awayWinRate}%` }} />
             </div>
             <div className="flex justify-between mt-1.5 text-xs">
-              <span className="text-win">Ev %{stats.homeWinRate.toFixed(0)}</span>
-              <span className="text-draw">Ber %{stats.drawRate.toFixed(0)}</span>
-              <span className="text-loss">Dep %{stats.awayWinRate.toFixed(0)}</span>
+              <span className="text-win">{t('similar.homeShort')} %{stats.homeWinRate.toFixed(0)}</span>
+              <span className="text-draw">{t('similar.drawShort')} %{stats.drawRate.toFixed(0)}</span>
+              <span className="text-loss">{t('similar.awayShort')} %{stats.awayWinRate.toFixed(0)}</span>
             </div>
           </div>
 
@@ -96,19 +88,19 @@ const SimilarMatchesSection: React.FC<SimilarMatchesSectionProps> = ({ matches, 
           <div className="grid grid-cols-4 gap-2 text-center">
             <div className="p-2 bg-muted/30 rounded-lg">
               <div className="text-lg font-bold text-foreground">{stats.avgHomeGoals.toFixed(1)}</div>
-              <div className="text-xs text-muted-foreground">Ev Golü</div>
+              <div className="text-xs text-muted-foreground">{t('similar.homeGoals')}</div>
             </div>
             <div className="p-2 bg-muted/30 rounded-lg">
               <div className="text-lg font-bold text-foreground">{stats.avgAwayGoals.toFixed(1)}</div>
-              <div className="text-xs text-muted-foreground">Dep Golü</div>
+              <div className="text-xs text-muted-foreground">{t('similar.awayGoals')}</div>
             </div>
             <div className="p-2 bg-muted/30 rounded-lg">
               <div className="text-lg font-bold text-primary">{stats.bttsRate.toFixed(0)}%</div>
-              <div className="text-xs text-muted-foreground">KG Var</div>
+              <div className="text-xs text-muted-foreground">{t('similar.bttsYes')}</div>
             </div>
             <div className="p-2 bg-muted/30 rounded-lg">
               <div className="text-lg font-bold text-secondary">{stats.over25Rate.toFixed(0)}%</div>
-              <div className="text-xs text-muted-foreground">Üst 2.5</div>
+              <div className="text-xs text-muted-foreground">{t('similar.over25')}</div>
             </div>
           </div>
         </div>
@@ -118,7 +110,7 @@ const SimilarMatchesSection: React.FC<SimilarMatchesSectionProps> = ({ matches, 
       <div className="glass-card p-4">
         <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
           <History className="w-4 h-4" />
-          En Benzer {matches.length} Maç
+          {t('similar.topNTitle', { count: matches.length })}
         </h4>
         
         <div className="space-y-2">
@@ -139,7 +131,7 @@ const SimilarMatchesSection: React.FC<SimilarMatchesSectionProps> = ({ matches, 
                 )}>
                   {match.similarityScore.toFixed(0)}%
                 </div>
-                <div className="text-micro text-muted-foreground">benzerlik</div>
+                <div className="text-micro text-muted-foreground">{t('similar.similarityLabel')}</div>
               </div>
 
               {/* Match Info */}
@@ -150,7 +142,7 @@ const SimilarMatchesSection: React.FC<SimilarMatchesSectionProps> = ({ matches, 
                   <span className="text-sm font-medium text-foreground truncate">{match.awayTeam}</span>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {match.league} • {new Date(match.date).toLocaleDateString('tr-TR')}
+                  {match.league} • {new Date(match.date).toLocaleDateString(dateLocale)}
                 </div>
               </div>
 

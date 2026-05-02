@@ -67,7 +67,9 @@
       "halfTime": "HALF TIME",
       "halfTimeScore": "Half Time: {{home}} - {{away}}",
       "liveStream": "Live broadcast",
-      "ariaLive": "Live"
+      "ariaLive": "Live",
+      "halfTimeShort": "HT",
+      "quickAnalysis": "Quick Analysis"
     }
   },
   "leagues": {

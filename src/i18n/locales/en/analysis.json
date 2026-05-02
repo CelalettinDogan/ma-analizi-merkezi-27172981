@@ -298,5 +298,57 @@
   },
   "injuries": {
     "none": "No missing players"
+  },
+  "context": {
+    "importance": "Match Importance",
+    "importanceLevel": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "seasonPhase": {
+      "early": "Early Season",
+      "earlyDesc": "Teams are finding form",
+      "mid": "Mid Season",
+      "midDesc": "Competition heats up",
+      "late": "Late Season",
+      "lateDesc": "Every point matters",
+      "final": "Final Weeks",
+      "finalDesc": "Title race"
+    },
+    "derbyTitle": "Derby Match",
+    "derbyDesc": "High motivation and rivalry",
+    "days": "days",
+    "momentum": "Momentum"
+  },
+  "power": {
+    "attack": "Attack",
+    "defense": "Defense",
+    "form": "Form",
+    "attackPower": "Attack Power",
+    "defensePower": "Defense Power",
+    "overallPower": "Overall Power",
+    "directComparison": "Direct Comparison",
+    "balanced": "Balanced",
+    "homeLabel": "Home",
+    "awayLabel": "Away"
+  },
+  "similar": {
+    "empty": "No similar matches found",
+    "summary": "Similar Matches Summary",
+    "homeShort": "Home",
+    "drawShort": "Draw",
+    "awayShort": "Away",
+    "homeGoals": "Home Goals",
+    "awayGoals": "Away Goals",
+    "bttsYes": "BTTS",
+    "over25": "Over 2.5",
+    "topNTitle": "Top {{count}} Similar Matches",
+    "similarityLabel": "similarity"
+  },
+  "h2hBadge": {
+    "pastMatches": "Past Matches ({{count}})",
+    "draws": "Draws"
   }
 }

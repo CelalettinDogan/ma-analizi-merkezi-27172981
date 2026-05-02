@@ -99,5 +99,22 @@
     "title": "Página no encontrada",
     "description": "La página que buscas no existe o ha sido movida.",
     "cta": "Ir al inicio"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "activeMessage": "Las notificaciones están activas — los recordatorios llegarán a tiempo.",
+    "promptMessage": "Habilita las notificaciones para recibir recordatorios de partidos y rachas.",
+    "enable": "Habilitar",
+    "deniedMessage": "Las notificaciones están bloqueadas. Habilítalas en la configuración del dispositivo.",
+    "openSettings": "Abrir Ajustes",
+    "webOnly": "Las notificaciones solo funcionan en la app móvil.",
+    "matchTitle": "Recordatorios de Partidos",
+    "matchDesc": "Partidos del día todos los días a las 18:00",
+    "streakTitle": "Recordatorios de Racha",
+    "streakDesc": "Mantén tu racha todos los días a las 20:00",
+    "permissionGranted": "¡Notificaciones habilitadas!",
+    "permissionDenied": "Permiso de notificación denegado",
+    "permissionFailed": "Solicitud de permiso fallida",
+    "settingsHint": "Ajustes > Apps > GolMetrik > Notificaciones"
   }
 }

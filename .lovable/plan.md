@@ -1,55 +1,57 @@
-# "İnternet bağlantısı yok" yanlış pozitifini düzelt
+# Tam Çeviri Tamamlama Planı
 
 ## Sorun
-`src/hooks/useOnlineStatus.ts` sadece tarayıcının `navigator.onLine` değerine ve `online`/`offline` event'lerine güveniyor. Android WebView'de bu sinyal güvenilmez:
-- Wi-Fi ↔ mobil veri geçişi anlık `offline` event üretir
-- Uygulama arka plandan ön plana dönerken kısa süreli `false` dönebilir
-- Captive portal / VPN durumlarında yanlış sonuç verir
-- Bazen `navigator.onLine` `false` kalıp güncellenmez
+Uygulama 5 dili destekliyor (TR, EN, DE, ES, AR) ancak **53 dosyada** hâlâ sabit Türkçe metinler var. Dil değiştirildiğinde bu metinler Türkçe olarak kalıyor. Tespit edilen noktalar:
 
-Sonuç: gerçekte internet varken `OfflineBanner` gösteriliyor.
+- **Dashboard kartları**: `AccuracyHeroCard`, `QuickStatsGrid`, `PredictionTypePills`, `ActivityFeed`, `MLPerformanceCard`, `RecentPredictions`, `StatsOverview`, `AILearningBar`, `AutoVerifyButton`, `PredictionTypeChart`
+- **Analiz bileşenleri**: `AnalysisHeroSummary`, `AdvancedAnalysisTabs`, `AIRecommendationCard`, `CollapsibleAnalysis`, `PredictionPillSelector`, `AnalysisSection`, `SimilarMatchesSection`
+- **Maç kartları**: `PredictionCard`, `TeamStatsCard`, `MatchContextCard`, `PowerComparisonCard`, `HeadToHeadCard`, `TodaysMatches`, `H2HSummaryBadge`, `LiveMatchCard2`
+- **Standings**: `StandingsTable`, `GoalStatsTab`, `FormAnalysisTab`
+- **Chat**: `ChatContainer`, `ChatInput`, `ChatMessage`
+- **Premium**: `PremiumUpgrade`
+- **Streak/Rewards**: `StreakRewardsCard`, `Rewards.tsx`
+- **Profil & UI**: `NotificationSettings`, `ThemeToggle`, `PullToRefresh`, `ShareCard`, `AnalysisSetDrawer`, `AnalysisSetItem`
+- **Charts**: `ConfidenceVisualizer`, `ScorePredictionChart`
+- **Sayfalar**: `Premium.tsx`, `Auth.tsx`, `Chat.tsx`
+- **Admin paneli**: `UserManagement`, `PremiumManagement`, `NotificationManagement`, `DashboardStats`, `AdminLayout`, `ActivityLog`, `AIManagement`, `Admin.tsx` (admin sadece TR'de kalabilir, aşağıda soruluyor)
 
-## Çözüm
+Toplam ~100+ JSX metni + 41 string literal sabit Türkçe.
 
-`useOnlineStatus` hook'unu üç katmanlı doğrulamayla yeniden yaz:
+## Yaklaşım
 
-1. **Capacitor `@capacitor/network` plugin'i** native platformda birincil kaynak olarak kullan (Android'de `navigator.onLine`'dan çok daha doğru). Web'de `navigator.onLine`'a düş.
-2. **Aktif ping doğrulaması**: Bir `offline` sinyali geldiğinde hemen banner gösterme — Supabase URL'ine `HEAD` (no-cors) isteği at, başarısız olursa offline kabul et.
-3. **Debounce (2.5 sn)**: Kısa flicker'ları yok say. Sadece 2.5 sn boyunca offline kalırsa banner göster. `online` sinyali anında uygulansın.
-4. **Periyodik recheck**: Offline durumdayken 10 sn'de bir ping atarak otomatik geri dön.
+### 1. Locale dosyalarına yeni anahtarlar ekleme
+Mevcut namespace yapısını koruyarak şu dosyalara ekleme yapılacak:
+- `common.json` → ortak butonlar, etiketler (Hücum, Savunma, Doğru, Yanlış, Başarılı, vb.)
+- `analysis.json` → analiz/tahmin kartı metinleri
+- `home.json` → maç listesi/kart metinleri
+- `chat.json` → chat UI metinleri (Faydalı, Geliştirilmeli)
+- `premium.json` → premium upgrade ek metinleri
+- `profile.json` → bildirim ayarları, tema
+- Yeni: `dashboard.json` ve `standings.json` namespace'leri (çok sayıda anahtar olduğu için ayrılır)
 
-## Yapılacaklar
+Her anahtar **5 dilin tamamına** (TR, EN, DE, ES, AR) çevrilecek.
 
-### 1. `@capacitor/network` paketini ekle
-```
-bun add @capacitor/network
-```
+### 2. Bileşenleri `useTranslation` ile güncelleme
+Her dosyada:
+- `useTranslation('namespace')` hook'u eklenecek
+- Sabit string'ler `{t('key')}` ile değiştirilecek
+- `aria-label`, `placeholder`, `title` gibi attribute'lar dahil edilecek
+- Plural ve interpolasyon gerektirenler (`{{count}}`) i18next sözdizimi ile yazılacak
 
-### 2. `src/hooks/useOnlineStatus.ts` yeniden yaz
-- Mount'ta hem `Network.getStatus()` (native) hem `navigator.onLine` ile başlangıç durumunu al
-- `Network.addListener('networkStatusChange', ...)` + `window` online/offline event'leri
-- Yardımcı `verifyConnection()`: `fetch(SUPABASE_URL + '/auth/v1/health', { method: 'HEAD', cache: 'no-store' })` — 3 sn timeout, başarılıysa online
-- Offline'a düşmeden önce `verifyConnection` çalıştır
-- 2.5 sn debounce timer
-- Offline'dayken 10 sn'de bir tekrar dene
-- Capacitor olmayan ortamda dinamik import ile graceful fallback
+### 3. i18n config güncellemesi
+`src/i18n/config.ts` içine yeni `dashboard` ve `standings` namespace'leri eklenecek; tüm dillerde import edilecek.
 
-### 3. `src/components/OfflineBanner.tsx` (küçük iyileştirme)
-- Banner'a "Tekrar dene" butonu ekle → manuel `verifyConnection` çağırır
-- Görünme threshold'u zaten hook tarafında halledildiği için ek değişiklik gerekmez
+### 4. Kalite kontrol
+- `rg -nP '[İıĞğŞşÇçÖöÜü]'` ile son tarama yapılarak kaçan metin olmadığı doğrulanacak (admin hariç tutulursa o dosyalar muaf).
+- Dil değiştirici ile EN/DE/ES/AR sırayla doğrulanacak.
 
-### 4. Capacitor sync
-Değişiklik sonrası kullanıcıya `npx cap sync android` çalıştırması gerektiğini hatırlat (yeni native plugin eklendiği için).
+## Açıklama (Teknik olmayan özet)
+Uygulama 5 dile çevrildi ama bazı butonlar, etiketler ve mesajlar yanlışlıkla Türkçe kodlanmış. Bu plan, tüm bu metinleri tespit edip çeviri sistemine taşır ve 5 dilin tamamına çevirir. Sonuç: dil değiştirildiğinde her şey o dile geçer.
 
-## Teknik detaylar
+## Soru: Admin paneli çevrilsin mi?
+Admin paneli (`/admin` altındaki sayfalar) yalnızca yönetici kullanıcılar tarafından görüldüğü için genelde tek dilde (TR) bırakılır. İki seçenek var:
 
-**Ping endpoint seçimi**: Supabase'in `/auth/v1/health` endpoint'i her zaman 200 döner ve CORS açıktır, ekstra cost yok. Alternatif: `VITE_SUPABASE_URL` root'una HEAD.
+- **A) Sadece kullanıcıya açık ekranlar çevrilsin** (admin TR kalsın) → daha hızlı, daha küçük locale dosyaları.
+- **B) Admin de dahil her şey çevrilsin** → tutarlı ama ~30% daha fazla iş.
 
-**Timeout**: 3 sn — yavaş 3G'de bile yeterli, kullanıcıyı bekletmez.
-
-**Cleanup**: `useEffect` cleanup'ta tüm listener'ları, timer'ları ve interval'ları temizle.
-
-## Etkilenen dosyalar
-- `src/hooks/useOnlineStatus.ts` (yeniden yazma)
-- `src/components/OfflineBanner.tsx` (retry butonu)
-- `package.json` (yeni dependency)
+Plan onaylanırken hangisini tercih ettiğinizi belirtirseniz ona göre uygularım. Belirtmezseniz **A**'yı varsayılan kabul edeceğim.

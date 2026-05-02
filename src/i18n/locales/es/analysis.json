@@ -25,11 +25,11 @@
     "factorsBadge": "{{count}} factores"
   },
   "sections": {
-    "powerComparison": "Comparación de poder",
+    "powerComparison": "Comparación de Fuerza",
     "headToHead": "Partidos cara a cara",
     "teamStats": "Estadísticas del equipo",
     "similarMatches": "Partidos similares",
-    "matchContext": "Contexto del partido",
+    "matchContext": "Contexto del Partido",
     "aiRecommendation": "Recomendación IA",
     "keyFactors": "Factores clave",
     "injuries": "Lesiones / Sanciones",
@@ -298,5 +298,57 @@
   },
   "injuries": {
     "none": "Sin jugadores ausentes"
+  },
+  "context": {
+    "importance": "Importancia del Partido",
+    "importanceLevel": {
+      "critical": "Crítico",
+      "high": "Alto",
+      "medium": "Medio",
+      "low": "Bajo"
+    },
+    "seasonPhase": {
+      "early": "Inicio de Temporada",
+      "earlyDesc": "Los equipos buscan su forma",
+      "mid": "Mitad de Temporada",
+      "midDesc": "La competencia se intensifica",
+      "late": "Final de Temporada",
+      "lateDesc": "Cada punto cuenta",
+      "final": "Semanas Finales",
+      "finalDesc": "Lucha por el título"
+    },
+    "derbyTitle": "Derbi",
+    "derbyDesc": "Alta motivación y rivalidad",
+    "days": "días",
+    "momentum": "Impulso"
+  },
+  "power": {
+    "attack": "Ataque",
+    "defense": "Defensa",
+    "form": "Forma",
+    "attackPower": "Poder de Ataque",
+    "defensePower": "Poder Defensivo",
+    "overallPower": "Poder Total",
+    "directComparison": "Comparación Directa",
+    "balanced": "Equilibrado",
+    "homeLabel": "Local",
+    "awayLabel": "Visitante"
+  },
+  "similar": {
+    "empty": "No se encontraron partidos similares",
+    "summary": "Resumen de Partidos Similares",
+    "homeShort": "Local",
+    "drawShort": "Emp.",
+    "awayShort": "Visit.",
+    "homeGoals": "Goles Local",
+    "awayGoals": "Goles Visit.",
+    "bttsYes": "AM",
+    "over25": "Más 2.5",
+    "topNTitle": "Top {{count}} Partidos Similares",
+    "similarityLabel": "similitud"
+  },
+  "h2hBadge": {
+    "pastMatches": "Partidos Anteriores ({{count}})",
+    "draws": "Empates"
   }
 }

@@ -219,6 +219,21 @@
   "standings": {
     "loading": "جاري تحميل الترتيب...",
     "errorLoading": "فشل تحميل الترتيب",
-    "retry": "إعادة المحاولة"
+    "retry": "إعادة المحاولة",
+    "team": "الفريق",
+    "championsLeague": "دوري الأبطال",
+    "europaLeague": "الدوري الأوروبي",
+    "conferenceLeague": "دوري المؤتمر",
+    "relegation": "منطقة الهبوط",
+    "topScorers": "الفرق الأكثر تسجيلاً",
+    "bestDefense": "أقوى الدفاعات",
+    "bestDifference": "أفضل فارق أهداف",
+    "avgGoalsPerMatch": "متوسط الأهداف لكل مباراة",
+    "risingTeams": "الفرق الصاعدة",
+    "fallingTeams": "الفرق الهابطة",
+    "bestPpgSubtitle": "أفضل معدل نقاط لكل مباراة",
+    "worstPpgSubtitle": "أقل معدل نقاط لكل مباراة",
+    "seasonGeneralNote": "محسوبة بناءً على الأداء العام للموسم",
+    "ppgUnit": "{{value}} نقطة/مباراة"
   }
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 import { Match } from '@/types/footballApi';
 import { cardTap } from '@/lib/animations';
 
@@ -11,6 +12,7 @@ interface LiveMatchCard2Props {
 }
 
 const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
+  const { t } = useTranslation('home');
   const isHalfTime = match.status === 'PAUSED';
   const minute = match.status === 'IN_PLAY' 
     ? ((match as any).minute ? `${(match as any).minute}'` : "●") 
@@ -25,7 +27,7 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
     <motion.button
       whileTap={cardTap}
       onClick={onClick}
-      aria-label={`${homeName} ${homeScore} - ${awayScore} ${awayName}, Canlı`}
+      aria-label={`${homeName} ${homeScore} - ${awayScore} ${awayName}, ${t('live.card.live')}`}
       className={cn(
         "w-full max-w-full p-3.5 sm:p-4 rounded-2xl text-left transition-all duration-200 overflow-hidden",
         "bg-card border border-border/50 shadow-[0_2px_12px_-2px_hsl(var(--foreground)/0.06)]",
@@ -40,7 +42,7 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
             <span className="relative w-2 h-2 bg-destructive rounded-full block" />
           </span>
           <span className="text-micro font-semibold text-destructive uppercase tracking-wider">
-            Canlı
+            {t('live.card.live')}
           </span>
         </div>
         
@@ -118,7 +120,7 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
       {match.score.halfTime.home !== null && (
         <div className="flex justify-center mb-2.5">
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-muted/40 text-micro text-muted-foreground font-medium">
-            İY {match.score.halfTime.home} - {match.score.halfTime.away}
+            {t('live.card.halfTimeShort')} {match.score.halfTime.home} - {match.score.halfTime.away}
           </span>
         </div>
       )}
@@ -127,7 +129,7 @@ const LiveMatchCard2: React.FC<LiveMatchCard2Props> = ({ match, onClick }) => {
       <div className="flex items-center justify-center pt-2.5 border-t border-border/10">
         <span className="inline-flex items-center gap-1.5 bg-primary/10 rounded-full px-3.5 py-1.5 shadow-sm">
           <Zap className="w-3.5 h-3.5 text-primary" />
-          <span className="text-xs font-semibold text-primary">Hızlı Analiz</span>
+          <span className="text-xs font-semibold text-primary">{t('live.card.quickAnalysis')}</span>
         </span>
       </div>
     </motion.button>

@@ -207,7 +207,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                         ? "bg-emerald-500/20 text-emerald-500" 
                         : "active:bg-muted text-muted-foreground"
                     )}
-                    aria-label="Faydalı"
+                    aria-label={t('actions.helpful')}
                   >
                     <ThumbsUp className="w-4 h-4" />
                   </motion.button>
@@ -222,7 +222,7 @@ const ChatMessage = forwardRef<HTMLDivElement, ChatMessageProps>(
                         ? "bg-destructive/20 text-destructive" 
                         : "active:bg-muted text-muted-foreground"
                     )}
-                    aria-label="Geliştirilmeli"
+                    aria-label={t('actions.needsImprovement')}
                   >
                     <ThumbsDown className="w-4 h-4" />
                   </motion.button>

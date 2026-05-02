@@ -2,6 +2,7 @@ import React from 'react';
 import { AlertTriangle, Calendar, Clock, TrendingUp, TrendingDown, Minus, Swords } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 export interface MatchContext {
   matchImportance: 'critical' | 'high' | 'medium' | 'low';
@@ -20,19 +21,16 @@ interface MatchContextCardProps {
   awayTeam: string;
 }
 
-const importanceConfig = {
-  critical: { label: 'Kritik', color: 'text-red-400', bg: 'bg-red-500/20', progress: 100 },
-  high: { label: 'Yüksek', color: 'text-orange-400', bg: 'bg-orange-500/20', progress: 75 },
-  medium: { label: 'Orta', color: 'text-yellow-400', bg: 'bg-yellow-500/20', progress: 50 },
-  low: { label: 'Düşük', color: 'text-muted-foreground', bg: 'bg-muted/30', progress: 25 },
-};
+const importanceMeta = {
+  critical: { color: 'text-red-400', bg: 'bg-red-500/20', progress: 100 },
+  high: { color: 'text-orange-400', bg: 'bg-orange-500/20', progress: 75 },
+  medium: { color: 'text-yellow-400', bg: 'bg-yellow-500/20', progress: 50 },
+  low: { color: 'text-muted-foreground', bg: 'bg-muted/30', progress: 25 },
+} as const;
 
-const seasonPhaseConfig = {
-  early: { label: 'Sezon Başı', icon: '🌱', description: 'Takımlar form arıyor' },
-  mid: { label: 'Sezon Ortası', icon: '⚡', description: 'Rekabet kızışıyor' },
-  late: { label: 'Sezon Sonu', icon: '🔥', description: 'Her puan kritik' },
-  final: { label: 'Final Haftaları', icon: '🏆', description: 'Şampiyonluk mücadelesi' },
-};
+const seasonPhaseIcon = {
+  early: '🌱', mid: '⚡', late: '🔥', final: '🏆',
+} as const;
 
 const MomentumIndicator: React.FC<{ value: number; team: string }> = ({ value, team }) => {
   const getTrendIcon = () => {
@@ -76,22 +74,24 @@ const MomentumIndicator: React.FC<{ value: number; team: string }> = ({ value, t
 };
 
 const MatchContextCard: React.FC<MatchContextCardProps> = ({ context, homeTeam, awayTeam }) => {
-  const importance = importanceConfig[context?.matchImportance] ?? importanceConfig.medium;
-  const phase = seasonPhaseConfig[context?.seasonPhase] ?? seasonPhaseConfig.mid;
+  const { t } = useTranslation('analysis');
+  const importance = importanceMeta[context?.matchImportance] ?? importanceMeta.medium;
+  const phaseKey = context?.seasonPhase ?? 'mid';
+  const phaseIcon = seasonPhaseIcon[phaseKey];
 
   return (
     <div className="glass-card p-4 space-y-4">
       <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
         <AlertTriangle className="w-4 h-4 text-primary" />
-        Maç Bağlamı
+        {t('sections.matchContext')}
       </h3>
 
       {/* Match Importance */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Maç Önemi</span>
+          <span className="text-xs text-muted-foreground">{t('context.importance')}</span>
           <span className={cn('text-sm font-medium', importance.color)}>
-            {importance.label}
+            {t(`context.importanceLevel.${context?.matchImportance ?? 'medium'}`)}
           </span>
         </div>
         <Progress value={importance.progress} className="h-2" />
@@ -100,10 +100,10 @@ const MatchContextCard: React.FC<MatchContextCardProps> = ({ context, homeTeam, 
       {/* Season Phase */}
       <div className={cn('p-3 rounded-lg', importance.bg)}>
         <div className="flex items-center gap-2">
-          <span className="text-lg">{phase.icon}</span>
+          <span className="text-lg">{phaseIcon}</span>
           <div>
-            <div className="text-sm font-medium text-foreground">{phase.label}</div>
-            <div className="text-xs text-muted-foreground">{phase.description}</div>
+            <div className="text-sm font-medium text-foreground">{t(`context.seasonPhase.${phaseKey}`)}</div>
+            <div className="text-xs text-muted-foreground">{t(`context.seasonPhase.${phaseKey}Desc`)}</div>
           </div>
         </div>
       </div>
@@ -113,8 +113,8 @@ const MatchContextCard: React.FC<MatchContextCardProps> = ({ context, homeTeam, 
         <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-purple-500/20 to-amber-500/20 rounded-lg border border-purple-500/30">
           <Swords className="w-5 h-5 text-purple-400" />
           <div>
-            <div className="text-sm font-medium text-purple-400">Derbi Maçı</div>
-            <div className="text-xs text-muted-foreground">Yüksek motivasyon ve rekabet</div>
+            <div className="text-sm font-medium text-purple-400">{t('context.derbyTitle')}</div>
+            <div className="text-xs text-muted-foreground">{t('context.derbyDesc')}</div>
           </div>
         </div>
       )}
@@ -128,7 +128,7 @@ const MatchContextCard: React.FC<MatchContextCardProps> = ({ context, homeTeam, 
               <span className="text-xs text-muted-foreground truncate">{homeTeam}</span>
             </div>
             <div className="text-lg font-bold text-foreground">
-              {context.homeRestDays ?? '-'} <span className="text-sm font-normal text-muted-foreground">gün</span>
+              {context.homeRestDays ?? '-'} <span className="text-sm font-normal text-muted-foreground">{t('context.days')}</span>
             </div>
           </div>
           <div className="p-3 bg-muted/30 rounded-lg">
@@ -137,7 +137,7 @@ const MatchContextCard: React.FC<MatchContextCardProps> = ({ context, homeTeam, 
               <span className="text-xs text-muted-foreground truncate">{awayTeam}</span>
             </div>
             <div className="text-lg font-bold text-foreground">
-              {context.awayRestDays ?? '-'} <span className="text-sm font-normal text-muted-foreground">gün</span>
+              {context.awayRestDays ?? '-'} <span className="text-sm font-normal text-muted-foreground">{t('context.days')}</span>
             </div>
           </div>
         </div>
@@ -146,7 +146,7 @@ const MatchContextCard: React.FC<MatchContextCardProps> = ({ context, homeTeam, 
       {/* Momentum */}
       {(context.homeMomentum !== undefined || context.awayMomentum !== undefined) && (
         <div className="space-y-2">
-          <div className="text-xs text-muted-foreground font-medium">Momentum</div>
+          <div className="text-xs text-muted-foreground font-medium">{t('context.momentum')}</div>
           <div className="flex gap-4">
             {context.homeMomentum !== undefined && (
               <MomentumIndicator value={context.homeMomentum} team={homeTeam} />

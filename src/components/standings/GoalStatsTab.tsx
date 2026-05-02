@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Target, Shield, TrendingUp, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface StandingData {
   team_name: string;
@@ -19,6 +20,7 @@ interface GoalStatsTabProps {
 }
 
 const GoalStatsTab: React.FC<GoalStatsTabProps> = ({ standings, isLoading }) => {
+  const { t } = useTranslation('common');
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -71,10 +73,10 @@ const GoalStatsTab: React.FC<GoalStatsTabProps> = ({ standings, isLoading }) => 
   const maxAvg = Math.max(...goalsPerMatch.map(t => t.avgGoals), 1);
 
   const sections = [
-    { title: 'En Golcü Takımlar', icon: Target, iconColor: 'text-primary', data: topScorers, render: (t: StandingData, i: number) => renderTeamRow(t, i, t.goals_for, maxGoalsFor, 'bg-primary') },
-    { title: 'En Sağlam Defanslar', icon: Shield, iconColor: 'text-blue-500', data: bestDefense, render: (t: StandingData, i: number) => renderTeamRow(t, i, t.goals_against, maxGoalsAgainst, 'bg-blue-500') },
-    { title: 'En İyi Averaj', icon: TrendingUp, iconColor: 'text-emerald-500', data: bestDifference, render: (t: StandingData, i: number) => renderTeamRow(t, i, t.goal_difference > 0 ? `+${t.goal_difference}` : t.goal_difference, maxDiff, 'bg-emerald-500') },
-    { title: 'Maç Başı Gol Ort.', icon: Activity, iconColor: 'text-amber-500', data: goalsPerMatch, render: (t: any, i: number) => renderTeamRow(t, i, t.avgGoals.toFixed(2), maxAvg, 'bg-amber-500') },
+    { title: t('standings.topScorers'), icon: Target, iconColor: 'text-primary', data: topScorers, render: (item: StandingData, i: number) => renderTeamRow(item, i, item.goals_for, maxGoalsFor, 'bg-primary') },
+    { title: t('standings.bestDefense'), icon: Shield, iconColor: 'text-blue-500', data: bestDefense, render: (item: StandingData, i: number) => renderTeamRow(item, i, item.goals_against, maxGoalsAgainst, 'bg-blue-500') },
+    { title: t('standings.bestDifference'), icon: TrendingUp, iconColor: 'text-emerald-500', data: bestDifference, render: (item: StandingData, i: number) => renderTeamRow(item, i, item.goal_difference > 0 ? `+${item.goal_difference}` : item.goal_difference, maxDiff, 'bg-emerald-500') },
+    { title: t('standings.avgGoalsPerMatch'), icon: Activity, iconColor: 'text-amber-500', data: goalsPerMatch, render: (item: any, i: number) => renderTeamRow(item, i, item.avgGoals.toFixed(2), maxAvg, 'bg-amber-500') },
   ];
 
   return (

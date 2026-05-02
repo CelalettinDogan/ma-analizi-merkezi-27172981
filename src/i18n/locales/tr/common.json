@@ -219,6 +219,21 @@
   "standings": {
     "loading": "Puan durumu yükleniyor...",
     "errorLoading": "Puan durumu yüklenirken hata oluştu",
-    "retry": "Tekrar Dene"
+    "retry": "Tekrar Dene",
+    "team": "Takım",
+    "championsLeague": "Şampiyonlar Ligi",
+    "europaLeague": "Avrupa Ligi",
+    "conferenceLeague": "Konferans Ligi",
+    "relegation": "Düşme Hattı",
+    "topScorers": "En Golcü Takımlar",
+    "bestDefense": "En Sağlam Defanslar",
+    "bestDifference": "En İyi Averaj",
+    "avgGoalsPerMatch": "Maç Başı Gol Ort.",
+    "risingTeams": "Yükselen Takımlar",
+    "fallingTeams": "Düşüşte Olanlar",
+    "bestPpgSubtitle": "En iyi maç başı puan ortalaması",
+    "worstPpgSubtitle": "En düşük maç başı puan ortalaması",
+    "seasonGeneralNote": "Sezon geneli performansa göre hesaplanmıştır",
+    "ppgUnit": "{{value}} puan/maç"
   }
 }
