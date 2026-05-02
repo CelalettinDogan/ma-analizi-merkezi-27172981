@@ -1,57 +1,57 @@
-# Tam Çeviri Tamamlama Planı
+# Kalan Çeviri Eksikleri – Tam Tamamlama Planı
 
-## Sorun
-Uygulama 5 dili destekliyor (TR, EN, DE, ES, AR) ancak **53 dosyada** hâlâ sabit Türkçe metinler var. Dil değiştirildiğinde bu metinler Türkçe olarak kalıyor. Tespit edilen noktalar:
+## Tespit
+Kodda hâlâ sabit Türkçe metin barındıran ve gerçekten kullanıcıya görünen alanlar:
 
-- **Dashboard kartları**: `AccuracyHeroCard`, `QuickStatsGrid`, `PredictionTypePills`, `ActivityFeed`, `MLPerformanceCard`, `RecentPredictions`, `StatsOverview`, `AILearningBar`, `AutoVerifyButton`, `PredictionTypeChart`
-- **Analiz bileşenleri**: `AnalysisHeroSummary`, `AdvancedAnalysisTabs`, `AIRecommendationCard`, `CollapsibleAnalysis`, `PredictionPillSelector`, `AnalysisSection`, `SimilarMatchesSection`
-- **Maç kartları**: `PredictionCard`, `TeamStatsCard`, `MatchContextCard`, `PowerComparisonCard`, `HeadToHeadCard`, `TodaysMatches`, `H2HSummaryBadge`, `LiveMatchCard2`
-- **Standings**: `StandingsTable`, `GoalStatsTab`, `FormAnalysisTab`
-- **Chat**: `ChatContainer`, `ChatInput`, `ChatMessage`
-- **Premium**: `PremiumUpgrade`
-- **Streak/Rewards**: `StreakRewardsCard`, `Rewards.tsx`
-- **Profil & UI**: `NotificationSettings`, `ThemeToggle`, `PullToRefresh`, `ShareCard`, `AnalysisSetDrawer`, `AnalysisSetItem`
-- **Charts**: `ConfidenceVisualizer`, `ScorePredictionChart`
-- **Sayfalar**: `Premium.tsx`, `Auth.tsx`, `Chat.tsx`
-- **Admin paneli**: `UserManagement`, `PremiumManagement`, `NotificationManagement`, `DashboardStats`, `AdminLayout`, `ActivityLog`, `AIManagement`, `Admin.tsx` (admin sadece TR'de kalabilir, aşağıda soruluyor)
+### A. Analiz sonrası ekran (AnalysisDrawer ve alt bileşenler)
+Drawer'ın kendisi büyük ölçüde çevrildi. Kalan görünür sızıntılar:
+- `src/components/charts/ScorePredictionChart.tsx` → JSX yorumları zararsız ama eklenmemiş. *Görünür sızıntı yok* (sadece kontrol).
+- `src/components/AnalysisSection.tsx`, `src/components/HeadToHeadCard.tsx`, `src/components/TeamStatsCard.tsx` → **hiçbir yerden import edilmiyor (legacy/ölü kod)**. Bunlar drawer mimarisinden önce kalan dosyalar. **Silinecek**, böylece "yarı çevrilmemiş" görünmeleri imkânsız hale gelir.
+  - Not: `'yüksek' | 'orta' | 'düşük'` ve `'Karşılıklı Gol'`, `'Maç Sonucu'` gibi string literal'lar veri model anahtarıdır (DB'de bu şekilde saklanıyor) — kalacak; çeviri sadece UI etiketinde yapılır.
 
-Toplam ~100+ JSX metni + 41 string literal sabit Türkçe.
+### B. Dashboard kartları (henüz hiç çevrilmemiş)
+- `dashboard/StatsOverview.tsx` (Doğruluk Oranı, Doğru Tahminler, Yüksek Güvenli, "yanlış tahmin", "Henüz tahmin verisi bulunmuyor")
+- `dashboard/RecentPredictions.tsx` (Başarılı/Hata toast'ları, "Sonuç Gir", "Maç Sonucunu Girin", "Henüz tahmin bulunmuyor")
+- `dashboard/QuickStatsGrid.tsx` (Başarılı, Başarı Oranı, "Veri toplanıyor")
+- `dashboard/PredictionTypePills.tsx` (etiket map'leri + "Tahmin Türleri", "Henüz tahmin verisi yok")
+- `dashboard/PredictionTypeChart.tsx` ("Tahmin Türlerine Göre Başarı", "Henüz veri bulunmuyor", "doğru/yanlış")
+- `dashboard/ActivityFeed.tsx` ("Kazandı/Kaybetti", "Tümünü Gör", "Tüm Tahminler", "Henüz tahmin yapılmadı", kısaltma map'i)
+- `dashboard/AccuracyHeroCard.tsx` (Doğru/Yanlış, "Henüz Veri Yok", "AI Tahmin Başarı Oranı")
+- `dashboard/AILearningBar.tsx` ("AI Öğrenmeye Hazırlanıyor", "AI Model Öğreniyor")
+- `dashboard/MLPerformanceCard.tsx` ("Genel Başarı" vd.)
+- `dashboard/AutoVerifyButton.tsx` ("Sonuç Bulunamadı", "Doğrulanıyor...", "Otomatik Doğrula", "AI Öğrenme Döngüsü")
 
-## Yaklaşım
+### C. Premium / Rewards / Profil
+- `pages/Premium.tsx` → `cleanPrice` regex (yıl/ay) → tüm dillerin son ek listesi zaten regex'te var, dokunulmaz; ama Türkçe hata mesajı kontrolleri (`'doğrulanamadı'` vd.) → değiştirilmez (server hata kodu).
+- `components/premium/PremiumUpgrade.tsx` → aynı.
+- `pages/Rewards.tsx` → "Plan Analiz Hakkı", "Plan Chat Hakkı", "Gün Serisi", "14+ gün seri ödülü"
+- `components/streak/StreakRewardsCard.tsx` → fallback "gün"
 
-### 1. Locale dosyalarına yeni anahtarlar ekleme
-Mevcut namespace yapısını koruyarak şu dosyalara ekleme yapılacak:
-- `common.json` → ortak butonlar, etiketler (Hücum, Savunma, Doğru, Yanlış, Başarılı, vb.)
-- `analysis.json` → analiz/tahmin kartı metinleri
-- `home.json` → maç listesi/kart metinleri
-- `chat.json` → chat UI metinleri (Faydalı, Geliştirilmeli)
-- `premium.json` → premium upgrade ek metinleri
-- `profile.json` → bildirim ayarları, tema
-- Yeni: `dashboard.json` ve `standings.json` namespace'leri (çok sayıda anahtar olduğu için ayrılır)
+### D. Küçük UI
+- `components/ThemeToggle.tsx` (aria-label: "Tema değiştir", "Açık/Koyu temaya geç")
+- `components/PullToRefresh.tsx` (aria-label: "Yenileniyor", "Yenilemek için çekin")
+- `pages/Chat.tsx` → "Yükleniyor..." fallback
+- `components/ShareCard.tsx` → renk eşleştirmedeki çoklu dil dizgileri zaten doğru, dokunulmaz.
 
-Her anahtar **5 dilin tamamına** (TR, EN, DE, ES, AR) çevrilecek.
+### E. Auth.tsx — Gizlilik Politikası ve Kullanım Şartları
+Modal içi tam blok metin Türkçe sabit. Bunlar yasal metin — uzun. **İki seçenek** (alttaki soru).
 
-### 2. Bileşenleri `useTranslation` ile güncelleme
-Her dosyada:
-- `useTranslation('namespace')` hook'u eklenecek
-- Sabit string'ler `{t('key')}` ile değiştirilecek
-- `aria-label`, `placeholder`, `title` gibi attribute'lar dahil edilecek
-- Plural ve interpolasyon gerektirenler (`{{count}}`) i18next sözdizimi ile yazılacak
+## Yapılacaklar
 
-### 3. i18n config güncellemesi
-`src/i18n/config.ts` içine yeni `dashboard` ve `standings` namespace'leri eklenecek; tüm dillerde import edilecek.
+1. **Locale anahtarları ekle** – `dashboard.json` (yeni namespace), `common.json`, `profile.json`, `chat.json`, `rewards.json`, `legal.json`'a yeni anahtarlar; 5 dilin (TR, EN, DE, ES, AR) tamamına çeviri.
+2. **`src/i18n/config.ts`** içine `dashboard` namespace'ini kaydet.
+3. **Bileşenleri `useTranslation` ile güncelle** — yukarıdaki B/C/D listesindeki tüm dosyalar.
+4. **Ölü kod sil**: `src/components/AnalysisSection.tsx`, `src/components/HeadToHeadCard.tsx`, `src/components/TeamStatsCard.tsx` (hiçbir yerden import edilmiyor — drv. doğrulandı).
+5. **Doğrulama**: `rg -nP '[İıĞğŞşÇçÖöÜü]' src/components src/pages` çıktısı yalnızca; (a) veri model literal'ları (`'yüksek'`, `'Karşılıklı Gol'`), (b) JSX yorumları, (c) regex çoklu-dil pattern'lerinden ibaret kalacak.
 
-### 4. Kalite kontrol
-- `rg -nP '[İıĞğŞşÇçÖöÜü]'` ile son tarama yapılarak kaçan metin olmadığı doğrulanacak (admin hariç tutulursa o dosyalar muaf).
-- Dil değiştirici ile EN/DE/ES/AR sırayla doğrulanacak.
+## Soru: Auth.tsx içindeki Gizlilik & Şartlar metni
 
-## Açıklama (Teknik olmayan özet)
-Uygulama 5 dile çevrildi ama bazı butonlar, etiketler ve mesajlar yanlışlıkla Türkçe kodlanmış. Bu plan, tüm bu metinleri tespit edip çeviri sistemine taşır ve 5 dilin tamamına çevirir. Sonuç: dil değiştirildiğinde her şey o dile geçer.
+Bu yasal blok ~50 satır uzun bir Türkçe metin. İki yol:
 
-## Soru: Admin paneli çevrilsin mi?
-Admin paneli (`/admin` altındaki sayfalar) yalnızca yönetici kullanıcılar tarafından görüldüğü için genelde tek dilde (TR) bırakılır. İki seçenek var:
+- **A) Olduğu gibi bırak** — yasal metinler genelde tek resmi dilde tutulur (KVKK referansı dolayısıyla TR uygun). Diğer dillerde de TR gösterilir.
+- **B) 5 dile çevir** — tutarlı görünüm; her dilin yasal anlamı muğlaklaşabilir.
 
-- **A) Sadece kullanıcıya açık ekranlar çevrilsin** (admin TR kalsın) → daha hızlı, daha küçük locale dosyaları.
-- **B) Admin de dahil her şey çevrilsin** → tutarlı ama ~30% daha fazla iş.
+Belirtmezseniz **A** varsayılır (sadece "Gizlilik Politikası" / "Kullanım Şartları" başlıklarını çevirir, içeriği TR bırakırım).
 
-Plan onaylanırken hangisini tercih ettiğinizi belirtirseniz ona göre uygularım. Belirtmezseniz **A**'yı varsayılan kabul edeceğim.
+## Onay sonrası teslim
+Onaylarsanız tek mesajda tüm değişiklikleri uygularım; ardından dil değiştirici ile EN/DE/ES/AR sırayla doğrulamanız için kısa bir kontrol listesi paylaşırım.
