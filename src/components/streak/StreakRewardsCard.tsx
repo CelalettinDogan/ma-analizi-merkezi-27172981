@@ -74,7 +74,7 @@ const StreakRewardsCard: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <span className={`text-xs font-semibold ${reached ? '' : 'text-muted-foreground'}`}>
-                      {m.day} {t('streak:days', { ns: 'streak' }) || 'gün'}
+                      {m.day} {t('dayShort')}
                     </span>
                     {reached && (
                       <motion.span
