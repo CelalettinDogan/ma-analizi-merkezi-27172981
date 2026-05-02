@@ -1,6 +1,7 @@
 import React from 'react';
 import { Zap, Shield, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface TeamPower {
   attackIndex: number;
@@ -98,6 +99,7 @@ const PowerComparisonCard: React.FC<PowerComparisonCardProps> = ({
   homePower,
   awayPower,
 }) => {
+  const { t } = useTranslation('analysis');
   const homeAdvantage = homePower.overallPower - awayPower.overallPower;
   
   return (
@@ -105,7 +107,7 @@ const PowerComparisonCard: React.FC<PowerComparisonCardProps> = ({
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <Activity className="w-4 h-4 text-primary" />
-          Güç Karşılaştırması
+          {t('sections.powerComparison')}
         </h3>
         <div className={cn(
           'text-xs font-medium px-2 py-0.5 rounded-full',
@@ -115,7 +117,7 @@ const PowerComparisonCard: React.FC<PowerComparisonCardProps> = ({
         )}>
           {homeAdvantage > 10 ? `${homeTeam} +${homeAdvantage.toFixed(0)}` :
            homeAdvantage < -10 ? `${awayTeam} +${Math.abs(homeAdvantage).toFixed(0)}` :
-           'Dengeli'}
+           t('power.balanced')}
         </div>
       </div>
 
@@ -123,11 +125,11 @@ const PowerComparisonCard: React.FC<PowerComparisonCardProps> = ({
       <div className="grid grid-cols-2 gap-4">
         <div className="text-center">
           <div className="text-sm font-medium text-foreground truncate">{homeTeam}</div>
-          <div className="text-xs text-muted-foreground">Ev Sahibi</div>
+          <div className="text-xs text-muted-foreground">{t('power.homeLabel')}</div>
         </div>
         <div className="text-center">
           <div className="text-sm font-medium text-foreground truncate">{awayTeam}</div>
-          <div className="text-xs text-muted-foreground">Deplasman</div>
+          <div className="text-xs text-muted-foreground">{t('power.awayLabel')}</div>
         </div>
       </div>
 
@@ -137,19 +139,19 @@ const PowerComparisonCard: React.FC<PowerComparisonCardProps> = ({
         <div className="space-y-3">
           <PowerGauge 
             value={homePower.attackIndex} 
-            label="Hücum" 
+            label={t('power.attack')} 
             icon={<Zap className="w-3.5 h-3.5 text-primary" />}
             color="text-primary"
           />
           <PowerGauge 
             value={homePower.defenseIndex} 
-            label="Savunma" 
+            label={t('power.defense')} 
             icon={<Shield className="w-3.5 h-3.5 text-blue-400" />}
             color="text-blue-400"
           />
           <PowerGauge 
             value={homePower.formScore} 
-            label="Form" 
+            label={t('power.form')} 
             icon={<Activity className="w-3.5 h-3.5 text-secondary" />}
             color="text-secondary"
             max={100}
@@ -160,19 +162,19 @@ const PowerComparisonCard: React.FC<PowerComparisonCardProps> = ({
         <div className="space-y-3">
           <PowerGauge 
             value={awayPower.attackIndex} 
-            label="Hücum" 
+            label={t('power.attack')} 
             icon={<Zap className="w-3.5 h-3.5 text-primary" />}
             color="text-primary"
           />
           <PowerGauge 
             value={awayPower.defenseIndex} 
-            label="Savunma" 
+            label={t('power.defense')} 
             icon={<Shield className="w-3.5 h-3.5 text-blue-400" />}
             color="text-blue-400"
           />
           <PowerGauge 
             value={awayPower.formScore} 
-            label="Form" 
+            label={t('power.form')} 
             icon={<Activity className="w-3.5 h-3.5 text-secondary" />}
             color="text-secondary"
             max={100}
@@ -182,23 +184,23 @@ const PowerComparisonCard: React.FC<PowerComparisonCardProps> = ({
 
       {/* Direct Comparisons */}
       <div className="pt-3 border-t border-border/50 space-y-3">
-        <div className="text-xs text-muted-foreground font-medium">Doğrudan Karşılaştırma</div>
+        <div className="text-xs text-muted-foreground font-medium">{t('power.directComparison')}</div>
         <ComparisonBar 
           homeValue={homePower.attackIndex} 
           awayValue={awayPower.attackIndex} 
-          label="Hücum Gücü"
+          label={t('power.attackPower')}
         />
         <ComparisonBar 
           homeValue={homePower.defenseIndex} 
           awayValue={awayPower.defenseIndex} 
-          label="Savunma Gücü"
+          label={t('power.defensePower')}
           homeColor="bg-blue-500"
           awayColor="bg-blue-400"
         />
         <ComparisonBar 
           homeValue={homePower.overallPower} 
           awayValue={awayPower.overallPower} 
-          label="Toplam Güç"
+          label={t('power.overallPower')}
           homeColor="bg-gradient-to-r from-primary to-secondary"
           awayColor="bg-gradient-to-l from-primary to-secondary"
         />
