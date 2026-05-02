@@ -12,5 +12,17 @@
   "earned": "¡Ganado!",
   "streakReward": "¡Recompensa por {{days}} días de racha!",
   "newReward": "¡Nueva recompensa ganada!",
-  "badge": "Insignia de Racha"
+  "badge": "Insignia de Racha",
+  "dailyStreak": "Racha Diaria",
+  "longest": "Más Larga",
+  "milestone": "Hito",
+  "activeBonuses": "Créditos Bonus Activos",
+  "planAnalysis": "Análisis del Plan",
+  "planChat": "Chats del Plan",
+  "plan": "Plan",
+  "nextGoal": "Próximo Objetivo",
+  "daySeries": "Racha de {{day}} Días",
+  "dayShort": "Día",
+  "badgeReward": "Recompensa por 14+ días de racha",
+  "premiumCta": "Consigue más créditos con Premium"
 }

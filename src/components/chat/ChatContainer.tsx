@@ -37,17 +37,19 @@ const DateDivider: React.FC<{ date: string }> = ({ date }) => (
 );
 
 // Helper to format date for divider
+import i18n from '@/i18n/config';
 const getDateLabel = (date: Date): string => {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diffDays = Math.floor((today.getTime() - messageDate.getTime()) / (1000 * 60 * 60 * 24));
   
-  if (diffDays === 0) return 'Bugün';
-  if (diffDays === 1) return 'Dün';
-  if (diffDays < 7) return `${diffDays} gün önce`;
+  if (diffDays === 0) return i18n.t('chat:dates.today');
+  if (diffDays === 1) return i18n.t('chat:dates.yesterday');
+  if (diffDays < 7) return i18n.t('chat:dates.daysAgo', { count: diffDays });
   
-  return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
+  const localeMap: Record<string, string> = { tr: 'tr-TR', en: 'en-US', de: 'de-DE', es: 'es-ES', ar: 'ar' };
+  return date.toLocaleDateString(localeMap[i18n.language] || 'en-US', { day: 'numeric', month: 'long' });
 };
 
 // Check if we need a date divider between two messages

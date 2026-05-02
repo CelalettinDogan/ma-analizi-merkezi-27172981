@@ -12,5 +12,17 @@
   "earned": "Kazanıldı!",
   "streakReward": "{{days}} gün seri ödülü!",
   "newReward": "Yeni ödül kazandın!",
-  "badge": "Seri Rozeti"
+  "badge": "Seri Rozeti",
+  "dailyStreak": "Günlük Seri",
+  "longest": "En Uzun",
+  "milestone": "Milestone",
+  "activeBonuses": "Aktif Bonus Haklar",
+  "planAnalysis": "Plan Analiz Hakkı",
+  "planChat": "Plan Chat Hakkı",
+  "plan": "Plan",
+  "nextGoal": "Sonraki Hedef",
+  "daySeries": "{{day}} Gün Serisi",
+  "dayShort": "Gün",
+  "badgeReward": "14+ gün seri ödülü",
+  "premiumCta": "Premium ile Daha Fazla Hak Kazan"
 }

@@ -64,7 +64,8 @@
     "results": "{{count}} نتيجة",
     "noResults": "لا توجد نتائج",
     "noResultsHint": "لا توجد تنبؤات تطابق المرشحات. حاول تغيير المرشحات.",
-    "aiDetailedReasoning": "تحليل الذكاء الاصطناعي التفصيلي"
+    "aiDetailedReasoning": "تحليل الذكاء الاصطناعي التفصيلي",
+    "poissonProbability": "احتمال بواسون"
   },
   "confidence": {
     "low": "منخفض",

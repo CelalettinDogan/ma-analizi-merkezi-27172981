@@ -96,18 +96,18 @@ const Rewards: React.FC = () => {
                       <Flame className="w-10 h-10 text-amber-500" />
                     </div>
                     <p className="text-4xl font-black tabular-nums">{streak.current_streak}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{t('streak:days', { ns: 'streak' }) || 'Günlük Seri'}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{t('rewards:dailyStreak')}</p>
                   </motion.div>
 
                   <div className="flex justify-center gap-6 mt-4">
                     <div className="text-center">
                       <p className="text-lg font-bold tabular-nums">{streak.longest_streak}</p>
-                      <p className="text-[10px] text-muted-foreground">En Uzun</p>
+                      <p className="text-[10px] text-muted-foreground">{t('rewards:longest')}</p>
                     </div>
                     <div className="w-px bg-border/40" />
                     <div className="text-center">
                       <p className="text-lg font-bold tabular-nums">{MILESTONES.filter(m => streak.current_streak >= m.day).length}/{MILESTONES.length}</p>
-                      <p className="text-[10px] text-muted-foreground">Milestone</p>
+                      <p className="text-[10px] text-muted-foreground">{t('rewards:milestone')}</p>
                     </div>
                   </div>
                 </div>
@@ -123,7 +123,7 @@ const Rewards: React.FC = () => {
                   <div className="p-1.5 rounded-xl bg-primary/10">
                     <Star className="w-4 h-4 text-primary" />
                   </div>
-                  <h3 className="text-sm font-bold">Aktif Bonus Haklar</h3>
+                  <h3 className="text-sm font-bold">{t('rewards:activeBonuses')}</h3>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
@@ -148,15 +148,15 @@ const Rewards: React.FC = () => {
                 {/* Daily plan limits */}
                 <div className="pt-2 border-t border-border/30 space-y-1.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Plan Analiz Hakkı</span>
+                    <span className="text-muted-foreground">{t('rewards:planAnalysis')}</span>
                     <span className="font-semibold tabular-nums">{analysisRemaining}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Plan Chat Hakkı</span>
+                    <span className="text-muted-foreground">{t('rewards:planChat')}</span>
                     <span className="font-semibold tabular-nums">{chatRemaining}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Plan</span>
+                    <span className="text-muted-foreground">{t('rewards:plan')}</span>
                     <span className="font-semibold">{planDisplayName}</span>
                   </div>
                 </div>
@@ -173,14 +173,14 @@ const Rewards: React.FC = () => {
                     <div className="p-1.5 rounded-xl bg-amber-500/10">
                       <TrendingUp className="w-4 h-4 text-amber-500" />
                     </div>
-                    <h3 className="text-sm font-bold">Sonraki Hedef</h3>
+                    <h3 className="text-sm font-bold">{t('rewards:nextGoal')}</h3>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${nextMilestone.bg} border ${nextMilestone.border}`}>
                       <nextMilestone.icon className={`w-5 h-5 ${nextMilestone.color}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold">{nextMilestone.day} Gün Serisi</p>
+                      <p className="text-xs font-semibold">{t('rewards:daySeries', { day: nextMilestone.day })}</p>
                       <p className="text-[10px] text-muted-foreground">{t(`rewards:${nextMilestone.rewardKey}`)}</p>
                     </div>
                     <span className="text-xs font-bold tabular-nums text-muted-foreground">
@@ -233,7 +233,7 @@ const Rewards: React.FC = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className={`text-xs font-semibold ${reached ? '' : 'text-muted-foreground'}`}>
-                            {m.day} {t('streak:days', { ns: 'streak' }) || 'Gün'}
+                            {m.day} {t('rewards:dayShort')}
                           </p>
                           <p className="text-[10px] text-muted-foreground">{t(`rewards:${m.rewardKey}`)}</p>
                         </div>
@@ -265,7 +265,7 @@ const Rewards: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-purple-400">{t('rewards:badge')}</p>
-                      <p className="text-[10px] text-muted-foreground">14+ gün seri ödülü</p>
+                      <p className="text-[10px] text-muted-foreground">{t('rewards:badgeReward')}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -281,7 +281,7 @@ const Rewards: React.FC = () => {
                 onClick={() => navigate('/premium')}
               >
                 <Crown className="w-4 h-4 mr-2" />
-                Premium ile Daha Fazla Hak Kazan
+                {t('rewards:premiumCta')}
               </Button>
             </motion.div>
           )}

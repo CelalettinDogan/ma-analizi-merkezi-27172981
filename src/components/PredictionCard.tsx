@@ -94,7 +94,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matc
             <>
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold flex items-center gap-1 text-primary">
-                  🎯 Poisson Olasılığı
+                  🎯 {t('predictions.poissonProbability')}
                 </span>
                 <span className="font-bold text-primary">%{Math.round(prediction.probability!)}</span>
               </div>
