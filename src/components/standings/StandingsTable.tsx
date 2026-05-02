@@ -27,6 +27,7 @@ const getFormIcon = (result: string) => {
 };
 
 const StandingsTable: React.FC<StandingsTableProps> = ({ standings }) => {
+  const { t } = useTranslation('common');
   const total = standings.length;
 
   return (
@@ -34,7 +35,7 @@ const StandingsTable: React.FC<StandingsTableProps> = ({ standings }) => {
       {/* Column headers */}
       <div className="flex items-center px-3 py-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
         <span className="w-7 text-center">#</span>
-        <span className="flex-1 ml-2">Takım</span>
+        <span className="flex-1 ml-2">{t('standings.team')}</span>
         <span className="w-7 text-center">O</span>
         <span className="w-7 text-center hidden xs:block">G</span>
         <span className="w-7 text-center hidden xs:block">B</span>
@@ -118,19 +119,19 @@ const StandingsTable: React.FC<StandingsTableProps> = ({ standings }) => {
       <div className="flex flex-wrap gap-3 pt-3 px-1 text-[10px] text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <div className="w-[3px] h-3 rounded-full bg-primary" />
-          <span>Şampiyonlar Ligi</span>
+          <span>{t('standings.championsLeague')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-[3px] h-3 rounded-full bg-blue-500" />
-          <span>Avrupa Ligi</span>
+          <span>{t('standings.europaLeague')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-[3px] h-3 rounded-full bg-cyan-500" />
-          <span>Konferans Ligi</span>
+          <span>{t('standings.conferenceLeague')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-[3px] h-3 rounded-full bg-destructive" />
-          <span>Düşme Hattı</span>
+          <span>{t('standings.relegation')}</span>
         </div>
       </div>
     </div>
