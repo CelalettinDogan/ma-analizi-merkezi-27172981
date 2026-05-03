@@ -13,6 +13,7 @@ import H2HSummaryBadge from '@/components/match/H2HSummaryBadge';
 import { useH2HPreview } from '@/hooks/useH2HPreview';
 import { getSmartPicks } from '@/services/smartPicksService';
 import { useMatchAIPreview, useMatchAIPreviewExists } from '@/hooks/useMatchAIPreview';
+import { formatPredictionType, formatPredictionValue } from '@/utils/predictionLabels';
 
 const TEAM_OVERRIDES: Record<string, string> = {
   'FC Internazionale Milano': 'Inter', 'Internazionale Milano': 'Inter', 'Inter Milan': 'Inter',
@@ -276,7 +277,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
             {/* Blurred confidence for free, clear for premium */}
             <div className={cn("flex items-center gap-1.5", !isPremium && "blur-[5px] select-none")}>
               <span className="text-xs font-bold tabular-nums text-primary">
-                {dailyPick.predictionValue}
+                {formatPredictionValue(t, dailyPick.predictionValue)}
               </span>
               <span className={cn(
                 "text-micro font-bold tabular-nums px-1.5 py-0.5 rounded-full",
@@ -306,8 +307,8 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
                 <span className="text-sm font-semibold truncate text-right">{dailyPick.awayTeam.replace(/ FC$| CF$| SC$/i, '').trim()}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">{dailyPick.predictionType}</span>
-                <span className="text-sm font-bold text-primary">{dailyPick.predictionValue}</span>
+                <span className="text-xs text-muted-foreground">{formatPredictionType(t, dailyPick.predictionType)}</span>
+                <span className="text-sm font-bold text-primary">{formatPredictionValue(t, dailyPick.predictionValue)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-micro text-muted-foreground/60">{dailyPick.league} · {dailyPick.matchDate}</span>

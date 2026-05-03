@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useAnalysisSet } from '@/contexts/AnalysisSetContext';
 import { cn, getHybridConfidence, getConfidenceLevel } from '@/lib/utils';
+import { formatPredictionType, formatPredictionValue } from '@/utils/predictionLabels';
 import { useAccessLevel } from '@/hooks/useAccessLevel';
 import PremiumTeaserOverlay from '@/components/premium/PremiumTeaserOverlay';
 import { PREDICTION_TYPES } from '@/constants/predictions';
@@ -111,7 +112,7 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
               >
                 <div className="flex items-center gap-2">
                   {prediction.isRecommended && <Crown className="w-3.5 h-3.5 text-primary" />}
-                  <span>{prediction.type}</span>
+                  <span>{formatPredictionType(t, prediction.type)}</span>
                   <LevelIcon className="w-3.5 h-3.5" />
                   {inSet && <Check className="w-3.5 h-3.5" />}
                 </div>
@@ -148,12 +149,12 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
                   {/* Header */}
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
-                      <h4 className="font-semibold text-foreground truncate">{selectedPrediction.type}</h4>
+                      <h4 className="font-semibold text-foreground truncate">{formatPredictionType(t, selectedPrediction.type)}</h4>
                       <p className="text-xs text-muted-foreground mt-0.5">{t('sections.predictionDetail')}</p>
                     </div>
                     <div className="text-right shrink-0 ml-2">
                       <div className={cn("text-xl font-bold text-foreground relative", isLocked && "select-none")} style={isLocked ? { filter: 'blur(8px)' } : undefined}>
-                        {selectedPrediction.prediction}
+                        {formatPredictionValue(t, selectedPrediction.prediction)}
                       </div>
                       {isLocked && (
                         <div className="absolute right-6 top-4">

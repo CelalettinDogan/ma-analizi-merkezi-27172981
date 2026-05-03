@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useAnalysisSet } from '@/contexts/AnalysisSetContext';
 import { cn, getHybridConfidence, getConfidenceLevel } from '@/lib/utils';
+import { formatPredictionType, formatPredictionValue } from '@/utils/predictionLabels';
 import ShareCard from '@/components/ShareCard';
 import { PREDICTION_TYPES } from '@/constants/predictions';
 import { formatMatchDate } from '@/lib/utils';
@@ -96,7 +97,7 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
           {mainPrediction.type === PREDICTION_TYPES.CORRECT_SCORE && !canSeeFullReasoning ? (
             <div className="relative inline-block">
               <h3 className="text-2xl font-bold text-foreground mb-1 select-none" style={{ filter: 'blur(8px)' }}>
-                {mainPrediction.prediction}
+                {formatPredictionValue(t, mainPrediction.prediction)}
               </h3>
               <div className="absolute inset-0 flex items-center justify-center">
                 <LockIcon className="w-5 h-5 text-amber-500/70" />
@@ -104,11 +105,11 @@ const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({ predictions
             </div>
           ) : (
             <h3 className="text-2xl font-bold text-foreground mb-1">
-              {mainPrediction.prediction}
+              {formatPredictionValue(t, mainPrediction.prediction)}
             </h3>
           )}
           <div className="flex items-center justify-center gap-2 flex-wrap">
-            <p className="text-sm text-muted-foreground">{mainPrediction.type}</p>
+            <p className="text-sm text-muted-foreground">{formatPredictionType(t, mainPrediction.type)}</p>
             {mainPrediction.riskLevel && (
               <span className={cn(
                 "text-xs px-2 py-0.5 rounded-full font-medium",

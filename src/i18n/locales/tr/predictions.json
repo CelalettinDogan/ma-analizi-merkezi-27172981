@@ -26,6 +26,14 @@
     "yes": "Var",
     "no": "Yok"
   },
+  "values": {
+    "teamWins": "{{team}} Kazanır",
+    "over": "{{line}} Üst",
+    "under": "{{line}} Alt",
+    "htOver": "İY {{line}} Üst",
+    "htUnder": "İY {{line}} Alt",
+    "htft": "İY {{ht}} / MS {{ft}}"
+  },
   "leagues": {
     "PL": "İngiltere Premier Ligi",
     "BL1": "Almanya Bundesliga",

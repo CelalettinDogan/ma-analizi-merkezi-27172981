@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { AnalysisSetItem as AnalysisSetItemType } from '@/types/analysisSet';
 import { format, parseISO } from 'date-fns';
 import { getDateLocale } from '@/i18n/dateLocale';
+import { formatPredictionType, formatPredictionValue } from '@/utils/predictionLabels';
 
 interface AnalysisSetItemProps {
   item: AnalysisSetItemType;
@@ -66,8 +67,8 @@ const AnalysisSetItem: React.FC<AnalysisSetItemProps> = ({ item, onRemove }) => 
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-sm">
           <TrendingUp className="h-4 w-4 text-primary" />
-          <span className="text-muted-foreground">{item.predictionType}:</span>
-          <span className="font-medium text-foreground">{item.predictionValue}</span>
+          <span className="text-muted-foreground">{formatPredictionType(t, item.predictionType)}:</span>
+          <span className="font-medium text-foreground">{formatPredictionValue(t, item.predictionValue)}</span>
         </div>
         <Badge
           variant="outline"

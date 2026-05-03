@@ -26,6 +26,14 @@
     "yes": "Ja",
     "no": "Nein"
   },
+  "values": {
+    "teamWins": "{{team}} gewinnt",
+    "over": "Über {{line}}",
+    "under": "Unter {{line}}",
+    "htOver": "HZ Über {{line}}",
+    "htUnder": "HZ Unter {{line}}",
+    "htft": "HZ {{ht}} / ES {{ft}}"
+  },
   "leagues": {
     "PL": "Englische Premier League",
     "BL1": "Deutsche Bundesliga",

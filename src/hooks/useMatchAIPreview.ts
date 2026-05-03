@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import i18n from '@/i18n/config';
 
 interface AIPreviewPrediction {
   type: string;
@@ -11,14 +12,20 @@ interface AIPreviewData {
   hasData: boolean;
 }
 
-const PREDICTION_TYPE_SHORT: Record<string, string> = {
-  'Karşılıklı Gol': 'KG',
-  'Toplam Gol Alt/Üst': 'Ü2.5',
-  'Maç Sonucu': 'MS',
-  'Doğru Skor': 'Skor',
-  'İlk Yarı Sonucu': 'İY',
-  'İlk Yarı / Maç Sonucu': 'İY/MS',
-  'İki Yarıda da Gol': 'İY Gol',
+const TYPE_TO_KEY: Record<string, string> = {
+  'Maç Sonucu': 'matchResult',
+  'Toplam Gol Alt/Üst': 'overUnder',
+  'Karşılıklı Gol': 'btts',
+  'Doğru Skor': 'correctScore',
+  'İlk Yarı Sonucu': 'firstHalf',
+  'İlk Yarı / Maç Sonucu': 'halfTimeFullTime',
+  'İki Yarıda da Gol': 'firstHalfOverUnder',
+};
+
+const shortLabel = (type: string): string => {
+  const key = TYPE_TO_KEY[type];
+  if (!key) return type;
+  return i18n.t(`predictions:shortLabels.${key}`) as string;
 };
 
 export function useMatchAIPreview(
@@ -48,7 +55,7 @@ export function useMatchAIPreview(
         .sort((a: any, b: any) => (b.confidence || 0) - (a.confidence || 0))
         .slice(0, 2)
         .map((p: any) => ({
-          type: PREDICTION_TYPE_SHORT[p.prediction_type] || p.prediction_type,
+          type: shortLabel(p.prediction_type),
           confidence: Math.round(p.confidence),
         }));
     },
