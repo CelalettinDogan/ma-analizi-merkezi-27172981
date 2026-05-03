@@ -307,8 +307,8 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
                 <span className="text-sm font-semibold truncate text-right">{dailyPick.awayTeam.replace(/ FC$| CF$| SC$/i, '').trim()}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">{dailyPick.predictionType}</span>
-                <span className="text-sm font-bold text-primary">{dailyPick.predictionValue}</span>
+                <span className="text-xs text-muted-foreground">{formatPredictionType(t, dailyPick.predictionType)}</span>
+                <span className="text-sm font-bold text-primary">{formatPredictionValue(t, dailyPick.predictionValue)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-micro text-muted-foreground/60">{dailyPick.league} · {dailyPick.matchDate}</span>
