@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useAnalysisSet } from '@/contexts/AnalysisSetContext';
 import { cn, getHybridConfidence, getConfidenceLevel } from '@/lib/utils';
+import { formatPredictionType, formatPredictionValue } from '@/utils/predictionLabels';
 import ShareCard from '@/components/ShareCard';
 import { PREDICTION_TYPES } from '@/constants/predictions';
 import { formatMatchDate } from '@/lib/utils';
