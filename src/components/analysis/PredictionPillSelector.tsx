@@ -149,12 +149,12 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
                   {/* Header */}
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
-                      <h4 className="font-semibold text-foreground truncate">{selectedPrediction.type}</h4>
+                      <h4 className="font-semibold text-foreground truncate">{formatPredictionType(t, selectedPrediction.type)}</h4>
                       <p className="text-xs text-muted-foreground mt-0.5">{t('sections.predictionDetail')}</p>
                     </div>
                     <div className="text-right shrink-0 ml-2">
                       <div className={cn("text-xl font-bold text-foreground relative", isLocked && "select-none")} style={isLocked ? { filter: 'blur(8px)' } : undefined}>
-                        {selectedPrediction.prediction}
+                        {formatPredictionValue(t, selectedPrediction.prediction)}
                       </div>
                       {isLocked && (
                         <div className="absolute right-6 top-4">
