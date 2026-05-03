@@ -6,6 +6,7 @@ import { AddToSetButton } from '@/components/analysis-set';
 import { Progress } from '@/components/ui/progress';
 import { CONFIDENCE_LEVELS } from '@/constants/predictions';
 import { getHybridConfidence, getConfidenceLevel, cn } from '@/lib/utils';
+import { formatPredictionType, formatPredictionValue } from '@/utils/predictionLabels';
 
 interface PredictionCardProps {
   prediction: Prediction;
