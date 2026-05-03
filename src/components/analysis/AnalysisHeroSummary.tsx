@@ -4,6 +4,7 @@ import { ChevronUp, Lock as LockIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MatchAnalysis, Prediction } from '@/types/match';
 import { getHybridConfidence, getConfidenceLevel, cn } from '@/lib/utils';
+import { formatPredictionType, formatPredictionValue } from '@/utils/predictionLabels';
 import ConfidenceBreakdownTooltip from './ConfidenceBreakdownTooltip';
 import { useAccessLevel } from '@/hooks/useAccessLevel';
 import PremiumTeaserOverlay from '@/components/premium/PremiumTeaserOverlay';
