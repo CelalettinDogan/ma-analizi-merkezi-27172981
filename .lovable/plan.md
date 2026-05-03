@@ -1,57 +1,80 @@
-# Kalan Çeviri Eksikleri – Tam Tamamlama Planı
+# Tüm Sayfalarda Çeviri Tamamlama Planı
 
-## Tespit
-Kodda hâlâ sabit Türkçe metin barındıran ve gerçekten kullanıcıya görünen alanlar:
+## Sorunun Kaynağı
 
-### A. Analiz sonrası ekran (AnalysisDrawer ve alt bileşenler)
-Drawer'ın kendisi büyük ölçüde çevrildi. Kalan görünür sızıntılar:
-- `src/components/charts/ScorePredictionChart.tsx` → JSX yorumları zararsız ama eklenmemiş. *Görünür sızıntı yok* (sadece kontrol).
-- `src/components/AnalysisSection.tsx`, `src/components/HeadToHeadCard.tsx`, `src/components/TeamStatsCard.tsx` → **hiçbir yerden import edilmiyor (legacy/ölü kod)**. Bunlar drawer mimarisinden önce kalan dosyalar. **Silinecek**, böylece "yarı çevrilmemiş" görünmeleri imkânsız hale gelir.
-  - Not: `'yüksek' | 'orta' | 'düşük'` ve `'Karşılıklı Gol'`, `'Maç Sonucu'` gibi string literal'lar veri model anahtarıdır (DB'de bu şekilde saklanıyor) — kalacak; çeviri sadece UI etiketinde yapılır.
+Ekran görüntüsündeki "Beraberlik" ve "İlk Yarı Sonucu" gibi metinler aslında **veritabanı seviyesinde Türkçe enum değerleri** olarak saklanıyor. Şu anki i18n çalışması sadece statik UI metinlerini kapsıyordu, ama tahmin türleri (`type`) ve tahmin değerleri (`prediction`) data layer'da Türkçe duruyor:
 
-### B. Dashboard kartları (henüz hiç çevrilmemiş)
-- `dashboard/StatsOverview.tsx` (Doğruluk Oranı, Doğru Tahminler, Yüksek Güvenli, "yanlış tahmin", "Henüz tahmin verisi bulunmuyor")
-- `dashboard/RecentPredictions.tsx` (Başarılı/Hata toast'ları, "Sonuç Gir", "Maç Sonucunu Girin", "Henüz tahmin bulunmuyor")
-- `dashboard/QuickStatsGrid.tsx` (Başarılı, Başarı Oranı, "Veri toplanıyor")
-- `dashboard/PredictionTypePills.tsx` (etiket map'leri + "Tahmin Türleri", "Henüz tahmin verisi yok")
-- `dashboard/PredictionTypeChart.tsx` ("Tahmin Türlerine Göre Başarı", "Henüz veri bulunmuyor", "doğru/yanlış")
-- `dashboard/ActivityFeed.tsx` ("Kazandı/Kaybetti", "Tümünü Gör", "Tüm Tahminler", "Henüz tahmin yapılmadı", kısaltma map'i)
-- `dashboard/AccuracyHeroCard.tsx` (Doğru/Yanlış, "Henüz Veri Yok", "AI Tahmin Başarı Oranı")
-- `dashboard/AILearningBar.tsx` ("AI Öğrenmeye Hazırlanıyor", "AI Model Öğreniyor")
-- `dashboard/MLPerformanceCard.tsx` ("Genel Başarı" vd.)
-- `dashboard/AutoVerifyButton.tsx` ("Sonuç Bulunamadı", "Doğrulanıyor...", "Otomatik Doğrula", "AI Öğrenme Döngüsü")
+- `src/constants/predictions.ts` → `PREDICTION_TYPES` (Maç Sonucu, İlk Yarı Sonucu, Doğru Skor…)
+- `src/services/mlPredictionService.ts` → `'Beraberlik'`, `'Evet'`, `'Hayır'`, `'2.5 Üst'`, `'X Kazanır'`
+- `src/services/predictionService.ts`, `autoVerifyService.ts` → bu Türkçe stringleri sonuç doğrulama mantığında **switch/includes** ile kullanıyor
 
-### C. Premium / Rewards / Profil
-- `pages/Premium.tsx` → `cleanPrice` regex (yıl/ay) → tüm dillerin son ek listesi zaten regex'te var, dokunulmaz; ama Türkçe hata mesajı kontrolleri (`'doğrulanamadı'` vd.) → değiştirilmez (server hata kodu).
-- `components/premium/PremiumUpgrade.tsx` → aynı.
-- `pages/Rewards.tsx` → "Plan Analiz Hakkı", "Plan Chat Hakkı", "Gün Serisi", "14+ gün seri ödülü"
-- `components/streak/StreakRewardsCard.tsx` → fallback "gün"
+Bu enumları doğrudan değiştirmek backend doğrulama mantığını ve mevcut DB kayıtlarını bozar. Bu yüzden çözüm **display layer** çevirisi olacak.
 
-### D. Küçük UI
-- `components/ThemeToggle.tsx` (aria-label: "Tema değiştir", "Açık/Koyu temaya geç")
-- `components/PullToRefresh.tsx` (aria-label: "Yenileniyor", "Yenilemek için çekin")
-- `pages/Chat.tsx` → "Yükleniyor..." fallback
-- `components/ShareCard.tsx` → renk eşleştirmedeki çoklu dil dizgileri zaten doğru, dokunulmaz.
+## Yaklaşım
 
-### E. Auth.tsx — Gizlilik Politikası ve Kullanım Şartları
-Modal içi tam blok metin Türkçe sabit. Bunlar yasal metin — uzun. **İki seçenek** (alttaki soru).
+1. **Yeni helper**: `src/utils/predictionLabels.ts`
+   - `formatPredictionType(t, typeStr)` → "İlk Yarı Sonucu" → t('predictions:types.firstHalf')
+   - `formatPredictionValue(t, predValue, homeTeam?, awayTeam?)` → "Beraberlik" → t('predictions:values.draw'); "2.5 Üst" → t('predictions:values.over', { line: 2.5 }); "Aston Villa Kazanır" → t('predictions:values.teamWins', { team }); "İY 1.5 Alt" → "HT Under 1.5"; vb.
+   - `formatConfidenceLabel(t, level)` → 'yüksek'|'orta'|'düşük' → t('analysis:confidence.high|medium|low')
+   - Regex ile dinamik kalıpları yakalar (skor "1-0", "X.Y Üst/Alt", "İY X.Y Üst/Alt", "{team} Kazanır", "İY/MS {x}/{y}")
 
-## Yapılacaklar
+2. **Locale güncellemeleri** (5 dilde tr/en/de/es/ar):
+   - `predictions.json` içine `values.*` anahtarları ekle (draw, yes, no, over, under, htOver, htUnder, teamWins, homeWin, awayWin, score)
+   - `predictions.json` `types.*` zaten mevcut, sadece eksik tr versiyonunu kontrol et
 
-1. **Locale anahtarları ekle** – `dashboard.json` (yeni namespace), `common.json`, `profile.json`, `chat.json`, `rewards.json`, `legal.json`'a yeni anahtarlar; 5 dilin (TR, EN, DE, ES, AR) tamamına çeviri.
-2. **`src/i18n/config.ts`** içine `dashboard` namespace'ini kaydet.
-3. **Bileşenleri `useTranslation` ile güncelle** — yukarıdaki B/C/D listesindeki tüm dosyalar.
-4. **Ölü kod sil**: `src/components/AnalysisSection.tsx`, `src/components/HeadToHeadCard.tsx`, `src/components/TeamStatsCard.tsx` (hiçbir yerden import edilmiyor — drv. doğrulandı).
-5. **Doğrulama**: `rg -nP '[İıĞğŞşÇçÖöÜü]' src/components src/pages` çıktısı yalnızca; (a) veri model literal'ları (`'yüksek'`, `'Karşılıklı Gol'`), (b) JSX yorumları, (c) regex çoklu-dil pattern'lerinden ibaret kalacak.
+3. **Display bileşenlerinde uygula**:
+   - `AnalysisHeroSummary.tsx` → `mainPrediction.prediction` ve `mainPrediction.type` satırları
+   - `PredictionPillSelector.tsx` → pill etiketleri ve seçili tahmin başlığı
+   - `PredictionCard.tsx` → prediction & type render
+   - `AdvancedAnalysisTabs.tsx` → tab içerikleri
+   - `AIRecommendationCard.tsx`, `CollapsibleAnalysis.tsx`
+   - `ShareCard.tsx` → paylaşım kartı (confidence + prediction)
+   - `analysis-set/AnalysisSetItem.tsx`, `AnalysisSetDrawer.tsx`
+   - `FilteredPredictionsSection.tsx`
+   - `TodaysMatches.tsx` → daily pick prediction
+   - `useMatchAIPreview.ts` → preview badge (kısa label map'ini i18n'e bağla)
 
-## Soru: Auth.tsx içindeki Gizlilik & Şartlar metni
+4. **AnalysisHeroSummary'deki confidence renk anahtarı**: Şu anda `confidenceLevel` Türkçe ('yüksek'/'orta'/'düşük') string'iyle objeden seçiyor. Bu data layer enum'u olduğu için string olarak kalacak; sadece görünür "Confidence" label'ı zaten t() ile geliyor.
 
-Bu yasal blok ~50 satır uzun bir Türkçe metin. İki yol:
+5. **Kalan hardcoded metinler** (i18n'e taşınacak):
+   - `pages/Auth.tsx` → henüz çevrilmemiş kısımlar (form validasyon mesajları, alt linkler)
+   - `pages/Premium.tsx` → çevrilmemiş başlıklar/CTA
+   - `components/chat/ChatInput.tsx` → placeholder & aria
+   - `components/charts/ConfidenceVisualizer.tsx`, `ScorePredictionChart.tsx` → eksen/legend etiketleri
+   - `hooks/useLocalNotifications.ts` → bildirim metinleri (kanal, başlık, body) → i18n.t() ile
+   - `services/purchaseService.ts` → hata mesajları → toast kullanan tarafa key olarak döndür, çağıran komponent t() ile gösterir; ya da `i18n.t()` doğrudan service içinde
+   - `services/smartPicksService.ts` → throw'lardaki Türkçe mesajlar i18n.t() ile
 
-- **A) Olduğu gibi bırak** — yasal metinler genelde tek resmi dilde tutulur (KVKK referansı dolayısıyla TR uygun). Diğer dillerde de TR gösterilir.
-- **B) 5 dile çevir** — tutarlı görünüm; her dilin yasal anlamı muğlaklaşabilir.
+6. **Dokunulmayacak yerler** (kasıtlı):
+   - `src/services/predictionService.ts`, `autoVerifyService.ts`, `mlPredictionService.ts`, `mlInferenceService.ts`, `useMatchAIPreview.ts` map **anahtarları** — bunlar veri sözleşmesi
+   - `src/constants/predictions.ts` PREDICTION_TYPES değerleri — bunlar enum, DB'de kayıtlı
+   - `src/components/admin/*` — önceki kararla kapsam dışı
+   - `pages/Privacy.tsx`, `pages/Terms.tsx` yasal metinler — önceki kararla TR
 
-Belirtmezseniz **A** varsayılır (sadece "Gizlilik Politikası" / "Kullanım Şartları" başlıklarını çevirir, içeriği TR bırakırım).
+## Teknik Detaylar
 
-## Onay sonrası teslim
-Onaylarsanız tek mesajda tüm değişiklikleri uygularım; ardından dil değiştirici ile EN/DE/ES/AR sırayla doğrulamanız için kısa bir kontrol listesi paylaşırım.
+`predictionLabels.ts` örnek kalıp eşleştirme:
+
+```ts
+// "Aston Villa Kazanır" → teamWins
+const winMatch = value.match(/^(.+?) Kazanır$/);
+if (winMatch) return t('predictions:values.teamWins', { team: winMatch[1] });
+
+// "2.5 Üst" / "2.5 Alt"
+const ouMatch = value.match(/^(\d+\.\d+) (Üst|Alt)$/);
+if (ouMatch) return t(`predictions:values.${ouMatch[2] === 'Üst' ? 'over' : 'under'}`, { line: ouMatch[1] });
+
+// "İY 1.5 Üst"
+const htOuMatch = value.match(/^İY (\d+\.\d+) (Üst|Alt)$/);
+
+// Kalan literal değerler
+const literal = { 'Beraberlik': 'draw', 'Evet': 'yes', 'Hayır': 'no' }[value];
+```
+
+## Beklenen Sonuç
+
+Analiz drawer'ı, tahmin kartları, paylaşım kartı, günün maçı kartı, AI öneri kartı ve filtre paneli artık aktif dile göre tüm tahmin metinlerini doğru gösterir. Veritabanı şeması ve doğrulama mantığı değişmez.
+
+## Onay
+
+Onayladıktan sonra build moduna geçip uygulayacağım. Admin paneli ve yasal metinler önceki kararlara göre TR kalır — değişsin isterseniz belirtin.
