@@ -112,7 +112,7 @@ const PredictionPillSelector: React.FC<PredictionPillSelectorProps> = ({ predict
               >
                 <div className="flex items-center gap-2">
                   {prediction.isRecommended && <Crown className="w-3.5 h-3.5 text-primary" />}
-                  <span>{prediction.type}</span>
+                  <span>{formatPredictionType(t, prediction.type)}</span>
                   <LevelIcon className="w-3.5 h-3.5" />
                   {inSet && <Check className="w-3.5 h-3.5" />}
                 </div>
