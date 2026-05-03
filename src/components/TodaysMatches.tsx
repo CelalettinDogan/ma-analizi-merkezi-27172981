@@ -277,7 +277,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
             {/* Blurred confidence for free, clear for premium */}
             <div className={cn("flex items-center gap-1.5", !isPremium && "blur-[5px] select-none")}>
               <span className="text-xs font-bold tabular-nums text-primary">
-                {dailyPick.predictionValue}
+                {formatPredictionValue(t, dailyPick.predictionValue)}
               </span>
               <span className={cn(
                 "text-micro font-bold tabular-nums px-1.5 py-0.5 rounded-full",
