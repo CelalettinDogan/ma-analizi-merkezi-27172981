@@ -80,7 +80,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matc
         <div className="mb-4 p-3 rounded-lg bg-muted/30">
           <div className="flex items-center justify-between text-xs mb-1">
             <span className="font-semibold text-primary flex items-center gap-1">
-              📊 Market Skoru
+              📊 {t('predictions.marketScore')}
             </span>
             <span className="font-bold text-primary">%{prediction.marketScore}</span>
           </div>
