@@ -65,7 +65,8 @@
     "noResults": "No results found",
     "noResultsHint": "No predictions match the selected filters. Try changing the filters.",
     "aiDetailedReasoning": "Detailed AI Reasoning",
-    "poissonProbability": "Poisson Probability"
+    "poissonProbability": "Poisson Probability",
+    "marketScore": "Market Score"
   },
   "confidence": {
     "low": "Low",

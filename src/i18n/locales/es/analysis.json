@@ -65,7 +65,8 @@
     "noResults": "No se encontraron resultados",
     "noResultsHint": "Ninguna predicción coincide con los filtros seleccionados. Prueba a cambiarlos.",
     "aiDetailedReasoning": "Análisis Detallado IA",
-    "poissonProbability": "Probabilidad Poisson"
+    "poissonProbability": "Probabilidad Poisson",
+    "marketScore": "Puntuación de mercado"
   },
   "confidence": {
     "low": "Baja",

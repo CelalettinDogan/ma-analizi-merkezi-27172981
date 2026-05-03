@@ -65,7 +65,8 @@
     "noResults": "لا توجد نتائج",
     "noResultsHint": "لا توجد تنبؤات تطابق المرشحات. حاول تغيير المرشحات.",
     "aiDetailedReasoning": "تحليل الذكاء الاصطناعي التفصيلي",
-    "poissonProbability": "احتمال بواسون"
+    "poissonProbability": "احتمال بواسون",
+    "marketScore": "درجة السوق"
   },
   "confidence": {
     "low": "منخفض",
