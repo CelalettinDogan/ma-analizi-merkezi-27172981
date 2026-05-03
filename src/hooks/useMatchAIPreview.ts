@@ -55,7 +55,7 @@ export function useMatchAIPreview(
         .sort((a: any, b: any) => (b.confidence || 0) - (a.confidence || 0))
         .slice(0, 2)
         .map((p: any) => ({
-          type: PREDICTION_TYPE_SHORT[p.prediction_type] || p.prediction_type,
+          type: shortLabel(p.prediction_type),
           confidence: Math.round(p.confidence),
         }));
     },
