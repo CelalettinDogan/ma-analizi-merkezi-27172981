@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { formatPredictionValue, formatConfidenceLabel } from '@/utils/predictionLabels';
 
 interface ShareCardProps {
   homeTeam: string;
