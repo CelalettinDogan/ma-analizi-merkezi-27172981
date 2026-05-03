@@ -40,7 +40,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matc
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h4 className="font-semibold text-foreground">{prediction.type}</h4>
+              <h4 className="font-semibold text-foreground">{formatPredictionType(t, prediction.type)}</h4>
               {prediction.isAIPowered && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
                   <Sparkles className="w-3 h-3" />
@@ -48,7 +48,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, index, matc
                 </span>
               )}
             </div>
-            <p className="text-lg font-display font-bold gradient-text">{prediction.prediction}</p>
+            <p className="text-lg font-display font-bold gradient-text">{formatPredictionValue(t, prediction.prediction)}</p>
           </div>
         </div>
         <div className="flex flex-col items-end gap-1">
