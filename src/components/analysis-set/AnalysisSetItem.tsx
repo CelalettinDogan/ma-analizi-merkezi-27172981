@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { AnalysisSetItem as AnalysisSetItemType } from '@/types/analysisSet';
 import { format, parseISO } from 'date-fns';
 import { getDateLocale } from '@/i18n/dateLocale';
+import { formatPredictionType, formatPredictionValue } from '@/utils/predictionLabels';
 
 interface AnalysisSetItemProps {
   item: AnalysisSetItemType;
