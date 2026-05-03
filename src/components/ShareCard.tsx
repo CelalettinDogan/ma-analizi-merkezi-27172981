@@ -139,11 +139,11 @@ const ShareCard: React.FC<ShareCardProps> = ({
 
           <div className="relative space-y-3">
             <div className={cn("px-4 py-3 rounded-lg bg-gradient-to-r text-white font-semibold text-center", getConfidenceColor(confidence))}>
-              {prediction}
+              {formatPredictionValue(t, prediction)}
             </div>
             <div className="flex items-center justify-center gap-2 text-sm">
               <span className="text-muted-foreground">{t('share.confidence')}</span>
-              <span className="font-semibold">{confidence}</span>
+              <span className="font-semibold">{formatConfidenceLabel(t, confidence)}</span>
             </div>
           </div>
 
