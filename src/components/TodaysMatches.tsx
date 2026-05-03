@@ -13,6 +13,7 @@ import H2HSummaryBadge from '@/components/match/H2HSummaryBadge';
 import { useH2HPreview } from '@/hooks/useH2HPreview';
 import { getSmartPicks } from '@/services/smartPicksService';
 import { useMatchAIPreview, useMatchAIPreviewExists } from '@/hooks/useMatchAIPreview';
+import { formatPredictionType, formatPredictionValue } from '@/utils/predictionLabels';
 
 const TEAM_OVERRIDES: Record<string, string> = {
   'FC Internazionale Milano': 'Inter', 'Internazionale Milano': 'Inter', 'Inter Milan': 'Inter',
