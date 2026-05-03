@@ -77,7 +77,7 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
         {mainPrediction.type === PREDICTION_TYPES.CORRECT_SCORE && !canSeeScore ? (
           <div className="relative inline-block">
             <h2 className="text-xl font-bold text-foreground mb-1 select-none" style={{ filter: 'blur(8px)' }}>
-              {mainPrediction.prediction}
+              {formatPredictionValue(t, mainPrediction.prediction)}
             </h2>
             <div className="absolute inset-0 flex items-center justify-center">
               <LockIcon className="w-4 h-4 text-amber-500/70" />
@@ -85,10 +85,10 @@ const AnalysisHeroSummary: React.FC<AnalysisHeroSummaryProps> = ({ analysis }) =
           </div>
         ) : (
           <h2 className="text-xl font-bold text-foreground mb-1">
-            {mainPrediction.prediction}
+            {formatPredictionValue(t, mainPrediction.prediction)}
           </h2>
         )}
-        <p className="text-xs text-muted-foreground">{mainPrediction.type}</p>
+        <p className="text-xs text-muted-foreground">{formatPredictionType(t, mainPrediction.type)}</p>
       </motion.div>
 
       {/* Stats row: Confidence + xG + Score */}
