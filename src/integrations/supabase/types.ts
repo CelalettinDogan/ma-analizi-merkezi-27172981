@@ -1453,6 +1453,14 @@ export type Database = {
       }
     }
     Functions: {
+      _streak_e2e_test: {
+        Args: never
+        Returns: {
+          detail: string
+          status: string
+          test: string
+        }[]
+      }
       cleanup_expired_caches: { Args: never; Returns: undefined }
       cleanup_expired_premiums: { Args: never; Returns: undefined }
       cleanup_old_analysis_usage: { Args: never; Returns: undefined }
