@@ -1471,6 +1471,10 @@ export type Database = {
         | { Args: { p_user_id: string }; Returns: number }
       get_my_predictor_stats: { Args: never; Returns: Json }
       grant_streak_reward: { Args: never; Returns: Json }
+      grant_streak_reward_for_user: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

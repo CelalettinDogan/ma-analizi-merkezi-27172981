@@ -1,80 +1,84 @@
-# Tüm Sayfalarda Çeviri Tamamlama Planı
+# Seri Ödülleri — Profesyonelleştirme Planı
 
-## Sorunun Kaynağı
+## Mevcut Durumun Tanısı (canlı veriden)
 
-Ekran görüntüsündeki "Beraberlik" ve "İlk Yarı Sonucu" gibi metinler aslında **veritabanı seviyesinde Türkçe enum değerleri** olarak saklanıyor. Şu anki i18n çalışması sadece statik UI metinlerini kapsıyordu, ama tahmin türleri (`type`) ve tahmin değerleri (`prediction`) data layer'da Türkçe duruyor:
+| Bulgu | Kanıt |
+|---|---|
+| 2 kullanıcı 5 gün seriye ulaşmış | `user_streaks`: current_streak=5 |
+| Ödül tablosu **boş** | `streak_rewards`: 0 satır |
+| Yani vaat edilen 3 gün ve 5 gün ödülleri **hiç verilmemiş** | — |
 
-- `src/constants/predictions.ts` → `PREDICTION_TYPES` (Maç Sonucu, İlk Yarı Sonucu, Doğru Skor…)
-- `src/services/mlPredictionService.ts` → `'Beraberlik'`, `'Evet'`, `'Hayır'`, `'2.5 Üst'`, `'X Kazanır'`
-- `src/services/predictionService.ts`, `autoVerifyService.ts` → bu Türkçe stringleri sonuç doğrulama mantığında **switch/includes** ile kullanıyor
+### Kök Nedenler (kodda)
 
-Bu enumları doğrudan değiştirmek backend doğrulama mantığını ve mevcut DB kayıtlarını bozar. Bu yüzden çözüm **display layer** çevirisi olacak.
+1. **Milestone tetikleyici eksik gün listesi** — `src/hooks/useStreak.ts` sadece `[3, 7, 14, 30, 60, 100]`'ü takip ediyor. **5 ve 14 günler eksik** → DB'deki `grant_streak_reward` RPC'si bu günlerde ödül üretse de client hiç çağırmıyor.
+2. **Tek atımlık tetikleyici** — Ödül sadece `current_streak === N` tam eşleştiği gün, **StreakBadge bileşeni ekranda mount olduğunda** veriliyor. StreakBadge sadece `Index.tsx` (Ana sayfa) içinde. Kullanıcı uygulamayı 3. gün açıp doğrudan Profil'e gittiyse → ödül kaybolur, bir daha hiç alamaz.
+3. **`sessionStorage` kapısı** — `streak_updated_today` flag'i milestone toast'unu engellemek için var, ama aynı zamanda ödül grant çağrısını da engelliyor.
+4. **Geriye dönük telafi yok** — Mevcut 5 günlük kullanıcılara hiçbir mekanizma 3. gün ödülünü vermiyor.
+5. **App resume / tarih değişimi algılaması yok** — `refetchOnWindowFocus: false`, Capacitor `App` resume event'i bağlı değil. Kullanıcı geceyi açık uygulamayla geçirip sabah dokunursa yeni gün olarak sayılmıyor.
+6. **`premium_trial` ödülü ölü kod** — 30. gün veriliyor ama hiçbir yerde tüketilmiyor / premium aktive etmiyor.
+7. **`streak-validator` cron'u doğrulanamadı** — fonksiyon var ama zamanlanmış olduğuna dair iz yok; kırılan seriler temizlenmeyebilir.
 
-## Yaklaşım
+---
 
-1. **Yeni helper**: `src/utils/predictionLabels.ts`
-   - `formatPredictionType(t, typeStr)` → "İlk Yarı Sonucu" → t('predictions:types.firstHalf')
-   - `formatPredictionValue(t, predValue, homeTeam?, awayTeam?)` → "Beraberlik" → t('predictions:values.draw'); "2.5 Üst" → t('predictions:values.over', { line: 2.5 }); "Aston Villa Kazanır" → t('predictions:values.teamWins', { team }); "İY 1.5 Alt" → "HT Under 1.5"; vb.
-   - `formatConfidenceLabel(t, level)` → 'yüksek'|'orta'|'düşük' → t('analysis:confidence.high|medium|low')
-   - Regex ile dinamik kalıpları yakalar (skor "1-0", "X.Y Üst/Alt", "İY X.Y Üst/Alt", "{team} Kazanır", "İY/MS {x}/{y}")
+## Çözüm Planı
 
-2. **Locale güncellemeleri** (5 dilde tr/en/de/es/ar):
-   - `predictions.json` içine `values.*` anahtarları ekle (draw, yes, no, over, under, htOver, htUnder, teamWins, homeWin, awayWin, score)
-   - `predictions.json` `types.*` zaten mevcut, sadece eksik tr versiyonunu kontrol et
+### 1. Ödül Verme Mantığını Sunucuya Taşı (tek doğru kaynak)
+- `update_user_streak` RPC'si zaten her gün çağrılıyor. İçinde streak güncellendikten sonra **otomatik olarak** `grant_streak_reward` çağıracak şekilde DB fonksiyonunu birleştir.
+- Böylece client-side milestone listesi ve `sessionStorage` kapısı tamamen devre dışı kalır; ödül veri girişiyle birlikte atomik olarak yazılır.
 
-3. **Display bileşenlerinde uygula**:
-   - `AnalysisHeroSummary.tsx` → `mainPrediction.prediction` ve `mainPrediction.type` satırları
-   - `PredictionPillSelector.tsx` → pill etiketleri ve seçili tahmin başlığı
-   - `PredictionCard.tsx` → prediction & type render
-   - `AdvancedAnalysisTabs.tsx` → tab içerikleri
-   - `AIRecommendationCard.tsx`, `CollapsibleAnalysis.tsx`
-   - `ShareCard.tsx` → paylaşım kartı (confidence + prediction)
-   - `analysis-set/AnalysisSetItem.tsx`, `AnalysisSetDrawer.tsx`
-   - `FilteredPredictionsSection.tsx`
-   - `TodaysMatches.tsx` → daily pick prediction
-   - `useMatchAIPreview.ts` → preview badge (kısa label map'ini i18n'e bağla)
+### 2. `grant_streak_reward` Fonksiyonunu Düzelt
+- "Bu streak periyodunda zaten verildi mi?" kontrolünü 30 gün penceresi yerine **mevcut streak'in başlangıç tarihi**'yle yap (kullanıcı 30 gün üstünde seriye sahipse milestone'lar tekrar verilmesin, ama yeni bir seri başlattığında verilebilsin).
+- Tüm milestone'ları `[3, 5, 7, 14, 30]` olarak garanti et (zaten DB'de doğru, sadece client'ı bypass etmek için tek kapı bu olacak).
 
-4. **AnalysisHeroSummary'deki confidence renk anahtarı**: Şu anda `confidenceLevel` Türkçe ('yüksek'/'orta'/'düşük') string'iyle objeden seçiyor. Bu data layer enum'u olduğu için string olarak kalacak; sadece görünür "Confidence" label'ı zaten t() ile geliyor.
+### 3. Geriye Dönük Telafi (one-time backfill)
+- Mevcut `current_streak` değerine göre hak edilmiş ama verilmemiş tüm ödülleri verecek bir migration çalıştır. Bu sayede şu anki 5 günlük 2 kullanıcı 3+5. gün ödüllerini hemen alır.
 
-5. **Kalan hardcoded metinler** (i18n'e taşınacak):
-   - `pages/Auth.tsx` → henüz çevrilmemiş kısımlar (form validasyon mesajları, alt linkler)
-   - `pages/Premium.tsx` → çevrilmemiş başlıklar/CTA
-   - `components/chat/ChatInput.tsx` → placeholder & aria
-   - `components/charts/ConfidenceVisualizer.tsx`, `ScorePredictionChart.tsx` → eksen/legend etiketleri
-   - `hooks/useLocalNotifications.ts` → bildirim metinleri (kanal, başlık, body) → i18n.t() ile
-   - `services/purchaseService.ts` → hata mesajları → toast kullanan tarafa key olarak döndür, çağıran komponent t() ile gösterir; ya da `i18n.t()` doğrudan service içinde
-   - `services/smartPicksService.ts` → throw'lardaki Türkçe mesajlar i18n.t() ile
+### 4. Capacitor App Resume + Tarih Değişimi Algılama
+- Yeni hook `useStreakHeartbeat`:
+  - Capacitor `App.addListener('appStateChange')` ile foreground'a dönünce `update_user_streak` invalidate.
+  - `visibilitychange` web fallback.
+  - Uygulama açıkken UTC tarih değiştiğinde (interval check 60sn) refetch.
+- `App.tsx` kök seviyede mount.
 
-6. **Dokunulmayacak yerler** (kasıtlı):
-   - `src/services/predictionService.ts`, `autoVerifyService.ts`, `mlPredictionService.ts`, `mlInferenceService.ts`, `useMatchAIPreview.ts` map **anahtarları** — bunlar veri sözleşmesi
-   - `src/constants/predictions.ts` PREDICTION_TYPES değerleri — bunlar enum, DB'de kayıtlı
-   - `src/components/admin/*` — önceki kararla kapsam dışı
-   - `pages/Privacy.tsx`, `pages/Terms.tsx` yasal metinler — önceki kararla TR
+### 5. `premium_trial` Ödülünü Gerçek Yap
+- 30. gün geldiğinde: `premium_subscriptions` tablosuna 1 günlük `is_active=true, plan_type='trial'` satırı eklenecek (DB tarafında, `grant_streak_reward` içinde).
+- Yoksa kullanıcıya somut bir karşılığı yok.
 
-## Teknik Detaylar
+### 6. `streak-validator` Cron Garantisi
+- `pg_cron` ile günlük 00:05 UTC schedule kur (kullanıcı-spesifik SQL `insert` aracıyla).
+- Kırılan seriler güvenilir biçimde sıfırlansın.
 
-`predictionLabels.ts` örnek kalıp eşleştirme:
+### 7. UX İyileştirmeleri
+- Ödül verildiğinde toast + light haptic (mevcut), ek olarak **"Telafi edildi" toast'u** kullanıcı geri açtığında görünsün (yeni granted ödüller için son N saniye penceresi).
+- `Rewards.tsx` üstüne **"Bir sonraki ödüle X saat"** sayacı (UTC gece yarısı).
+- Ödül kullanıldığında haptic medium + sayaç animasyonu (zaten kısmen var, doğrula).
 
-```ts
-// "Aston Villa Kazanır" → teamWins
-const winMatch = value.match(/^(.+?) Kazanır$/);
-if (winMatch) return t('predictions:values.teamWins', { team: winMatch[1] });
+### 8. Telemetri / Doğrulama
+- `admin_activity_logs` içine `streak_reward_granted`, `streak_reset`, `bonus_credit_used` event'leri yaz → Admin panelinden gerçek çalıştığı izlenebilir.
 
-// "2.5 Üst" / "2.5 Alt"
-const ouMatch = value.match(/^(\d+\.\d+) (Üst|Alt)$/);
-if (ouMatch) return t(`predictions:values.${ouMatch[2] === 'Üst' ? 'over' : 'under'}`, { line: ouMatch[1] });
+---
 
-// "İY 1.5 Üst"
-const htOuMatch = value.match(/^İY (\d+\.\d+) (Üst|Alt)$/);
+## Dokunulacak Dosyalar
 
-// Kalan literal değerler
-const literal = { 'Beraberlik': 'draw', 'Evet': 'yes', 'Hayır': 'no' }[value];
+```text
+DB migration:
+  - update_user_streak (içine grant + premium_trial aktivasyonu)
+  - grant_streak_reward (pencere mantığı düzeltme)
+  - one-time backfill SQL
+
+Kod:
+  - src/hooks/useStreak.ts            (sessionStorage gate kaldır, milestone listesi tutarlı)
+  - src/hooks/useStreakHeartbeat.ts   (YENİ — app resume + date change)
+  - src/App.tsx                       (heartbeat mount)
+  - src/components/streak/StreakBadge.tsx (grantRewards client çağrısı kaldır)
+  - src/pages/Rewards.tsx             (geri sayım sayacı + son ödül vurgusu)
 ```
 
 ## Beklenen Sonuç
 
-Analiz drawer'ı, tahmin kartları, paylaşım kartı, günün maçı kartı, AI öneri kartı ve filtre paneli artık aktif dile göre tüm tahmin metinlerini doğru gösterir. Veritabanı şeması ve doğrulama mantığı değişmez.
-
-## Onay
-
-Onayladıktan sonra build moduna geçip uygulayacağım. Admin paneli ve yasal metinler önceki kararlara göre TR kalır — değişsin isterseniz belirtin.
+- Kullanıcı uygulamayı her açtığında seri **garanti** sayılır.
+- Hak edilen tüm milestone ödülleri **kaçırılmadan** verilir (3, 5, 7, 14, 30).
+- 30. gün premium trial **gerçekten** aktive olur.
+- Geceyi geçen kullanıcı sabah uygulamaya dönünce yeni gün olarak işlenir.
+- Mevcut serisi olan kullanıcıların geçmiş ödülleri telafi edilir.
+- Admin panelinden ödül akışı izlenebilir.
