@@ -127,6 +127,9 @@ const AppContent = () => {
   // Initialize push notifications
   usePushNotifications();
 
+  // Streak heartbeat: refetch on resume / date change, surface granted rewards
+  useStreakHeartbeat();
+
   // Handle Android back button
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
