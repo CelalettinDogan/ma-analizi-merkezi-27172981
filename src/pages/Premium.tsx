@@ -479,7 +479,7 @@ const Premium = () => {
           </div>
 
           {/* Plan comparison */}
-          <PlanComparisonTable />
+          <PlanComparisonTable onSelectPlan={(p) => { setSelectedPlan(p); }} />
 
           {/* Social proof */}
           <SocialProofCounter />
