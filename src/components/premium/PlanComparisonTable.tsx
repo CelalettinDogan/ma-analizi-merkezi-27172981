@@ -29,11 +29,29 @@ const rows: Row[] = [
  * Mobile-first 2-column comparison: Free vs selected plan.
  * Plan switcher is a pill segmented control. Selected plan column glows.
  */
-const PlanComparisonTable: React.FC = () => {
+interface PlanComparisonTableProps {
+  onSelectPlan?: (plan: 'premium_basic' | 'premium_plus' | 'premium_pro') => void;
+}
+
+const PLAN_KEY_MAP: Record<PlanKey, 'premium_basic' | 'premium_plus' | 'premium_pro'> = {
+  basic: 'premium_basic',
+  plus: 'premium_plus',
+  pro: 'premium_pro',
+};
+
+const PlanComparisonTable: React.FC<PlanComparisonTableProps> = ({ onSelectPlan }) => {
   const { t } = useTranslation('premium');
   
   const tap = useHapticTap('light');
+  const tapMedium = useHapticTap('medium');
   const [selected, setSelected] = useState<PlanKey>('plus');
+
+  const handleUpgradeClick = () => {
+    tapMedium();
+    onSelectPlan?.(PLAN_KEY_MAP[selected]);
+    // Scroll to plan cards / CTA section at top of page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const renderCell = (val: Cell, highlight: boolean) => {
     if (val === true) {
@@ -168,7 +186,7 @@ const PlanComparisonTable: React.FC = () => {
 
       {/* Sticky CTA strip */}
       <button
-        onClick={() => { tap(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+        onClick={handleUpgradeClick}
         className="w-full px-4 py-3.5 bg-gradient-to-r from-primary/15 to-emerald-500/10 border-t border-primary/20 text-[13px] font-bold text-primary active:opacity-80 transition-opacity flex items-center justify-center gap-1.5"
         style={{ WebkitTapHighlightColor: 'transparent' }}
       >
