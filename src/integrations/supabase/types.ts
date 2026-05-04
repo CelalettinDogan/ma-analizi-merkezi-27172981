@@ -1454,7 +1454,7 @@ export type Database = {
     }
     Functions: {
       _streak_e2e_test: {
-        Args: never
+        Args: { test_user: string }
         Returns: {
           detail: string
           status: string
