@@ -9,33 +9,18 @@ import useHapticTap from '@/hooks/useHapticTap';
 
 const StreakBadge: React.FC = () => {
   const { streak, milestone, dismissMilestone } = useStreak();
-  const { bonusCredits, grantRewards } = useStreakRewards();
+  const { bonusCredits } = useStreakRewards();
   const { t } = useTranslation(['streak', 'rewards']);
-  const tap = useHapticTap('medium');
-  const tapHeavy = useHapticTap('heavy');
+  const tap = useHapticTap('heavy');
 
-  // Grant rewards on milestone
+  // Server has already granted rewards; just celebrate when a new milestone arrives
   React.useEffect(() => {
     if (milestone) {
       tap();
       toast.success(t('streak:milestone', { days: milestone }), { duration: 4000 });
-      
-      // Try to grant streak reward
-      grantRewards().then((rewards) => {
-        if (rewards && rewards.length > 0) {
-          tapHeavy();
-          rewards.forEach((r) => {
-            const rewardKey = `rewards:day${r.day}`;
-            toast.success(t('rewards:newReward'), {
-              description: t(rewardKey),
-              duration: 5000,
-            });
-          });
-        }
-      }).catch(console.error);
-      
       dismissMilestone();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [milestone]);
 
   if (streak.current_streak < 1) return null;

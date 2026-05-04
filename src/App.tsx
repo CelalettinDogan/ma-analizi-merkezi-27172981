@@ -17,6 +17,7 @@ import { Browser } from "@capacitor/browser";
 import { supabase } from "@/integrations/supabase/client";
 import { purchaseService } from "@/services/purchaseService";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useStreakHeartbeat } from "@/hooks/useStreakHeartbeat";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
@@ -125,6 +126,9 @@ const AppContent = () => {
 
   // Initialize push notifications
   usePushNotifications();
+
+  // Streak heartbeat: refetch on resume / date change, surface granted rewards
+  useStreakHeartbeat();
 
   // Handle Android back button
   useEffect(() => {
