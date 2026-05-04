@@ -445,7 +445,7 @@ const Premium = () => {
           </motion.div>
 
           {/* CTA */}
-          <div className="px-2 pt-2 space-y-2.5">
+          <div id="premium-cta" className="px-2 pt-2 space-y-2.5 scroll-mt-20">
             <motion.div whileTap={{ scale: 0.95 }}>
               <Button
                 onClick={handlePurchase}
