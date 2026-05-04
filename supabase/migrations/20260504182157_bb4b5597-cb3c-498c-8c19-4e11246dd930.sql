@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public._streak_e2e_test(uuid);
