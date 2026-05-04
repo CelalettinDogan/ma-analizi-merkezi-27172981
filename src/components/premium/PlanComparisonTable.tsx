@@ -49,8 +49,13 @@ const PlanComparisonTable: React.FC<PlanComparisonTableProps> = ({ onSelectPlan 
   const handleUpgradeClick = () => {
     tapMedium();
     onSelectPlan?.(PLAN_KEY_MAP[selected]);
-    // Scroll to plan cards / CTA section at top of page
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Scroll to CTA — Premium page uses an inner scroll container (not window)
+    requestAnimationFrame(() => {
+      const target = document.getElementById('premium-cta');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   };
 
   const renderCell = (val: Cell, highlight: boolean) => {
