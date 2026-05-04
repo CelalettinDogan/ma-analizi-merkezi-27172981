@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -7,13 +7,11 @@ interface StreakData {
   current_streak: number;
   longest_streak: number;
   last_activity_date: string | null;
+  newly_granted?: Array<{ day: number; type: string; quantity: number }>;
 }
-
-const SESSION_KEY = 'streak_updated_today';
 
 export const useStreak = () => {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const [milestone, setMilestone] = useState<number | null>(null);
 
   const { data: streak, isLoading } = useQuery({
@@ -28,18 +26,11 @@ export const useStreak = () => {
     refetchOnWindowFocus: false,
   });
 
-  // Check for milestones
+  // Surface a "milestone reached" UI signal whenever the server reports newly granted rewards
   useEffect(() => {
-    if (!streak) return;
-    const alreadyShown = sessionStorage.getItem(SESSION_KEY);
-    if (alreadyShown) return;
-
-    const milestones = [3, 7, 14, 30, 60, 100];
-    const hit = milestones.find(m => streak.current_streak === m);
-    if (hit) {
-      setMilestone(hit);
-      sessionStorage.setItem(SESSION_KEY, 'true');
-    }
+    if (!streak?.newly_granted?.length) return;
+    const highest = streak.newly_granted.reduce((max, r) => Math.max(max, r.day), 0);
+    if (highest > 0) setMilestone(highest);
   }, [streak]);
 
   const dismissMilestone = () => setMilestone(null);
