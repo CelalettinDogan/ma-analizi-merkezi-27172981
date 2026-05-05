@@ -872,18 +872,36 @@ serve(async (req) => {
       console.log(`Admin user ${userId} - bypassing all limits`);
     }
 
+    // Get bonus_chat credits from streak rewards (server-authoritative)
+    const { data: bonusRows } = await supabaseAdmin
+      .from("streak_rewards")
+      .select("quantity, expires_at, used")
+      .eq("user_id", userId)
+      .eq("reward_type", "bonus_chat")
+      .eq("used", false);
+    const nowIso = new Date().toISOString();
+    const bonusChatAvailable = (bonusRows ?? [])
+      .filter((r: any) => !r.expires_at || r.expires_at > nowIso)
+      .reduce((sum: number, r: any) => sum + (r.quantity ?? 0), 0);
+
     // Access check: Admin or Premium required (Free users cannot access)
+    // EXCEPTION: Free user with bonus_chat credit can access
+    let willConsumeBonus = false;
     if (!isAdmin && planType === 'free') {
-      console.log(`User ${userId} has no access (free user)`);
-      return new Response(
-        JSON.stringify({ 
-          error: "AI Asistan Premium kullanıcılara özeldir. Premium planına geçerek yapay zeka destekli analizlere erişin!", 
-          code: "ACCESS_DENIED",
-          planType: 'free',
-          isAdmin: false
-        }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      if (bonusChatAvailable <= 0) {
+        console.log(`User ${userId} has no access (free user, no bonus)`);
+        return new Response(
+          JSON.stringify({ 
+            error: "AI Asistan Premium kullanıcılara özeldir. Premium planına geçerek yapay zeka destekli analizlere erişin!", 
+            code: "ACCESS_DENIED",
+            planType: 'free',
+            isAdmin: false
+          }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      willConsumeBonus = true;
+      console.log(`Free user ${userId} using bonus_chat (${bonusChatAvailable} available)`);
     }
 
     // Check daily usage limit (admins bypass this)
@@ -897,18 +915,24 @@ serve(async (req) => {
     const currentUsage = usageData?.usage_count ?? 0;
 
     // Check plan-based daily limit (admins bypass)
-    if (!isAdmin && currentUsage >= dailyLimit) {
-      console.log(`User ${userId} exceeded daily limit: ${currentUsage}/${dailyLimit}`);
-      return new Response(
-        JSON.stringify({ 
-          error: `Günlük ${dailyLimit} mesaj limitiniz doldu. Paketinizi yükselterek daha fazla mesaj hakkı alabilirsiniz!`, 
-          code: "LIMIT_EXCEEDED",
-          usage: { current: currentUsage, limit: dailyLimit },
-          planType,
-          isAdmin: false
-        }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // Premium plan limit hit → fall back to bonus_chat if available
+    if (!isAdmin && !willConsumeBonus && currentUsage >= dailyLimit) {
+      if (bonusChatAvailable > 0) {
+        willConsumeBonus = true;
+        console.log(`Premium user ${userId} plan limit reached, using bonus_chat (${bonusChatAvailable} available)`);
+      } else {
+        console.log(`User ${userId} exceeded daily limit: ${currentUsage}/${dailyLimit}`);
+        return new Response(
+          JSON.stringify({ 
+            error: `Günlük ${dailyLimit} mesaj limitiniz doldu. Paketinizi yükselterek daha fazla mesaj hakkı alabilirsiniz!`, 
+            code: "LIMIT_EXCEEDED",
+            usage: { current: currentUsage, limit: dailyLimit },
+            planType,
+            isAdmin: false
+          }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     // Parse request body (includes conversation history from frontend)
