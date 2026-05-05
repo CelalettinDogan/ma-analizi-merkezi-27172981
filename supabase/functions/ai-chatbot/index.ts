@@ -956,9 +956,9 @@ serve(async (req) => {
       // Consume bonus or increment plan usage
       if (!isAdmin) {
         if (willConsumeBonus) {
-          await supabaseAdmin.rpc("use_bonus_credit", { credit_type: "bonus_chat" });
+          await supabaseAdmin.rpc("use_bonus_credit_for_user", { p_user_id: userId, credit_type: "bonus_chat" });
         } else {
-          await supabaseAdmin.rpc("increment_chatbot_usage");
+          await supabaseAdmin.rpc("increment_chatbot_usage", { p_user_id: userId });
         }
       }
       
