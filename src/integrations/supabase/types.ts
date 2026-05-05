@@ -1493,6 +1493,10 @@ export type Database = {
         | { Args: { p_user_id: string }; Returns: boolean }
       update_user_streak: { Args: never; Returns: Json }
       use_bonus_credit: { Args: { credit_type: string }; Returns: boolean }
+      use_bonus_credit_for_user: {
+        Args: { credit_type: string; p_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "vip"
