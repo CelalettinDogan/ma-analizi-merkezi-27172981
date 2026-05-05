@@ -8,7 +8,6 @@ import { Card, CardContent } from '@/components/ui/card';
 
 const MILESTONES = [
   { day: 3, icon: Zap, rewardKey: 'day3', color: 'text-blue-400' },
-  { day: 5, icon: MessageSquare, rewardKey: 'day5', color: 'text-emerald-400' },
   { day: 7, icon: MessageSquare, rewardKey: 'day7', color: 'text-emerald-500' },
   { day: 14, icon: Award, rewardKey: 'day14', color: 'text-purple-400' },
   { day: 30, icon: Crown, rewardKey: 'day30', color: 'text-amber-400' },

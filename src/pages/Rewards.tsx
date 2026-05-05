@@ -14,7 +14,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const MILESTONES = [
   { day: 3, icon: Zap, rewardKey: 'day3', color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
-  { day: 5, icon: MessageSquare, rewardKey: 'day5', color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
   { day: 7, icon: MessageSquare, rewardKey: 'day7', color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
   { day: 14, icon: Award, rewardKey: 'day14', color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
   { day: 30, icon: Crown, rewardKey: 'day30', color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
