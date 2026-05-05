@@ -52,7 +52,8 @@ export const newState = (): SimState => ({
   premium: [],
 });
 
-const MILESTONES = [3, 5, 7, 14, 30] as const;
+const MILESTONES = [3, 7, 14, 30] as const;
+const CHAT_COOLDOWN_MS = 30 * 86_400_000;
 
 const addDays = (iso: string, days: number): string => {
   const d = new Date(iso + 'T00:00:00Z');
