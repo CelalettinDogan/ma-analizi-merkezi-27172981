@@ -1230,14 +1230,20 @@ serve(async (req) => {
       }
     }
 
-    // Increment usage count (skip for admin users)
+    // Consume bonus or increment plan usage (skip for admin users)
     let newUsageCount = currentUsage;
+    let newBonusRemaining = bonusChatAvailable;
     if (!isAdmin) {
-      const { data: newUsageData } = await supabaseAdmin.rpc("increment_chatbot_usage");
-      newUsageCount = newUsageData ?? currentUsage + 1;
+      if (willConsumeBonus) {
+        const { data: consumed } = await supabaseAdmin.rpc("use_bonus_credit", { credit_type: "bonus_chat" });
+        if (consumed) newBonusRemaining = Math.max(0, bonusChatAvailable - 1);
+      } else {
+        const { data: newUsageData } = await supabaseAdmin.rpc("increment_chatbot_usage");
+        newUsageCount = newUsageData ?? currentUsage + 1;
+      }
     }
     
-    console.log(`User ${userId} new usage: ${isAdmin ? "∞ (admin)" : `${newUsageCount}/${dailyLimit}`}`);
+    console.log(`User ${userId} new usage: ${isAdmin ? "∞ (admin)" : `${newUsageCount}/${dailyLimit} (bonus left: ${newBonusRemaining})`}`);
 
     // Save messages to chat history
     await supabaseAdmin.from("chat_history").insert([
@@ -1252,7 +1258,9 @@ serve(async (req) => {
         usage: {
           current: isAdmin ? 0 : newUsageCount,
           limit: isAdmin ? "∞" : dailyLimit,
-          remaining: isAdmin ? "∞" : dailyLimit - newUsageCount
+          remaining: isAdmin ? "∞" : Math.max(0, dailyLimit - newUsageCount) + newBonusRemaining,
+          bonusRemaining: newBonusRemaining,
+          usedBonus: willConsumeBonus,
         },
         planType,
         isAdmin,
