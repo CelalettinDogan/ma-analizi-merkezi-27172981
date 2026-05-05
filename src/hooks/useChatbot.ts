@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -52,7 +53,8 @@ interface UseChatbotReturn {
 export const useChatbot = (): UseChatbotReturn => {
   const { user, session } = useAuth();
   const { canUseAIChat, isAdmin, dailyChatLimit, planType } = useAccessLevel();
-  const { bonusCredits, useBonusCredit } = useStreakRewards();
+  const { bonusCredits } = useStreakRewards();
+  const queryClient = useQueryClient();
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -223,17 +225,8 @@ export const useChatbot = (): UseChatbotReturn => {
     setMessages(prev => [...prev, userMessage, loadingMessage]);
 
     try {
-      // Consume bonus credit BEFORE sending if needed
-      if (needsBonusCredit) {
-        const consumed = await useBonusCredit('bonus_chat');
-        if (!consumed) {
-          setError('Bonus hakkınız kalmadı');
-          toast.warning('Bonus chat hakkınız tükendi');
-          setMessages(prev => prev.filter(m => !m.isLoading));
-          setIsLoading(false);
-          return;
-        }
-      }
+      // Note: bonus_chat consumption is handled server-side atomically.
+      // Do NOT call useBonusCredit here — server will consume after successful response.
 
       const conversationHistory = messages.slice(-5).map(m => ({
         role: m.role,
@@ -287,30 +280,34 @@ export const useChatbot = (): UseChatbotReturn => {
         )
       );
 
-      // Update usage counters
-      if (!isAdmin) {
+      // Update usage counters from server response (authoritative)
+      if (!isAdmin && data.usage) {
+        const serverUsage = data.usage;
+        const bonusRem = typeof serverUsage.bonusRemaining === 'number'
+          ? serverUsage.bonusRemaining
+          : (usage?.bonusRemaining ?? 0);
+
         if (isFreePlan) {
-          // Free user: decrement bonus remaining
-          const newBonusRemaining = Math.max(0, (usage?.bonusRemaining ?? 0) - 1);
-          setUsage(prev => prev ? {
-            ...prev,
-            remaining: newBonusRemaining,
-            bonusRemaining: newBonusRemaining,
-          } : null);
-        } else if (data.usage && dailyChatLimit < 999) {
-          // Premium user: update from server response
-          const current = data.usage.current;
+          setUsage({
+            current: 0,
+            limit: bonusRem,
+            remaining: bonusRem,
+            bonusRemaining: bonusRem,
+          });
+        } else if (dailyChatLimit < 999) {
+          const current = typeof serverUsage.current === 'number' ? serverUsage.current : 0;
           const planRemaining = Math.max(0, dailyChatLimit - current);
-          const bonusRem = needsBonusCredit
-            ? Math.max(0, (usage?.bonusRemaining ?? 0) - 1)
-            : (usage?.bonusRemaining ?? 0);
-          
           setUsage({
             current,
             limit: dailyChatLimit,
             remaining: planRemaining + bonusRem,
             bonusRemaining: bonusRem,
           });
+        }
+
+        // Refresh bonus credits cache so other UI updates
+        if (serverUsage.usedBonus) {
+          queryClient.invalidateQueries({ queryKey: ['bonus-credits'] });
         }
       }
     } catch (e) {
@@ -321,7 +318,7 @@ export const useChatbot = (): UseChatbotReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, session, messages, isAdmin, dailyChatLimit, usage, canUseAIChat, useBonusCredit]);
+  }, [user, session, messages, isAdmin, dailyChatLimit, usage, canUseAIChat, queryClient]);
 
   // Clear messages
   const clearMessages = useCallback(async () => {

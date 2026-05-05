@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.use_bonus_credit_for_user(uuid, text) FROM PUBLIC, anon, authenticated;

@@ -872,18 +872,36 @@ serve(async (req) => {
       console.log(`Admin user ${userId} - bypassing all limits`);
     }
 
+    // Get bonus_chat credits from streak rewards (server-authoritative)
+    const { data: bonusRows } = await supabaseAdmin
+      .from("streak_rewards")
+      .select("quantity, expires_at, used")
+      .eq("user_id", userId)
+      .eq("reward_type", "bonus_chat")
+      .eq("used", false);
+    const nowIso = new Date().toISOString();
+    const bonusChatAvailable = (bonusRows ?? [])
+      .filter((r: any) => !r.expires_at || r.expires_at > nowIso)
+      .reduce((sum: number, r: any) => sum + (r.quantity ?? 0), 0);
+
     // Access check: Admin or Premium required (Free users cannot access)
+    // EXCEPTION: Free user with bonus_chat credit can access
+    let willConsumeBonus = false;
     if (!isAdmin && planType === 'free') {
-      console.log(`User ${userId} has no access (free user)`);
-      return new Response(
-        JSON.stringify({ 
-          error: "AI Asistan Premium kullanıcılara özeldir. Premium planına geçerek yapay zeka destekli analizlere erişin!", 
-          code: "ACCESS_DENIED",
-          planType: 'free',
-          isAdmin: false
-        }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      if (bonusChatAvailable <= 0) {
+        console.log(`User ${userId} has no access (free user, no bonus)`);
+        return new Response(
+          JSON.stringify({ 
+            error: "AI Asistan Premium kullanıcılara özeldir. Premium planına geçerek yapay zeka destekli analizlere erişin!", 
+            code: "ACCESS_DENIED",
+            planType: 'free',
+            isAdmin: false
+          }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      willConsumeBonus = true;
+      console.log(`Free user ${userId} using bonus_chat (${bonusChatAvailable} available)`);
     }
 
     // Check daily usage limit (admins bypass this)
@@ -897,18 +915,24 @@ serve(async (req) => {
     const currentUsage = usageData?.usage_count ?? 0;
 
     // Check plan-based daily limit (admins bypass)
-    if (!isAdmin && currentUsage >= dailyLimit) {
-      console.log(`User ${userId} exceeded daily limit: ${currentUsage}/${dailyLimit}`);
-      return new Response(
-        JSON.stringify({ 
-          error: `Günlük ${dailyLimit} mesaj limitiniz doldu. Paketinizi yükselterek daha fazla mesaj hakkı alabilirsiniz!`, 
-          code: "LIMIT_EXCEEDED",
-          usage: { current: currentUsage, limit: dailyLimit },
-          planType,
-          isAdmin: false
-        }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // Premium plan limit hit → fall back to bonus_chat if available
+    if (!isAdmin && !willConsumeBonus && currentUsage >= dailyLimit) {
+      if (bonusChatAvailable > 0) {
+        willConsumeBonus = true;
+        console.log(`Premium user ${userId} plan limit reached, using bonus_chat (${bonusChatAvailable} available)`);
+      } else {
+        console.log(`User ${userId} exceeded daily limit: ${currentUsage}/${dailyLimit}`);
+        return new Response(
+          JSON.stringify({ 
+            error: `Günlük ${dailyLimit} mesaj limitiniz doldu. Paketinizi yükselterek daha fazla mesaj hakkı alabilirsiniz!`, 
+            code: "LIMIT_EXCEEDED",
+            usage: { current: currentUsage, limit: dailyLimit },
+            planType,
+            isAdmin: false
+          }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     // Parse request body (includes conversation history from frontend)
@@ -929,9 +953,13 @@ serve(async (req) => {
     if (intent.isNewsRequest && !providedContext) {
       const redirectResponse = getNewsRedirectResponse(intent.teams);
       
-      // Only increment usage for non-admin users
+      // Consume bonus or increment plan usage
       if (!isAdmin) {
-        await supabaseAdmin.rpc("increment_chatbot_usage");
+        if (willConsumeBonus) {
+          await supabaseAdmin.rpc("use_bonus_credit_for_user", { p_user_id: userId, credit_type: "bonus_chat" });
+        } else {
+          await supabaseAdmin.rpc("increment_chatbot_usage", { p_user_id: userId });
+        }
       }
       
       await supabaseAdmin.from("chat_history").insert([
@@ -941,13 +969,16 @@ serve(async (req) => {
 
       console.log(`User ${userId} asked for news, redirecting to stats`);
 
+      const newCurrent = isAdmin ? 0 : (willConsumeBonus ? currentUsage : currentUsage + 1);
       return new Response(
         JSON.stringify({
           message: redirectResponse,
           usage: {
-            current: isAdmin ? 0 : currentUsage + 1,
+            current: newCurrent,
             limit: isAdmin ? "∞" : dailyLimit,
-            remaining: isAdmin ? "∞" : dailyLimit - currentUsage - 1
+            remaining: isAdmin ? "∞" : Math.max(0, dailyLimit - newCurrent) + Math.max(0, bonusChatAvailable - (willConsumeBonus ? 1 : 0)),
+            bonusRemaining: Math.max(0, bonusChatAvailable - (willConsumeBonus ? 1 : 0)),
+            usedBonus: willConsumeBonus,
           },
           isPremium: planType !== 'free',
           isAdmin,
@@ -1199,14 +1230,21 @@ serve(async (req) => {
       }
     }
 
-    // Increment usage count (skip for admin users)
+    // Consume bonus or increment plan usage (skip for admin users)
     let newUsageCount = currentUsage;
+    let newBonusRemaining = bonusChatAvailable;
     if (!isAdmin) {
-      const { data: newUsageData } = await supabaseAdmin.rpc("increment_chatbot_usage");
-      newUsageCount = newUsageData ?? currentUsage + 1;
+      if (willConsumeBonus) {
+        const { data: consumed, error: bErr } = await supabaseAdmin.rpc("use_bonus_credit_for_user", { p_user_id: userId, credit_type: "bonus_chat" });
+        if (bErr) console.error("use_bonus_credit_for_user error:", bErr);
+        if (consumed) newBonusRemaining = Math.max(0, bonusChatAvailable - 1);
+      } else {
+        const { data: newUsageData } = await supabaseAdmin.rpc("increment_chatbot_usage", { p_user_id: userId });
+        newUsageCount = newUsageData ?? currentUsage + 1;
+      }
     }
     
-    console.log(`User ${userId} new usage: ${isAdmin ? "∞ (admin)" : `${newUsageCount}/${dailyLimit}`}`);
+    console.log(`User ${userId} new usage: ${isAdmin ? "∞ (admin)" : `${newUsageCount}/${dailyLimit} (bonus left: ${newBonusRemaining})`}`);
 
     // Save messages to chat history
     await supabaseAdmin.from("chat_history").insert([
@@ -1221,7 +1259,9 @@ serve(async (req) => {
         usage: {
           current: isAdmin ? 0 : newUsageCount,
           limit: isAdmin ? "∞" : dailyLimit,
-          remaining: isAdmin ? "∞" : dailyLimit - newUsageCount
+          remaining: isAdmin ? "∞" : Math.max(0, dailyLimit - newUsageCount) + newBonusRemaining,
+          bonusRemaining: newBonusRemaining,
+          usedBonus: willConsumeBonus,
         },
         planType,
         isAdmin,
