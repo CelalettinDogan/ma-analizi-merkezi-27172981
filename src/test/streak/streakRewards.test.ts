@@ -39,27 +39,27 @@ describe('Streak rewards — end-to-end scenarios', () => {
     expect(bonusTotals(s, USER).bonus_analysis).toBe(1);
   });
 
-  it('T4: 5-day streak grants bonus_chat once', () => {
+  it('T4: 5-day streak does NOT grant bonus_chat (rule changed)', () => {
     const s = newState();
     for (let i = 0; i < 5; i++) updateStreak(s, USER, day(i));
     expect(bonusTotals(s, USER)).toMatchObject({
       bonus_analysis: 1,
-      bonus_chat: 1,
+      bonus_chat: 0,
     });
   });
 
-  it('T5: 7-day streak adds +2 bonus_chat (cumulative=3)', () => {
+  it('T5: 7-day streak grants exactly 1 bonus_chat', () => {
     const s = newState();
     for (let i = 0; i < 7; i++) updateStreak(s, USER, day(i));
-    expect(bonusTotals(s, USER).bonus_chat).toBe(3); // 1 from day5 + 2 from day7
+    expect(bonusTotals(s, USER).bonus_chat).toBe(1);
   });
 
-  it('T6: 14-day streak grants badge + 3 chat credits (total chat=6)', () => {
+  it('T6: 14-day streak grants badge but no extra chat (still chat=1)', () => {
     const s = newState();
     for (let i = 0; i < 14; i++) updateStreak(s, USER, day(i));
     const t = bonusTotals(s, USER);
     expect(t.has_streak_badge).toBe(true);
-    expect(t.bonus_chat).toBe(6); // 1+2+3
+    expect(t.bonus_chat).toBe(1);
   });
 
   it('T7: 30-day streak activates 1-day premium trial', () => {
