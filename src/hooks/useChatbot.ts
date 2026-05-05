@@ -318,7 +318,7 @@ export const useChatbot = (): UseChatbotReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, session, messages, isAdmin, dailyChatLimit, usage, canUseAIChat, useBonusCredit]);
+  }, [user, session, messages, isAdmin, dailyChatLimit, usage, canUseAIChat, queryClient]);
 
   // Clear messages
   const clearMessages = useCallback(async () => {
