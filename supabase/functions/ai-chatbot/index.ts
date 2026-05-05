@@ -1235,10 +1235,11 @@ serve(async (req) => {
     let newBonusRemaining = bonusChatAvailable;
     if (!isAdmin) {
       if (willConsumeBonus) {
-        const { data: consumed } = await supabaseAdmin.rpc("use_bonus_credit", { credit_type: "bonus_chat" });
+        const { data: consumed, error: bErr } = await supabaseAdmin.rpc("use_bonus_credit_for_user", { p_user_id: userId, credit_type: "bonus_chat" });
+        if (bErr) console.error("use_bonus_credit_for_user error:", bErr);
         if (consumed) newBonusRemaining = Math.max(0, bonusChatAvailable - 1);
       } else {
-        const { data: newUsageData } = await supabaseAdmin.rpc("increment_chatbot_usage");
+        const { data: newUsageData } = await supabaseAdmin.rpc("increment_chatbot_usage", { p_user_id: userId });
         newUsageCount = newUsageData ?? currentUsage + 1;
       }
     }
