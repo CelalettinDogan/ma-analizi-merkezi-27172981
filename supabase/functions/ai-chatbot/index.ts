@@ -953,9 +953,13 @@ serve(async (req) => {
     if (intent.isNewsRequest && !providedContext) {
       const redirectResponse = getNewsRedirectResponse(intent.teams);
       
-      // Only increment usage for non-admin users
+      // Consume bonus or increment plan usage
       if (!isAdmin) {
-        await supabaseAdmin.rpc("increment_chatbot_usage");
+        if (willConsumeBonus) {
+          await supabaseAdmin.rpc("use_bonus_credit", { credit_type: "bonus_chat" });
+        } else {
+          await supabaseAdmin.rpc("increment_chatbot_usage");
+        }
       }
       
       await supabaseAdmin.from("chat_history").insert([
@@ -965,13 +969,16 @@ serve(async (req) => {
 
       console.log(`User ${userId} asked for news, redirecting to stats`);
 
+      const newCurrent = isAdmin ? 0 : (willConsumeBonus ? currentUsage : currentUsage + 1);
       return new Response(
         JSON.stringify({
           message: redirectResponse,
           usage: {
-            current: isAdmin ? 0 : currentUsage + 1,
+            current: newCurrent,
             limit: isAdmin ? "∞" : dailyLimit,
-            remaining: isAdmin ? "∞" : dailyLimit - currentUsage - 1
+            remaining: isAdmin ? "∞" : Math.max(0, dailyLimit - newCurrent) + Math.max(0, bonusChatAvailable - (willConsumeBonus ? 1 : 0)),
+            bonusRemaining: Math.max(0, bonusChatAvailable - (willConsumeBonus ? 1 : 0)),
+            usedBonus: willConsumeBonus,
           },
           isPremium: planType !== 'free',
           isAdmin,
