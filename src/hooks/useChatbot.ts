@@ -53,7 +53,8 @@ interface UseChatbotReturn {
 export const useChatbot = (): UseChatbotReturn => {
   const { user, session } = useAuth();
   const { canUseAIChat, isAdmin, dailyChatLimit, planType } = useAccessLevel();
-  const { bonusCredits, useBonusCredit } = useStreakRewards();
+  const { bonusCredits } = useStreakRewards();
+  const queryClient = useQueryClient();
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
