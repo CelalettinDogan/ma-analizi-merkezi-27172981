@@ -52,7 +52,8 @@ export const newState = (): SimState => ({
   premium: [],
 });
 
-const MILESTONES = [3, 5, 7, 14, 30] as const;
+const MILESTONES = [3, 7, 14, 30] as const;
+const CHAT_COOLDOWN_MS = 30 * 86_400_000;
 
 const addDays = (iso: string, days: number): string => {
   const d = new Date(iso + 'T00:00:00Z');
@@ -103,40 +104,29 @@ export function grantRewards(state: SimState, userId: string): GrantedReward[] {
         });
         granted.push({ day: 3, type: 'bonus_analysis', quantity: 1 });
         break;
-      case 5:
+      case 7: {
+        // 30-day cooldown: skip if any bonus_chat granted in last 30 days
+        const nowMs = new Date(now + 'T00:00:00Z').getTime();
+        const recentChat = state.rewards.some(
+          (r) =>
+            r.user_id === userId &&
+            r.reward_type === 'bonus_chat' &&
+            nowMs - new Date(r.granted_at + 'T00:00:00Z').getTime() < CHAT_COOLDOWN_MS,
+        );
+        if (recentChat) break;
         state.rewards.push({
           user_id: userId,
           reward_type: 'bonus_chat',
-          streak_day: 5,
+          streak_day: 7,
           quantity: 1,
           granted_at: now,
           used: false,
           expires_at: null,
         });
-        granted.push({ day: 5, type: 'bonus_chat', quantity: 1 });
+        granted.push({ day: 7, type: 'bonus_chat', quantity: 1 });
         break;
-      case 7:
-        state.rewards.push({
-          user_id: userId,
-          reward_type: 'bonus_chat',
-          streak_day: 7,
-          quantity: 2,
-          granted_at: now,
-          used: false,
-          expires_at: null,
-        });
-        granted.push({ day: 7, type: 'bonus_chat', quantity: 2 });
-        break;
+      }
       case 14:
-        state.rewards.push({
-          user_id: userId,
-          reward_type: 'bonus_chat',
-          streak_day: 14,
-          quantity: 3,
-          granted_at: now,
-          used: false,
-          expires_at: null,
-        });
         state.rewards.push({
           user_id: userId,
           reward_type: 'badge',
@@ -146,7 +136,7 @@ export function grantRewards(state: SimState, userId: string): GrantedReward[] {
           used: false,
           expires_at: null,
         });
-        granted.push({ day: 14, type: 'bonus_chat+badge', quantity: 3 });
+        granted.push({ day: 14, type: 'badge', quantity: 1 });
         break;
       case 30: {
         state.rewards.push({

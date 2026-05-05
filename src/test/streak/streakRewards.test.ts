@@ -39,27 +39,27 @@ describe('Streak rewards — end-to-end scenarios', () => {
     expect(bonusTotals(s, USER).bonus_analysis).toBe(1);
   });
 
-  it('T4: 5-day streak grants bonus_chat once', () => {
+  it('T4: 5-day streak does NOT grant bonus_chat (rule changed)', () => {
     const s = newState();
     for (let i = 0; i < 5; i++) updateStreak(s, USER, day(i));
     expect(bonusTotals(s, USER)).toMatchObject({
       bonus_analysis: 1,
-      bonus_chat: 1,
+      bonus_chat: 0,
     });
   });
 
-  it('T5: 7-day streak adds +2 bonus_chat (cumulative=3)', () => {
+  it('T5: 7-day streak grants exactly 1 bonus_chat', () => {
     const s = newState();
     for (let i = 0; i < 7; i++) updateStreak(s, USER, day(i));
-    expect(bonusTotals(s, USER).bonus_chat).toBe(3); // 1 from day5 + 2 from day7
+    expect(bonusTotals(s, USER).bonus_chat).toBe(1);
   });
 
-  it('T6: 14-day streak grants badge + 3 chat credits (total chat=6)', () => {
+  it('T6: 14-day streak grants badge but no extra chat (still chat=1)', () => {
     const s = newState();
     for (let i = 0; i < 14; i++) updateStreak(s, USER, day(i));
     const t = bonusTotals(s, USER);
     expect(t.has_streak_badge).toBe(true);
-    expect(t.bonus_chat).toBe(6); // 1+2+3
+    expect(t.bonus_chat).toBe(1);
   });
 
   it('T7: 30-day streak activates 1-day premium trial', () => {
@@ -118,11 +118,11 @@ describe('Streak rewards — end-to-end scenarios', () => {
     expect(bonusTotals(s, USER).bonus_analysis).toBe(0);
   });
 
-  it('T13: bonus_chat credits stack and consume FIFO', () => {
+  it('T13: bonus_chat single credit consumes once then empty', () => {
     const s = newState();
     for (let i = 0; i < 7; i++) updateStreak(s, USER, day(i));
-    expect(bonusTotals(s, USER).bonus_chat).toBe(3);
-    for (let i = 0; i < 3; i++) expect(useBonusCredit(s, USER, 'bonus_chat')).toBe(true);
+    expect(bonusTotals(s, USER).bonus_chat).toBe(1);
+    expect(useBonusCredit(s, USER, 'bonus_chat')).toBe(true);
     expect(useBonusCredit(s, USER, 'bonus_chat')).toBe(false);
   });
 
@@ -141,5 +141,34 @@ describe('Streak rewards — end-to-end scenarios', () => {
     const trials = s.rewards.filter((r) => r.streak_day === 30);
     expect(trials.length).toBe(1);
     expect(s.premium.length).toBe(1);
+  });
+
+  it('T16: 30-day cooldown — second 7-day streak within 30 days does NOT grant chat', () => {
+    const s = newState();
+    // First 7-day streak → chat=1
+    for (let i = 0; i < 7; i++) updateStreak(s, USER, day(i));
+    expect(bonusTotals(s, USER).bonus_chat).toBe(1);
+    // Consume + break + new 7-day streak starting day 15 (within 30d window)
+    useBonusCredit(s, USER, 'bonus_chat');
+    updateStreak(s, USER, day(15));
+    for (let i = 16; i < 22; i++) updateStreak(s, USER, day(i));
+    expect(s.streaks.get(USER)!.current_streak).toBe(7);
+    // Cooldown: no new chat granted
+    expect(bonusTotals(s, USER).bonus_chat).toBe(0);
+    // After 30+ days from first grant, a new 7-day streak grants chat again
+    updateStreak(s, USER, day(50));
+    for (let i = 51; i < 57; i++) updateStreak(s, USER, day(i));
+    expect(bonusTotals(s, USER).bonus_chat).toBe(1);
+  });
+
+  it('T17: free user E2E — earns 1 chat, uses it, then is denied', () => {
+    const s = newState();
+    for (let i = 0; i < 7; i++) updateStreak(s, USER, day(i));
+    expect(bonusTotals(s, USER).bonus_chat).toBe(1);
+    // First request: bonus available → succeeds
+    expect(useBonusCredit(s, USER, 'bonus_chat')).toBe(true);
+    // Second request: no credits → would 403
+    expect(useBonusCredit(s, USER, 'bonus_chat')).toBe(false);
+    expect(bonusTotals(s, USER).bonus_chat).toBe(0);
   });
 });

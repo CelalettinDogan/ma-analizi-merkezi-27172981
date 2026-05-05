@@ -46,3 +46,6 @@ jobs:
 
       - name: Streak rewards E2E scenarios
         run: bunx vitest run src/test/streak/streakRewards.test.ts --reporter=verbose
+
+      - name: AI chatbot bonus_chat gating E2E
+        run: bunx vitest run src/test/streak/aiChatbotBonus.test.ts --reporter=verbose

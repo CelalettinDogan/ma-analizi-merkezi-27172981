@@ -1,49 +1,72 @@
-## Sorun
 
-Streak ödülleri DB'de doğru veriliyor (`bonus_chat`, `bonus_analysis`), ama `ai-chatbot` edge function bonus credit'leri **hiç tanımıyor**:
+## Amaç
 
-1. **Free kullanıcı** bonus_chat kazansa bile 403 ACCESS_DENIED alıyor.
-2. **Premium kullanıcı** günlük plan limitini doldurduğunda bonus_chat varsa bile 429 LIMIT_EXCEEDED alıyor.
+1. **Kural değişikliği:** `bonus_chat` ödülü artık SADECE 7 günlük seri tamamlandığında ve son 30 gün içinde başka chat ödülü verilmemişse 1 kez verilir. (Bugün 5/7/14. günlerde de chat veriliyor — bu kaldırılacak.)
+2. **Uçtan uca regresyon testleri:** Free kullanıcı bonus_chat kazanır → ilk istek 200, kredi tükenince sonraki istek 403. Premium plan limiti dolunca bonus’a düşer, o da bitince 429. Testler CI'da otomatik koşar.
 
-Sonuç: Frontend (`useChatbot.ts`) bonus'u önceden tüketiyor → sunucu reddediyor → kullanıcı hakkını kaybediyor, cevap alamıyor.
+## Değişiklikler
 
-## Çözüm
+### 1. DB — yeni migration: `grant_streak_reward_for_user` güncellemesi
 
-### 1. `supabase/functions/ai-chatbot/index.ts` — server-authoritative bonus akışı
+- Milestone tablosu yeniden tanımlanıyor:
+  - **3 gün** → `bonus_analysis` ×1 (değişmedi)
+  - **7 gün** → `bonus_chat` ×1, **ancak son 30 gün içinde herhangi bir `bonus_chat` ödülü verilmediyse**
+  - **14 gün** → sadece `badge` (chat verilmiyor)
+  - **30 gün** → `premium_trial` (değişmedi)
+- 5. ve eski 7/14. gündeki chat grantları kaldırıldı.
+- 30-gün kontrolü:
+  ```sql
+  NOT EXISTS (
+    SELECT 1 FROM streak_rewards
+    WHERE user_id = p_user_id
+      AND reward_type = 'bonus_chat'
+      AND granted_at > now() - interval '30 days'
+  )
+  ```
+- Mevcut "bu streak penceresinde verildi mi?" kontrolü korunuyor (idempotency).
 
-Frontend'in bonus tüketmesini kaldırıp tüm mantığı edge function'a taşı:
+### 2. Simülatör — `src/test/streak/streakSimulator.ts`
 
-- Plan ve admin kontrolünden sonra, `chatbot_usage` sayısını al.
-- Free kullanıcı için: 403 dönmeden önce `streak_rewards`'tan kullanılabilir `bonus_chat` quantity > 0 kontrolü yap. Varsa devam et, response'ta `usedBonus: true` işaretle.
-- Premium kullanıcı için: `currentUsage >= dailyLimit` ise yine bonus kontrolü yap; varsa devam, yoksa 429.
-- Başarılı yanıt **gönderildikten sonra**:
-  - Plan limiti dahilinde ise → `increment_chatbot_usage` (mevcut davranış).
-  - Bonus kullanılacaksa → `use_bonus_credit('bonus_chat')` RPC'sini çağır (atomik, advisory lock'lu zaten).
-- Response payload'una `bonusRemaining` ekle (DB'den taze sayı).
+- `MILESTONES` ve grant mantığı yeni SQL ile birebir senkronlanır.
+- 30-gün cooldown'u state üzerinden kontrol eden helper eklenir.
 
-### 2. `src/hooks/useChatbot.ts` — client tarafı sadeleştirme
+### 3. Test — `src/test/streak/streakRewards.test.ts`
 
-- `useBonusCredit('bonus_chat')` çağrısını **sendMessage başlangıcından kaldır** (server tüketecek).
-- Sunucu cevabındaki `usage` + `bonusRemaining` ile state'i güncelle.
-- Hata durumunda yanlışlıkla bonus tüketilmiş olmasın (atomicity sunucuda garanti).
-- `hasAccess` koşulu olduğu gibi kalabilir (UI gating için doğru).
+Mevcut T4/T5/T6 senaryoları yeni kurala göre güncellenir:
+- T4 (5 gün) artık chat vermez.
+- T5 (7 gün) tam olarak 1 chat verir.
+- T6 (14 gün) yalnız badge ekler, chat=1 olarak kalır.
 
-### 3. Test
+Yeni senaryolar:
+- **T16 — 30-gün cooldown:** 7 gün streak → chat=1. Streak kırılıp 8 gün sonra tekrar 7 gün → cooldown aktif, chat verilmez. 31 gün sonraki yeni 7-gün serisi → chat verilir.
+- **T17 — Free user uçtan uca tüketim:** bonus_chat=1 verildi → `useBonusCredit` true → ikinci çağrı false (krediyi geri alıyor).
 
-`src/test/streak/streakRewards.test.ts` simülatörünü güncelle: yeni server akışını yansıtan T16 senaryosu ekle:
-- T16a: Free + bonus_chat=2 → 2 mesaj başarılı, 3.'de 403.
-- T16b: Premium Basic plan limiti (3) dolduktan sonra bonus_chat=1 → 4. mesaj bonus'tan geçer, 5. 429.
+### 4. Edge function regresyon testi — `supabase/functions/ai-chatbot/index.test.ts` (Deno)
 
-### 4. Manuel doğrulama
+`supabase--test_edge_functions` ile koşulan yeni Deno testi:
+- Test kullanıcısı oluştur, bonus_chat=1 enjekte et (service role).
+- 1. POST `/ai-chatbot` → 200, `bonusRemaining: 0`, `usedBonus: true`.
+- 2. POST → 403 `ACCESS_DENIED` (free user, bonus tükendi).
+- DB doğrulaması: `streak_rewards.used = true`.
+- Premium senaryosu: plan limitini doldur → bonus_chat=1 ekle → 1 ek istek 200 → sonraki 429.
 
-E2E olarak `supabase--curl_edge_functions` ile `/ai-chatbot` çağırıp DB'deki test kullanıcısı için:
-- Bonus harcanışı `streak_rewards.used` / `quantity` üzerinden doğrulanır.
-- Frontend usage göstergesi anında günceller.
+### 5. CI — `.github/workflows/ci.yml`
+
+Mevcut `streak-e2e` job'una iki adım daha:
+- `bunx vitest run src/test/streak/streakRewards.test.ts` (mevcut, güncellenmiş senaryolar dahil).
+- Yeni `chatbot-e2e` job: `supabase functions test ai-chatbot` (Deno), service role secret CI'da zaten yok → bunun yerine vitest tarafında HTTP mock fixture'ı ile aynı akışı doğrulayan `aiChatbotBonus.test.ts` ekliyoruz (deterministic, secret gerektirmez). Manuel doğrulama için ayrı bir "manual smoke" notu README'ye eklenir.
 
 ## Etkilenen dosyalar
 
-- `supabase/functions/ai-chatbot/index.ts` (free 403 + 429 dallarında bonus fallback, sonunda `use_bonus_credit` çağrısı)
-- `src/hooks/useChatbot.ts` (client-side bonus tüketimini kaldır, sunucu cevabını uygula)
-- `src/test/streak/streakRewards.test.ts` (T16 senaryoları)
+- `supabase/migrations/<new>.sql` — `grant_streak_reward_for_user` güncellemesi
+- `src/test/streak/streakSimulator.ts` — milestone + 30-gün cooldown
+- `src/test/streak/streakRewards.test.ts` — T4/T5/T6 güncel + T16/T17
+- `src/test/streak/aiChatbotBonus.test.ts` — yeni, edge function akışını mock'layan test
+- `.github/workflows/ci.yml` — yeni testlerin verbose koşumu
 
-DB şeması veya RPC değişikliği **gerekmiyor** — `use_bonus_credit` ve `get_bonus_credits` zaten doğru çalışıyor, edge function bunları kullanmıyordu.
+## Kabul kriterleri
+
+- 7 gün serisi → chat hakkı 1 kez verilir, 30 gün içinde tekrar verilmez.
+- Free kullanıcı bonus ile 1 mesaj atabilir, sonraki 403.
+- Premium limit dolunca bonus tüketilir; bonus da bitince 429.
+- Tüm testler CI’da yeşil; PR’larda otomatik bloklayıcı.
