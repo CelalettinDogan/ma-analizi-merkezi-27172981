@@ -31,11 +31,11 @@ export async function getSmartPicks(limit: number = 3): Promise<SmartPick[]> {
 
   if (matchError) {
     console.error('Error fetching upcoming matches:', matchError);
-    throw new Error('Akıllı seçimler yüklenemedi');
+    return [];
   }
 
   if (!upcomingMatches || upcomingMatches.length === 0) {
-    throw new Error('Yaklaşan maç bulunamadı');
+    return [];
   }
 
   // Create a set of valid upcoming match keys
