@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles } from 'lucide-react';
+import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles, Swords } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
