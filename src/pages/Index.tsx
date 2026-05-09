@@ -7,6 +7,7 @@ import HeroSection from '@/components/HeroSection';
 import LegalDisclaimer from '@/components/LegalDisclaimer';
 import { AnalysisSetButton } from '@/components/analysis-set';
 import AppHeader from '@/components/layout/AppHeader';
+import NotificationOnboardingBanner from '@/components/NotificationOnboardingBanner';
 
 import LeagueGrid from '@/components/league/LeagueGrid';
 import MatchCarousel from '@/components/match/MatchCarousel';
@@ -286,6 +287,7 @@ const Index: React.FC = () => {
 
       {/* Scrollable Content */}
       <main className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
+      <NotificationOnboardingBanner />
       {/* Hero Section - Simplified with count-up */}
       <HeroSection stats={stats} onAnalyzeClick={() => setCommandOpen(true)} />
 
