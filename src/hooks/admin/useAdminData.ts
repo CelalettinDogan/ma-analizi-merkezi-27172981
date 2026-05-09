@@ -441,10 +441,8 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
         })));
       }
 
-      const { count } = await supabase
-        .from('push_tokens')
-        .select('*', { count: 'exact', head: true });
-      setTokenCount(count || 0);
+      // Push tokens removed — local notifications run on-device.
+      setTokenCount(0);
     } catch (e) {
       console.error('Notifications fetch error:', e);
     }
@@ -599,28 +597,17 @@ export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
   }, [user, logAction]);
 
   const sendNotification = useCallback(async (data: { title: string; body: string; targetAudience: string }) => {
-    // Call edge function to send via FCM + log
-    const { data: result, error } = await supabase.functions.invoke('send-push-notification', {
-      body: {
-        title: data.title,
-        body: data.body,
-        target_audience: data.targetAudience,
-      },
+    // Push delivery removed — record notification in history only.
+    // Bildirimler artık cihaz-içi yerel hatırlatmalar üzerinden çalışır.
+    await supabase.from('push_notifications').insert({
+      title: data.title,
+      body: data.body,
+      target_audience: data.targetAudience,
+      sent_by: user?.id,
+      sent_at: new Date().toISOString(),
     });
 
-    if (error) {
-      // Fallback: just insert notification record if edge function fails
-      console.error('Edge function error, falling back to DB insert:', error);
-      await supabase.from('push_notifications').insert({
-        title: data.title,
-        body: data.body,
-        target_audience: data.targetAudience,
-        sent_by: user?.id,
-        sent_at: new Date().toISOString(),
-      });
-    }
-
-    await logAction('send_notification', 'push_notifications', undefined, { ...data, result });
+    await logAction('send_notification', 'push_notifications', undefined, data);
     await fetchNotifications();
   }, [user, logAction, fetchNotifications]);
 
