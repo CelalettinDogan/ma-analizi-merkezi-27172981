@@ -31,11 +31,11 @@ export async function getSmartPicks(limit: number = 3): Promise<SmartPick[]> {
 
   if (matchError) {
     console.error('Error fetching upcoming matches:', matchError);
-    return [];
+    throw new Error('Akıllı seçimler yüklenemedi');
   }
 
   if (!upcomingMatches || upcomingMatches.length === 0) {
-    return [];
+    throw new Error('Yaklaşan maç bulunamadı');
   }
 
   // Create a set of valid upcoming match keys
@@ -59,26 +59,16 @@ export async function getSmartPicks(limit: number = 3): Promise<SmartPick[]> {
 
   if (predictionsError) {
     console.error('Error fetching predictions for smart picks:', predictionsError);
-    return [];
+    throw new Error('Akıllı seçimler yüklenemedi');
   }
 
   // Filter predictions to only include upcoming matches
-  const validPredictions = predictions?.filter(pred =>
+  const validPredictions = predictions?.filter(pred => 
     upcomingMatchKeys.has(`${pred.home_team}-${pred.away_team}`)
   ) || [];
 
-  // Fallback: if no AI predictions exist, return placeholder picks from upcoming matches
   if (validPredictions.length === 0) {
-    return upcomingMatches.slice(0, limit).map(m => ({
-      homeTeam: m.home_team_name,
-      awayTeam: m.away_team_name,
-      league: m.competition_code,
-      matchDate: (m.utc_date as string).split('T')[0],
-      predictionType: '',
-      predictionValue: '',
-      confidence: 'orta' as const,
-      hybridConfidence: 0,
-    }));
+    throw new Error('Henüz analiz edilmiş tahmin bulunmuyor. Önce maç analizi yapın.');
   }
 
   // Get unique matches with their highest confidence prediction

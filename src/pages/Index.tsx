@@ -8,7 +8,6 @@ import LegalDisclaimer from '@/components/LegalDisclaimer';
 import { AnalysisSetButton } from '@/components/analysis-set';
 import AppHeader from '@/components/layout/AppHeader';
 import NotificationOnboardingBanner from '@/components/NotificationOnboardingBanner';
-import DailyPickCard from '@/components/home/DailyPickCard';
 
 import LeagueGrid from '@/components/league/LeagueGrid';
 import MatchCarousel from '@/components/match/MatchCarousel';
@@ -291,11 +290,6 @@ const Index: React.FC = () => {
       <NotificationOnboardingBanner />
       {/* Hero Section - Simplified with count-up */}
       <HeroSection stats={stats} onAnalyzeClick={() => setCommandOpen(true)} />
-
-      {/* Daily Pick — premium conversion card */}
-      <div className="pt-1">
-        <DailyPickCard isPremium={isPremium} />
-      </div>
 
       {/* Main Content - Clean Single Column Flow */}
       <div className="container mx-auto px-4 py-5 space-y-7">

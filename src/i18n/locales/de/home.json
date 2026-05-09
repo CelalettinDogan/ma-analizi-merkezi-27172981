@@ -102,8 +102,6 @@
   },
   "dailyPick": {
     "title": "Tagestor",
-    "unlockCta": "Mit Premium freischalten",
-    "subtitle": "Die heute zuverlässigste KI-Vorhersage",
-    "placeholder": "Tagestor wird vorbereitet — bald verfügbar"
+    "unlockCta": "Vorhersage sehen"
   }
 }

@@ -1,69 +1,55 @@
-# Günün Skoru — Premium Dönüşüm Odaklı Yeniden Yapılandırma
+## Sorun
 
-## Mevcut Durum (Sorun)
+Uygulama açıldığında bildirim izni dialog'u görünmüyor. Üç ayrı sebep birleşiyor:
 
-`Günün Skoru` zaten `TodaysMatches.tsx` içinde küçük bir satır olarak kodlu, ancak:
-- Veri kaynağı (`getSmartPicks`) yalnızca **kullanıcı tarafından önceden analiz edilmiş** tahminleri kullanıyor.
-- Yeterli tahmin yoksa hata fırlatıyor → satır hiç render edilmiyor.
-- Bugün ekranda görünmemesinin sebebi bu: DB'de uygun bir `predictions` kaydı yok.
-- Görsel olarak da diğer maç satırları arasında kayboluyor — premium teaser olarak yeterince güçlü değil.
+1. İzin isteği `useLocalNotifications` içinde **`if (!user) return`** ile auth'a kilitli — `/auth` ekranındayken hiç çağrılmıyor.
+2. `AndroidManifest.xml` içinde Android 13+ için zorunlu olan `POST_NOTIFICATIONS` runtime izni deklare edilmemişse, `LocalNotifications.requestPermissions()` sessizce `denied` döner ve sistem dialog'u açılmaz.
+3. 3 saniyelik `setTimeout` + React StrictMode birlikte ilk mount'ta cleanup tetikleyebilir; ayrıca kullanıcı bir kez "Reddet" dediyse Android bir daha otomatik sormaz.
 
-## Hedef
+## Çözüm Planı
 
-Günün Skoru'nu, anasayfanın **dikkat çeken bir bölümüne** çıkar; **her zaman dolu** olsun (yoksa otomatik seç); free kullanıcılar için bahis tipi/oran **bulanık** kalsın ve net bir CTA ile `/premium`'a yönlendirsin.
+### 1. `useLocalNotifications` hook'unu auth'tan ayır
+- İzin sorma + kanal oluşturma kısmını kullanıcı login'den BAĞIMSIZ hale getir; sadece **scheduling** (streak/match notifications) `user` ve `streak`'e bağlı kalsın.
+- 3000ms timeout'u 800ms'ye düşür ve cleanup'ı sadece scheduling timer'ı için kullan, izin isteği için kullanma.
+- İlk mount'ta `LocalNotifications.checkPermissions()` çağır:
+  - `granted` → kanal oluştur, schedule'a geç
+  - `prompt` → `requestPermissions()` çağır, sonuca göre devam et
+  - `denied` → sessiz geç (Profil > Bildirimler ekranındaki "Ayarları Aç" CTA zaten var)
+- StrictMode'a karşı `useRef` flag ile çift tetiklemeyi engelle.
 
-## Yapılacaklar
-
-### 1) Veri tarafı — daima bir DailyPick olsun
-`smartPicksService.ts` içine **fallback** ekle:
-- Önce mevcut mantık (en yüksek `hybrid_confidence`'lı, henüz başlamamış tahmin).
-- Tahmin yoksa: `cached_matches` içinden bugün/yarın oynanacak en "büyük" maçı (ör. en üstteki `TIMED` competition) seç ve **placeholder bir SmartPick** üret (predictionType/Value boş, hybridConfidence yok).
-- Hata fırlatmak yerine `[]` dön; UI bunu yönetsin.
-
-### 2) Yeni komponent — `DailyPickCard.tsx`
-`TodaysMatches` içindeki gömülü satırı çıkar, ayrı bir komponent yap. `src/pages/Index.tsx`'te **HeroSection ile LeagueGrid arasına** yerleştir.
-
-Tasarım (mevcut Emerald/Amber temasında, 8px grid, 16px radii):
-- Amber gradient + parıltı (shimmer) animasyonu.
-- Üst satır: `Sparkles` ikon + "Günün Skoru" + sağda gün etiketi (Bugün/Yarın).
-- Orta satır: `EvSahibi vs Deplasman` + lig adı (küçük).
-- Alt satır:
-  - **Free**: tahmin tipi+değer ve %güven **blur(6px)** ile gösterilir, üstüne kilit ikonu + "Premium ile Aç" CTA butonu (tam genişlik, amber). Tıklayınca `/premium`.
-  - **Premium**: net tahmin tipi+değer + güven yüzdesi (renk: ≥70 emerald, ≥50 amber, <50 muted) + "Maçı Analiz Et" butonu → maç analiz drawer'ını açar.
-- Placeholder durumda (henüz analiz yok): aynı kart, alt satır yerine "Günün skoru hazırlanıyor — birkaç saat içinde açılıyor" mikro metni.
-
-### 3) `TodaysMatches.tsx` temizliği
-- `dailyPickRowEl`, `useQuery(['daily-top-prediction'])`, `Lock`/`Sparkles` importları, `showDailyDetail` state'i kaldır.
-- Bileşen sadece günün maç listesine odaklansın.
-
-### 4) i18n
-5 dil (tr/en/de/es/ar) için `home.json` altındaki `dailyPick` bloğunu genişlet:
-- `title`, `subtitle` (ör. "Yapay zekânın bugünkü en yüksek güvenli skoru")
-- `unlockCta` ("Premium ile Aç")
-- `analyzeCta` ("Maçı Analiz Et")
-- `placeholder` ("Günün skoru hazırlanıyor")
-- `today` / `tomorrow` etiketleri zaten var.
-
-### 5) Premium tetikleyici (analytics)
-`DailyPickCard` üzerindeki kilit CTA'sı `/premium`'a giderken `usePremiumPromotion` üzerinden `triggerLimitFeedback('daily_pick')` benzeri bir kaynak parametresi geçir, böylece premium ekranında "Günün Skoru'nu görmek için" başlığı gösterilebilir (opsiyonel — minik dokunuş).
-
-## Dokunulan/Yeni Dosyalar
-
-```text
-+ src/components/home/DailyPickCard.tsx        (yeni)
-~ src/services/smartPicksService.ts            (fallback + hata yerine boş dön)
-~ src/components/TodaysMatches.tsx             (Günün Skoru çıkarıldı)
-~ src/pages/Index.tsx                          (Hero altına DailyPickCard)
-~ src/i18n/locales/{tr,en,de,es,ar}/home.json  (yeni metinler)
+### 2. AndroidManifest'e POST_NOTIFICATIONS izni ekle
+Kullanıcının lokal Android projesinde aşağıdaki satırın `<manifest>` altında olması gerekiyor:
+```xml
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 ```
+Bunu plan dosyasına net bir kullanıcı talimatı olarak ekleyeceğim. (Lovable sandbox'ta `android/` klasörü olmadığından kod tarafında düzenlenemiyor — Android Studio'da yapılacak.)
 
-## Backend / DB
+### 3. İlk açılışta görsel onboarding (opsiyonel ama önerilir)
+İlk auth başarısından sonra, ana ekranın üstünde **bir kez** gösterilen küçük bir banner ekle: "Maç hatırlatmaları için bildirimleri aç" — tıklayınca `requestPermissions()` doğrudan kullanıcı etkileşimi içinde tetiklenir. Bu, daha önce reddedilmiş kullanıcılar için de yeni bir fırsat sağlar (sistem dialog'u tekrar açılmasa bile, denied banner ile ayarlara yönlendirilir).
+- Banner state'i `Preferences` key `'notif_prompt_shown_v1'` ile saklanır, bir kez kapatınca tekrar gösterilmez.
+- Konum: `src/pages/Index.tsx` üstüne küçük dismiss'lı kart.
 
-Şema değişikliği yok. Yeni edge function yok. Sadece istemci tarafı bir refactor + UX iyileştirmesi.
+### 4. Ek savunma: dev/preview davranışı
+Web preview'da (`Capacitor.isNativePlatform() === false`) hiçbir prompt yok — bu zaten doğru. Profil > Bildirimler kartında "Bildirimler sadece mobil uygulamada çalışır" mesajı görünüyor; değiştirme.
+
+## Etkilenecek dosyalar (kod tarafı)
+- `src/hooks/useLocalNotifications.ts` — auth'tan ayır, checkPermissions önce, StrictMode guard
+- `src/pages/Index.tsx` — tek-seferlik bildirim onboarding banner'ı
+- `src/i18n/locales/{tr,en,de,es,ar}/profile.json` — yeni banner stringleri (`notifications.onboardingBanner.*`)
+
+## Kullanıcı tarafı (Android Studio'da yapılacaklar)
+1. `git pull`
+2. `bun install`
+3. **`android/app/src/main/AndroidManifest.xml`** dosyasını aç ve `<manifest>` etiketinin hemen altına şunu ekle (yoksa):
+   ```xml
+   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+   ```
+4. `npx cap sync android`
+5. Eğer önceden "İzin Verme" demişsen: telefonda **Ayarlar → Uygulamalar → GolMetrik → Bildirimler → Aç** veya uygulamayı tamamen kaldırıp tekrar yükle (Android prompt'u sıfırlamak için gerekli)
+6. Android Studio'da `versionCode` artır, signed APK build et
 
 ## Doğrulama
-
-- Free kullanıcı: kart görünür, tahmin bulanık, CTA `/premium`'a gidiyor.
-- Premium kullanıcı: kart görünür, tahmin net, "Maçı Analiz Et" drawer'ı açıyor.
-- DB'de uygun tahmin yoksa: kart görünür, placeholder metin gösteriliyor, kart yine de tıklanabilir → free için `/premium`.
-- Mobil 390px viewport'ta düzgün; safe-area, h-screen layout korunur.
+- İlk açılışta (taze install, daha önce hiç izin istenmemiş): app açılır → ~1 sn sonra Android sistem dialog'u "Bildirim göndermesine izin verilsin mi?" çıkar
+- Kabul → kanal oluşur, scheduling çalışır, çökme yok
+- Reddet → çökme yok, ana ekranda "bildirimleri aç" banner'ı bir kez gösterilir
+- Profil > Bildirimler kartı doğru durumu yansıtır (granted/prompt/denied)
