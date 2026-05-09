@@ -38,39 +38,61 @@ export const setNotificationPrefs = async (prefs: NotificationPrefs) => {
   await Preferences.set({ key: PREFS_KEY, value: JSON.stringify(prefs) });
 };
 
+/**
+ * Ensures notification permission + Android channel exist.
+ * Safe to call multiple times. Returns final permission status.
+ */
+export const ensureNotificationPermission = async (): Promise<'granted' | 'denied' | 'prompt'> => {
+  if (!Capacitor.isNativePlatform()) return 'prompt';
+  try {
+    const current = await LocalNotifications.checkPermissions();
+    let display = current.display;
+
+    if (display === 'prompt' || display === 'prompt-with-rationale') {
+      const req = await LocalNotifications.requestPermissions();
+      display = req.display;
+    }
+
+    if (display === 'granted') {
+      try {
+        await LocalNotifications.createChannel({
+          id: 'golmetrik_reminders',
+          name: 'Hatırlatmalar',
+          description: 'Maç ve seri hatırlatmaları',
+          importance: 4,
+          sound: 'default',
+          vibration: true,
+        });
+      } catch {
+        // channel may already exist
+      }
+      return 'granted';
+    }
+    return display === 'denied' ? 'denied' : 'prompt';
+  } catch (err) {
+    console.warn('ensureNotificationPermission error:', err);
+    return 'prompt';
+  }
+};
+
 export const useLocalNotifications = () => {
   const { user } = useAuth();
   const { streak } = useStreak();
-  const scheduled = useRef(false);
+  const permissionRequested = useRef(false);
 
   const scheduleNotifications = useCallback(async () => {
     if (!Capacitor.isNativePlatform()) return;
 
     try {
-      // Request permission
-      const permResult = await LocalNotifications.requestPermissions();
-      if (permResult.display !== 'granted') {
-        console.log('Local notification permission not granted');
-        return;
-      }
-
-      // Create notification channel for Android
-      await LocalNotifications.createChannel({
-        id: 'golmetrik_reminders',
-        name: 'Hatırlatmalar',
-        description: 'Maç ve seri hatırlatmaları',
-        importance: 4, // HIGH
-        sound: 'default',
-        vibration: true,
-      });
+      const status = await ensureNotificationPermission();
+      if (status !== 'granted') return;
 
       // Cancel existing scheduled notifications to re-schedule fresh
       await LocalNotifications.cancel({
-        notifications: Object.values(NOTIFICATION_IDS).map(id => ({ id })),
+        notifications: Object.values(NOTIFICATION_IDS).map((id) => ({ id })),
       });
 
       const prefs = await getNotificationPrefs();
-
       const notifications: any[] = [];
 
       // 1. Daily match reminder at 18:00
@@ -93,9 +115,10 @@ export const useLocalNotifications = () => {
 
       // 2. Streak reminder at 20:00 (only if user has an active streak)
       if (prefs.streakReminders && streak.current_streak > 0) {
-        const streakMsg = streak.current_streak >= 5
-          ? `🔥 ${streak.current_streak} günlük serin harika! Bugün de devam et!`
-          : `🔥 ${streak.current_streak} günlük serini kırma! Bugün giriş yap.`;
+        const streakMsg =
+          streak.current_streak >= 5
+            ? `🔥 ${streak.current_streak} günlük serin harika! Bugün de devam et!`
+            : `🔥 ${streak.current_streak} günlük serini kırma! Bugün giriş yap.`;
 
         notifications.push({
           id: NOTIFICATION_IDS.STREAK_REMINDER,
@@ -120,7 +143,7 @@ export const useLocalNotifications = () => {
           title: '📊 Haftalık Özet',
           body: 'Geçen haftanın tahmin sonuçlarına göz at!',
           schedule: {
-            on: { hour: 10, minute: 0, weekday: 2 } as ScheduleOn, // Monday = 2 in Capacitor
+            on: { hour: 10, minute: 0, weekday: 2 } as ScheduleOn,
             allowWhileIdle: true,
             repeats: true,
           },
@@ -140,16 +163,28 @@ export const useLocalNotifications = () => {
     }
   }, [streak.current_streak]);
 
-  // Schedule on mount + when streak changes
+  // Request permission ASAP on app launch (independent of auth).
+  // Android shows the system dialog only on the first request, so do this early.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    if (permissionRequested.current) return;
+    permissionRequested.current = true;
+
+    const timer = setTimeout(() => {
+      ensureNotificationPermission().catch((err) =>
+        console.warn('Initial permission request failed:', err),
+      );
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Schedule notifications once user is logged in (and re-schedule when streak changes).
   useEffect(() => {
     if (!user || !Capacitor.isNativePlatform()) return;
-
-    // Small delay to avoid scheduling during initial app load
     const timer = setTimeout(() => {
       scheduleNotifications();
-      scheduled.current = true;
-    }, 3000);
-
+    }, 1500);
     return () => clearTimeout(timer);
   }, [user, scheduleNotifications]);
 
@@ -162,18 +197,17 @@ export const useLocalNotifications = () => {
       (action) => {
         const path = action.notification.extra?.path;
         if (path) {
-          // Navigate via window.location for simplicity in deep link
           window.location.hash = path;
         }
-      }
+      },
     );
 
     return () => {
-      listener.then(l => l.remove());
+      listener.then((l) => l.remove());
     };
   }, []);
 
-  return { scheduleNotifications };
+  return { scheduleNotifications, ensureNotificationPermission };
 };
 
 export default useLocalNotifications;

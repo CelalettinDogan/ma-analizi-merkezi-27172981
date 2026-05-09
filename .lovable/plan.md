@@ -1,37 +1,55 @@
-## Amaç
+## Sorun
 
-Uygulamadaki Firebase tabanlı push notification altyapısını tamamen kaldır, yerine `@capacitor/local-notifications` ile cihaz üzerinden zamanlanan günlük maç ve seri (streak) hatırlatmalarını aktif et. Böylece izin verildikten sonra yaşanan çökme ortadan kalkar ve Firebase/`google-services.json` gereksinimi olmaz.
+Uygulama açıldığında bildirim izni dialog'u görünmüyor. Üç ayrı sebep birleşiyor:
 
-## Yapılacaklar
+1. İzin isteği `useLocalNotifications` içinde **`if (!user) return`** ile auth'a kilitli — `/auth` ekranındayken hiç çağrılmıyor.
+2. `AndroidManifest.xml` içinde Android 13+ için zorunlu olan `POST_NOTIFICATIONS` runtime izni deklare edilmemişse, `LocalNotifications.requestPermissions()` sessizce `denied` döner ve sistem dialog'u açılmaz.
+3. 3 saniyelik `setTimeout` + React StrictMode birlikte ilk mount'ta cleanup tetikleyebilir; ayrıca kullanıcı bir kez "Reddet" dediyse Android bir daha otomatik sormaz.
 
-### 1. Push notification katmanını kaldır
-- `src/hooks/usePushNotifications.ts` dosyasını sil.
-- `src/App.tsx` içinden `usePushNotifications` import'u ve `usePushNotifications()` çağrısını kaldır.
-- `package.json` içinden `@capacitor/push-notifications` bağımlılığını çıkar.
-- `supabase/functions/send-push-notification/` edge function'ını sil (artık tetiklenmiyor).
-- `push_tokens` tablosunu temizleyen bir migration aç (tablo varsa drop, RLS politikalarıyla birlikte).
-- Admin panelinde push gönderim arayüzü varsa (`NotificationManagement.tsx`) ilgili push gönderme bölümünü kaldır veya "Yerel hatırlatmalar yalnızca cihazda" notuyla devre dışı bırak.
+## Çözüm Planı
 
-### 2. Local notifications'ı resmi giriş noktası yap
-- `src/App.tsx` içinde `useLocalNotifications` hook'unu aktif et (mevcut `useStreakHeartbeat`'ın yanına ekle).
-- `useLocalNotifications` zaten 3 sn gecikmeli izin istiyor; splash kapandıktan sonra çağrıldığı için çökme riski yok. Ek koruma olarak `try/catch` ve `Capacitor.isNativePlatform()` kontrollerini doğrula.
-- Hook üç bildirimi zamanlıyor: günlük maç hatırlatması (18:00), streak hatırlatması (20:00, sadece aktif streak varsa), haftalık özet (Pazartesi 10:00). Bunlar yeterli.
+### 1. `useLocalNotifications` hook'unu auth'tan ayır
+- İzin sorma + kanal oluşturma kısmını kullanıcı login'den BAĞIMSIZ hale getir; sadece **scheduling** (streak/match notifications) `user` ve `streak`'e bağlı kalsın.
+- 3000ms timeout'u 800ms'ye düşür ve cleanup'ı sadece scheduling timer'ı için kullan, izin isteği için kullanma.
+- İlk mount'ta `LocalNotifications.checkPermissions()` çağır:
+  - `granted` → kanal oluştur, schedule'a geç
+  - `prompt` → `requestPermissions()` çağır, sonuca göre devam et
+  - `denied` → sessiz geç (Profil > Bildirimler ekranındaki "Ayarları Aç" CTA zaten var)
+- StrictMode'a karşı `useRef` flag ile çift tetiklemeyi engelle.
 
-### 3. Profil > Bildirim Ayarları'nı local'e bağla
-- `src/components/profile/NotificationSettings.tsx` üzerindeki toggle'ları `getNotificationPrefs` / `setNotificationPrefs` ile senkronize et.
-- Toggle değişiminde `scheduleNotifications()` tekrar çağırılarak zamanlama yenilensin.
-- "Push bildirim" yazıları "Hatırlatmalar" olarak güncellensin (TR + diğer 4 locale).
+### 2. AndroidManifest'e POST_NOTIFICATIONS izni ekle
+Kullanıcının lokal Android projesinde aşağıdaki satırın `<manifest>` altında olması gerekiyor:
+```xml
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+```
+Bunu plan dosyasına net bir kullanıcı talimatı olarak ekleyeceğim. (Lovable sandbox'ta `android/` klasörü olmadığından kod tarafında düzenlenemiyor — Android Studio'da yapılacak.)
 
-### 4. Android manifest temizliği
-- `AndroidManifest.xml` (varsa) `POST_NOTIFICATIONS` izni kalsın (local notifications de bunu kullanıyor), ancak FCM/`google-services` ile ilgili meta-data ve receiver tanımları kaldırılsın. `android/app/google-services.json` dosyası gerekirse silinsin.
+### 3. İlk açılışta görsel onboarding (opsiyonel ama önerilir)
+İlk auth başarısından sonra, ana ekranın üstünde **bir kez** gösterilen küçük bir banner ekle: "Maç hatırlatmaları için bildirimleri aç" — tıklayınca `requestPermissions()` doğrudan kullanıcı etkileşimi içinde tetiklenir. Bu, daha önce reddedilmiş kullanıcılar için de yeni bir fırsat sağlar (sistem dialog'u tekrar açılmasa bile, denied banner ile ayarlara yönlendirilir).
+- Banner state'i `Preferences` key `'notif_prompt_shown_v1'` ile saklanır, bir kez kapatınca tekrar gösterilmez.
+- Konum: `src/pages/Index.tsx` üstüne küçük dismiss'lı kart.
 
-### 5. Doğrulama
-- `bun run build` başarılı olmalı.
-- Kapsamlı manuel kontrol: `npx cap sync android` sonrası uygulama açıldığında izin diyaloğu 3 sn sonra çıkmalı, kabul/red sonrası çökme olmamalı, profil ekranında toggle kapatılınca planlı bildirim iptal olmalı.
+### 4. Ek savunma: dev/preview davranışı
+Web preview'da (`Capacitor.isNativePlatform() === false`) hiçbir prompt yok — bu zaten doğru. Profil > Bildirimler kartında "Bildirimler sadece mobil uygulamada çalışır" mesajı görünüyor; değiştirme.
 
-## Teknik Notlar
+## Etkilenecek dosyalar (kod tarafı)
+- `src/hooks/useLocalNotifications.ts` — auth'tan ayır, checkPermissions önce, StrictMode guard
+- `src/pages/Index.tsx` — tek-seferlik bildirim onboarding banner'ı
+- `src/i18n/locales/{tr,en,de,es,ar}/profile.json` — yeni banner stringleri (`notifications.onboardingBanner.*`)
 
-- Local notifications cihaz lokalinde çalışır; sunucu push'a gerek yoktur, dolayısıyla Firebase ve `send-push-notification` edge function tamamen kaldırılır.
-- Streak hatırlatması mesajı zaten `useLocalNotifications` içinde dinamik (mevcut streak gün sayısına göre). Ekstra mantık gerekmez.
-- Quiet hours desteği için `src/lib/quietHours.ts` zaten var; ileride `scheduleNotifications` içine bu kontrol eklenebilir (bu plan kapsamı dışı).
-- Capacitor versiyon notu: `@capacitor/local-notifications` zaten kuruluysa ek kurulum gerekmez; değilse `bun add @capacitor/local-notifications` ve `npx cap sync` kullanıcı tarafında çalıştırılmalı.
+## Kullanıcı tarafı (Android Studio'da yapılacaklar)
+1. `git pull`
+2. `bun install`
+3. **`android/app/src/main/AndroidManifest.xml`** dosyasını aç ve `<manifest>` etiketinin hemen altına şunu ekle (yoksa):
+   ```xml
+   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+   ```
+4. `npx cap sync android`
+5. Eğer önceden "İzin Verme" demişsen: telefonda **Ayarlar → Uygulamalar → GolMetrik → Bildirimler → Aç** veya uygulamayı tamamen kaldırıp tekrar yükle (Android prompt'u sıfırlamak için gerekli)
+6. Android Studio'da `versionCode` artır, signed APK build et
+
+## Doğrulama
+- İlk açılışta (taze install, daha önce hiç izin istenmemiş): app açılır → ~1 sn sonra Android sistem dialog'u "Bildirim göndermesine izin verilsin mi?" çıkar
+- Kabul → kanal oluşur, scheduling çalışır, çökme yok
+- Reddet → çökme yok, ana ekranda "bildirimleri aç" banner'ı bir kez gösterilir
+- Profil > Bildirimler kartı doğru durumu yansıtır (granted/prompt/denied)
