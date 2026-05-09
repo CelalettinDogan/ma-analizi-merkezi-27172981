@@ -349,7 +349,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
                   {match.awayTeam.crest && <img src={match.awayTeam.crest} alt="" className="w-4 h-4 object-contain shrink-0" />}
                 </div>
               </motion.button>
-              {index === 0 && dailyPickRowEl}
+              
             </React.Fragment>
           );
         })}
