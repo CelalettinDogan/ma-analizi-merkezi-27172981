@@ -184,14 +184,6 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
   const getDateLabel = useDateLabel();
   const [showAll, setShowAll] = useState(false);
 
-  const { data: picks } = useQuery({
-    queryKey: ['daily-top-prediction'],
-    queryFn: () => getSmartPicks(1),
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
-  });
-  const dailyPick = picks?.[0];
-
   const { featuredMatch, otherMatches, featuredReason, hasMatchesToday, title } = useMemo(() => {
     if (matches.length === 0) return { featuredMatch: null, otherMatches: [] as Match[], featuredReason: 'recommended' as FeaturedReason, hasMatchesToday: false, title: t('todays.title') };
     const todayMatches = matches.filter(m => isToday(new Date(m.utcDate)));
