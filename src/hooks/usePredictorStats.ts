@@ -7,6 +7,9 @@ export interface PredictorStats {
   verified_predictions: number;
   correct_predictions: number;
   accuracy: number | null;
+  verified_predictions_14d?: number;
+  correct_predictions_14d?: number;
+  accuracy_14d?: number | null;
 }
 
 export type PredictorRank = 'rookie' | 'amateur' | 'analyst' | 'expert' | 'master';

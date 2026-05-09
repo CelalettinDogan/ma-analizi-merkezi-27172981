@@ -9,5 +9,6 @@
     "analyst": "Analyst",
     "expert": "Expert",
     "master": "Master"
-  }
+  },
+  "last14Days": "Last 14 days"
 }
