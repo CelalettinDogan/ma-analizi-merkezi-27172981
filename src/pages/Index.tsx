@@ -8,6 +8,7 @@ import LegalDisclaimer from '@/components/LegalDisclaimer';
 import { AnalysisSetButton } from '@/components/analysis-set';
 import AppHeader from '@/components/layout/AppHeader';
 import NotificationOnboardingBanner from '@/components/NotificationOnboardingBanner';
+import DailyPickCard from '@/components/home/DailyPickCard';
 
 import LeagueGrid from '@/components/league/LeagueGrid';
 import MatchCarousel from '@/components/match/MatchCarousel';
