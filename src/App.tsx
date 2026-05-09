@@ -16,7 +16,7 @@ import { App as CapApp, URLOpenListenerEvent } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
 import { supabase } from "@/integrations/supabase/client";
 import { purchaseService } from "@/services/purchaseService";
-import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useLocalNotifications } from "@/hooks/useLocalNotifications";
 import { useStreakHeartbeat } from "@/hooks/useStreakHeartbeat";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
@@ -124,8 +124,8 @@ const AppContent = () => {
     purchaseService.initialize().catch(console.error);
   }, []);
 
-  // Initialize push notifications
-  usePushNotifications();
+  // Initialize local notifications (streak + match reminders)
+  useLocalNotifications();
 
   // Streak heartbeat: refetch on resume / date change, surface granted rewards
   useStreakHeartbeat();
