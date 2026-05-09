@@ -292,6 +292,11 @@ const Index: React.FC = () => {
       {/* Hero Section - Simplified with count-up */}
       <HeroSection stats={stats} onAnalyzeClick={() => setCommandOpen(true)} />
 
+      {/* Daily Pick — premium conversion card */}
+      <div className="pt-1">
+        <DailyPickCard isPremium={isPremium} />
+      </div>
+
       {/* Main Content - Clean Single Column Flow */}
       <div className="container mx-auto px-4 py-5 space-y-7">
         <LastFreeAnalysisBanner />
