@@ -46,6 +46,14 @@ const PredictorRankCard: React.FC = () => {
             <span>{t('correct')}: {stats.correct_predictions}</span>
           </div>
           <Progress value={progressValue} className="h-1.5" />
+          {(stats.verified_predictions_14d ?? 0) > 0 && (
+            <div className="flex justify-between text-micro text-muted-foreground pt-1">
+              <span>{t('last14Days')}</span>
+              <span className="font-semibold text-foreground">
+                {stats.accuracy_14d ?? 0}% · {stats.correct_predictions_14d}/{stats.verified_predictions_14d}
+              </span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
