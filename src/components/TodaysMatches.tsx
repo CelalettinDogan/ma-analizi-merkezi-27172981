@@ -1,9 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles, Swords, Lock } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Calendar, ChevronRight, Star, Loader2, Clock, Sparkles, Swords } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Match } from '@/types/footballApi';
 import { format, isToday, isTomorrow } from 'date-fns';
@@ -11,7 +10,6 @@ import { getDateLocale } from '@/i18n/dateLocale';
 import { cn } from '@/lib/utils';
 import H2HSummaryBadge from '@/components/match/H2HSummaryBadge';
 import { useH2HPreview } from '@/hooks/useH2HPreview';
-import { getSmartPicks } from '@/services/smartPicksService';
 import { useMatchAIPreview, useMatchAIPreviewExists } from '@/hooks/useMatchAIPreview';
 import { formatPredictionType, formatPredictionValue } from '@/utils/predictionLabels';
 
@@ -186,14 +184,6 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
   const getDateLabel = useDateLabel();
   const [showAll, setShowAll] = useState(false);
 
-  const { data: picks } = useQuery({
-    queryKey: ['daily-top-prediction'],
-    queryFn: () => getSmartPicks(1),
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
-  });
-  const dailyPick = picks?.[0];
-
   const { featuredMatch, otherMatches, featuredReason, hasMatchesToday, title } = useMemo(() => {
     if (matches.length === 0) return { featuredMatch: null, otherMatches: [] as Match[], featuredReason: 'recommended' as FeaturedReason, hasMatchesToday: false, title: t('todays.title') };
     const todayMatches = matches.filter(m => isToday(new Date(m.utcDate)));
@@ -218,128 +208,10 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
     );
   }
 
-  const dailyPickRowEl = dailyPick ? (
-    <div key="daily-pick-row" className="relative">
-      {/* Shimmer overlay for attention */}
-      <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 animate-[shimmer_3s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-amber-500/[0.07] to-transparent" />
-      </div>
-
-      <motion.button
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05, duration: 0.3 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={() => {
-          if (!isPremium) {
-            navigate('/premium');
-          } else {
-            setShowDailyDetail(prev => !prev);
-          }
-        }}
-        className={cn(
-          "w-full relative overflow-hidden transition-colors",
-          "border border-amber-500/25 bg-gradient-to-r from-amber-500/[0.08] via-amber-500/[0.04] to-amber-500/[0.08]",
-          showDailyDetail ? "rounded-t-2xl" : "rounded-2xl",
-        )}
-      >
-        {/* Amber accent bar */}
-        <div className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-amber-500/60" />
-
-        <div className="px-4 py-3 space-y-2">
-          {/* Header row: title + CTA */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
-              <span className="text-sm font-bold text-amber-500">{t('dailyPick.title', 'Günün Skoru')}</span>
-            </div>
-            {!isPremium ? (
-              <div className="flex items-center gap-1.5 bg-amber-500/15 rounded-full px-3 py-1">
-                <Lock className="w-3 h-3 text-amber-500" />
-                <span className="text-xs font-semibold text-amber-500">{t('dailyPick.unlockCta', 'Tahmine Bak')}</span>
-              </div>
-            ) : (
-              <ChevronRight className={cn("w-4 h-4 text-amber-500/60 transition-transform duration-200", showDailyDetail && "rotate-90")} />
-            )}
-          </div>
-
-          {/* Teaser: show match names + blurred prediction for free users */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-xs font-medium text-foreground/80 truncate">
-                {dailyPick.homeTeam.replace(/ FC$| CF$| SC$/i, '').trim()}
-              </span>
-              <span className="text-micro text-muted-foreground/50">vs</span>
-              <span className="text-xs font-medium text-foreground/80 truncate">
-                {dailyPick.awayTeam.replace(/ FC$| CF$| SC$/i, '').trim()}
-              </span>
-            </div>
-            {/* Blurred confidence for free, clear for premium */}
-            <div className={cn("flex items-center gap-1.5", !isPremium && "blur-[5px] select-none")}>
-              <span className="text-xs font-bold tabular-nums text-primary">
-                {formatPredictionValue(t, dailyPick.predictionValue)}
-              </span>
-              <span className={cn(
-                "text-micro font-bold tabular-nums px-1.5 py-0.5 rounded-full",
-                dailyPick.hybridConfidence >= 70 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
-              )}>
-                %{Math.round(dailyPick.hybridConfidence)}
-              </span>
-            </div>
-          </div>
-        </div>
-      </motion.button>
-
-      {/* Premium expanded detail */}
-      <AnimatePresence>
-        {isPremium && showDailyDetail && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="px-4 py-3 border border-t-0 border-amber-500/25 rounded-b-2xl bg-card/60 space-y-2">
-              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-                <span className="text-sm font-semibold truncate">{dailyPick.homeTeam.replace(/ FC$| CF$| SC$/i, '').trim()}</span>
-                <span className="text-xs text-muted-foreground/40">vs</span>
-                <span className="text-sm font-semibold truncate text-right">{dailyPick.awayTeam.replace(/ FC$| CF$| SC$/i, '').trim()}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">{formatPredictionType(t, dailyPick.predictionType)}</span>
-                <span className="text-sm font-bold text-primary">{formatPredictionValue(t, dailyPick.predictionValue)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-micro text-muted-foreground/60">{dailyPick.league} · {dailyPick.matchDate}</span>
-                <div className="flex items-center gap-1.5">
-                  <div className="relative w-5 h-5">
-                    <svg className="w-5 h-5 -rotate-90" viewBox="0 0 20 20">
-                      <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted/20" />
-                      <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" strokeWidth="2"
-                        strokeDasharray={`${(dailyPick.hybridConfidence / 100) * 50.3} 50.3`}
-                        className={dailyPick.hybridConfidence >= 70 ? 'text-emerald-400' : 'text-amber-400'}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </div>
-                  <span className={cn("text-xs font-bold tabular-nums", dailyPick.hybridConfidence >= 70 ? 'text-emerald-400' : 'text-amber-400')}>
-                    %{Math.round(dailyPick.hybridConfidence)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  ) : null;
-
   if (matches.length === 0) {
     return (
       <div className="space-y-3">
         <div className="flex items-center gap-2"><div className="w-1 h-5 rounded-full bg-primary" /><h2 className="font-display font-semibold text-sm">{t('todays.title')}</h2></div>
-        {dailyPickRowEl}
         <div className="text-center py-10"><Calendar className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" /><p className="text-muted-foreground text-sm">{t('todays.noScheduledTitle')}</p><p className="text-xs text-muted-foreground/60 mt-1">{t('todays.noScheduledHint')}</p></div>
       </div>
     );
@@ -477,7 +349,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
                   {match.awayTeam.crest && <img src={match.awayTeam.crest} alt="" className="w-4 h-4 object-contain shrink-0" />}
                 </div>
               </motion.button>
-              {index === 0 && dailyPickRowEl}
+              
             </React.Fragment>
           );
         })}

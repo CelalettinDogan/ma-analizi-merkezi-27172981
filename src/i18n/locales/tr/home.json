@@ -102,6 +102,8 @@
   },
   "dailyPick": {
     "title": "Günün Skoru",
-    "unlockCta": "Tahmine Bak"
+    "unlockCta": "Premium ile Aç",
+    "subtitle": "Yapay zekânın bugünkü en yüksek güvenli skoru",
+    "placeholder": "Günün skoru hazırlanıyor — birkaç saat içinde açılıyor"
   }
 }

@@ -97,6 +97,8 @@
   },
   "dailyPick": {
     "title": "Gol del Día",
-    "unlockCta": "Ver Predicción"
+    "unlockCta": "Desbloquear con Premium",
+    "subtitle": "La predicción de IA con mayor confianza de hoy",
+    "placeholder": "El gol del día se está preparando — disponible pronto"
   }
 }

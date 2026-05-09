@@ -102,6 +102,8 @@
   },
   "dailyPick": {
     "title": "Daily Score",
-    "unlockCta": "See Prediction"
+    "unlockCta": "Unlock with Premium",
+    "subtitle": "Today's highest-confidence AI prediction",
+    "placeholder": "Today's score is being prepared — coming soon"
   }
 }
