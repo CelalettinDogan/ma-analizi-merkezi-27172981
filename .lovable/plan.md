@@ -1,84 +1,99 @@
-# Tahmin Başarı Oranı Neden Düştü?
 
-DB üzerinde yaptığım incelemeye göre **modelin doğruluğu aslında düşmedi** — istatistiklerin hesaplanma şekli ve son haftalardaki birkaç popüler maç oranı yapay olarak aşağı çekiyor.
+# Admin Panel 2026 — Faz 1 (Quick Wins)
 
-## Bulgular (gerçek veriler)
+Tek oturumda bitirilebilir, mevcut yapıyı bozmadan üstüne katman ekleyen pro desktop-first iyileştirmeler. Mobil görünüm korunur (mevcut tab nav + drawer paterni).
 
-**Tüm zamanlar (her satır 1 tahmin sayılıyor — duplicate dahil):**
-| Tip | Doğru/Toplam | Acc |
-|---|---|---|
-| Toplam Gol A/Ü | 175/256 | %68.4 |
-| Karşılıklı Gol | 50/91 | %54.9 |
-| Maç Sonucu | 16/36 | %44.4 |
-| İlk Yarı | 3/9 | %33.3 |
+## 1) Layout: Pro Desktop Shell
 
-**Aynı maç-tahmin kombinasyonu tekilleştirildiğinde:**
-| Tip | Doğru/Toplam | Acc |
-|---|---|---|
-| Toplam Gol A/Ü | 68/108 | **%63** |
-| Karşılıklı Gol | 15/26 | **%58** |
-| Maç Sonucu | 11/16 | **%69** ← gerçekte yüksek |
-| İlk Yarı | 3/5 | **%60** |
+`src/components/admin/AdminLayout.tsx` güncelle:
+- Masaüstünde shadcn `Sidebar` (collapsible="icon") — kalıcı, daraltılabilir, klavye ile gezilebilir.
+- Üst bar (sticky, h-12): SidebarTrigger · Breadcrumb · Global arama (Command Palette tetikleyici, ⌘K rozeti) · Environment badge (Live/Test) · Refresh · Admin avatar.
+- Mobil tab şeridi mevcut haliyle kalır.
 
-## Asıl sebep: Duplicate predictions
+## 2) Command Palette (⌘K / Ctrl+K)
 
-`predictions` tablosunda her kullanıcı analizi yeni satır oluşturuyor. Aynı maça aynı tahmin için **10 kopya** birikmiş örnekler var:
+Yeni: `src/components/admin/AdminCommandPalette.tsx` — shadcn `Command` + `CommandDialog`.
+- Bölümlere atla (Dashboard, Kullanıcılar, Premium, AI, Bildirimler, Loglar, **Gelir**)
+- Hızlı eylemler: "Analytics yenile", "Kullanıcı ara: …", "Premium ata", "Bildirim gönder"
+- Kullanıcı arama: edge function `admin-users?search=` ile inline sonuç
+- Klavye kısayolları: `g d` dashboard, `g u` users, `g r` revenue, `g a` ai, `?` shortcut yardımı, `r` aktif bölümü yenile
 
-- Atlético–Arsenal (2.5 Alt): **10 satır**
-- Leeds–Burnley (2.5 Üst): **9 satır**
-- Bayern–Heidenheim: 8, Man Utd–Brentford: 7, Dortmund–Frankfurt: 7
-- Bayern–PSG 1-1 (2.5 Üst — kaybeden): **4 satır**
-- Everton–City 3-3 (2.5 Alt — kaybeden): **3 satır**
-- Chelsea–Forest İY Beraberlik (kaybeden): **5 satır**
+## 3) Dashboard: Trend Grafikleri & KPI Sparklines
 
-Sonuç: popüler maçlardaki tek bir kayıp, istatistiği N defa "kaybetmiş" gibi gösteriyor. Son 6 günün İlk Yarı %0 oranı **tamamen tek bir Chelsea–Forest maçından** (5 kopya) geliyor.
+`DashboardStats.tsx` zenginleştir (Recharts zaten projede yüklü):
+- KPI kartlarına 14 günlük sparkline + ▲/▼ değişim yüzdesi
+- Yeni "Aktivite Trendleri" kartı — son 30 günün `today_chats`, `today_analysis`, `active_users_24h` çoklu çizgi grafiği
+- "Kullanıcı Büyümesi" kümülatif alan grafiği (`profiles.created_at` ile)
+- Date range selector (7g/14g/30g/90g)
+- Veri kaynağı: `admin_daily_analytics` tablosundan zaman serisi (`order by report_date desc limit 30`). Yeni hook: `useAnalyticsTimeSeries(days)`.
 
-## İkincil sebep: Düşük örneklem + son haftadaki yüksek skorlu üst sürprizleri
+## 4) Yeni Bölüm: Gelir & Abonelik (MRR)
 
-- Maç Sonucu sadece 36 doğrulanmış tahmine sahip → küçük değişimler oranı çok oynatıyor
-- 4–6 Mayıs aralığında üç sürpriz sonuç (Bayern–PSG 1-1, Sevilla–Sociedad 1-0, Everton–City 3-3) tek başına o haftayı %0–%50'ye çekti
-- Önceki ve sonraki günler hâlâ %72–%100 aralığında
+Yeni: `src/components/admin/RevenueManagement.tsx` + `AdminSection` enum'una `revenue` eklenir.
+- KPI kartları: **MRR**, **ARPU**, **Active Subs**, **Churn (30g)**, **Trial→Paid dönüşüm**, **Refund/iptal sayısı**
+- Plan bazlı dağılım (donut) + plan bazlı MRR (stacked bar)
+- 30 günlük yeni abonelik / iptal akışı (line chart)
+- Son 50 işlem tablosu (`premium_subscriptions` — user, plan, platform, starts_at, expires_at, auto_renewing, acknowledged)
+- Hesaplamalar `useAdminData`'da `fetchRevenueStats` olarak — `premium_subscriptions` + `PLAN_PRICES`'dan client-side; expired vs active, trial filtresi.
 
-## Düzeltme planı
+## 5) Kullanıcı Yönetimi: Pro Desktop Tablosu
 
-### 1) İstatistik tekilleştirmesi (ana fix)
-`get_my_predictor_stats` ve admin dashboard sorgularını her maç-tahmin kombinasyonu için **bir kez** sayacak şekilde güncelle:
-```sql
-SELECT DISTINCT ON (home_team, away_team, match_date, prediction_type, prediction_value) ...
-```
-Bu tek başına Maç Sonucu oranını %44 → %69, BTTS %55 → %58, O/U %68 → %63 (gerçek oran) yapıyor.
+`UserManagement.tsx` + `admin-users` edge function:
+- **Server-side arama**: `search` query param zaten desteklenir; debounce 300ms, sayfa sıfırlama.
+- **Çoklu filtre çubuğu**: Plan (Free/Basic/Plus/Pro), Rol (admin/vip/moderator), Durum (aktif/banlı), Tarih aralığı, Aktivite (son 7g aktif).
+- **Sıralanabilir kolonlar**: Kayıt tarihi, son giriş, kullanım.
+- **Bulk seçim** (checkbox kolon) + toolbar: Toplu Premium ata, Toplu rol ekle, Toplu ban, CSV dışa aktar.
+- **Kullanıcı detay drawer** (sağdan açılan `Sheet`): profil, abonelik geçmişi, son 30 günlük chat/analiz kullanım grafiği, son tahminleri, son aktivite logları, hızlı eylemler.
 
-### 2) Duplicate yazımını engelle
-`predictions` tablosuna unique index:
-```sql
-CREATE UNIQUE INDEX predictions_unique_per_user_match
-ON predictions (user_id, home_team, away_team, match_date, prediction_type);
-```
-ve insert tarafında `ON CONFLICT DO NOTHING`. Aynı kullanıcı aynı maçı tekrar analiz ederse yeni satır açmasın.
+Edge function `admin-users` küçük güncelleme: filter parametreleri (`plan`, `role`, `status`, `from`, `to`) kabul etsin, `orderBy` desteği.
 
-### 3) Trend grafiği için "rolling 14-day, dedup'lı" oran
-Profil/Predictor kartında tek bir günlük dalgalanma yerine **14-günlük yuvarlanan ortalama** göster — küçük örneklem sapmalarını yumuşatır.
+## 6) Klavye Kısayolları & Erişilebilirlik
 
-### 4) İlk Yarı Sonucu doğrulamasını gözden geçir
-Chelsea–Forest 5 satırının HT verisi gerçekten "Beraberlik değil" miydi kontrol et; HT yoksa `null` (pending) bırakılmalı, yanlış/false işaretlenmemeli. `auto-verify/index.ts:161-168` mantığı doğru görünüyor ama 5 kayıt false işaretlendiğine göre HT verisi gelmiş ve Chelsea ya da Forest önde bitirmiş olabilir — log incelemesi gerek.
+Yeni hook: `src/hooks/admin/useAdminHotkeys.ts`
+- ⌘K palette, `g + harf` navigation, `r` refresh, `?` help dialog, `Esc` modal kapat
+- Tüm yeni butonlara `aria-label`, table'a `role="grid"`, focus ring tokenize.
 
-### 5) (Opsiyonel) Eski duplicate'ları temizle
-Tek seferlik bir migration ile mevcut duplicate satırları (`(home_team, away_team, match_date, prediction_type, prediction_value)` üzerinde) en eski hariç sil.
+## 7) Tasarım Sistemi Tutarlılığı
 
-## Teknik dosyalar
+- Yeni renkler doğrudan değil — `text-primary`, `text-muted-foreground` gibi tokenler.
+- Tüm grafikler `hsl(var(--primary))` türevi paletten beslenir; Recharts `<ChartContainer>` (zaten `components/ui/chart.tsx` mevcut) kullanılır.
+- Kart radii 12px, 8px grid, mevcut Emerald/Amber paleti korunur.
 
-- `supabase/migrations/*` — yeni unique index + dedup view
-- DB function `get_my_predictor_stats` — DISTINCT ON ile yeniden yaz
-- `src/services/predictionService.ts` — insert'e ON CONFLICT
-- `src/components/predictor/PredictorRankCard.tsx` ve admin dashboard — yeni dedup'lı RPC'yi kullan
-- `supabase/functions/auto-verify/index.ts` — HT verisi denetiminin loglarını artır
+## Teknik Detaylar
 
-## Beklenen sonuç
+**Yeni dosyalar**
+- `src/components/admin/AdminCommandPalette.tsx`
+- `src/components/admin/AdminSidebar.tsx` (shadcn Sidebar)
+- `src/components/admin/RevenueManagement.tsx`
+- `src/components/admin/UserDetailSheet.tsx`
+- `src/components/admin/UserFilters.tsx`
+- `src/components/admin/charts/KpiSparkline.tsx`
+- `src/components/admin/charts/ActivityTrendChart.tsx`
+- `src/components/admin/charts/UserGrowthChart.tsx`
+- `src/hooks/admin/useAnalyticsTimeSeries.ts`
+- `src/hooks/admin/useRevenueStats.ts`
+- `src/hooks/admin/useAdminHotkeys.ts`
 
-Düzeltmeler sonrası gerçek oranlar:
-- Toplam Gol A/Ü: ~%63
-- Karşılıklı Gol: ~%58
-- Maç Sonucu: ~%69
-- İlk Yarı: ~%60
+**Düzenlenecek**
+- `src/components/admin/AdminLayout.tsx` — desktop sidebar + topbar + breadcrumb + ⌘K
+- `src/components/admin/UserManagement.tsx` — filtreler, sıralama, bulk, detay drawer
+- `src/hooks/admin/useAdminData.ts` — `fetchRevenueStats`, `fetchAnalyticsTimeSeries`, `bulk*` aksiyonlar, server-side search/filter parametreleri
+- `src/pages/Admin.tsx` — `revenue` section + `RevenueManagement` render
+- `supabase/functions/admin-users/index.ts` — filter/order parametreleri (sadece okuma; mevcut RLS/admin koruması korunur)
 
-Yani genel performans **düşmedi**; sadece istatistik motoru duplicate'lar yüzünden yanıltıcı raporluyordu.
+**Veri kaynakları (mevcut, yeni tablo gerekmez)**
+- `admin_daily_analytics` (zaman serisi)
+- `premium_subscriptions` (MRR/churn/aktivasyon)
+- `profiles.created_at` (büyüme)
+- `chatbot_usage` / `analysis_usage` (kullanıcı detay grafikleri)
+
+**Performans**
+- Time-series fetch'ler `staleTime: 5dk` ile React Query benzeri davranış (mevcut pattern: useCallback + loadedSections ref).
+- Tablo virtualization gerek görülürse Faz 2'ye bırakılır (20/sayfa pagination yeterli).
+
+## Kapsam Dışı (Faz 2+ için not)
+- Realtime websocket KPI sayaçları
+- Feature Flags modülü
+- Cohort/retention matrisi
+- Edge function log viewer
+- Prompt versiyonlama & A/B test
