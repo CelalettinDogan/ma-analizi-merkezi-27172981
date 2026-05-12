@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldAlert, Lock, Loader2 } from 'lucide-react';
@@ -6,20 +6,27 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAdminData } from '@/hooks/admin/useAdminData';
-import AdminLayout, { AdminSection } from '@/components/admin/AdminLayout';
+import AdminLayout from '@/components/admin/AdminLayout';
+import type { AdminSection } from '@/components/admin/AdminSidebar';
+import AdminCommandPalette from '@/components/admin/AdminCommandPalette';
+import { useAdminHotkeys } from '@/hooks/admin/useAdminHotkeys';
 import DashboardStats from '@/components/admin/DashboardStats';
 import UserManagement from '@/components/admin/UserManagement';
 import PremiumManagement from '@/components/admin/PremiumManagement';
+import RevenueManagement from '@/components/admin/RevenueManagement';
 import AIManagement from '@/components/admin/AIManagement';
 import NotificationManagement from '@/components/admin/NotificationManagement';
 import ActivityLog from '@/components/admin/ActivityLog';
 import { fadeInUp } from '@/lib/animations';
+import { toast } from 'sonner';
 
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
   const { isAdmin, isLoading: roleLoading } = useUserRole();
   const [activeSection, setActiveSection] = useState<AdminSection>('dashboard');
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [userSearchSeed, setUserSearchSeed] = useState<string>('');
 
   const {
     isLoading,
@@ -58,14 +65,54 @@ const AdminPage: React.FC = () => {
 
   useEffect(() => {
     if (isCheckingAuth) return;
-    
     if (!user) {
       navigate('/auth', { replace: true });
       return;
     }
   }, [isCheckingAuth, user, navigate]);
 
-  // Loading state
+  const refreshActive = useCallback(() => {
+    switch (activeSection) {
+      case 'dashboard':
+        refreshDashboard();
+        break;
+      case 'users':
+        refreshUsers();
+        break;
+      case 'premium':
+      case 'revenue':
+        refreshPlanStats();
+        break;
+      case 'ai':
+        refreshPredictionStats();
+        refreshLeagueStats();
+        break;
+      case 'notifications':
+        refreshNotifications();
+        break;
+      case 'logs':
+        refreshActivityLogs();
+        break;
+    }
+    toast.success('Yenilendi');
+  }, [
+    activeSection,
+    refreshDashboard,
+    refreshUsers,
+    refreshPlanStats,
+    refreshPredictionStats,
+    refreshLeagueStats,
+    refreshNotifications,
+    refreshActivityLogs,
+  ]);
+
+  useAdminHotkeys({
+    enabled: !!isAuthorized,
+    onOpenPalette: () => setPaletteOpen(true),
+    onSectionChange: setActiveSection,
+    onRefresh: refreshActive,
+  });
+
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center pt-safe">
@@ -74,23 +121,17 @@ const AdminPage: React.FC = () => {
     );
   }
 
-  // Unauthorized state
   if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4 pt-safe">
-        <motion.div 
-          {...fadeInUp}
-          className="max-w-md mx-auto text-center"
-        >
+        <motion.div {...fadeInUp} className="max-w-md mx-auto text-center">
           <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-500/10 flex items-center justify-center border border-red-500/30">
             <ShieldAlert className="w-10 h-10 text-red-500" />
           </div>
-          
           <h1 className="text-2xl font-bold mb-2">Erişim Engellendi</h1>
           <p className="text-muted-foreground mb-6">
             Bu sayfaya erişim yetkiniz bulunmuyor. Admin paneline sadece yetkili kullanıcılar erişebilir.
           </p>
-          
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button onClick={() => navigate('/')} className="gap-2">
               Ana Sayfaya Dön
@@ -110,22 +151,22 @@ const AdminPage: React.FC = () => {
   const totalPremium = planStats.reduce((sum, p) => sum + p.count, 0);
   const monthlyRevenue = planStats.reduce((sum, p) => sum + p.revenue, 0);
   const conversionRate = dashboardData ? dashboardData.premiumRate : 0;
-  const overallAccuracy = predictionStats.length > 0 
-    ? predictionStats.reduce((sum, p) => sum + p.accuracy, 0) / predictionStats.length 
-    : 0;
+  const overallAccuracy =
+    predictionStats.length > 0
+      ? predictionStats.reduce((sum, p) => sum + p.accuracy, 0) / predictionStats.length
+      : 0;
   const totalPredictions = predictionStats.reduce((sum, p) => sum + p.total, 0);
 
   const renderSection = () => {
     switch (activeSection) {
       case 'dashboard':
         return (
-          <DashboardStats 
-            data={dashboardData} 
-            isLoading={isLoading || sectionLoading} 
+          <DashboardStats
+            data={dashboardData}
+            isLoading={isLoading || sectionLoading}
             onRefreshAnalytics={triggerAnalyticsRefresh}
           />
         );
-      
       case 'users':
         return (
           <UserManagement
@@ -140,9 +181,11 @@ const AdminPage: React.FC = () => {
             onToggleRole={toggleRole}
             onBanUser={banUser}
             onUnbanUser={unbanUser}
+            initialSearch={userSearchSeed}
           />
         );
-      
+      case 'revenue':
+        return <RevenueManagement />;
       case 'premium':
         return (
           <PremiumManagement
@@ -153,7 +196,6 @@ const AdminPage: React.FC = () => {
             isLoading={sectionLoading}
           />
         );
-      
       case 'ai':
         return (
           <AIManagement
@@ -164,10 +206,12 @@ const AdminPage: React.FC = () => {
             systemPrompt={systemPrompt}
             isLoading={sectionLoading}
             onSavePrompt={savePrompt}
-            onRefresh={() => { refreshPredictionStats(); refreshLeagueStats(); }}
+            onRefresh={() => {
+              refreshPredictionStats();
+              refreshLeagueStats();
+            }}
           />
         );
-      
       case 'notifications':
         return (
           <NotificationManagement
@@ -178,7 +222,6 @@ const AdminPage: React.FC = () => {
             onRefresh={refreshNotifications}
           />
         );
-      
       case 'logs':
         return (
           <ActivityLog
@@ -187,16 +230,29 @@ const AdminPage: React.FC = () => {
             onRefresh={refreshActivityLogs}
           />
         );
-      
       default:
         return null;
     }
   };
 
   return (
-    <AdminLayout activeSection={activeSection} onSectionChange={setActiveSection}>
-      {renderSection()}
-    </AdminLayout>
+    <>
+      <AdminLayout
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+        onOpenCommandPalette={() => setPaletteOpen(true)}
+      >
+        {renderSection()}
+      </AdminLayout>
+      <AdminCommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        onSectionChange={setActiveSection}
+        onRefresh={refreshActive}
+        onTriggerAnalytics={triggerAnalyticsRefresh}
+        onJumpToUserSearch={(q) => setUserSearchSeed(q)}
+      />
+    </>
   );
 };
 
