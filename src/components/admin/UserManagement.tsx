@@ -89,6 +89,7 @@ interface UserManagementProps {
   onToggleRole: (userId: string, role: string, action: 'add' | 'remove') => Promise<void>;
   onBanUser: (userId: string, reason: string) => Promise<void>;
   onUnbanUser: (userId: string) => Promise<void>;
+  initialSearch?: string;
 }
 
 // --- Helper functions ---
@@ -278,9 +279,10 @@ const UserManagement: React.FC<UserManagementProps> = ({
   onToggleRole,
   onBanUser,
   onUnbanUser,
+  initialSearch = '',
 }) => {
   const isMobile = useIsMobile();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [premiumDialogOpen, setPremiumDialogOpen] = useState(false);
   const [banDialogOpen, setBanDialogOpen] = useState(false);
@@ -288,6 +290,10 @@ const UserManagement: React.FC<UserManagementProps> = ({
   const [premiumDuration, setPremiumDuration] = useState(30);
   const [banReason, setBanReason] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  React.useEffect(() => {
+    if (initialSearch) setSearchQuery(initialSearch);
+  }, [initialSearch]);
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
