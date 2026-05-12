@@ -1,99 +1,57 @@
+## Plan — Admin Mobile Native + Login Yönlendirme Düzeltmesi
 
-# Admin Panel 2026 — Faz 1 (Quick Wins)
+### 1) Sorun: Login sonrası /admin açılıyor
 
-Tek oturumda bitirilebilir, mevcut yapıyı bozmadan üstüne katman ekleyen pro desktop-first iyileştirmeler. Mobil görünüm korunur (mevcut tab nav + drawer paterni).
+**Sebep:** AuthGuard, /admin'e doğrudan erişim denendiğinde `/auth` sayfasına `state.from='/admin'` gönderiyor. Auth.tsx login sonrası bu `from`'a dönüyor. Ayrıca user-menu'den admin linkine tıklayıp logout olunca, sonraki login otomatik admin'e dönüyor.
 
-## 1) Layout: Pro Desktop Shell
+**Çözüm:** Auth.tsx'te `from` değerini güvenli rotalarla sınırla — admin gibi yetki gerektiren rotalar dışlanır, login her zaman ana sayfa (`/`) açar. Ayrıca AuthGuard `from` göndermeyi sadece tab rotaları için yapsın.
 
-`src/components/admin/AdminLayout.tsx` güncelle:
-- Masaüstünde shadcn `Sidebar` (collapsible="icon") — kalıcı, daraltılabilir, klavye ile gezilebilir.
-- Üst bar (sticky, h-12): SidebarTrigger · Breadcrumb · Global arama (Command Palette tetikleyici, ⌘K rozeti) · Environment badge (Live/Test) · Refresh · Admin avatar.
-- Mobil tab şeridi mevcut haliyle kalır.
+```ts
+// src/pages/Auth.tsx
+const SAFE_RETURN = ['/', '/live', '/chat', '/standings', '/premium', '/profile'];
+const from = (location.state as any)?.from;
+const target = SAFE_RETURN.includes(from) ? from : '/';
+navigate(target, { replace: true });
+```
 
-## 2) Command Palette (⌘K / Ctrl+K)
+Sonuç: kullanıcı giriş yapınca her zaman ana sayfa açılır. Admin'e ulaşmak için profil → kullanıcı menüsü → "Admin Panel" linki kullanılır (zaten mevcut, UserMenu.tsx).
 
-Yeni: `src/components/admin/AdminCommandPalette.tsx` — shadcn `Command` + `CommandDialog`.
-- Bölümlere atla (Dashboard, Kullanıcılar, Premium, AI, Bildirimler, Loglar, **Gelir**)
-- Hızlı eylemler: "Analytics yenile", "Kullanıcı ara: …", "Premium ata", "Bildirim gönder"
-- Kullanıcı arama: edge function `admin-users?search=` ile inline sonuç
-- Klavye kısayolları: `g d` dashboard, `g u` users, `g r` revenue, `g a` ai, `?` shortcut yardımı, `r` aktif bölümü yenile
+### 2) Admin Panel — Tam Native Mobile (Bottom Tabs)
 
-## 3) Dashboard: Trend Grafikleri & KPI Sparklines
+Mevcut `AdminLayout.tsx` mobilde üst yatay sekme + hamburger drawer kullanıyor. Bunu app'in geri kalanı gibi alt sekmeli native yapıya dönüştürürüz.
 
-`DashboardStats.tsx` zenginleştir (Recharts zaten projede yüklü):
-- KPI kartlarına 14 günlük sparkline + ▲/▼ değişim yüzdesi
-- Yeni "Aktivite Trendleri" kartı — son 30 günün `today_chats`, `today_analysis`, `active_users_24h` çoklu çizgi grafiği
-- "Kullanıcı Büyümesi" kümülatif alan grafiği (`profiles.created_at` ile)
-- Date range selector (7g/14g/30g/90g)
-- Veri kaynağı: `admin_daily_analytics` tablosundan zaman serisi (`order by report_date desc limit 30`). Yeni hook: `useAnalyticsTimeSeries(days)`.
+#### Mobile (<768px)
+- **Üst başlık (sticky, pt-safe):** geri butonu (Uygulamaya dön → `/`), aktif bölüm başlığı, "Live" rozeti.
+- **İçerik:** `flex-1 overflow-y-auto`, `paddingBottom: calc(80px + env(safe-area-inset-bottom))` (mevcut bottom-nav clearance pattern).
+- **Alt sekme barı (`AdminBottomNav`):** floating pill, `backdrop-blur-2xl`, BottomNav.tsx ile aynı stil dili. 7 sekme fazla → 5 ana sekme + "Daha" overflow:
+  - Dashboard, Kullanıcılar, Gelir, AI, **Daha** (sheet açılır: Premium, Bildirim, Log)
+- Her dokunuşta `Haptics.impact({ style: ImpactStyle.Light })`.
+- `user-select: none`, `-webkit-tap-highlight-color: transparent` (zaten globalde).
 
-## 4) Yeni Bölüm: Gelir & Abonelik (MRR)
+#### Desktop (≥768px)
+- Mevcut sidebar + topbar + Command Palette korunur (değişiklik yok).
 
-Yeni: `src/components/admin/RevenueManagement.tsx` + `AdminSection` enum'una `revenue` eklenir.
-- KPI kartları: **MRR**, **ARPU**, **Active Subs**, **Churn (30g)**, **Trial→Paid dönüşüm**, **Refund/iptal sayısı**
-- Plan bazlı dağılım (donut) + plan bazlı MRR (stacked bar)
-- 30 günlük yeni abonelik / iptal akışı (line chart)
-- Son 50 işlem tablosu (`premium_subscriptions` — user, plan, platform, starts_at, expires_at, auto_renewing, acknowledged)
-- Hesaplamalar `useAdminData`'da `fetchRevenueStats` olarak — `premium_subscriptions` + `PLAN_PRICES`'dan client-side; expired vs active, trial filtresi.
+#### Yeni / değişen dosyalar
+- **Yeni:** `src/components/admin/AdminBottomNav.tsx` — 5 sekme + "Daha" overflow sheet, BottomNav.tsx pattern'i.
+- **Değişen:** `src/components/admin/AdminLayout.tsx` — mobil dalı baştan yazılır:
+  - Hamburger drawer + üst yatay sekme stripi kaldırılır.
+  - Mobilde sidebar/SidebarProvider sarmalayıcı yalnız `md:` üstünde aktif (mobilde basit `<div>` shell).
+  - Yeni mobil header (44px back, başlık, Live rozeti).
+  - `<AdminBottomNav />` mount edilir (sadece mobilde).
+- **Değişen:** `src/pages/Admin.tsx` — pt-safe ve native iskelete uyacak şekilde küçük spacing düzenlemeleri (yetki engellendi/loading ekranları).
 
-## 5) Kullanıcı Yönetimi: Pro Desktop Tablosu
+#### Komut paleti
+Mobilde gizli, desktop'ta kalır (mevcut davranış). ⌘K hotkey desktop için.
 
-`UserManagement.tsx` + `admin-users` edge function:
-- **Server-side arama**: `search` query param zaten desteklenir; debounce 300ms, sayfa sıfırlama.
-- **Çoklu filtre çubuğu**: Plan (Free/Basic/Plus/Pro), Rol (admin/vip/moderator), Durum (aktif/banlı), Tarih aralığı, Aktivite (son 7g aktif).
-- **Sıralanabilir kolonlar**: Kayıt tarihi, son giriş, kullanım.
-- **Bulk seçim** (checkbox kolon) + toolbar: Toplu Premium ata, Toplu rol ekle, Toplu ban, CSV dışa aktar.
-- **Kullanıcı detay drawer** (sağdan açılan `Sheet`): profil, abonelik geçmişi, son 30 günlük chat/analiz kullanım grafiği, son tahminleri, son aktivite logları, hızlı eylemler.
+#### Tasarım tokenları
+- Renkler: emerald primary, amber accent (mevcut).
+- Radii: 12-16px kart, 24px bottom nav pill.
+- Border: `border-border/60`, `bg-background/80 backdrop-blur`.
+- Tüm spacing 8pt grid.
 
-Edge function `admin-users` küçük güncelleme: filter parametreleri (`plan`, `role`, `status`, `from`, `to`) kabul etsin, `orderBy` desteği.
+### 3) Memory güncelleme
+`mem://features/admin-panel-mobile-native-ux` dosyasını yeni yapıya göre güncelle (alt sekmeli native admin, "Daha" overflow, login redirect güvenli rotalar).
 
-## 6) Klavye Kısayolları & Erişilebilirlik
-
-Yeni hook: `src/hooks/admin/useAdminHotkeys.ts`
-- ⌘K palette, `g + harf` navigation, `r` refresh, `?` help dialog, `Esc` modal kapat
-- Tüm yeni butonlara `aria-label`, table'a `role="grid"`, focus ring tokenize.
-
-## 7) Tasarım Sistemi Tutarlılığı
-
-- Yeni renkler doğrudan değil — `text-primary`, `text-muted-foreground` gibi tokenler.
-- Tüm grafikler `hsl(var(--primary))` türevi paletten beslenir; Recharts `<ChartContainer>` (zaten `components/ui/chart.tsx` mevcut) kullanılır.
-- Kart radii 12px, 8px grid, mevcut Emerald/Amber paleti korunur.
-
-## Teknik Detaylar
-
-**Yeni dosyalar**
-- `src/components/admin/AdminCommandPalette.tsx`
-- `src/components/admin/AdminSidebar.tsx` (shadcn Sidebar)
-- `src/components/admin/RevenueManagement.tsx`
-- `src/components/admin/UserDetailSheet.tsx`
-- `src/components/admin/UserFilters.tsx`
-- `src/components/admin/charts/KpiSparkline.tsx`
-- `src/components/admin/charts/ActivityTrendChart.tsx`
-- `src/components/admin/charts/UserGrowthChart.tsx`
-- `src/hooks/admin/useAnalyticsTimeSeries.ts`
-- `src/hooks/admin/useRevenueStats.ts`
-- `src/hooks/admin/useAdminHotkeys.ts`
-
-**Düzenlenecek**
-- `src/components/admin/AdminLayout.tsx` — desktop sidebar + topbar + breadcrumb + ⌘K
-- `src/components/admin/UserManagement.tsx` — filtreler, sıralama, bulk, detay drawer
-- `src/hooks/admin/useAdminData.ts` — `fetchRevenueStats`, `fetchAnalyticsTimeSeries`, `bulk*` aksiyonlar, server-side search/filter parametreleri
-- `src/pages/Admin.tsx` — `revenue` section + `RevenueManagement` render
-- `supabase/functions/admin-users/index.ts` — filter/order parametreleri (sadece okuma; mevcut RLS/admin koruması korunur)
-
-**Veri kaynakları (mevcut, yeni tablo gerekmez)**
-- `admin_daily_analytics` (zaman serisi)
-- `premium_subscriptions` (MRR/churn/aktivasyon)
-- `profiles.created_at` (büyüme)
-- `chatbot_usage` / `analysis_usage` (kullanıcı detay grafikleri)
-
-**Performans**
-- Time-series fetch'ler `staleTime: 5dk` ile React Query benzeri davranış (mevcut pattern: useCallback + loadedSections ref).
-- Tablo virtualization gerek görülürse Faz 2'ye bırakılır (20/sayfa pagination yeterli).
-
-## Kapsam Dışı (Faz 2+ için not)
-- Realtime websocket KPI sayaçları
-- Feature Flags modülü
-- Cohort/retention matrisi
-- Edge function log viewer
-- Prompt versiyonlama & A/B test
+### Kapsam dışı (faz 2'ye)
+- User detail sheet, server-side advanced filters, bulk actions — onceden plana eklenmişti, ileride.
+- Realtime KPI, feature flags.

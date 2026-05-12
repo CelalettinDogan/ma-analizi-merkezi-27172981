@@ -33,8 +33,10 @@ const Auth: React.FC = () => {
 
   useEffect(() => {
     if (user) {
-      const from = (location.state as { from?: string })?.from || '/';
-      navigate(from, { replace: true });
+      const SAFE_RETURN = ['/', '/live', '/chat', '/standings', '/premium', '/profile'];
+      const from = (location.state as { from?: string })?.from;
+      const target = from && SAFE_RETURN.includes(from) ? from : '/';
+      navigate(target, { replace: true });
     }
   }, [user, navigate, location.state]);
 

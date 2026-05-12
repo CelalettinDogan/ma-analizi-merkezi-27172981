@@ -1,23 +1,17 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Menu,
-  X,
-  ChevronRight,
-  Search,
-  Activity,
-  KeyRound,
-} from 'lucide-react';
+import React from 'react';
+import { ChevronLeft, Search, Activity, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   SidebarProvider,
   SidebarInset,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import AdminSidebar, { NAV_ITEMS, AdminSection } from '@/components/admin/AdminSidebar';
-import { cn } from '@/lib/utils';
+import AdminBottomNav from '@/components/admin/AdminBottomNav';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 export type { AdminSection };
 
@@ -34,26 +28,76 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   onSectionChange,
   onOpenCommandPalette,
 }) => {
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const activeItem = NAV_ITEMS.find((i) => i.id === activeSection);
 
   const isMac = typeof navigator !== 'undefined' && /mac/i.test(navigator.platform);
   const cmdKey = isMac ? '⌘' : 'Ctrl';
 
+  // ====== MOBILE: Native shell with bottom tabs ======
+  if (isMobile) {
+    return (
+      <div
+        className="bg-background flex flex-col select-none"
+        style={{ height: 'var(--app-height, 100vh)' }}
+      >
+        {/* Native top bar */}
+        <header
+          className="sticky top-0 z-30 bg-background/95 backdrop-blur-xl border-b border-border/40"
+          style={{ paddingTop: 'env(safe-area-inset-top)' }}
+        >
+          <div className="flex items-center justify-between px-2 h-12">
+            <button
+              onClick={() => {
+                try { Haptics.impact({ style: ImpactStyle.Light }); } catch {}
+                navigate('/');
+              }}
+              className="w-11 h-11 -ml-1 flex items-center justify-center rounded-full active:bg-muted/60 touch-manipulation"
+              aria-label="Geri"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <div className="flex items-center gap-1.5 text-sm font-semibold truncate px-2">
+              <Activity className="w-4 h-4 text-primary shrink-0" />
+              <span className="truncate">{activeItem?.label || 'Admin'}</span>
+            </div>
+            <div className="w-11 h-11 flex items-center justify-end">
+              <Badge variant="outline" className="gap-1 text-emerald-500 border-emerald-500/30 text-[10px] px-1.5 py-0.5 h-5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live
+              </Badge>
+            </div>
+          </div>
+        </header>
+
+        {/* Scrollable content */}
+        <main
+          className="flex-1 overflow-y-auto"
+          style={{
+            paddingBottom: 'calc(96px + env(safe-area-inset-bottom, 0px))',
+            overscrollBehavior: 'none',
+          }}
+        >
+          <div className="p-3">{children}</div>
+        </main>
+
+        {/* Bottom nav */}
+        <AdminBottomNav activeSection={activeSection} onSectionChange={onSectionChange} />
+      </div>
+    );
+  }
+
+  // ====== DESKTOP: Existing sidebar shell ======
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full bg-background">
-        {/* Desktop Sidebar */}
-        <div className="hidden md:block">
-          <AdminSidebar activeSection={activeSection} onSectionChange={onSectionChange} />
-        </div>
+        <AdminSidebar activeSection={activeSection} onSectionChange={onSectionChange} />
 
         <SidebarInset className="flex flex-col min-w-0">
-          {/* Top Bar (desktop) */}
-          <header className="hidden md:flex sticky top-0 z-30 h-12 items-center gap-3 border-b border-border bg-background/80 backdrop-blur px-4">
+          <header className="sticky top-0 z-30 h-12 flex items-center gap-3 border-b border-border bg-background/80 backdrop-blur px-4">
             <SidebarTrigger className="-ml-1" />
             <div className="h-4 w-px bg-border" />
-            {/* Breadcrumb */}
             <nav className="flex items-center gap-1.5 text-sm" aria-label="Breadcrumb">
               <span className="text-muted-foreground">Admin</span>
               <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
@@ -61,7 +105,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
             </nav>
 
             <div className="ml-auto flex items-center gap-2">
-              {/* Command palette trigger */}
               {onOpenCommandPalette && (
                 <Button
                   variant="outline"
@@ -83,70 +126,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
             </div>
           </header>
 
-          {/* Mobile Header */}
-          <header className="md:hidden sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border pt-safe">
-            <div className="flex items-center justify-between px-3 py-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setMobileNavOpen((v) => !v)}
-                className="h-9 w-9"
-                aria-label="Menü"
-              >
-                {mobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </Button>
-              <div className="flex items-center gap-1.5 text-sm font-semibold">
-                <Activity className="w-4 h-4 text-primary" />
-                {activeItem?.label || 'Admin'}
-              </div>
-              <Badge variant="outline" className="text-emerald-500 border-emerald-500/30 text-[10px]">
-                Live
-              </Badge>
-            </div>
-
-            {/* Mobile horizontal tab strip */}
-            <ScrollArea className="w-full">
-              <div className="flex px-2 py-1.5 gap-1 min-w-max">
-                {NAV_ITEMS.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeSection === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        onSectionChange(item.id);
-                        setMobileNavOpen(false);
-                      }}
-                      className={cn(
-                        'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap',
-                        isActive
-                          ? 'bg-primary text-primary-foreground'
-                          : 'text-muted-foreground bg-muted/40',
-                      )}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </ScrollArea>
-          </header>
-
-          {/* Mobile drawer overlay (extra menu — kept simple) */}
-          <AnimatePresence>
-            {mobileNavOpen && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 z-40 md:hidden"
-                onClick={() => setMobileNavOpen(false)}
-              />
-            )}
-          </AnimatePresence>
-
-          {/* Page content */}
           <main className="flex-1 overflow-y-auto pb-safe">
             <div className="container mx-auto p-3 md:p-6 max-w-7xl">{children}</div>
           </main>
