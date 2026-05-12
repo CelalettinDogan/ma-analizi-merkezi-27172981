@@ -1,23 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Users, 
-  Crown, 
-  MessageSquare, 
-  BarChart3, 
-  TrendingUp, 
+import {
+  Users,
+  Crown,
+  MessageSquare,
+  BarChart3,
+  TrendingUp,
   Activity,
   Target,
   Calendar,
   Loader2,
   RefreshCw,
-  Clock
+  Clock,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { staggerContainer, staggerItem } from '@/lib/animations';
+import { useAnalyticsTimeSeries, type RangeDays } from '@/hooks/admin/useAnalyticsTimeSeries';
+import KpiSparkline from '@/components/admin/charts/KpiSparkline';
+import ActivityTrendChart from '@/components/admin/charts/ActivityTrendChart';
+import UserGrowthChart from '@/components/admin/charts/UserGrowthChart';
 
 interface DashboardData {
   totalUsers: number;
@@ -38,6 +42,9 @@ interface DashboardStatsProps {
 }
 
 const DashboardStats: React.FC<DashboardStatsProps> = ({ data, isLoading, onRefreshAnalytics }) => {
+  const [range, setRange] = useState<RangeDays>(30);
+  const { series, growth, isLoading: tsLoading } = useAnalyticsTimeSeries(range);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -163,6 +170,80 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ data, isLoading, onRefr
           );
         })}
       </div>
+
+      {/* Range selector */}
+      <motion.div variants={staggerItem} className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold text-muted-foreground tracking-wide">TRENDLER</h3>
+        <div className="inline-flex rounded-lg border border-border bg-muted/30 p-0.5">
+          {([7, 14, 30, 90] as RangeDays[]).map((r) => (
+            <button
+              key={r}
+              onClick={() => setRange(r)}
+              className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+                range === r
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {r}g
+            </button>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Trend charts */}
+      <motion.div variants={staggerItem} className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Aktivite Trendleri</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {tsLoading ? (
+              <div className="h-[260px] flex items-center justify-center">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <ActivityTrendChart data={series} />
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Kullanıcı Büyümesi</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {tsLoading ? (
+              <div className="h-[220px] flex items-center justify-center">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <UserGrowthChart data={growth} />
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Mini sparklines */}
+      <motion.div variants={staggerItem} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {[
+          { label: 'Aktif (24s)', key: 'active_users_24h' as const, color: '--primary' },
+          { label: 'Analiz', key: 'today_analysis' as const, color: '--primary' },
+          { label: 'Chat', key: 'today_chats' as const, color: '--primary' },
+          { label: 'AI Doğruluk', key: 'ai_accuracy' as const, color: '--primary' },
+        ].map((s) => (
+          <Card key={s.key}>
+            <CardContent className="pt-4 pb-3">
+              <p className="text-[11px] text-muted-foreground tracking-wide">{s.label}</p>
+              <p className="text-lg font-semibold">
+                {s.key === 'ai_accuracy'
+                  ? `%${(series.at(-1)?.[s.key] ?? 0).toFixed(1)}`
+                  : (series.at(-1)?.[s.key] ?? 0).toLocaleString('tr-TR')}
+              </p>
+              <KpiSparkline data={series.map((d) => Number(d[s.key] ?? 0))} colorVar={s.color} />
+            </CardContent>
+          </Card>
+        ))}
+      </motion.div>
 
       {/* AI Accuracy Card */}
       <motion.div variants={staggerItem}>

@@ -71,7 +71,7 @@ interface LogEntry {
   createdAt: string;
 }
 
-type AdminSection = 'dashboard' | 'users' | 'premium' | 'ai' | 'notifications' | 'logs';
+type AdminSection = 'dashboard' | 'users' | 'premium' | 'revenue' | 'ai' | 'notifications' | 'logs';
 
 export const useAdminData = (activeSection: AdminSection = 'dashboard') => {
   const { user } = useAuth();
