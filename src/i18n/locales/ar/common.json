@@ -39,7 +39,8 @@
     "settings": "الإعدادات",
     "history": "السجل",
     "logout": "تسجيل الخروج",
-    "login": "تسجيل الدخول"
+    "login": "تسجيل الدخول",
+    "wc": "WC"
   },
   "language": {
     "label": "اللغة",
@@ -235,5 +236,31 @@
     "worstPpgSubtitle": "أقل معدل نقاط لكل مباراة",
     "seasonGeneralNote": "محسوبة بناءً على الأداء العام للموسم",
     "ppgUnit": "{{value}} نقطة/مباراة"
+  },
+  "wc": {
+    "hero": {
+      "liveCoverage": "تغطية مباشرة",
+      "comingSoon": "البطولة قريباً",
+      "title": "كأس العالم 2026",
+      "subtitle": "الطريق إلى النهائي • أمريكا • المكسيك • كندا",
+      "daysToKickoff_one": "باقي {{count}} يوم",
+      "daysToKickoff_other": "باقي {{count}} يوم"
+    },
+    "stages": {
+      "all": "الكل",
+      "group": "المجموعة {{letter}}"
+    },
+    "ongoingTitle": "المباريات الجارية",
+    "upcomingTitle": "المباريات القادمة",
+    "liveCount_one": "{{count}} مباراة مباشرة",
+    "liveCount_other": "{{count}} مباراة مباشرة",
+    "empty": "لا توجد مباريات في هذه المرحلة بعد.",
+    "viewDetails": "عرض التفاصيل",
+    "standings": {
+      "title": "ترتيب {{group}}",
+      "fullTable": "الجدول الكامل",
+      "team": "الفريق",
+      "empty": "الترتيب غير متاح بعد."
+    }
   }
 }

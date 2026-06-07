@@ -39,7 +39,8 @@
     "settings": "Ayarlar",
     "history": "Geçmiş",
     "logout": "Çıkış Yap",
-    "login": "Giriş Yap"
+    "login": "Giriş Yap",
+    "wc": "WC"
   },
   "language": {
     "label": "Dil",
@@ -235,5 +236,31 @@
     "worstPpgSubtitle": "En düşük maç başı puan ortalaması",
     "seasonGeneralNote": "Sezon geneli performansa göre hesaplanmıştır",
     "ppgUnit": "{{value}} puan/maç"
+  },
+  "wc": {
+    "hero": {
+      "liveCoverage": "Canlı Yayın",
+      "comingSoon": "Turnuva Yakında",
+      "title": "DÜNYA KUPASI 2026",
+      "subtitle": "Final Yolu • ABD • Meksika • Kanada",
+      "daysToKickoff_one": "{{count}} gün kaldı",
+      "daysToKickoff_other": "{{count}} gün kaldı"
+    },
+    "stages": {
+      "all": "Tümü",
+      "group": "Grup {{letter}}"
+    },
+    "ongoingTitle": "DEVAM EDEN MAÇLAR",
+    "upcomingTitle": "YAKLAŞAN MAÇLAR",
+    "liveCount_one": "{{count}} maç canlı",
+    "liveCount_other": "{{count}} maç canlı",
+    "empty": "Bu aşamada henüz maç bulunmuyor.",
+    "viewDetails": "Detayları gör",
+    "standings": {
+      "title": "{{group}} Puan Durumu",
+      "fullTable": "Tam Tablo",
+      "team": "Takım",
+      "empty": "Puan durumu henüz mevcut değil."
+    }
   }
 }

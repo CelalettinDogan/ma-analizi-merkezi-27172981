@@ -39,7 +39,8 @@
     "settings": "Einstellungen",
     "history": "Verlauf",
     "logout": "Abmelden",
-    "login": "Anmelden"
+    "login": "Anmelden",
+    "wc": "WC"
   },
   "language": {
     "label": "Sprache",
@@ -235,5 +236,31 @@
     "worstPpgSubtitle": "Niedrigster Punkteschnitt",
     "seasonGeneralNote": "Berechnet auf Basis der Gesamtsaisonleistung",
     "ppgUnit": "{{value}} Pkt./Spiel"
+  },
+  "wc": {
+    "hero": {
+      "liveCoverage": "Live-Übertragung",
+      "comingSoon": "Turnier bald",
+      "title": "WM 2026",
+      "subtitle": "Weg ins Finale • USA • MEX • KAN",
+      "daysToKickoff_one": "Noch {{count}} Tag",
+      "daysToKickoff_other": "Noch {{count}} Tage"
+    },
+    "stages": {
+      "all": "Alle",
+      "group": "Gruppe {{letter}}"
+    },
+    "ongoingTitle": "LAUFENDE SPIELE",
+    "upcomingTitle": "KOMMENDE SPIELE",
+    "liveCount_one": "{{count}} Spiel live",
+    "liveCount_other": "{{count}} Spiele live",
+    "empty": "In dieser Phase noch keine Spiele.",
+    "viewDetails": "Details ansehen",
+    "standings": {
+      "title": "Tabelle {{group}}",
+      "fullTable": "Komplette Tabelle",
+      "team": "Team",
+      "empty": "Tabelle noch nicht verfügbar."
+    }
   }
 }

@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Radio, Sparkles, Crown, BarChart3, User } from 'lucide-react';
+import { Home, Trophy, Sparkles, Crown, BarChart3, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
@@ -29,7 +29,7 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
   const computedItems = useMemo((): NavItem[] => {
     const items: NavItem[] = [
       { icon: Home, label: t('nav.home'), path: '/' },
-      { icon: Radio, label: t('nav.live'), path: '/live', badge: 'live' as const },
+      { icon: Trophy, label: t('nav.wc'), path: '/live', badge: 'live' as const },
       { icon: Sparkles, label: t('nav.ai'), path: '/chat', isAI: true },
       { icon: BarChart3, label: t('nav.league'), path: '/standings' },
       { icon: User, label: t('nav.profile'), path: '/profile' },
