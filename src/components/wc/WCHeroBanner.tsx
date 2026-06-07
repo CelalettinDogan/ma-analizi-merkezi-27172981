@@ -70,11 +70,11 @@ const WCHeroBanner: React.FC = () => {
           </span>
         </div>
 
-        <h1 className="font-display font-black text-2xl leading-tight text-foreground tracking-tight">
+        <h1 className="font-display font-black text-2xl leading-tight text-white tracking-tight">
           {t('wc.hero.title')}
         </h1>
 
-        <p className="text-xs text-muted-foreground/90 mt-1">
+        <p className="text-xs text-white/70 mt-1">
           {t('wc.hero.subtitle')}
         </p>
 
