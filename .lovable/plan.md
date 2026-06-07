@@ -1,79 +1,59 @@
+# Dünya Kupası Heyecan Modu — Empty State Yenileme
 
-## Plan — FIFA Dünya Kupası 2026 (WC) Entegrasyonu
+## Amaç
+"Bugünün Maçları" ve "Yaklaşan Maçlar" bölümleri boş kaldığında kullanıcı sönük bir "maç yok" mesajı görmesin. Yerine **FIFA Dünya Kupası 2026 geri sayımı** ve atmosferik bir kart görünsün — kullanıcı turnuva heyecanını hissetsin.
 
-football-data.org API'sinde `WC` (id: 2000) kodu altında 11 Haziran – 19 Temmuz 2026 arası 104 maç hazır. Mevcut sync altyapısına WC'yi ekleyip uygulamada görünür kılacağız. Milli takım maçları için tahmin motorunu nötr saha + form bilgisi olmayan duruma uyarlayacağız.
+## Kapsam
+Sadece **frontend / görsel** değişiklik. Backend, sync, tahmin motoru aynı kalır.
 
-### 1) Sabitlere WC eklenmesi
+## Yapılacaklar
 
-**`src/constants/predictions.ts`**
-- `LEAGUE_CODES.WORLD_CUP = 'WC'`
-- `LEAGUE_NAMES['WC'] = 'FIFA Dünya Kupası 2026'`
+### 1. Yeni bileşen: `src/components/home/WorldCupHypeCard.tsx`
+Boş state yerine gösterilecek özel kart. İçeriği:
 
-**`src/types/footballApi.ts`** — `SUPPORTED_COMPETITIONS` listesine WC (id: 2000, kod: WC, emblem) eklenecek; `CompetitionCode` tipi otomatik genişler.
+- **Arka plan**: Emerald → Amber yumuşak gradient + ince grid/particle dokusu (Magic UI `Particles` veya hafif `AnimatedGridPattern`, performans dostu)
+- **Üst rozet**: 🏆 "FIFA Dünya Kupası 2026" — pulse animasyonlu küçük nokta
+- **Başlık (büyük)**: "Dünya Kupası başlıyor"
+- **Geri sayım**: 11 Haziran 2026 18:00'a kadar **GG : SS : DD : SN** — `setInterval` ile 1 sn'de bir güncellenen 4 büyük rakam bloğu, monospace font, kartlar arası "•" ayraç
+- **Alt satır**: "104 maç • 48 takım • 12 grup • Meksika, ABD, Kanada"
+- **CTA**: "Dünya Kupası maçlarını gör" → `onClick` ile `selectedLeague`'i `'WC'` yapar (parent'tan prop ile gelir)
+- **Mikro animasyon**: framer-motion ile fade-in + hafif float; CTA `whileTap scale 0.96`
 
-**`src/components/league/LeagueGrid.tsx`** — WC kartı (özel renk + dünya ikonu) eklenecek; turnuva 19 Temmuz'da bittiğinde otomatik gizlenmesi için tarih kontrolü.
+Turnuva başladıktan sonra (≥ 11 Haziran) kart otomatik olarak **"Dünya Kupası devam ediyor — bugün X maç"** moduna geçer ve geri sayım yerine "Canlı yayında" rozeti gösterir.
 
-### 2) Edge function'larda WC desteği
+### 2. Entegrasyon noktaları
+İki yer:
 
-**`supabase/functions/sync-matches/index.ts`**
-- `SUPPORTED_LEAGUES`'e `'WC'` eklenir → 7sn rate-limit gecikmesi ile API'den çekilir, mevcut `cached_matches` upsert mantığı aynen çalışır.
+- **`src/components/TodaysMatches.tsx`** — bugünün maçı 0 olduğunda mevcut `EmptyState`/"Planlanmış maç bulunamadı" bloğu yerine `<WorldCupHypeCard variant="today" onSelectWC={...} />` render et. WC zaten seçiliyse normal empty state göster (sonsuz döngü olmasın).
+- **`src/components/UpcomingMatches.tsx`** — `matches.length === 0` dalında aynı kart, `variant="upcoming"`. Varyant sadece başlık/CTA metnini ufak değiştirir.
 
-**`supabase/functions/sync-standings/index.ts`**
-- WC'yi ekler. Grup aşaması: API `type=TOTAL` ile grup başına ayrı tablo döner (`group: "GROUP_A"` vb.). Mevcut `cached_standings` şeması yeterli — bir `group` (text, nullable) kolonu migration ile eklenir.
+Parent (`Index.tsx` / `useHomeData` tüketicisi) `onLeagueSelect('WC')` callback'ini iletecek — mevcut `selectedLeague` setter'ı zaten var, sadece prop drilling.
 
-**`supabase/functions/sync-live-matches/index.ts`**
-- WC eklenir (turnuva sırasında canlı skor).
-
-**`supabase/functions/auto-verify/index.ts`** — LEAGUE_MAP'e WC eklenir (sonuç doğrulama).
-
-### 3) Veritabanı şema güncellemesi
-
-Migration:
-```sql
-ALTER TABLE public.cached_standings ADD COLUMN IF NOT EXISTS group_name text;
-ALTER TABLE public.cached_standings ADD COLUMN IF NOT EXISTS stage text; -- GROUP_STAGE, LAST_16, ...
-ALTER TABLE public.cached_matches ADD COLUMN IF NOT EXISTS stage text;
-ALTER TABLE public.cached_matches ADD COLUMN IF NOT EXISTS group_name text;
+### 3. i18n
+Tüm metinler `src/i18n/locales/{tr,en,es,de,ar}/home.json` içine yeni `worldCup` anahtarı altında:
 ```
-(GRANT'ler zaten mevcut; sadece kolon ekleme.)
+worldCup: {
+  badge, title, subtitleCountdown, subtitleLive,
+  days, hours, minutes, seconds,
+  meta: "104 maç • 48 takım • 12 grup",
+  cta: "Dünya Kupası maçlarını gör",
+  liveBadge: "Turnuva devam ediyor"
+}
+```
 
-### 4) Tahmin motoru — Milli takım modu
+### 4. Tasarım tokenları
+Yeni renk YOK. Mevcut `--primary` (emerald) ve hero glow'daki amber (`hsl(45 70% 50%)`) tonları kullanılır. Gradient `index.css`'e `--gradient-worldcup` olarak eklenir, kart bunu tüketir — design system uyumlu.
 
-**Sorun:** API milli takımlar için lig formu/xG/ev avantajı dönmüyor. Mevcut FMS motoru bu parametrelerle çalışır.
+## Teknik Notlar
+- Geri sayım hedefi: `new Date('2026-06-11T18:00:00Z')` sabit
+- `useEffect` cleanup ile `setInterval` temizliği
+- Kart yüksekliği ~260px, mobile-first (390px viewport'ta tüm rakamlar tek satırda kalır)
+- Particles dahil tüm efektler `prefers-reduced-motion` kontrolüne saygı duyar
+- Touch standartları (memory): `user-select: none`, `touch-manipulation`
 
-**Çözüm — `src/utils/predictionEngine.ts`:**
-- `competitionCode === 'WC'` ise:
-  - `home_advantage = 0` (nötr saha — tüm maçlar ABD/Kanada/Meksika'da)
-  - `league_form` ağırlığı %0 → yerine **H2H** (api'den `head2head` endpoint'i mevcut) + **grup puan durumu** kullanılır
-  - Poisson hesaplaması grup içi ortalama gollere göre yapılır (`league_averages` tablosuna fallback)
-  - AI promptuna "Bu maç milli takım turnuva maçıdır; lig formu yerine son uluslararası maçlar ve H2H değerlendirilir" notu eklenir.
+## Dosya Özeti
+- **Yeni**: `src/components/home/WorldCupHypeCard.tsx`
+- **Düzenle**: `TodaysMatches.tsx`, `UpcomingMatches.tsx`, 5 dil `home.json`, `index.css` (1 gradient değişkeni)
+- **Hariç**: backend, sync, prediction engine, bracket UI (Phase 2)
 
-### 5) UI uyarlamaları
-
-**`src/components/standings/StandingsTable.tsx`** — WC için grup bazlı render (A, B, C... grupları ayrı tablolar).
-
-**`src/components/MatchCard` / hero** — WC maçlarına "🏆 Dünya Kupası" rozeti + grup/aşama etiketi (örn. "Grup A · 1. Maç" / "Çeyrek Final").
-
-**Bracket (faz 2'ye ertelenir)** — eleme turu görselleştirmesi şu an kapsam dışı; sadece liste + grup tabloları.
-
-### 6) İlk dolum
-
-Migration sonrası manuel tetikleme:
-- `sync-matches` → 104 WC maçı `cached_matches`'e düşer
-- `sync-standings` → 8 grup tablosu `cached_standings`'e düşer
-- Auto-verify cron zaten 6 saatte bir → turnuva başlayınca sonuçlar otomatik doğrulanır
-
-### Teknik detaylar
-- API rate limit: WC ekleyince toplam 7 lig × 7sn = ~49sn/sync — mevcut cron aralıklarıyla uyumlu.
-- `LEAGUE_MAP` (auto-verify): `'WC': 2000`.
-- `cached_matches.competition_code` zaten free-text → ek constraint yok.
-- Memory: `mem://features/world-cup-2026-support` dosyası oluşturulur (nötr saha kuralı, grup bazlı standings, turnuva tarih aralığı).
-
-### Kapsam dışı (faz 2)
-- Eleme bracket görselleştirmesi
-- FIFA ranking entegrasyonu (ayrı API gerekir)
-- Milli takım son 10 maç form bilgisi (API kapsamı dışı)
-- Özel "Dünya Kupası özel" promosyon/push kampanyası
-
-### Tahmini iş yükü
-Tek oturum (~30 dk): 3 edge function + 2 frontend dosyası + 1 migration + tahmin motoru WC dalı.
+Tahmini süre: ~15 dakika.
