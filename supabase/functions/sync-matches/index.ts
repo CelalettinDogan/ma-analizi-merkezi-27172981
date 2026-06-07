@@ -129,6 +129,8 @@ serve(async (req) => {
           home_score: match.score?.fullTime?.home,
           away_score: match.score?.fullTime?.away,
           winner: match.score?.winner,
+          stage: match.stage || null,
+          group_name: match.group || null,
           raw_data: match,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'match_id' });
