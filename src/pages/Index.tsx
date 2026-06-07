@@ -320,6 +320,7 @@ const Index: React.FC = () => {
             onMatchSelect={handleMatchSelect}
             lastUpdated={lastUpdated}
             isPremium={isPremium}
+            onSelectWorldCup={() => handleLeagueSelect('WC' as CompetitionCode)}
           />
         </motion.section>
 
