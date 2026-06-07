@@ -50,13 +50,13 @@ serve(async (req) => {
       console.log(`[sync-matches] Cleaned up ${cleanupCount || 0} old matches`);
     }
 
-    // === STEP 2: Get date range (today + 3 days) ===
+    // === STEP 2: Get date range (today + 10 days, to capture upcoming tournaments like WC) ===
     const today = new Date();
-    const threeDaysLater = new Date(today);
-    threeDaysLater.setDate(threeDaysLater.getDate() + 3);
+    const tenDaysLater = new Date(today);
+    tenDaysLater.setDate(tenDaysLater.getDate() + 10);
     
     const dateFrom = today.toISOString().split('T')[0];
-    const dateTo = threeDaysLater.toISOString().split('T')[0];
+    const dateTo = tenDaysLater.toISOString().split('T')[0];
 
     console.log(`[sync-matches] Starting sync for ${dateFrom} to ${dateTo}`);
 
