@@ -354,6 +354,7 @@ export type Database = {
           away_team_name: string
           competition_code: string
           competition_name: string | null
+          group_name: string | null
           home_score: number | null
           home_team_crest: string | null
           home_team_id: number | null
@@ -362,6 +363,7 @@ export type Database = {
           match_id: number
           matchday: number | null
           raw_data: Json | null
+          stage: string | null
           status: string
           updated_at: string | null
           utc_date: string
@@ -374,6 +376,7 @@ export type Database = {
           away_team_name: string
           competition_code: string
           competition_name?: string | null
+          group_name?: string | null
           home_score?: number | null
           home_team_crest?: string | null
           home_team_id?: number | null
@@ -382,6 +385,7 @@ export type Database = {
           match_id: number
           matchday?: number | null
           raw_data?: Json | null
+          stage?: string | null
           status: string
           updated_at?: string | null
           utc_date: string
@@ -394,6 +398,7 @@ export type Database = {
           away_team_name?: string
           competition_code?: string
           competition_name?: string | null
+          group_name?: string | null
           home_score?: number | null
           home_team_crest?: string | null
           home_team_id?: number | null
@@ -402,6 +407,7 @@ export type Database = {
           match_id?: number
           matchday?: number | null
           raw_data?: Json | null
+          stage?: string | null
           status?: string
           updated_at?: string | null
           utc_date?: string
@@ -418,11 +424,13 @@ export type Database = {
           goal_difference: number | null
           goals_against: number | null
           goals_for: number | null
+          group_name: string | null
           id: number
           lost: number | null
           played_games: number | null
           points: number | null
           position: number
+          stage: string | null
           team_crest: string | null
           team_id: number
           team_name: string
@@ -439,11 +447,13 @@ export type Database = {
           goal_difference?: number | null
           goals_against?: number | null
           goals_for?: number | null
+          group_name?: string | null
           id?: number
           lost?: number | null
           played_games?: number | null
           points?: number | null
           position: number
+          stage?: string | null
           team_crest?: string | null
           team_id: number
           team_name: string
@@ -460,11 +470,13 @@ export type Database = {
           goal_difference?: number | null
           goals_against?: number | null
           goals_for?: number | null
+          group_name?: string | null
           id?: number
           lost?: number | null
           played_games?: number | null
           points?: number | null
           position?: number
+          stage?: string | null
           team_crest?: string | null
           team_id?: number
           team_name?: string

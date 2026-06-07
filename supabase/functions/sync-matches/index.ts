@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const FOOTBALL_DATA_BASE_URL = 'https://api.football-data.org/v4';
-const SUPPORTED_LEAGUES = ['PL', 'BL1', 'PD', 'SA', 'FL1', 'CL'];
+const SUPPORTED_LEAGUES = ['PL', 'BL1', 'PD', 'SA', 'FL1', 'CL', 'WC'];
 
 // Rate limit: wait between requests to respect API limits
 const DELAY_BETWEEN_REQUESTS = 7000; // 7 seconds (safe for 10 req/min)
@@ -50,13 +50,13 @@ serve(async (req) => {
       console.log(`[sync-matches] Cleaned up ${cleanupCount || 0} old matches`);
     }
 
-    // === STEP 2: Get date range (today + 3 days) ===
+    // === STEP 2: Get date range (today + 10 days, to capture upcoming tournaments like WC) ===
     const today = new Date();
-    const threeDaysLater = new Date(today);
-    threeDaysLater.setDate(threeDaysLater.getDate() + 3);
+    const tenDaysLater = new Date(today);
+    tenDaysLater.setDate(tenDaysLater.getDate() + 10);
     
     const dateFrom = today.toISOString().split('T')[0];
-    const dateTo = threeDaysLater.toISOString().split('T')[0];
+    const dateTo = tenDaysLater.toISOString().split('T')[0];
 
     console.log(`[sync-matches] Starting sync for ${dateFrom} to ${dateTo}`);
 
@@ -129,6 +129,8 @@ serve(async (req) => {
           home_score: match.score?.fullTime?.home,
           away_score: match.score?.fullTime?.away,
           winner: match.score?.winner,
+          stage: match.stage || null,
+          group_name: match.group || null,
           raw_data: match,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'match_id' });

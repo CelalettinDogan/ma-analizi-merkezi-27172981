@@ -94,6 +94,7 @@ export const SUPPORTED_COMPETITIONS = [
   { code: 'SA', name: 'Serie A', country: 'İtalya', flag: '🇮🇹' },
   { code: 'FL1', name: 'Ligue 1', country: 'Fransa', flag: '🇫🇷' },
   { code: 'CL', name: 'Şampiyonlar Ligi', country: 'Avrupa', flag: '🇪🇺' },
+  { code: 'WC', name: 'Dünya Kupası', country: 'FIFA 2026', flag: '🏆' },
 ] as const;
 
 export type CompetitionCode = typeof SUPPORTED_COMPETITIONS[number]['code'];

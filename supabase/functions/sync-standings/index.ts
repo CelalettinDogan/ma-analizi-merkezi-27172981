@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const FOOTBALL_DATA_BASE_URL = 'https://api.football-data.org/v4';
-const SUPPORTED_LEAGUES = ['PL', 'BL1', 'PD', 'SA', 'FL1'];
+const SUPPORTED_LEAGUES = ['PL', 'BL1', 'PD', 'SA', 'FL1', 'WC'];
 
 // Rate limit: wait between requests (CL excluded - no traditional standings)
 const DELAY_BETWEEN_REQUESTS = 7000; // 7 seconds
@@ -55,35 +55,48 @@ serve(async (req) => {
 
         if (response.ok) {
           const data = await response.json();
-          const standings = data.standings?.[0]?.table || [];
+          const allTables = data.standings || [];
           const competitionName = data.competition?.name || league;
 
-          console.log(`[sync-standings] ${league}: ${standings.length} teams`);
+          let teamCount = 0;
+          for (const tbl of allTables) {
+            // Only process TOTAL type tables (skip HOME/AWAY)
+            if (tbl.type && tbl.type !== 'TOTAL') continue;
+            const stage = tbl.stage || null;
+            const groupName = tbl.group || null;
+            const table = tbl.table || [];
 
-          for (const entry of standings) {
-            const { error } = await supabase.from('cached_standings').upsert({
-              competition_code: league,
-              competition_name: competitionName,
-              position: entry.position,
-              team_id: entry.team?.id,
-              team_name: entry.team?.name || 'Unknown',
-              team_short_name: entry.team?.shortName,
-              team_tla: entry.team?.tla,
-              team_crest: entry.team?.crest,
-              played_games: entry.playedGames,
-              form: entry.form,
-              won: entry.won,
-              draw: entry.draw,
-              lost: entry.lost,
-              points: entry.points,
-              goals_for: entry.goalsFor,
-              goals_against: entry.goalsAgainst,
-              goal_difference: entry.goalDifference,
-              updated_at: new Date().toISOString(),
-            }, { onConflict: 'competition_code,team_id' });
+            for (const entry of table) {
+              const { error } = await supabase.from('cached_standings').upsert({
+                competition_code: league,
+                competition_name: competitionName,
+                position: entry.position,
+                team_id: entry.team?.id,
+                team_name: entry.team?.name || 'Unknown',
+                team_short_name: entry.team?.shortName,
+                team_tla: entry.team?.tla,
+                team_crest: entry.team?.crest,
+                played_games: entry.playedGames,
+                form: entry.form,
+                won: entry.won,
+                draw: entry.draw,
+                lost: entry.lost,
+                points: entry.points,
+                goals_for: entry.goalsFor,
+                goals_against: entry.goalsAgainst,
+                goal_difference: entry.goalDifference,
+                stage,
+                group_name: groupName,
+                updated_at: new Date().toISOString(),
+              }, { onConflict: 'competition_code,team_id' });
 
-            if (!error) totalUpserted++;
+              if (!error) {
+                totalUpserted++;
+                teamCount++;
+              }
+            }
           }
+          console.log(`[sync-standings] ${league}: ${teamCount} teams across ${allTables.length} table(s)`);
         } else {
           const errorText = await response.text();
           console.error(`[sync-standings] ${league} error: ${response.status}`);

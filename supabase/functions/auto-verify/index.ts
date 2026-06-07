@@ -42,6 +42,7 @@ const LEAGUE_MAP: Record<string, string> = {
   'SA': 'SA',
   'FL1': 'FL1',
   'CL': 'CL',
+  'WC': 'WC',
   
   // English names
   'Premier League': 'PL',
@@ -52,6 +53,8 @@ const LEAGUE_MAP: Record<string, string> = {
   'Ligue 1': 'FL1',
   'UEFA Champions League': 'CL',
   'Champions League': 'CL',
+  'FIFA World Cup': 'WC',
+  'World Cup': 'WC',
   
   // Turkish names
   'İngiltere Premier Ligi': 'PL',
@@ -60,6 +63,8 @@ const LEAGUE_MAP: Record<string, string> = {
   'İtalya Serie A': 'SA',
   'Fransa Ligue 1': 'FL1',
   'UEFA Şampiyonlar Ligi': 'CL',
+  'FIFA Dünya Kupası 2026': 'WC',
+  'Dünya Kupası': 'WC',
 };
 
 // Normalize league name for flexible matching
@@ -84,6 +89,7 @@ function normalizeLeagueName(league: string): string | null {
   if (lowerLeague.includes('bundesliga')) return 'BL1';
   if (lowerLeague.includes('ligue 1')) return 'FL1';
   if (lowerLeague.includes('champions')) return 'CL';
+  if (lowerLeague.includes('world cup') || lowerLeague.includes('dünya kupası') || lowerLeague.includes('dunya kupasi')) return 'WC';
   
   return null;
 }

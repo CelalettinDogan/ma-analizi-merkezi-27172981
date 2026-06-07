@@ -43,6 +43,7 @@ export const LEAGUE_CODES = {
   SERIE_A: 'SA',
   LIGUE_1: 'FL1',
   CHAMPIONS_LEAGUE: 'CL',
+  WORLD_CUP: 'WC',
 } as const;
 
 export const LEAGUE_NAMES: Record<string, string> = {
@@ -52,6 +53,7 @@ export const LEAGUE_NAMES: Record<string, string> = {
   [LEAGUE_CODES.SERIE_A]: 'İtalya Serie A',
   [LEAGUE_CODES.LIGUE_1]: 'Fransa Ligue 1',
   [LEAGUE_CODES.CHAMPIONS_LEAGUE]: 'UEFA Şampiyonlar Ligi',
+  [LEAGUE_CODES.WORLD_CUP]: 'FIFA Dünya Kupası 2026',
 };
 
 // Match importance levels
