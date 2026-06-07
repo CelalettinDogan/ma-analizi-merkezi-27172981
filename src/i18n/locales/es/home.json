@@ -98,5 +98,20 @@
   "dailyPick": {
     "title": "Gol del Día",
     "unlockCta": "Ver Predicción"
+  },
+  "worldCup": {
+    "badge": "Mundial 2026",
+    "title": "El Mundial se acerca",
+    "titleLive": "¡El Mundial está en vivo!",
+    "subtitleCountdown": "El balón rueda el 11 de junio",
+    "subtitleLive": "104 partidos, un trofeo",
+    "days": "Días",
+    "hours": "Hrs",
+    "minutes": "Min",
+    "seconds": "Seg",
+    "meta": "104 partidos • 48 selecciones • 12 grupos",
+    "liveBadge": "Torneo en vivo",
+    "cta": "Ir a partidos del Mundial",
+    "ctaUpcoming": "Ver fixture del Mundial"
   }
 }

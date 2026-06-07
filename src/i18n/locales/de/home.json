@@ -103,5 +103,20 @@
   "dailyPick": {
     "title": "Tagestor",
     "unlockCta": "Vorhersage sehen"
+  },
+  "worldCup": {
+    "badge": "WM 2026",
+    "title": "Die WM steht bevor",
+    "titleLive": "Die WM läuft!",
+    "subtitleCountdown": "Anstoß am 11. Juni",
+    "subtitleLive": "104 Spiele, ein Pokal",
+    "days": "Tage",
+    "hours": "Std",
+    "minutes": "Min",
+    "seconds": "Sek",
+    "meta": "104 Spiele • 48 Teams • 12 Gruppen",
+    "liveBadge": "Turnier läuft",
+    "cta": "Zu den WM-Spielen",
+    "ctaUpcoming": "WM-Spielplan ansehen"
   }
 }

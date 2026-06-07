@@ -4,17 +4,20 @@ import { useTranslation } from 'react-i18next';
 import { Match } from '@/types/footballApi';
 import { format } from 'date-fns';
 import { getDateLocale } from '@/i18n/dateLocale';
+import WorldCupHypeCard from '@/components/home/WorldCupHypeCard';
 
 interface UpcomingMatchesProps {
   matches: Match[];
   isLoading: boolean;
   onSelectMatch: (match: Match) => void;
+  onSelectWorldCup?: () => void;
 }
 
-const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({ 
-  matches, 
-  isLoading, 
-  onSelectMatch 
+const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
+  matches,
+  isLoading,
+  onSelectMatch,
+  onSelectWorldCup,
 }) => {
   const { t } = useTranslation('home');
   const locale = getDateLocale();
@@ -29,12 +32,7 @@ const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
   }
 
   if (matches.length === 0) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
-        <p>{t('upcoming.empty')}</p>
-      </div>
-    );
+    return <WorldCupHypeCard variant="upcoming" onSelectWC={onSelectWorldCup} />;
   }
 
   return (

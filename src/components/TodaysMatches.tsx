@@ -82,6 +82,8 @@ const cleanTeamName = (team: { shortName?: string; tla?: string; name: string })
   return cleaned || raw;
 };
 
+import WorldCupHypeCard from '@/components/home/WorldCupHypeCard';
+
 interface TodaysMatchesProps {
   matches: Match[];
   isLoading?: boolean;
@@ -89,6 +91,7 @@ interface TodaysMatchesProps {
   onMatchSelect: (match: Match) => void;
   lastUpdated?: Date | null;
   isPremium?: boolean;
+  onSelectWorldCup?: () => void;
 }
 
 const BIG_TEAMS = [
@@ -180,7 +183,7 @@ const TeamCell: React.FC<{ team: Match['homeTeam']; align: 'left' | 'right'; log
   );
 };
 
-const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = false, loadingMatchId, onMatchSelect, lastUpdated, isPremium = false }) => {
+const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = false, loadingMatchId, onMatchSelect, lastUpdated, isPremium = false, onSelectWorldCup }) => {
   const { t } = useTranslation('home');
   const navigate = useNavigate();
   const getDateLabel = useDateLabel();
@@ -340,7 +343,7 @@ const TodaysMatches: React.FC<TodaysMatchesProps> = ({ matches, isLoading = fals
       <div className="space-y-3">
         <div className="flex items-center gap-2"><div className="w-1 h-5 rounded-full bg-primary" /><h2 className="font-display font-semibold text-sm">{t('todays.title')}</h2></div>
         {dailyPickRowEl}
-        <div className="text-center py-10"><Calendar className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" /><p className="text-muted-foreground text-sm">{t('todays.noScheduledTitle')}</p><p className="text-xs text-muted-foreground/60 mt-1">{t('todays.noScheduledHint')}</p></div>
+        <WorldCupHypeCard variant="today" onSelectWC={onSelectWorldCup} />
       </div>
     );
   }
