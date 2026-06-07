@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const FOOTBALL_DATA_BASE_URL = 'https://api.football-data.org/v4';
-const SUPPORTED_LEAGUES = ['PL', 'BL1', 'PD', 'SA', 'FL1'];
+const SUPPORTED_LEAGUES = ['PL', 'BL1', 'PD', 'SA', 'FL1', 'WC'];
 
 // Rate limit: wait between requests (CL excluded - no traditional standings)
 const DELAY_BETWEEN_REQUESTS = 7000; // 7 seconds
