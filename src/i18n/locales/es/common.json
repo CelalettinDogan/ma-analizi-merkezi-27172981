@@ -39,7 +39,8 @@
     "settings": "Ajustes",
     "history": "Historial",
     "logout": "Cerrar sesión",
-    "login": "Iniciar sesión"
+    "login": "Iniciar sesión",
+    "wc": "WC"
   },
   "language": {
     "label": "Idioma",
@@ -235,5 +236,31 @@
     "worstPpgSubtitle": "Menor promedio de puntos por partido",
     "seasonGeneralNote": "Calculado en base al rendimiento general de la temporada",
     "ppgUnit": "{{value}} pts/partido"
+  },
+  "wc": {
+    "hero": {
+      "liveCoverage": "Cobertura en Vivo",
+      "comingSoon": "Torneo Próximo",
+      "title": "MUNDIAL 2026",
+      "subtitle": "Camino a la Final • EE.UU. • MEX • CAN",
+      "daysToKickoff_one": "Falta {{count}} día",
+      "daysToKickoff_other": "Faltan {{count}} días"
+    },
+    "stages": {
+      "all": "Todos",
+      "group": "Grupo {{letter}}"
+    },
+    "ongoingTitle": "PARTIDOS EN CURSO",
+    "upcomingTitle": "PRÓXIMOS PARTIDOS",
+    "liveCount_one": "{{count}} partido en vivo",
+    "liveCount_other": "{{count}} partidos en vivo",
+    "empty": "Aún no hay partidos en esta fase.",
+    "viewDetails": "Ver detalles",
+    "standings": {
+      "title": "Clasificación {{group}}",
+      "fullTable": "Tabla completa",
+      "team": "Equipo",
+      "empty": "Clasificación aún no disponible."
+    }
   }
 }

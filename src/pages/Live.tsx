@@ -1,319 +1,287 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Radio, WifiOff, Trophy, Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import AppHeader from '@/components/layout/AppHeader';
 import LiveMatchCard2 from '@/components/live/LiveMatchCard2';
-import LeagueGrid from '@/components/league/LeagueGrid';
-import { Skeleton } from '@/components/ui/skeleton';
-import CommandPalette from '@/components/navigation/CommandPalette';
-import { Match, CompetitionCode, SUPPORTED_COMPETITIONS } from '@/types/footballApi';
+import WCHeroBanner from '@/components/wc/WCHeroBanner';
+import StageChipSelector, { StageChip } from '@/components/wc/StageChipSelector';
+import WCStandingsCard, { WCStandingRow } from '@/components/wc/WCStandingsCard';
+import UpcomingWCCard from '@/components/wc/UpcomingWCCard';
+import { Match, CompetitionCode } from '@/types/footballApi';
 import { supabase } from '@/integrations/supabase/client';
-import { staggerContainer, staggerItem, fadeInUp } from '@/lib/animations';
-import { toast } from 'sonner';
-import { getTeamNextMatch } from '@/services/footballApiService';
+import { fadeInUp, staggerContainer, staggerItem } from '@/lib/animations';
 
-const REFRESH_INTERVAL = 60000;
+const REFRESH_INTERVAL = 60_000;
 
-const transformCachedLiveMatch = (cached: {
-  match_id: number;
-  competition_code: string;
-  competition_name: string | null;
-  home_team_id: number | null;
-  home_team_name: string;
-  home_team_crest: string | null;
-  away_team_id: number | null;
-  away_team_name: string;
-  away_team_crest: string | null;
-  home_score: number | null;
-  away_score: number | null;
-  status: string;
-  matchday: number | null;
-  utc_date: string;
-  half_time_home: number | null;
-  half_time_away: number | null;
-  updated_at: string | null;
-}): Match => ({
-  id: cached.match_id,
-  utcDate: cached.utc_date,
-  status: cached.status as Match['status'],
-  matchday: cached.matchday || undefined,
+const transformLive = (c: any): Match => ({
+  id: c.match_id,
+  utcDate: c.utc_date,
+  status: c.status as Match['status'],
+  matchday: c.matchday || undefined,
   competition: {
     id: 0,
-    name: cached.competition_name || '',
-    code: cached.competition_code as CompetitionCode,
+    name: c.competition_name || 'World Cup',
+    code: c.competition_code as CompetitionCode,
     emblem: '',
-    area: { id: 0, name: '', code: '', flag: '' }
+    area: { id: 0, name: '', code: '', flag: '🏆' },
   },
   homeTeam: {
-    id: cached.home_team_id || 0,
-    name: cached.home_team_name,
-    shortName: cached.home_team_name,
-    tla: cached.home_team_name.substring(0, 3).toUpperCase(),
-    crest: cached.home_team_crest || ''
+    id: c.home_team_id || 0,
+    name: c.home_team_name,
+    shortName: c.home_team_name,
+    tla: (c.home_team_name || '').substring(0, 3).toUpperCase(),
+    crest: c.home_team_crest || '',
   },
   awayTeam: {
-    id: cached.away_team_id || 0,
-    name: cached.away_team_name,
-    shortName: cached.away_team_name,
-    tla: cached.away_team_name.substring(0, 3).toUpperCase(),
-    crest: cached.away_team_crest || ''
+    id: c.away_team_id || 0,
+    name: c.away_team_name,
+    shortName: c.away_team_name,
+    tla: (c.away_team_name || '').substring(0, 3).toUpperCase(),
+    crest: c.away_team_crest || '',
   },
   score: {
     winner: null,
-    fullTime: { home: cached.home_score, away: cached.away_score },
-    halfTime: { home: cached.half_time_home, away: cached.half_time_away }
-  }
+    fullTime: { home: c.home_score, away: c.away_score },
+    halfTime: { home: c.half_time_home, away: c.half_time_away },
+  },
 });
 
-/* Skeleton for loading state */
-const LiveMatchSkeleton = () => (
-  <div className="p-4 rounded-2xl border border-border/50 bg-card space-y-4">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <Skeleton className="w-2.5 h-2.5 rounded-full" />
-        <Skeleton className="w-10 h-3" />
-      </div>
-      <Skeleton className="w-20 h-3" />
-    </div>
-    <div className="flex items-center justify-between gap-4">
-      <div className="flex-1 flex flex-col items-center gap-2">
-        <Skeleton className="w-10 h-10 rounded-xl" />
-        <Skeleton className="w-16 h-3" />
-      </div>
-      <div className="flex flex-col items-center gap-1">
-        <Skeleton className="w-20 h-8 rounded-lg" />
-        <Skeleton className="w-10 h-3" />
-      </div>
-      <div className="flex-1 flex flex-col items-center gap-2">
-        <Skeleton className="w-10 h-10 rounded-xl" />
-        <Skeleton className="w-16 h-3" />
-      </div>
-    </div>
-    <Skeleton className="w-full h-8 rounded-full" />
-  </div>
-);
+const transformMatch = (c: any): Match => ({
+  id: c.match_id,
+  utcDate: c.utc_date,
+  status: c.status as Match['status'],
+  matchday: c.matchday || undefined,
+  competition: {
+    id: 0,
+    name: c.competition_name || 'World Cup',
+    code: c.competition_code as CompetitionCode,
+    emblem: '',
+    area: { id: 0, name: '', code: '', flag: '🏆' },
+  },
+  homeTeam: {
+    id: c.home_team_id || 0,
+    name: c.home_team_name,
+    shortName: c.home_team_name,
+    tla: (c.home_team_name || '').substring(0, 3).toUpperCase(),
+    crest: c.home_team_crest || '',
+  },
+  awayTeam: {
+    id: c.away_team_id || 0,
+    name: c.away_team_name,
+    shortName: c.away_team_name,
+    tla: (c.away_team_name || '').substring(0, 3).toUpperCase(),
+    crest: c.away_team_crest || '',
+  },
+  score: {
+    winner: null,
+    fullTime: { home: null, away: null },
+    halfTime: { home: null, away: null },
+  },
+  // Carry stage/group through (read by UpcomingWCCard)
+  ...(c.stage ? { stage: c.stage } : {}),
+  ...(c.group_name ? { group_name: c.group_name } : {}),
+} as Match);
 
 const LivePage: React.FC = () => {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation('common');
   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
+  const [upcomingMatches, setUpcomingMatches] = useState<Match[]>([]);
+  const [standings, setStandings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [selectedLeague, setSelectedLeague] = useState<CompetitionCode | ''>('');
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [commandOpen, setCommandOpen] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
-  
-  const isMountedRef = React.useRef(true);
+  const [selectedGroup, setSelectedGroup] = useState<string>('');
+  const isMountedRef = useRef(true);
 
-  const fetchFromCache = useCallback(async () => {
-    if (!isMountedRef.current) return;
-    
+  const fetchAll = useCallback(async () => {
     try {
-      let query = supabase
-        .from('cached_live_matches')
-        .select('*')
-        .order('utc_date', { ascending: true });
+      const [liveRes, upcomingRes, standingsRes] = await Promise.all([
+        supabase
+          .from('cached_live_matches')
+          .select('*')
+          .eq('competition_code', 'WC')
+          .order('utc_date', { ascending: true }),
+        supabase
+          .from('cached_matches')
+          .select('*')
+          .eq('competition_code', 'WC')
+          .gte('utc_date', new Date().toISOString())
+          .in('status', ['SCHEDULED', 'TIMED'])
+          .order('utc_date', { ascending: true })
+          .limit(8),
+        supabase
+          .from('cached_standings')
+          .select('*')
+          .eq('competition_code', 'WC')
+          .order('group_name', { ascending: true })
+          .order('position', { ascending: true }),
+      ]);
 
-      if (selectedLeague) {
-        query = query.eq('competition_code', selectedLeague);
-      } else {
-        const defaultCodes = SUPPORTED_COMPETITIONS.slice(0, 2).map(c => c.code);
-        query = query.in('competition_code', defaultCodes);
-      }
-
-      const { data, error: fetchError } = await query;
-
-      if (fetchError) throw fetchError;
       if (!isMountedRef.current) return;
 
-      const matches = (data || []).map(transformCachedLiveMatch);
-      setLiveMatches(matches);
-      
-      if (data && data.length > 0) {
-        const latestUpdate = data.reduce((latest, m) => {
-          const mTime = m.updated_at ? new Date(m.updated_at).getTime() : 0;
-          return mTime > latest ? mTime : latest;
-        }, 0);
-        if (latestUpdate) setLastUpdated(new Date(latestUpdate));
-      } else {
-        setLastUpdated(new Date());
-      }
-
-      setError(null);
+      setLiveMatches((liveRes.data || []).map(transformLive));
+      setUpcomingMatches((upcomingRes.data || []).map(transformMatch));
+      setStandings(standingsRes.data || []);
     } catch (e) {
-      console.error('Error fetching from cache:', e);
-      if (isMountedRef.current) {
-        setError(t('live.errorLoading'));
-      }
+      console.error('WC fetch error:', e);
     } finally {
-      if (isMountedRef.current) {
-        setIsLoading(false);
-        setIsRefreshing(false);
-      }
+      if (isMountedRef.current) setIsLoading(false);
     }
-  }, [selectedLeague]);
-
-  const syncLiveMatches = useCallback(async () => {
-    if (!isMountedRef.current) return;
-    setIsSyncing(true);
-    await fetchFromCache();
-    if (isMountedRef.current) {
-      setIsSyncing(false);
-    }
-  }, [fetchFromCache]);
+  }, []);
 
   useEffect(() => {
     isMountedRef.current = true;
-    const init = async () => {
-      if (!isMountedRef.current) return;
-      setIsLoading(true);
-      await fetchFromCache();
-    };
-    init();
-    return () => { isMountedRef.current = false; };
-  }, [selectedLeague]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (isMountedRef.current) fetchFromCache();
+    fetchAll();
+    const id = setInterval(() => {
+      if (isMountedRef.current) fetchAll();
     }, REFRESH_INTERVAL);
-    return () => clearInterval(interval);
-  }, [fetchFromCache]);
+    return () => {
+      isMountedRef.current = false;
+      clearInterval(id);
+    };
+  }, [fetchAll]);
+
+  // Derive unique group labels from standings
+  const groupLabels = useMemo(() => {
+    const set = new Set<string>();
+    standings.forEach((s) => { if (s.group_name) set.add(s.group_name); });
+    return Array.from(set).sort();
+  }, [standings]);
+
+  // Stage chips: "All" + Groups
+  const chips: StageChip[] = useMemo(() => {
+    const base: StageChip[] = [{ id: 'ALL', label: t('wc.stages.all') }];
+    groupLabels.forEach((g) => {
+      // group_name examples: "GROUP_A" or "Group A"
+      const letter = g.replace(/group[_\s-]*/i, '').trim().toUpperCase() || g;
+      base.push({ id: g, label: t('wc.stages.group', { letter }) });
+    });
+    return base;
+  }, [groupLabels, t]);
+
+  // Default selected: first group
+  useEffect(() => {
+    if (!selectedGroup && groupLabels.length > 0) {
+      setSelectedGroup(groupLabels[0]);
+    }
+  }, [groupLabels, selectedGroup]);
+
+  // Filter live & upcoming by selected stage (ALL = no filter)
+  const filteredLive = useMemo(() => {
+    if (selectedGroup === 'ALL' || !selectedGroup) return liveMatches;
+    return liveMatches.filter((m) => (m as any).group_name === selectedGroup);
+  }, [liveMatches, selectedGroup]);
+
+  const filteredUpcoming = useMemo(() => {
+    if (selectedGroup === 'ALL' || !selectedGroup) return upcomingMatches;
+    const filtered = upcomingMatches.filter((m) => (m as any).group_name === selectedGroup);
+    return filtered.length > 0 ? filtered : upcomingMatches;
+  }, [upcomingMatches, selectedGroup]);
+
+  const selectedGroupStandings: WCStandingRow[] = useMemo(() => {
+    if (!selectedGroup || selectedGroup === 'ALL') {
+      // fall back to first group if "All"
+      const first = groupLabels[0];
+      return standings.filter((s) => s.group_name === first);
+    }
+    return standings.filter((s) => s.group_name === selectedGroup);
+  }, [standings, selectedGroup, groupLabels]);
 
   const handleMatchSelect = (match: Match) => {
     navigate('/', { state: { selectedMatch: match } });
   };
 
-  const handleCommandTeamSelect = async (teamName: string, leagueCode: string) => {
-    setCommandOpen(false);
-    toast.info(t('live.searchingTeam', { team: teamName }));
-    try {
-      const nextMatch = await getTeamNextMatch(teamName);
-      if (nextMatch) {
-        navigate('/', { state: { selectedMatch: nextMatch } });
-      } else {
-        toast.warning(t('live.noUpcomingForTeam', { team: teamName }));
-        navigate('/');
-      }
-    } catch (error) {
-      console.error('Team match search error:', error);
-      toast.error(t('live.searchError'));
-    }
-  };
+  const groupDisplayLabel = useMemo(() => {
+    const g = selectedGroup === 'ALL' ? groupLabels[0] : selectedGroup;
+    if (!g) return '';
+    const letter = g.replace(/group[_\s-]*/i, '').trim().toUpperCase() || g;
+    return t('wc.stages.group', { letter });
+  }, [selectedGroup, groupLabels, t]);
 
-  const formatLastUpdated = () => {
-    if (!lastUpdated) return '';
-    return lastUpdated.toLocaleTimeString(i18n.language, { 
-      hour: '2-digit', minute: '2-digit', second: '2-digit'
-    });
-  };
+  const hasLive = filteredLive.length > 0;
+  const displayCards = hasLive ? filteredLive.slice(0, 6) : filteredUpcoming.slice(0, 3);
+  const isUpcomingMode = !hasLive;
 
   return (
     <div className="h-screen bg-background flex flex-col">
       <AppHeader />
 
-      <main className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}>
-        <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-5 overflow-x-hidden">
-          
-          {/* Live Header */}
-          <motion.div {...fadeInUp} className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <span className="w-2.5 h-2.5 bg-destructive rounded-full block" />
-              <h1 className="font-display font-bold text-lg">{t('live.title')}</h1>
-              {!isLoading && liveMatches.length > 0 && (
-                <Badge variant="secondary" className="text-micro font-semibold px-2 py-0.5">
-                  {t('live.matchCount', { count: liveMatches.length })}
-                </Badge>
-              )}
-            </div>
-          </motion.div>
+      <main
+        className="flex-1 overflow-y-auto"
+        style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))' }}
+      >
+        <div className="container mx-auto px-3 py-4 space-y-4">
+          {/* Hero */}
+          <WCHeroBanner />
 
-          {/* League Filter with live match counts */}
-          <motion.div {...fadeInUp}>
-            <LeagueGrid 
-              selectedLeague={selectedLeague} 
-              onLeagueSelect={(code) => setSelectedLeague(code === selectedLeague ? '' : code)}
-              liveMatches={liveMatches}
-            />
-          </motion.div>
-
-          {/* Subtle delay note */}
-          <p className="text-[10px] text-muted-foreground/50 text-center">{t('live.delayNote')}</p>
-
-          {/* Content */}
-          {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {[1, 2, 3].map((i) => (
-                <LiveMatchSkeleton key={i} />
-              ))}
-            </div>
-          ) : error ? (
-            <div className="text-center py-16">
-              <WifiOff className="w-14 h-14 mx-auto mb-4 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground mb-4">{error}</p>
-              <Button variant="outline" onClick={syncLiveMatches} disabled={isSyncing} size="sm">
-                {t('live.retry')}
-              </Button>
-            </div>
-          ) : liveMatches.length === 0 ? (
-            <motion.div 
-              {...fadeInUp}
-              className="py-12 sm:py-16 text-center"
-            >
-              <Radio className="w-12 h-12 text-muted-foreground/25 mx-auto mb-5" />
-              
-              <h3 className="font-display font-bold text-base sm:text-lg mb-1.5">{t('live.noMatchesTitle')}</h3>
-              <p className="text-xs text-muted-foreground max-w-xs mx-auto mb-8">
-                {t('live.noMatchesDesc')}
-              </p>
-
-              <Button 
-                variant="default" 
-                onClick={() => navigate('/')}
-                className="gap-2.5 rounded-xl h-12 px-6 font-semibold text-sm shadow-[0_4px_20px_-4px_hsl(var(--primary)/0.35)] active:scale-[0.97] transition-all duration-200"
-              >
-                <Trophy className="w-4.5 h-4.5" />
-                {t('live.goToUpcoming')}
-              </Button>
-
-              <p className="text-[11px] text-muted-foreground/40 mt-4">{t('live.willAppear')}</p>
-            </motion.div>
-          ) : (
-            <motion.div
-              variants={staggerContainer}
-              initial="initial"
-              animate="animate"
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
-            >
-              <AnimatePresence mode="popLayout">
-                {liveMatches.map((match) => (
-                  <motion.div
-                    key={match.id}
-                    variants={staggerItem}
-                    layout
-                    exit={{ opacity: 0, scale: 0.9 }}
-                  >
-                    <LiveMatchCard2 match={match} onClick={() => handleMatchSelect(match)} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+          {/* Stage Chips */}
+          {chips.length > 1 && (
+            <motion.div {...fadeInUp}>
+              <StageChipSelector
+                chips={chips}
+                selectedId={selectedGroup || 'ALL'}
+                onSelect={setSelectedGroup}
+              />
             </motion.div>
           )}
 
+          {/* Matches Section */}
+          <motion.div {...fadeInUp} className="space-y-3">
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                {isUpcomingMode ? t('wc.upcomingTitle') : t('wc.ongoingTitle')}
+              </h2>
+              {hasLive && (
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase text-destructive">
+                  <span className="relative flex w-1.5 h-1.5">
+                    <span className="absolute inset-0 rounded-full bg-destructive animate-ping opacity-75" />
+                    <span className="relative w-1.5 h-1.5 rounded-full bg-destructive" />
+                  </span>
+                  {t('wc.liveCount', { count: filteredLive.length })}
+                </span>
+              )}
+            </div>
+
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              </div>
+            ) : displayCards.length === 0 ? (
+              <div className="rounded-2xl bg-card/40 border border-border/30 px-4 py-8 text-center">
+                <p className="text-xs text-muted-foreground">{t('wc.empty')}</p>
+              </div>
+            ) : (
+              <motion.div
+                variants={staggerContainer}
+                initial="initial"
+                animate="animate"
+                className="space-y-3"
+              >
+                {displayCards.map((match) => (
+                  <motion.div key={match.id} variants={staggerItem}>
+                    {hasLive ? (
+                      <LiveMatchCard2 match={match} onClick={() => handleMatchSelect(match)} />
+                    ) : (
+                      <UpcomingWCCard match={match} onClick={() => handleMatchSelect(match)} />
+                    )}
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </motion.div>
+
+          {/* Group Standings */}
+          {!isLoading && selectedGroupStandings.length > 0 && (
+            <motion.div {...fadeInUp}>
+              <WCStandingsCard
+                groupLabel={groupDisplayLabel}
+                rows={selectedGroupStandings as WCStandingRow[]}
+              />
+            </motion.div>
+          )}
         </div>
       </main>
-
-      <CommandPalette 
-        open={commandOpen} 
-        onOpenChange={setCommandOpen}
-        onTeamSelect={handleCommandTeamSelect}
-      />
     </div>
   );
 };

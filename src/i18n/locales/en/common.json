@@ -39,7 +39,8 @@
     "settings": "Settings",
     "history": "History",
     "logout": "Log Out",
-    "login": "Log In"
+    "login": "Log In",
+    "wc": "WC"
   },
   "language": {
     "label": "Language",
@@ -235,5 +236,31 @@
     "worstPpgSubtitle": "Lowest points per match average",
     "seasonGeneralNote": "Calculated based on overall season performance",
     "ppgUnit": "{{value}} pts/match"
+  },
+  "wc": {
+    "hero": {
+      "liveCoverage": "Live Coverage",
+      "comingSoon": "Tournament Soon",
+      "title": "WORLD CUP 2026",
+      "subtitle": "Road to the Final • USA • MEX • CAN",
+      "daysToKickoff_one": "{{count}} day to kickoff",
+      "daysToKickoff_other": "{{count}} days to kickoff"
+    },
+    "stages": {
+      "all": "All",
+      "group": "Group {{letter}}"
+    },
+    "ongoingTitle": "ONGOING MATCHES",
+    "upcomingTitle": "UPCOMING MATCHES",
+    "liveCount_one": "{{count}} match live",
+    "liveCount_other": "{{count}} matches live",
+    "empty": "No matches in this stage yet.",
+    "viewDetails": "View details",
+    "standings": {
+      "title": "{{group}} Standings",
+      "fullTable": "Full Table",
+      "team": "Team",
+      "empty": "Standings not available yet."
+    }
   }
 }
