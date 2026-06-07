@@ -103,5 +103,20 @@
   "dailyPick": {
     "title": "Günün Skoru",
     "unlockCta": "Tahmine Bak"
+  },
+  "worldCup": {
+    "badge": "Dünya Kupası 2026",
+    "title": "Dünya Kupası başlıyor",
+    "titleLive": "Dünya Kupası başladı!",
+    "subtitleCountdown": "11 Haziran'da ilk düdük çalıyor",
+    "subtitleLive": "104 maç, tek hedef: kupa",
+    "days": "Gün",
+    "hours": "Saat",
+    "minutes": "Dak",
+    "seconds": "Sn",
+    "meta": "104 maç • 48 takım • 12 grup",
+    "liveBadge": "Turnuva canlı",
+    "cta": "Dünya Kupası maçlarına git",
+    "ctaUpcoming": "Dünya Kupası fikstürünü gör"
   }
 }

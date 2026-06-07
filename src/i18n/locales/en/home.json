@@ -103,5 +103,20 @@
   "dailyPick": {
     "title": "Daily Score",
     "unlockCta": "See Prediction"
+  },
+  "worldCup": {
+    "badge": "World Cup 2026",
+    "title": "World Cup is coming",
+    "titleLive": "World Cup is live!",
+    "subtitleCountdown": "Kick-off on June 11",
+    "subtitleLive": "104 matches, one trophy",
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Min",
+    "seconds": "Sec",
+    "meta": "104 matches • 48 teams • 12 groups",
+    "liveBadge": "Tournament live",
+    "cta": "Go to World Cup matches",
+    "ctaUpcoming": "See World Cup fixtures"
   }
 }
