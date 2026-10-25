@@ -28,5 +28,50 @@
   "wcArchive": "World Cup 2026",
   "wcArchiveDesc": "The tournament is over. The new thrill is in the Arena.",
   "error": "Something went wrong",
-  "upsell": "Joker and AI tips are Premium"
+  "upsell": "Joker and AI tips are Premium",
+  "tabLeague": "Leagues",
+  "live": "LIVE",
+  "livePts": "live",
+  "community": "Community",
+  "picks": "{{count}} picks",
+  "streakWeeks": "{{count}} week streak",
+  "nextTier": "{{left}} pts to {{tier}}",
+  "lastWeek": "Last week",
+  "lastWeekText": "{{points}} pts · #{{rank}} of {{total}}",
+  "badges": "Badges",
+  "tier": {
+    "bronze": "Bronze",
+    "silver": "Silver",
+    "gold": "Gold",
+    "diamond": "Diamond"
+  },
+  "badge": {
+    "first_hit": "First Hit",
+    "joker_hit": "Joker Strike",
+    "perfect_week": "Perfect Week",
+    "streak_4": "4-Week Streak",
+    "podium": "Podium"
+  },
+  "league": {
+    "title": "Friend Leagues",
+    "desc": "Create a private league, share the code, compete with friends.",
+    "create": "Create",
+    "namePh": "League name",
+    "join": "Join",
+    "codePh": "League code",
+    "members": "{{count}} members",
+    "leave": "Leave",
+    "copy": "Share code",
+    "shareText": "Join my '{{name}}' league in GolMetrik Arena! Code: {{code}}",
+    "created": "League created",
+    "joined": "You joined the league",
+    "empty": "You have no leagues yet.",
+    "back": "My leagues",
+    "err": {
+      "invalid_code": "Invalid code",
+      "league_full": "League is full (50)",
+      "too_many": "League limit reached",
+      "invalid_name": "Name must be 2-32 characters"
+    }
+  }
 }

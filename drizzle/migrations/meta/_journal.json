@@ -15,6 +15,20 @@
       "when": 1792925152864,
       "tag": "0001_funnel_and_referrals",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792944287988,
+      "tag": "0002_arena_live_tiers_leagues",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792944300144,
+      "tag": "0003_arena_profile_volatile",
+      "breakpoints": true
     }
   ]
 }

@@ -28,5 +28,50 @@
   "wcArchive": "Mundial 2026",
   "wcArchiveDesc": "El torneo terminó. La nueva emoción está en la Arena.",
   "error": "Ocurrió un error",
-  "upsell": "Comodín y pistas IA son Premium"
+  "upsell": "Comodín y pistas IA son Premium",
+  "tabLeague": "Ligas",
+  "live": "EN VIVO",
+  "livePts": "en vivo",
+  "community": "Comunidad",
+  "picks": "{{count}} pronósticos",
+  "streakWeeks": "Racha de {{count}} semanas",
+  "nextTier": "{{left}} pts para {{tier}}",
+  "lastWeek": "Semana pasada",
+  "lastWeekText": "{{points}} pts · #{{rank}} de {{total}}",
+  "badges": "Insignias",
+  "tier": {
+    "bronze": "Bronce",
+    "silver": "Plata",
+    "gold": "Oro",
+    "diamond": "Diamante"
+  },
+  "badge": {
+    "first_hit": "Primer Acierto",
+    "joker_hit": "Golpe de Comodín",
+    "perfect_week": "Semana Perfecta",
+    "streak_4": "Racha de 4 Semanas",
+    "podium": "Podio"
+  },
+  "league": {
+    "title": "Ligas de Amigos",
+    "desc": "Crea una liga privada, comparte el código y compite con amigos.",
+    "create": "Crear",
+    "namePh": "Nombre de la liga",
+    "join": "Unirse",
+    "codePh": "Código de liga",
+    "members": "{{count}} miembros",
+    "leave": "Salir",
+    "copy": "Compartir código",
+    "shareText": "¡Únete a mi liga '{{name}}' en GolMetrik Arena! Código: {{code}}",
+    "created": "Liga creada",
+    "joined": "Te uniste a la liga",
+    "empty": "Aún no tienes ligas.",
+    "back": "Mis ligas",
+    "err": {
+      "invalid_code": "Código no válido",
+      "league_full": "Liga llena (50)",
+      "too_many": "Límite de ligas alcanzado",
+      "invalid_name": "El nombre debe tener 2-32 caracteres"
+    }
+  }
 }

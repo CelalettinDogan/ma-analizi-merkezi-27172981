@@ -1,0 +1,1 @@
+ALTER FUNCTION public.get_arena_profile() VOLATILE;

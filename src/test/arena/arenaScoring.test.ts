@@ -31,3 +31,11 @@ describe('arena scoring', () => {
     expect(isPickLocked('2026-10-25T12:01:00Z', now)).toBe(false);
   });
 });
+
+import { arenaTier } from '@/lib/arenaScoring';
+describe('arenaTier', () => {
+  it('bronze below 30', () => expect(arenaTier(29)).toBe('bronze'));
+  it('silver from 30', () => expect(arenaTier(30)).toBe('silver'));
+  it('gold from 90', () => expect(arenaTier(90)).toBe('gold'));
+  it('diamond from 200', () => expect(arenaTier(200)).toBe('diamond'));
+});
