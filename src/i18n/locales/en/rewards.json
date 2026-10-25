@@ -23,5 +23,20 @@
   "daySeries": "{{day}}-Day Streak",
   "dayShort": "Day",
   "badgeReward": "14+ day streak reward",
-  "premiumCta": "Get More Credits with Premium"
+  "premiumCta": "Get More Credits with Premium",
+  "referral": {
+    "title": "Invite & earn",
+    "desc": "When a friend signs up with your code, you both get +2 analyses.",
+    "share": "Invite",
+    "copied": "Copied",
+    "invited": "You invited {{count}} friends",
+    "placeholder": "Invite code",
+    "apply": "Apply",
+    "redeemed": "+2 analyses added!",
+    "shareText": "I analyze matches with GolMetrik AI. Join with code {{code}} and we both get +2 analyses!",
+    "err_invalid": "Invalid code",
+    "err_self": "You can't use your own code",
+    "err_used": "You already used a code",
+    "err_too_old": "Invite codes can only be used in your first 7 days"
+  }
 }

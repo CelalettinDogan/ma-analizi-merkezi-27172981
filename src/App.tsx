@@ -122,6 +122,7 @@ const AppContent = () => {
   // Initialize purchase service
   useEffect(() => {
     purchaseService.initialize().catch(console.error);
+    import('@/lib/analytics').then(m => m.logEvent('app_open'));
   }, []);
 
   // Initialize local notifications (streak + match reminders)

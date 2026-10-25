@@ -9,6 +9,8 @@ import { useAccessLevel } from '@/hooks/useAccessLevel';
 import { isPickLocked, ResultPick, OUPick } from '@/lib/arenaScoring';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { logEvent } from '@/lib/analytics';
+import { maybeRequestReview } from '@/lib/inAppReview';
 
 interface ArenaMatch {
   match_id: number;
@@ -88,6 +90,10 @@ const Arena: React.FC = () => {
     if (r) toast.success(t('rewardWon', { rank: r.rank, analysis: r.bonus_analysis, chat: r.bonus_chat }));
   }, [week.data?.reward, t]);
 
+  useEffect(() => {
+    if ((week.data?.matches ?? []).some(m => m.status === 'FINISHED' && (m.points ?? 0) > 0)) maybeRequestReview('arena_win');
+  }, [week.data]);
+
   const countdown = useCountdown(week.data?.ends_at);
 
   const submit = async (m: ArenaMatch, patch: Partial<{ result: ResultPick; ou: OUPick; joker: boolean }>) => {
@@ -105,6 +111,7 @@ const Arena: React.FC = () => {
       return;
     }
     if (navigator.vibrate) navigator.vibrate(10);
+    logEvent('arena_pick');
     qc.invalidateQueries({ queryKey: ['arena-week'] });
     qc.invalidateQueries({ queryKey: ['arena-lb'] });
   };

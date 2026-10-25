@@ -80,6 +80,7 @@ export function useMatchAnalysis() {
       });
 
       setAnalysis(result);
+      import('@/lib/analytics').then(m => m.logEvent('analysis_done'));
       return result;
     } catch (error) {
       console.error('Analysis error:', error);

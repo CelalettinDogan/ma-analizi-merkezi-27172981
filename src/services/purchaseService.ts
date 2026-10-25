@@ -133,6 +133,7 @@ class PurchaseService {
    * Start a real native subscription purchase
    */
   async purchaseSubscription(productId: string): Promise<PurchaseResult> {
+    import('@/lib/analytics').then(m => m.logEvent('purchase_start', { productId }));
     if (!this.isNative) {
       return { success: false, error: 'Satın alma için mobil uygulama gerekli.' };
     }
