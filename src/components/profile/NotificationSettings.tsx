@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, BellOff, Flame, Trophy, ShieldCheck, ShieldAlert, ShieldQuestion, ExternalLink } from 'lucide-react';
+import { Bell, BellOff, Flame, Trophy, ShieldCheck, ShieldAlert, ShieldQuestion, ExternalLink, Zap } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ const NotificationSettings: React.FC = () => {
   const [prefs, setPrefs] = useState<NotificationPrefs>({
     matchReminders: true,
     streakReminders: true,
+    arenaReminders: true,
   });
   const [loaded, setLoaded] = useState(false);
   const [permStatus, setPermStatus] = useState<PermissionStatus>('loading');
@@ -220,6 +221,26 @@ const NotificationSettings: React.FC = () => {
               <Switch
                 checked={prefs.streakReminders}
                 onCheckedChange={() => handleToggle('streakReminders')}
+                disabled={!isNative || isDenied}
+              />
+            </div>
+
+            {/* Arena reminders */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Zap className="h-4 w-4 text-amber-500" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {t('notifications.arenaTitle')}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {t('notifications.arenaDesc')}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={prefs.arenaReminders}
+                onCheckedChange={() => handleToggle('arenaReminders')}
                 disabled={!isNative || isDenied}
               />
             </div>

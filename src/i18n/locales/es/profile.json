@@ -115,6 +115,8 @@
     "permissionGranted": "¡Notificaciones habilitadas!",
     "permissionDenied": "Permiso de notificación denegado",
     "permissionFailed": "Solicitud de permiso fallida",
-    "settingsHint": "Ajustes > Apps > GolMetrik > Notificaciones"
+    "settingsHint": "Ajustes > Apps > GolMetrik > Notificaciones",
+    "arenaTitle": "Recordatorios de Arena",
+    "arenaDesc": "Nueva semana y partidos sin tu pronóstico"
   }
 }

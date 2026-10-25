@@ -115,6 +115,8 @@
     "permissionGranted": "Notifications enabled!",
     "permissionDenied": "Notification permission denied",
     "permissionFailed": "Permission request failed",
-    "settingsHint": "Go to Settings > Apps > GolMetrik > Notifications"
+    "settingsHint": "Go to Settings > Apps > GolMetrik > Notifications",
+    "arenaTitle": "Arena Reminders",
+    "arenaDesc": "New week and matches you have not picked yet"
   }
 }

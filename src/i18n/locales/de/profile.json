@@ -115,6 +115,8 @@
     "permissionGranted": "Benachrichtigungen aktiviert!",
     "permissionDenied": "Benachrichtigungsberechtigung verweigert",
     "permissionFailed": "Berechtigungsanfrage fehlgeschlagen",
-    "settingsHint": "Einstellungen > Apps > GolMetrik > Benachrichtigungen"
+    "settingsHint": "Einstellungen > Apps > GolMetrik > Benachrichtigungen",
+    "arenaTitle": "Arena-Erinnerungen",
+    "arenaDesc": "Neue Woche und Spiele ohne deine Tippabgabe"
   }
 }
