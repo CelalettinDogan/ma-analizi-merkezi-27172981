@@ -65,7 +65,12 @@
       "ariaLive": "مباشر",
       "halfTimeShort": "ش1",
       "quickAnalysis": "تحليل سريع"
-    }
+    },
+    "scoresTitle": "النتائج المباشرة",
+    "standingsLoading": "جارٍ تحميل الترتيب...",
+    "standingsError": "حدث خطأ أثناء تحميل الترتيب",
+    "delayNote": "قد تتأخر البيانات حوالي 15 دقيقة",
+    "emptyCta": "انتقل إلى المباريات القادمة"
   },
   "leagues": {
     "liveBadge": "{{count}} مباشر"
