@@ -29,7 +29,7 @@ const BottomNav = React.forwardRef<HTMLElement, { onSearchClick?: () => void }>(
   const computedItems = useMemo((): NavItem[] => {
     const items: NavItem[] = [
       { icon: Home, label: t('nav.home'), path: '/' },
-      { icon: Trophy, label: t('nav.wc'), path: '/live', badge: 'live' as const },
+      { icon: Trophy, label: t('nav.wc'), path: '/live', badge: undefined },
       { icon: Sparkles, label: t('nav.ai'), path: '/chat', isAI: true },
       { icon: BarChart3, label: t('nav.league'), path: '/standings' },
       { icon: User, label: t('nav.profile'), path: '/profile' },
