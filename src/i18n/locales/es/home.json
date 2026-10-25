@@ -65,7 +65,12 @@
       "ariaLive": "En vivo",
       "halfTimeShort": "D",
       "quickAnalysis": "Análisis Rápido"
-    }
+    },
+    "scoresTitle": "Marcadores en Vivo",
+    "standingsLoading": "Cargando clasificación...",
+    "standingsError": "Error al cargar la clasificación",
+    "delayNote": "Los datos pueden tener ~15 min de retraso",
+    "emptyCta": "Ir a Próximos Partidos"
   },
   "leagues": {
     "liveBadge": "{{count}} EN VIVO"
