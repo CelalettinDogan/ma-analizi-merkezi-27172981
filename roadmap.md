@@ -1,5 +1,7 @@
 # Roadmap — Downloads & Premium conversion
 
+- [ ] Fit Arena cards, ranks and community bars on phone screens in TR/EN/DE/ES/AR
+
 - [x] Preserve all unclaimed Arena top-3 rewards until the winner opens Arena — PostgreSQL late-return/once-only tests passed; signed-in Arena response verified
 
 - [x] Funnel tracking (app_events) + admin funnel card
