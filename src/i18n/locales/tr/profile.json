@@ -115,6 +115,8 @@
     "permissionGranted": "Bildirimler etkinleştirildi!",
     "permissionDenied": "Bildirim izni reddedildi",
     "permissionFailed": "İzin isteği başarısız oldu",
-    "settingsHint": "Ayarlar > Uygulamalar > GolMetrik > Bildirimler yolunu izleyin"
+    "settingsHint": "Ayarlar > Uygulamalar > GolMetrik > Bildirimler yolunu izleyin",
+    "arenaTitle": "Arena Hatırlatmaları",
+    "arenaDesc": "Yeni hafta ve tahminini yapmadığın maçlar"
   }
 }

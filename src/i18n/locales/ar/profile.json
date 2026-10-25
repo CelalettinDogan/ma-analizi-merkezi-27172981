@@ -115,6 +115,8 @@
     "permissionGranted": "تم تفعيل الإشعارات!",
     "permissionDenied": "تم رفض إذن الإشعارات",
     "permissionFailed": "فشل طلب الإذن",
-    "settingsHint": "الإعدادات > التطبيقات > GolMetrik > الإشعارات"
+    "settingsHint": "الإعدادات > التطبيقات > GolMetrik > الإشعارات",
+    "arenaTitle": "تذكيرات الأرينا",
+    "arenaDesc": "الأسبوع الجديد والمباريات التي لم تختر فيها بعد"
   }
 }
