@@ -41,13 +41,15 @@ interface ArenaWeek {
 interface LbRow { rank: number; name: string; points: number; correct: number; is_me: boolean }
 interface Lb { rows: LbRow[]; me: { rank: number; points: number; total: number } | null }
 
-const useCountdown = (target?: string) => {
+const useCountdown = (language: string, target?: string) => {
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 60_000); return () => clearInterval(i); }, []);
   if (!target) return '';
   const ms = Math.max(0, new Date(target).getTime() - now);
   const d = Math.floor(ms / 86_400_000), h = Math.floor((ms % 86_400_000) / 3_600_000), m = Math.floor((ms % 3_600_000) / 60_000);
-  return d > 0 ? `${d}d ${h}h` : `${h}h ${m}m`;
+  const unit = (value: number, name: 'day' | 'hour' | 'minute') =>
+    new Intl.NumberFormat(language, { style: 'unit', unit: name, unitDisplay: 'narrow' }).format(value);
+  return d > 0 ? `${unit(d, 'day')} ${unit(h, 'hour')}` : `${unit(h, 'hour')} ${unit(m, 'minute')}`;
 };
 
 const Crest = ({ src, name }: { src: string | null; name: string }) =>
@@ -123,7 +125,7 @@ const Arena: React.FC = () => {
     if ((week.data?.matches ?? []).some(m => m.status === 'FINISHED' && (m.points ?? 0) > 0)) maybeRequestReview('arena_win');
   }, [week.data]);
 
-  const countdown = useCountdown(week.data?.ends_at);
+  const countdown = useCountdown(i18n.language, week.data?.ends_at);
 
   const submit = async (m: ArenaMatch, patch: Partial<{ result: ResultPick; ou: OUPick; joker: boolean }>) => {
     if (patch.joker && !canJoker) { navigate('/premium?from=arena_joker'); return; }
@@ -163,8 +165,6 @@ const Arena: React.FC = () => {
       <main className="flex-1 min-h-0 min-w-0 overflow-y-auto px-4 pt-2 space-y-4" style={{ paddingBottom: 'calc(96px + env(safe-area-inset-bottom, 0px))' }}>
         {/* Hero */}
         <section className="relative overflow-hidden rounded-2xl border border-border/40 bg-card p-4">
-          <div className="absolute -top-16 -right-10 w-48 h-48 rounded-full bg-primary/15 blur-3xl" />
-          <div className="absolute -bottom-20 -left-10 w-48 h-48 rounded-full bg-accent/10 blur-3xl" />
           <div className="relative flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 text-primary text-xs font-semibold uppercase"><Trophy className="w-4 h-4" />{t('title')}</div>
@@ -195,7 +195,7 @@ const Arena: React.FC = () => {
         </section>
 
         {/* Tabs */}
-        <div className="grid grid-cols-4 gap-1 p-1 rounded-xl bg-muted/40">
+        <div className="grid grid-cols-2 min-[360px]:grid-cols-4 gap-1 p-1 rounded-xl bg-muted/40">
           {(['play', 'week', 'league', 'all'] as const).map(k => (
             <Button variant="ghost" size="sm" key={k} onClick={() => setTab(k)}
               className={cn('min-w-0 h-12 px-1 py-1 whitespace-normal rounded-lg text-xs leading-tight font-medium transition-colors', tab === k ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground')}>
@@ -247,9 +247,9 @@ const Arena: React.FC = () => {
                       </span>
                     </div>
                     <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 mb-3">
-                      <div className="flex items-center gap-2 min-w-0"><Crest src={m.home_crest} name={m.home} /><span className="min-w-0 text-xs font-semibold leading-snug break-words">{m.home}</span></div>
+                      <div className="flex flex-col min-[360px]:flex-row items-center gap-2 min-w-0"><Crest src={m.home_crest} name={m.home} /><span className="min-w-0 text-xs font-semibold leading-snug break-words text-center min-[360px]:text-start">{m.home}</span></div>
                       <span className="text-xs text-muted-foreground">vs</span>
-                      <div className="flex items-center gap-2 justify-end min-w-0"><span className="min-w-0 text-xs font-semibold leading-snug break-words text-end">{m.away}</span><Crest src={m.away_crest} name={m.away} /></div>
+                      <div className="flex flex-col-reverse min-[360px]:flex-row items-center gap-2 justify-end min-w-0"><span className="min-w-0 text-xs font-semibold leading-snug break-words text-center min-[360px]:text-end">{m.away}</span><Crest src={m.away_crest} name={m.away} /></div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       {(['1', 'X', '2'] as ResultPick[]).map(r => (
