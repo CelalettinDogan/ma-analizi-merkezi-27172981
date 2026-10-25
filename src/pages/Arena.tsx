@@ -34,7 +34,7 @@ const useCountdown = (target?: string) => {
   if (!target) return '';
   const ms = Math.max(0, new Date(target).getTime() - now);
   const d = Math.floor(ms / 86_400_000), h = Math.floor((ms % 86_400_000) / 3_600_000), m = Math.floor((ms % 3_600_000) / 60_000);
-  return d > 0 ? `${d}g ${h}s` : `${h}s ${m}dk`;
+  return d > 0 ? `${d}d ${h}h` : `${h}h ${m}m`;
 };
 
 const Crest = ({ src, name }: { src: string | null; name: string }) =>
