@@ -23,5 +23,20 @@
   "daySeries": "{{day}}-Tage-Serie",
   "dayShort": "Tag",
   "badgeReward": "Belohnung für 14+ Tage Serie",
-  "premiumCta": "Mit Premium mehr Guthaben sichern"
+  "premiumCta": "Mit Premium mehr Guthaben sichern",
+  "referral": {
+    "title": "Einladen & verdienen",
+    "desc": "Meldet sich ein Freund mit deinem Code an, erhaltet ihr beide +2 Analysen.",
+    "share": "Einladen",
+    "copied": "Kopiert",
+    "invited": "{{count}} Freunde eingeladen",
+    "placeholder": "Einladungscode",
+    "apply": "Einlösen",
+    "redeemed": "+2 Analysen hinzugefügt!",
+    "shareText": "Ich analysiere Spiele mit GolMetrik AI. Mit Code {{code}} bekommen wir beide +2 Analysen!",
+    "err_invalid": "Ungültiger Code",
+    "err_self": "Eigener Code nicht möglich",
+    "err_used": "Du hast bereits einen Code genutzt",
+    "err_too_old": "Codes nur in den ersten 7 Tagen einlösbar"
+  }
 }

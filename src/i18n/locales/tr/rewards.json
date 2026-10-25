@@ -23,5 +23,20 @@
   "daySeries": "{{day}} Gün Serisi",
   "dayShort": "Gün",
   "badgeReward": "14+ gün seri ödülü",
-  "premiumCta": "Premium ile Daha Fazla Hak Kazan"
+  "premiumCta": "Premium ile Daha Fazla Hak Kazan",
+  "referral": {
+    "title": "Davet et, kazan",
+    "desc": "Arkadaşın kodunla kayıt olursa ikinize de +2 analiz hakkı.",
+    "share": "Davet et",
+    "copied": "Kopyalandı",
+    "invited": "{{count}} arkadaş davet ettin",
+    "placeholder": "Davet kodu",
+    "apply": "Uygula",
+    "redeemed": "+2 analiz hakkı eklendi!",
+    "shareText": "GolMetrik AI ile maçları analiz ediyorum. {{code}} koduyla katıl, ikimiz de +2 analiz kazanalım!",
+    "err_invalid": "Kod geçersiz",
+    "err_self": "Kendi kodunu kullanamazsın",
+    "err_used": "Zaten bir kod kullandın",
+    "err_too_old": "Davet kodu yalnızca ilk 7 gün kullanılabilir"
+  }
 }

@@ -11,6 +11,7 @@ import type { AdminSection } from '@/components/admin/AdminSidebar';
 import AdminCommandPalette from '@/components/admin/AdminCommandPalette';
 import { useAdminHotkeys } from '@/hooks/admin/useAdminHotkeys';
 import DashboardStats from '@/components/admin/DashboardStats';
+import ConversionFunnel from '@/components/admin/ConversionFunnel';
 import UserManagement from '@/components/admin/UserManagement';
 import PremiumManagement from '@/components/admin/PremiumManagement';
 import RevenueManagement from '@/components/admin/RevenueManagement';
@@ -161,11 +162,14 @@ const AdminPage: React.FC = () => {
     switch (activeSection) {
       case 'dashboard':
         return (
-          <DashboardStats
-            data={dashboardData}
-            isLoading={isLoading || sectionLoading}
-            onRefreshAnalytics={triggerAnalyticsRefresh}
-          />
+          <div className="space-y-4">
+            <DashboardStats
+              data={dashboardData}
+              isLoading={isLoading || sectionLoading}
+              onRefreshAnalytics={triggerAnalyticsRefresh}
+            />
+            <ConversionFunnel />
+          </div>
         );
       case 'users':
         return (

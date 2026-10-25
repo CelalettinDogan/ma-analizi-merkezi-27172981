@@ -23,5 +23,20 @@
   "daySeries": "Racha de {{day}} Días",
   "dayShort": "Día",
   "badgeReward": "Recompensa por 14+ días de racha",
-  "premiumCta": "Consigue más créditos con Premium"
+  "premiumCta": "Consigue más créditos con Premium",
+  "referral": {
+    "title": "Invita y gana",
+    "desc": "Si un amigo se registra con tu código, ambos ganan +2 análisis.",
+    "share": "Invitar",
+    "copied": "Copiado",
+    "invited": "Invitaste a {{count}} amigos",
+    "placeholder": "Código de invitación",
+    "apply": "Aplicar",
+    "redeemed": "¡+2 análisis añadidos!",
+    "shareText": "Analizo partidos con GolMetrik AI. ¡Únete con el código {{code}} y ganamos +2 análisis!",
+    "err_invalid": "Código no válido",
+    "err_self": "No puedes usar tu propio código",
+    "err_used": "Ya usaste un código",
+    "err_too_old": "Solo se puede usar en tus primeros 7 días"
+  }
 }
