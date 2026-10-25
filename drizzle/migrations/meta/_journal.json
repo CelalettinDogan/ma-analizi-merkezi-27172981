@@ -36,6 +36,13 @@
       "when": 1792951397261,
       "tag": "0004_protect_arena_matches_from_cleanup",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792952743340,
+      "tag": "0005_retain_pending_arena_rewards",
+      "breakpoints": true
     }
   ]
 }

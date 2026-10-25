@@ -264,18 +264,21 @@ export type Database = {
       }
       arena_rewards: {
         Row: {
+          claimed_at: string | null
           created_at: string
           rank: number
           user_id: string
           week_start: string
         }
         Insert: {
+          claimed_at?: string | null
           created_at?: string
           rank: number
           user_id: string
           week_start: string
         }
         Update: {
+          claimed_at?: string | null
           created_at?: string
           rank?: number
           user_id?: string
@@ -1627,6 +1630,7 @@ export type Database = {
     }
     Functions: {
       arena_ensure_week: { Args: { p_week: string }; Returns: number[] }
+      arena_save_pending_rewards: { Args: never; Returns: undefined }
       arena_scored_picks: {
         Args: { p_week: string }
         Returns: {
