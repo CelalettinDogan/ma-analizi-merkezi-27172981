@@ -8,14 +8,21 @@ import {
 
 const NOW = new Date('2026-10-25T12:00:00.000Z');
 
-const match = (over: Partial<ReminderCandidateMatch> = {}): ReminderCandidateMatch => ({
-  match_id: 1,
-  home_team_name: 'Galatasaray',
-  away_team_name: 'Fenerbahçe',
-  utc_date: '2026-10-26T18:00:00.000Z',
-  status: 'TIMED',
-  ...over,
-});
+type TestMatch = ReminderCandidateMatch & {
+  home_team_id?: number | null;
+  away_team_id?: number | null;
+  pick?: unknown;
+};
+
+const match = (over: Record<string, unknown> = {}): TestMatch =>
+  ({
+    match_id: 1,
+    home_team_name: 'Galatasaray',
+    away_team_name: 'Fenerbahçe',
+    utc_date: '2026-10-26T18:00:00.000Z',
+    status: 'TIMED',
+    ...over,
+  }) as TestMatch;
 
 describe('reminderTimeFor', () => {
   it('returns kickoff minus 2 hours when far enough in the future', () => {
