@@ -93,7 +93,7 @@ const Arena: React.FC = () => {
   const submit = async (m: ArenaMatch, patch: Partial<{ result: ResultPick; ou: OUPick; joker: boolean }>) => {
     if (patch.joker && !canJoker) { navigate('/premium?from=arena_joker'); return; }
     const next = { result: m.pick?.result ?? null, ou: m.pick?.ou ?? null, joker: m.pick?.joker ?? false, ...patch };
-    if (!next.result) { if (patch.ou !== undefined || patch.joker !== undefined) toast(t('subtitle')); if (!patch.result) return; }
+    if (!next.result) { toast(t('rules')); return; }
     setSaving(m.match_id);
     const { error } = await supabase.rpc('submit_arena_pick' as any, {
       p_match_id: m.match_id, p_result: next.result, p_ou: next.ou, p_joker: next.joker,
