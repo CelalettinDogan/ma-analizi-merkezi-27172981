@@ -28,5 +28,50 @@
   "wcArchive": "Dünya Kupası 2026",
   "wcArchiveDesc": "Turnuva sona erdi. Yeni heyecan Arena'da.",
   "error": "Bir hata oluştu",
-  "upsell": "Joker ve AI ipuçları Premium'da"
+  "upsell": "Joker ve AI ipuçları Premium'da",
+  "tabLeague": "Ligler",
+  "live": "CANLI",
+  "livePts": "anlık",
+  "community": "Topluluk",
+  "picks": "{{count}} tahmin",
+  "streakWeeks": "{{count}} hafta seri",
+  "nextTier": "{{tier}} için {{left}} puan",
+  "lastWeek": "Geçen hafta",
+  "lastWeekText": "{{points}} puan · {{rank}}. sıra / {{total}}",
+  "badges": "Rozetler",
+  "tier": {
+    "bronze": "Bronz",
+    "silver": "Gümüş",
+    "gold": "Altın",
+    "diamond": "Elmas"
+  },
+  "badge": {
+    "first_hit": "İlk İsabet",
+    "joker_hit": "Joker Vuruşu",
+    "perfect_week": "Kusursuz Hafta",
+    "streak_4": "4 Hafta Seri",
+    "podium": "Kürsü"
+  },
+  "league": {
+    "title": "Arkadaş Ligleri",
+    "desc": "Özel lig kur, kodu paylaş, arkadaşlarınla yarış.",
+    "create": "Lig Kur",
+    "namePh": "Lig adı",
+    "join": "Katıl",
+    "codePh": "Lig kodu",
+    "members": "{{count}} üye",
+    "leave": "Ayrıl",
+    "copy": "Kodu paylaş",
+    "shareText": "GolMetrik Arena'da '{{name}}' ligime katıl! Kod: {{code}}",
+    "created": "Lig kuruldu",
+    "joined": "Lige katıldın",
+    "empty": "Henüz bir ligin yok.",
+    "back": "Liglerim",
+    "err": {
+      "invalid_code": "Geçersiz kod",
+      "league_full": "Lig dolu (50 üye)",
+      "too_many": "Lig sınırına ulaştın",
+      "invalid_name": "Ad 2-32 karakter olmalı"
+    }
+  }
 }

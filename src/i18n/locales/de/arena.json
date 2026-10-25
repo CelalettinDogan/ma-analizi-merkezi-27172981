@@ -28,5 +28,50 @@
   "wcArchive": "WM 2026",
   "wcArchiveDesc": "Das Turnier ist vorbei. Die neue Spannung gibt es in der Arena.",
   "error": "Ein Fehler ist aufgetreten",
-  "upsell": "Joker und KI-Tipps sind Premium"
+  "upsell": "Joker und KI-Tipps sind Premium",
+  "tabLeague": "Ligen",
+  "live": "LIVE",
+  "livePts": "live",
+  "community": "Community",
+  "picks": "{{count}} Tipps",
+  "streakWeeks": "{{count}} Wochen Serie",
+  "nextTier": "Noch {{left}} Pkt. bis {{tier}}",
+  "lastWeek": "Letzte Woche",
+  "lastWeekText": "{{points}} Pkt. · Platz {{rank}} von {{total}}",
+  "badges": "Abzeichen",
+  "tier": {
+    "bronze": "Bronze",
+    "silver": "Silber",
+    "gold": "Gold",
+    "diamond": "Diamant"
+  },
+  "badge": {
+    "first_hit": "Erster Treffer",
+    "joker_hit": "Joker-Treffer",
+    "perfect_week": "Perfekte Woche",
+    "streak_4": "4-Wochen-Serie",
+    "podium": "Podest"
+  },
+  "league": {
+    "title": "Freundesligen",
+    "desc": "Erstelle eine private Liga, teile den Code und tritt gegen Freunde an.",
+    "create": "Erstellen",
+    "namePh": "Liganame",
+    "join": "Beitreten",
+    "codePh": "Liga-Code",
+    "members": "{{count}} Mitglieder",
+    "leave": "Verlassen",
+    "copy": "Code teilen",
+    "shareText": "Tritt meiner Liga '{{name}}' in der GolMetrik Arena bei! Code: {{code}}",
+    "created": "Liga erstellt",
+    "joined": "Liga beigetreten",
+    "empty": "Du hast noch keine Liga.",
+    "back": "Meine Ligen",
+    "err": {
+      "invalid_code": "Ungültiger Code",
+      "league_full": "Liga ist voll (50)",
+      "too_many": "Liga-Limit erreicht",
+      "invalid_name": "Name muss 2-32 Zeichen haben"
+    }
+  }
 }
