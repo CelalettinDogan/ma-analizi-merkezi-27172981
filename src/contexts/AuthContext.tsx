@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         setSession(session);
         setUser(session?.user ?? null);
-        if (session) saveNativeSession(session);
+        if (session) { saveNativeSession(session); if (event === 'SIGNED_IN') userSignedOut.current = false; }
         if (event === 'SIGNED_OUT') clearNativeSession();
         if (initialized.current) setIsLoading(false);
       }
