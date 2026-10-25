@@ -34,6 +34,7 @@ const nextTierName = (total: number) => (total >= 90 ? 'diamond' : total >= 30 ?
 interface ArenaWeek {
   week_start: string; ends_at: string; participants: number;
   reward: { rank: number; bonus_analysis: number; bonus_chat: number } | null;
+  rewards?: { week_start: string; rank: number; bonus_analysis: number; bonus_chat: number }[];
   matches: ArenaMatch[];
 }
 interface LbRow { rank: number; name: string; points: number; correct: number; is_me: boolean }
@@ -107,9 +108,15 @@ const Arena: React.FC = () => {
   });
 
   useEffect(() => {
-    const r = week.data?.reward;
-    if (r) toast.success(t('rewardWon', { rank: r.rank, analysis: r.bonus_analysis, chat: r.bonus_chat }));
-  }, [week.data?.reward, t]);
+    const rewards = week.data?.rewards ?? (week.data?.reward ? [week.data.reward] : []);
+    for (const r of rewards) {
+      toast.success(t('rewardWon', { rank: r.rank, analysis: r.bonus_analysis, chat: r.bonus_chat }));
+    }
+    if (rewards.length > 0) {
+      qc.invalidateQueries({ queryKey: ['bonus-credits'] });
+      qc.invalidateQueries({ queryKey: ['arena-profile'] });
+    }
+  }, [week.data?.rewards, week.data?.reward, t, qc]);
 
   useEffect(() => {
     if ((week.data?.matches ?? []).some(m => m.status === 'FINISHED' && (m.points ?? 0) > 0)) maybeRequestReview('arena_win');
