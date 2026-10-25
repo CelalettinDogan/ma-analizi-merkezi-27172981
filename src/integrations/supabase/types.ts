@@ -176,6 +176,56 @@ export type Database = {
         }
         Relationships: []
       }
+      arena_league_members: {
+        Row: {
+          joined_at: string
+          league_id: string
+          user_id: string
+        }
+        Insert: {
+          joined_at?: string
+          league_id: string
+          user_id: string
+        }
+        Update: {
+          joined_at?: string
+          league_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "arena_league_members_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "arena_leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      arena_leagues: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
       arena_picks: {
         Row: {
           created_at: string
@@ -1580,12 +1630,15 @@ export type Database = {
       arena_scored_picks: {
         Args: { p_week: string }
         Returns: {
+          live: boolean
           match_id: number
           points: number
+          result_ok: boolean
           settled: boolean
           user_id: string
         }[]
       }
+      arena_tier: { Args: { p_total: number }; Returns: string }
       arena_week_start: { Args: { p_offset?: number }; Returns: string }
       cleanup_expired_caches: { Args: never; Returns: undefined }
       cleanup_expired_premiums: { Args: never; Returns: undefined }
@@ -1596,7 +1649,13 @@ export type Database = {
       cleanup_old_chatbot_usage: { Args: never; Returns: undefined }
       cleanup_old_features: { Args: never; Returns: undefined }
       cleanup_old_predictions: { Args: never; Returns: undefined }
+      create_arena_league: { Args: { p_name: string }; Returns: Json }
       get_arena_leaderboard: { Args: { p_scope?: string }; Returns: Json }
+      get_arena_league_board: {
+        Args: { p_league: string; p_scope?: string }
+        Returns: Json
+      }
+      get_arena_profile: { Args: never; Returns: Json }
       get_arena_week: { Args: never; Returns: Json }
       get_bonus_credits: { Args: never; Returns: Json }
       get_conversion_funnel: { Args: { p_days?: number }; Returns: Json }
@@ -1606,6 +1665,7 @@ export type Database = {
       get_daily_usage:
         | { Args: never; Returns: number }
         | { Args: { p_user_id: string }; Returns: number }
+      get_my_arena_leagues: { Args: never; Returns: Json }
       get_my_predictor_stats: { Args: never; Returns: Json }
       get_my_referral: { Args: never; Returns: Json }
       grant_streak_reward: { Args: never; Returns: Json }
@@ -1629,6 +1689,8 @@ export type Database = {
       is_premium_user:
         | { Args: never; Returns: boolean }
         | { Args: { p_user_id: string }; Returns: boolean }
+      join_arena_league: { Args: { p_code: string }; Returns: Json }
+      leave_arena_league: { Args: { p_league: string }; Returns: undefined }
       redeem_referral: { Args: { p_code: string }; Returns: Json }
       submit_arena_pick: {
         Args: {
