@@ -149,6 +149,81 @@ export type Database = {
         }
         Relationships: []
       }
+      arena_picks: {
+        Row: {
+          created_at: string
+          id: string
+          joker: boolean
+          match_id: number
+          ou_pick: string | null
+          result_pick: string
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          joker?: boolean
+          match_id: number
+          ou_pick?: string | null
+          result_pick: string
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          joker?: boolean
+          match_id?: number
+          ou_pick?: string | null
+          result_pick?: string
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
+      arena_rewards: {
+        Row: {
+          created_at: string
+          rank: number
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          rank: number
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          rank?: number
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
+      arena_weeks: {
+        Row: {
+          created_at: string
+          match_ids: number[]
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          match_ids?: number[]
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          match_ids?: number[]
+          week_start?: string
+        }
+        Relationships: []
+      }
       bet_slip_items: {
         Row: {
           away_score: number | null
@@ -1438,6 +1513,17 @@ export type Database = {
       }
     }
     Functions: {
+      arena_ensure_week: { Args: { p_week: string }; Returns: number[] }
+      arena_scored_picks: {
+        Args: { p_week: string }
+        Returns: {
+          match_id: number
+          points: number
+          settled: boolean
+          user_id: string
+        }[]
+      }
+      arena_week_start: { Args: { p_offset?: number }; Returns: string }
       cleanup_expired_caches: { Args: never; Returns: undefined }
       cleanup_expired_premiums: { Args: never; Returns: undefined }
       cleanup_old_analysis_usage: { Args: never; Returns: undefined }
@@ -1447,6 +1533,8 @@ export type Database = {
       cleanup_old_chatbot_usage: { Args: never; Returns: undefined }
       cleanup_old_features: { Args: never; Returns: undefined }
       cleanup_old_predictions: { Args: never; Returns: undefined }
+      get_arena_leaderboard: { Args: { p_scope?: string }; Returns: Json }
+      get_arena_week: { Args: never; Returns: Json }
       get_bonus_credits: { Args: never; Returns: Json }
       get_daily_analysis_usage:
         | { Args: never; Returns: number }
@@ -1476,6 +1564,15 @@ export type Database = {
       is_premium_user:
         | { Args: never; Returns: boolean }
         | { Args: { p_user_id: string }; Returns: boolean }
+      submit_arena_pick: {
+        Args: {
+          p_joker?: boolean
+          p_match_id: number
+          p_ou: string
+          p_result: string
+        }
+        Returns: Json
+      }
       update_user_streak: { Args: never; Returns: Json }
       use_bonus_credit: { Args: { credit_type: string }; Returns: boolean }
       use_bonus_credit_for_user: {
