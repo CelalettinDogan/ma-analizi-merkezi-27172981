@@ -1,5 +1,7 @@
 # Roadmap — Downloads & Premium conversion
 
+- [ ] Preserve and verify all unclaimed Arena top-3 rewards until the winner opens Arena
+
 - [x] Funnel tracking (app_events) + admin funnel card
 - [x] In-App Review prompt after positive moments (Arena win, 90-day cooldown)
 - [x] Referral (invite & earn +2 analyses both sides, first 7 days)
