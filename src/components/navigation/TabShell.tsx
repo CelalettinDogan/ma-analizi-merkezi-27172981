@@ -64,6 +64,13 @@ const TabShell: React.FC = () => {
   const [visitedTabs, setVisitedTabs] = useState<Set<TabPath>>(new Set(['/']));
 
   useEffect(() => {
+    if (activeTab === '/premium') {
+      const from = new URLSearchParams(location.search).get('from') ?? 'direct';
+      import('@/lib/analytics').then(m => m.logEvent('paywall_view', { from }));
+    }
+  }, [activeTab, location.search]);
+
+  useEffect(() => {
     if (activeTab && !visitedTabs.has(activeTab)) {
       setVisitedTabs(prev => new Set(prev).add(activeTab));
     }
