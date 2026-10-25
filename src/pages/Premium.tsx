@@ -248,6 +248,11 @@ const Premium = () => {
   const tapMedium = useHapticTap('medium');
   const tapLight = useHapticTap('light');
 
+  useEffect(() => {
+    const from = new URLSearchParams(window.location.search).get('from') ?? 'direct';
+    import('@/lib/analytics').then(m => m.logEvent('paywall_view', { from }));
+  }, []);
+
   const sel = plans.find(p => p.id === selectedPlan)!;
   const productId = isYearly ? sel.yearlyId : sel.monthlyId;
   const planName = t(`plans.${sel.nameKey}.name`);
