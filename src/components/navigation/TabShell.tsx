@@ -8,7 +8,7 @@ import { useLocalNotifications } from '@/hooks/useLocalNotifications';
 
 // Index stays eager (first screen), rest are lazy loaded for bundle optimization
 import Index from '@/pages/Index';
-const Live = React.lazy(() => import('@/pages/Live'));
+const Live = React.lazy(() => import('@/pages/Arena'));
 const Chat = React.lazy(() => import('@/pages/Chat'));
 const Standings = React.lazy(() => import('@/pages/Standings'));
 const Premium = React.lazy(() => import('@/pages/Premium'));
