@@ -39,3 +39,13 @@ export function scoreArenaPick(pick: ArenaPickInput, m: MatchOutcome): number {
 export function isPickLocked(kickoffIso: string, now: Date = new Date()): boolean {
   return new Date(kickoffIso).getTime() <= now.getTime();
 }
+
+/** Mirror of SQL arena_tier(): cumulative settled points -> tier. */
+export type ArenaTier = 'bronze' | 'silver' | 'gold' | 'diamond';
+export const TIER_THRESHOLDS = { silver: 30, gold: 90, diamond: 200 } as const;
+export function arenaTier(total: number): ArenaTier {
+  if (total >= TIER_THRESHOLDS.diamond) return 'diamond';
+  if (total >= TIER_THRESHOLDS.gold) return 'gold';
+  if (total >= TIER_THRESHOLDS.silver) return 'silver';
+  return 'bronze';
+}
