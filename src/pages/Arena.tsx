@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Trophy, Lock, Sparkles, Zap, Share2, Users, Timer, Gift, Crown, Loader2 } from 'lucide-react';
+import { Trophy, Lock, Sparkles, Zap, Share2, Users, Timer, Gift, Crown, Loader2, Flame, Medal, Radio } from 'lucide-react';
+import ArenaLeagues from '@/components/arena/ArenaLeagues';
 import AppHeader from '@/components/layout/AppHeader';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccessLevel } from '@/hooks/useAccessLevel';
@@ -21,7 +22,15 @@ interface ArenaMatch {
   home_score: number | null; away_score: number | null;
   pick: { result: ResultPick; ou: OUPick; joker: boolean } | null;
   points: number | null;
+  minute?: string | null;
+  dist?: { n: number; '1': number; X: number; '2': number } | null;
 }
+interface ArenaProfile {
+  total: number; tier: 'bronze' | 'silver' | 'gold' | 'diamond'; next: number | null; streak: number;
+  last_week: { points: number; rank: number; total: number } | null; badges: string[];
+}
+const TIER_CLS: Record<string, string> = { bronze: 'text-accent/80 border-accent/30', silver: 'text-muted-foreground border-border', gold: 'text-accent border-accent/60', diamond: 'text-primary border-primary/60' };
+const nextTierName = (total: number) => (total >= 90 ? 'diamond' : total >= 30 ? 'gold' : 'silver');
 interface ArenaWeek {
   week_start: string; ends_at: string; participants: number;
   reward: { rank: number; bonus_analysis: number; bonus_chat: number } | null;
@@ -49,7 +58,7 @@ const Arena: React.FC = () => {
   const qc = useQueryClient();
   const { isPremium, isAdmin } = useAccessLevel();
   const canJoker = isPremium || isAdmin;
-  const [tab, setTab] = useState<'play' | 'week' | 'all'>('play');
+  const [tab, setTab] = useState<'play' | 'week' | 'league' | 'all'>('play');
   const [saving, setSaving] = useState<number | null>(null);
 
   const week = useQuery({
@@ -60,10 +69,22 @@ const Arena: React.FC = () => {
       return data as unknown as ArenaWeek;
     },
     staleTime: 60_000,
+    refetchInterval: (q) => ((q.state.data as ArenaWeek | undefined)?.matches ?? []).some(m => m.status === 'IN_PLAY') ? 60_000 : false,
+  });
+
+  const profile = useQuery({
+    queryKey: ['arena-profile'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_arena_profile' as any);
+      if (error) throw error;
+      return data as unknown as ArenaProfile;
+    },
+    staleTime: 5 * 60_000,
   });
 
   const lb = useQuery({
     queryKey: ['arena-lb', tab === 'all' ? 'all' : 'week'],
+    enabled: tab === 'week' || tab === 'all',
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_arena_leaderboard' as any, { p_scope: tab === 'all' ? 'all' : 'week' });
       if (error) throw error;
@@ -114,6 +135,7 @@ const Arena: React.FC = () => {
     logEvent('arena_pick');
     qc.invalidateQueries({ queryKey: ['arena-week'] });
     qc.invalidateQueries({ queryKey: ['arena-lb'] });
+    qc.invalidateQueries({ queryKey: ['arena-profile'] });
   };
 
   const myPoints = (week.data?.matches ?? []).reduce((s, m) => s + (m.points ?? 0), 0);
@@ -139,6 +161,18 @@ const Arena: React.FC = () => {
             <div>
               <div className="flex items-center gap-2 text-primary text-xs font-semibold uppercase tracking-wider"><Trophy className="w-4 h-4" />{t('title')}</div>
               <h1 className="mt-1 text-lg font-bold text-foreground leading-snug">{t('subtitle')}</h1>
+              {profile.data && (
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+                  <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5', TIER_CLS[profile.data.tier])}><Medal className="w-3 h-3" />{t(`tier.${profile.data.tier}`)}</span>
+                  {profile.data.streak > 0 && <span className="flex items-center gap-1 rounded-full border border-accent/40 px-2 py-0.5 text-accent"><Flame className="w-3 h-3" />{t('streakWeeks', { count: profile.data.streak })}</span>}
+                </div>
+              )}
+              {profile.data?.next != null && (
+                <div className="mt-2 w-40">
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden"><div className="h-full bg-primary" style={{ width: `${Math.min(100, (profile.data.total / profile.data.next) * 100)}%` }} /></div>
+                  <p className="mt-1 text-[10px] text-muted-foreground">{t('nextTier', { left: profile.data.next - profile.data.total, tier: t(`tier.${nextTierName(profile.data.total)}`) })}</p>
+                </div>
+              )}
             </div>
             <div className="text-right shrink-0">
               <div className="text-3xl font-black text-primary tabular-nums">{myPoints}</div>
@@ -153,11 +187,11 @@ const Arena: React.FC = () => {
         </section>
 
         {/* Tabs */}
-        <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-muted/40">
-          {(['play', 'week', 'all'] as const).map(k => (
+        <div className="grid grid-cols-4 gap-1 p-1 rounded-xl bg-muted/40">
+          {(['play', 'week', 'league', 'all'] as const).map(k => (
             <button key={k} onClick={() => setTab(k)}
               className={cn('h-9 rounded-lg text-sm font-medium transition-colors', tab === k ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground')}>
-              {t(k === 'play' ? 'tabPlay' : k === 'week' ? 'tabWeek' : 'tabAll')}
+              {t(k === 'play' ? 'tabPlay' : k === 'week' ? 'tabWeek' : k === 'league' ? 'tabLeague' : 'tabAll')}
             </button>
           ))}
         </div>
@@ -165,11 +199,30 @@ const Arena: React.FC = () => {
         {tab === 'play' && (
           <>
             {week.isLoading && <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}
+            {profile.data?.last_week && (
+              <div className="rounded-2xl border border-primary/30 bg-primary/5 p-3 flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-[11px] text-muted-foreground">{t('lastWeek')}</p>
+                  <p className="text-sm font-semibold text-foreground">{t('lastWeekText', profile.data.last_week)}</p>
+                </div>
+                <button onClick={() => { const text = t('shareText', { points: profile.data!.last_week!.points }); if (navigator.share) navigator.share({ text, url: 'https://golmetrikapp.lovable.app' }).catch(() => {}); else navigator.clipboard.writeText(text).then(() => toast.success(t('share'))); }}
+                  className="text-primary min-h-[44px] px-2" aria-label={t('share')}><Share2 className="w-4 h-4" /></button>
+              </div>
+            )}
+            {(profile.data?.badges?.length ?? 0) > 0 && (
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {profile.data!.badges.map(b => (
+                  <span key={b} className="shrink-0 flex items-center gap-1 rounded-full border border-accent/40 bg-accent/10 px-3 h-8 text-xs font-semibold text-accent"><Medal className="w-3.5 h-3.5" />{t(`badge.${b}`)}</span>
+                ))}
+              </div>
+            )}
             {week.data && week.data.matches.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">{t('empty')}</p>}
             <div className="space-y-3">
               {week.data?.matches.map(m => {
                 const locked = isPickLocked(m.utc_date);
                 const finished = m.status === 'FINISHED';
+                const isLive = m.status === 'IN_PLAY';
+                const d = m.dist;
                 const s = strength.data;
                 const hs = s?.[m.home] ?? 1, as = s?.[m.away] ?? 1;
                 const favHome = hs >= as;
@@ -179,9 +232,10 @@ const Arena: React.FC = () => {
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-2">
                       <span className="truncate">{m.competition_name}</span>
                       <span className="flex items-center gap-1">
-                        {locked && !finished && <Lock className="w-3 h-3" />}
-                        {finished ? `${m.home_score}-${m.away_score}` : locked ? t('locked') : fmtTime(m.utc_date)}
-                        {m.points != null && finished && <span className={cn('ml-1 font-bold', m.points > 0 ? 'text-primary' : 'text-muted-foreground')}>+{m.points}</span>}
+                        {isLive && <span className="flex items-center gap-1 text-destructive font-bold"><Radio className="w-3 h-3 animate-pulse" />{t('live')}{m.minute ? ` ${m.minute}'` : ''}</span>}
+                        {locked && !finished && !isLive && <Lock className="w-3 h-3" />}
+                        {finished || (isLive && m.home_score != null) ? <span className="font-bold text-foreground">{m.home_score}-{m.away_score}</span> : locked ? t('locked') : fmtTime(m.utc_date)}
+                        {m.points != null && m.pick && (finished || isLive) && <span className={cn('ml-1 font-bold', m.points > 0 ? 'text-primary' : 'text-muted-foreground')}>+{m.points}{isLive ? ` ${t('livePts')}` : ''}</span>}
                       </span>
                     </div>
                     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-3">
@@ -196,6 +250,20 @@ const Arena: React.FC = () => {
                             m.pick?.result === r ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/30 border-border/40 text-foreground')}>{r}</button>
                       ))}
                     </div>
+                    {d && d.n > 0 && (
+                      <div className="mt-2">
+                        <div className="flex h-1.5 rounded-full overflow-hidden bg-muted">
+                          <div className="bg-primary" style={{ width: `${(d['1'] / d.n) * 100}%` }} />
+                          <div className="bg-muted-foreground/50" style={{ width: `${(d.X / d.n) * 100}%` }} />
+                          <div className="bg-accent" style={{ width: `${(d['2'] / d.n) * 100}%` }} />
+                        </div>
+                        <div className="mt-1 flex justify-between text-[10px] text-muted-foreground tabular-nums">
+                          <span>1 %{Math.round((d['1'] / d.n) * 100)}</span>
+                          <span>{t('community')} · {t('picks', { count: d.n })}</span>
+                          <span>2 %{Math.round((d['2'] / d.n) * 100)}</span>
+                        </div>
+                      </div>
+                    )}
                     <div className="grid grid-cols-2 gap-2 mt-2">
                       {(['U', 'O'] as const).map(o => (
                         <button key={o} disabled={locked || saving === m.match_id} onClick={() => submit(m, { ou: m.pick?.ou === o ? null : o })}
@@ -231,7 +299,9 @@ const Arena: React.FC = () => {
           </>
         )}
 
-        {tab !== 'play' && (
+        {tab === 'league' && <ArenaLeagues />}
+
+        {(tab === 'week' || tab === 'all') && (
           <section className="space-y-2">
             {gap != null && gap > 0 && (
               <button onClick={() => (canJoker ? setTab('play') : navigate('/premium?from=arena_near_top'))}
