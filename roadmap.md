@@ -1,6 +1,6 @@
 # Roadmap — Downloads & Premium conversion
 
-- [ ] Fit Arena cards, ranks and community bars on phone screens in TR/EN/DE/ES/AR
+- [x] Fit Arena cards, ranks and community bars on phone screens in TR/EN/DE/ES/AR — signed-in 320px/393px checks passed with no overflow; 20 Arena tests passed
 
 - [x] Preserve all unclaimed Arena top-3 rewards until the winner opens Arena — PostgreSQL late-return/once-only tests passed; signed-in Arena response verified
 
