@@ -149,6 +149,33 @@ export type Database = {
         }
         Relationships: []
       }
+      app_events: {
+        Row: {
+          created_at: string
+          device_id: string | null
+          event: string
+          id: number
+          props: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string | null
+          event: string
+          id?: never
+          props?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_id?: string | null
+          event?: string
+          id?: never
+          props?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       arena_picks: {
         Row: {
           created_at: string
@@ -1309,6 +1336,42 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          invitee_id: string
+          inviter_id: string
+        }
+        Insert: {
+          created_at?: string
+          invitee_id: string
+          inviter_id: string
+        }
+        Update: {
+          created_at?: string
+          invitee_id?: string
+          inviter_id?: string
+        }
+        Relationships: []
+      }
       streak_rewards: {
         Row: {
           created_at: string
@@ -1536,6 +1599,7 @@ export type Database = {
       get_arena_leaderboard: { Args: { p_scope?: string }; Returns: Json }
       get_arena_week: { Args: never; Returns: Json }
       get_bonus_credits: { Args: never; Returns: Json }
+      get_conversion_funnel: { Args: { p_days?: number }; Returns: Json }
       get_daily_analysis_usage:
         | { Args: never; Returns: number }
         | { Args: { p_user_id: string }; Returns: number }
@@ -1543,6 +1607,7 @@ export type Database = {
         | { Args: never; Returns: number }
         | { Args: { p_user_id: string }; Returns: number }
       get_my_predictor_stats: { Args: never; Returns: Json }
+      get_my_referral: { Args: never; Returns: Json }
       grant_streak_reward: { Args: never; Returns: Json }
       grant_streak_reward_for_user: {
         Args: { p_user_id: string }
@@ -1564,6 +1629,7 @@ export type Database = {
       is_premium_user:
         | { Args: never; Returns: boolean }
         | { Args: { p_user_id: string }; Returns: boolean }
+      redeem_referral: { Args: { p_code: string }; Returns: Json }
       submit_arena_pick: {
         Args: {
           p_joker?: boolean
