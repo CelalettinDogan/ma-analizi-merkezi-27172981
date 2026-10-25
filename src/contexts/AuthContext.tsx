@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState, useRef } from 'r
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Capacitor } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
+import { saveNativeSession, loadNativeSession, clearNativeSession, isNativeApp } from '@/lib/nativeSessionStore';
 
 const PUBLISHED_URL = 'https://golmetrikapp.lovable.app';
 const NATIVE_SCHEME = 'golmetrik://';
@@ -30,26 +32,79 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const initialized = useRef(false);
+  const userSignedOut = useRef(false);
+  const restoring = useRef<Promise<boolean> | null>(null);
+
+  // Restore from native backup (single-flight to avoid refresh-token reuse revocation)
+  const restoreFromBackup = () => {
+    if (restoring.current) return restoring.current;
+    restoring.current = (async () => {
+      const backup = await loadNativeSession();
+      if (!backup) return false;
+      const { data, error } = await supabase.auth.setSession(backup);
+      if (error) {
+        // Only discard backup when the server truly rejected it
+        const msg = (error.message || '').toLowerCase();
+        const isNetwork = msg.includes('fetch') || msg.includes('network') || (error as any).status === 0;
+        if (!isNetwork) await clearNativeSession();
+        return false;
+      }
+      return !!data.session;
+    })().finally(() => { restoring.current = null; });
+    return restoring.current;
+  };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        if (event === 'SIGNED_OUT' && !userSignedOut.current && isNativeApp()) {
+          // Unexpected sign-out: try the native backup before giving up
+          setTimeout(() => {
+            restoreFromBackup().then((ok) => {
+              if (!ok) { setSession(null); setUser(null); }
+            });
+          }, 0);
+          return;
+        }
         setSession(session);
         setUser(session?.user ?? null);
-        if (initialized.current) {
-          setIsLoading(false);
-        }
+        if (session) { saveNativeSession(session); if (event === 'SIGNED_IN') userSignedOut.current = false; }
+        if (event === 'SIGNED_OUT') clearNativeSession();
+        if (initialized.current) setIsLoading(false);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      let s = session;
+      if (!s && isNativeApp()) {
+        if (await restoreFromBackup()) s = (await supabase.auth.getSession()).data.session;
+      }
+      setSession(s);
+      setUser(s?.user ?? null);
+      if (s) saveNativeSession(s);
       initialized.current = true;
       setIsLoading(false);
-    });
+    })();
 
-    return () => subscription.unsubscribe();
+    // Foreground/background refresh handling on native
+    let removeListener: (() => void) | undefined;
+    if (isNativeApp()) {
+      const h = CapApp.addListener('appStateChange', async ({ isActive }) => {
+        if (isActive) {
+          supabase.auth.startAutoRefresh();
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) { await restoreFromBackup(); return; }
+          const expMs = (session.expires_at ?? 0) * 1000;
+          if (expMs - Date.now() < 5 * 60 * 1000) await supabase.auth.refreshSession();
+        } else {
+          supabase.auth.stopAutoRefresh();
+        }
+      });
+      removeListener = () => { h.then((x) => x.remove()); };
+    }
+
+    return () => { subscription.unsubscribe(); removeListener?.(); };
   }, []);
 
   const signUp = async (email: string, password: string, displayName?: string) => {
@@ -67,6 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
+    userSignedOut.current = false;
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -75,6 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    userSignedOut.current = true;
     setUser(null);
     setSession(null);
     try {
@@ -82,6 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem('cached_user_roles');
       localStorage.removeItem('cached_premium_sub');
     } catch {}
+    await clearNativeSession();
     await supabase.auth.signOut();
   };
 
